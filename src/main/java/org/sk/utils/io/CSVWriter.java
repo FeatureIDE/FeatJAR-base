@@ -12,9 +12,9 @@ import java.util.Objects;
 /**
  * Writer for CSV files.
  * <p>
- * After instantiation set the path to the output file with either:
- * {@link #setFileName} or {@link #setOutputFile}. Then change the default
- * values of the following properties, if necessary:
+ * After instantiation set the path to the output file with
+ * {@link #setOutputDirectory(Path)} and subsequently {@link #setFileName}. Then
+ * change the default values of the following properties, if necessary:
  * <ul>
  * <li>{@link #setKeepLines(boolean)}: If {@code true}, keeps the data stored
  * within the CSV Writer even after they are written to the output file.
@@ -68,28 +68,24 @@ public class CSVWriter {
 		}
 	}
 
-	public void setFileName(Path fileName) {
+	public void setFileName(Path fileName) throws IOException {
 		setOutputFile(outputDirectoryPath.resolve(fileName));
 	}
 
-	public void setFileName(String fileName) {
+	public void setFileName(String fileName) throws IOException {
 		setOutputFile(outputDirectoryPath.resolve(fileName));
 	}
 
-	private void setOutputFile(Path outputFile) {
+	private void setOutputFile(Path outputFile) throws IOException {
 		this.outputFilePath = outputFile;
-		try {
-			if (append) {
-				newFile = !Files.exists(outputFile);
-			} else {
-				Files.deleteIfExists(outputFile);
-				newFile = true;
-			}
-			if (newFile) {
-				Files.createFile(outputFile);
-			}
-		} catch (IOException e) {
-			e.printStackTrace();
+		if (append) {
+			newFile = !Files.exists(outputFile);
+		} else {
+			Files.deleteIfExists(outputFile);
+			newFile = true;
+		}
+		if (newFile) {
+			Files.createFile(outputFile);
 		}
 		reset();
 	}

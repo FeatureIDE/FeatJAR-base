@@ -52,10 +52,6 @@ public class Logger {
 			if (!installed) {
 				FileOutputStream outFileStream = new FileOutputStream(outputPath.resolve("console_log.txt").toFile());
 				FileOutputStream errFileStream = new FileOutputStream(outputPath.resolve("error_log.txt").toFile());
-//				FileOutputStream outReducedFileStream = new FileOutputStream(
-//						outputPath.resolve("console_log_reduced.txt").toFile());
-//				FileOutputStream errReducedFileStream = new FileOutputStream(
-//						outputPath.resolve("error_log_reduced.txt").toFile());
 
 				if (printToStandardConsole) {
 					outStream = new PrintStream(new MultiStream(orgOut, outFileStream));
