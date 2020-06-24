@@ -2,11 +2,8 @@ package org.sk.utils.io;
 
 import java.io.IOException;
 import java.nio.charset.Charset;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
+import java.nio.file.*;
+import java.util.*;
 
 /**
  * Reader for a simple format that stores a list of names as text (one per
@@ -30,14 +27,14 @@ public class NameListReader {
 	private List<Integer> systemIDs;
 
 	public void read(Path file) throws IOException {
-		List<String> lines = Files.readAllLines(file, Charset.defaultCharset());
+		final List<String> lines = Files.readAllLines(file, Charset.defaultCharset());
 
 		if (lines != null) {
 			boolean pause = false;
 			systemNames = new ArrayList<>(lines.size());
 			systemIDs = new ArrayList<>(lines.size());
 			int lineNumber = 0;
-			for (String modelName : lines) {
+			for (final String modelName : lines) {
 				if (!modelName.trim().isEmpty()) {
 					if (!modelName.startsWith("\t")) {
 						if (modelName.startsWith(COMMENT)) {

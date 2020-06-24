@@ -1,8 +1,6 @@
 package org.sk.utils;
 
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
-import java.io.PrintStream;
+import java.io.*;
 import java.nio.file.Path;
 import java.sql.Timestamp;
 import java.text.SimpleDateFormat;
@@ -19,6 +17,9 @@ public class Logger {
 
 	private static final String DATE_FORMAT_STRING = "MM/dd/yyyy-HH:mm:ss";
 	private static final SimpleDateFormat DATE_FORMAT = new SimpleDateFormat(DATE_FORMAT_STRING);
+
+	private static final String outFileName = "console_log.txt";
+	private static final String errFileName = "error_log.txt";
 
 	private static final Logger INSTANCE = new Logger();
 
@@ -50,9 +51,10 @@ public class Logger {
 	public void install(Path outputPath, boolean printToStandardConsole) throws FileNotFoundException {
 		synchronized (INSTANCE) {
 			if (!installed) {
-				FileOutputStream outFileStream = new FileOutputStream(outputPath.resolve("console_log.txt").toFile());
-				FileOutputStream errFileStream = new FileOutputStream(outputPath.resolve("error_log.txt").toFile());
-
+				File outFile = outputPath.resolve(outFileName).toFile();
+				File errFile = outputPath.resolve(errFileName).toFile();
+				final FileOutputStream outFileStream = new FileOutputStream(outFile);
+				final FileOutputStream errFileStream = new FileOutputStream(errFile);
 				if (printToStandardConsole) {
 					outStream = new PrintStream(new MultiStream(orgOut, outFileStream));
 					errStream = new PrintStream(new MultiStream(orgErr, errFileStream));
@@ -154,8 +156,8 @@ public class Logger {
 	}
 
 	private String formatMessage(String message) {
-		String curTime = getCurTime();
-		int curTabLevel = tabLevel;
+		final String curTime = getCurTime();
+		final int curTabLevel = tabLevel;
 
 		final StringBuilder sb = new StringBuilder(DATE_FORMAT_STRING.length() + 1 + curTabLevel + message.length());
 		sb.append(curTime);

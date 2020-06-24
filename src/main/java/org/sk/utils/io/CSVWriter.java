@@ -1,13 +1,8 @@
 package org.sk.utils.io;
 
 import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.nio.file.StandardOpenOption;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Objects;
+import java.nio.file.*;
+import java.util.*;
 
 /**
  * Writer for CSV files.
@@ -57,11 +52,11 @@ public class CSVWriter {
 
 	public boolean setOutputDirectory(Path outputPath) throws IOException {
 		if (Files.isDirectory(outputPath)) {
-			this.outputDirectoryPath = outputPath;
+			outputDirectoryPath = outputPath;
 			return true;
 		} else if (!Files.exists(outputPath)) {
 			Files.createDirectories(outputPath);
-			this.outputDirectoryPath = outputPath;
+			outputDirectoryPath = outputPath;
 			return true;
 		} else {
 			return false;
@@ -77,7 +72,7 @@ public class CSVWriter {
 	}
 
 	private void setOutputFile(Path outputFile) throws IOException {
-		this.outputFilePath = outputFile;
+		outputFilePath = outputFile;
 		if (append) {
 			newFile = !Files.exists(outputFile);
 		} else {
@@ -140,7 +135,7 @@ public class CSVWriter {
 					values.subList(1, values.size()).clear();
 					nextLine = 1;
 				}
-			} catch (IOException e) {
+			} catch (final IOException e) {
 				e.printStackTrace();
 			}
 		}
@@ -155,7 +150,7 @@ public class CSVWriter {
 	}
 
 	private void writer(StringBuilder sb, List<String> line) {
-		for (String value : line) {
+		for (final String value : line) {
 			if (value != null) {
 				sb.append(value);
 			}
@@ -173,7 +168,7 @@ public class CSVWriter {
 		try {
 			Files.write(p, toString().getBytes(), StandardOpenOption.APPEND, StandardOpenOption.CREATE);
 			return true;
-		} catch (IOException e) {
+		} catch (final IOException e) {
 			e.printStackTrace();
 		}
 		return false;
@@ -218,7 +213,7 @@ public class CSVWriter {
 		if (this == obj) {
 			return true;
 		}
-		if (obj == null || getClass() != obj.getClass()) {
+		if ((obj == null) || (getClass() != obj.getClass())) {
 			return false;
 		}
 		return Objects.equals(outputFilePath, ((CSVWriter) obj).outputFilePath);
@@ -226,8 +221,8 @@ public class CSVWriter {
 
 	@Override
 	public String toString() {
-		StringBuilder sb = new StringBuilder();
-		for (List<String> line : values) {
+		final StringBuilder sb = new StringBuilder();
+		for (final List<String> line : values) {
 			writer(sb, line);
 		}
 		return sb.toString();

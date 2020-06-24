@@ -1,10 +1,7 @@
 package org.sk.utils.io;
 
-import java.io.IOException;
-import java.io.OutputStream;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
+import java.io.*;
+import java.util.*;
 
 public class MultiStream extends OutputStream {
 
@@ -15,41 +12,42 @@ public class MultiStream extends OutputStream {
 		this.streamList.addAll(Arrays.asList(streamList));
 	}
 
+	@Override
 	public void flush() throws IOException {
-		for (OutputStream outputStream : streamList) {
+		for (final OutputStream outputStream : streamList) {
 			try {
 				outputStream.flush();
-			} catch (IOException e) {
+			} catch (final IOException e) {
 			}
 		}
 	}
 
 	@Override
 	public void write(byte[] buf, int off, int len) throws IOException {
-		for (OutputStream outputStream : streamList) {
+		for (final OutputStream outputStream : streamList) {
 			try {
 				outputStream.write(buf, off, len);
-			} catch (IOException e) {
+			} catch (final IOException e) {
 			}
 		}
 	}
 
 	@Override
 	public void write(int b) throws IOException {
-		for (OutputStream outputStream : streamList) {
+		for (final OutputStream outputStream : streamList) {
 			try {
 				outputStream.write(b);
-			} catch (IOException e) {
+			} catch (final IOException e) {
 			}
 		}
 	}
 
 	@Override
 	public void write(byte[] b) throws IOException {
-		for (OutputStream outputStream : streamList) {
+		for (final OutputStream outputStream : streamList) {
 			try {
 				outputStream.write(b);
-			} catch (IOException e) {
+			} catch (final IOException e) {
 			}
 		}
 	}
