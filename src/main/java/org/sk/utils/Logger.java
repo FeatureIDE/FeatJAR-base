@@ -1,6 +1,9 @@
 package org.sk.utils;
 
-import java.io.*;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.PrintStream;
 import java.nio.file.Path;
 import java.sql.Timestamp;
 import java.text.SimpleDateFormat;
@@ -41,7 +44,6 @@ public class Logger {
 	private PrintStream errStream;
 
 	public int verboseLevel = 1;
-	public int tabLevel = 0;
 	public boolean installed = false;
 
 	public void install(Path outputPath) throws FileNotFoundException {
@@ -89,28 +91,8 @@ public class Logger {
 		this.verboseLevel = verboseLevel;
 	}
 
-	public int getTabLevel() {
-		return tabLevel;
-	}
-
-	public void setTabLevel(int tabLevel) {
-		this.tabLevel = tabLevel;
-	}
-
-	public void incTabLevel() {
-		tabLevel++;
-	}
-
-	public void decTabLevel() {
-		tabLevel--;
-	}
-
 	public int isVerbose() {
 		return verboseLevel;
-	}
-
-	public static final String getCurTime() {
-		return DATE_FORMAT.format(new Timestamp(System.currentTimeMillis()));
 	}
 
 	public final void logError(String message) {
@@ -155,16 +137,16 @@ public class Logger {
 		}
 	}
 
-	private String formatMessage(String message) {
-		final String curTime = getCurTime();
-		final int curTabLevel = tabLevel;
+	public static final String getCurTime() {
+		return DATE_FORMAT.format(new Timestamp(System.currentTimeMillis()));
+	}
 
-		final StringBuilder sb = new StringBuilder(DATE_FORMAT_STRING.length() + 1 + curTabLevel + message.length());
+	public static String formatMessage(String message) {
+		final String curTime = getCurTime();
+
+		final StringBuilder sb = new StringBuilder(DATE_FORMAT_STRING.length() + 1 + message.length());
 		sb.append(curTime);
 		sb.append(' ');
-		for (int i = 0; i < curTabLevel; i++) {
-			sb.append('\t');
-		}
 		sb.append(message);
 		return sb.toString();
 	}
