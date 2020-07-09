@@ -1,6 +1,6 @@
 package org.sk.utils.io.formats;
 
-import java.util.Optional;
+import java.util.*;
 
 /**
  * Saves a warning with a line number where it occurred.
@@ -9,7 +9,7 @@ import java.util.Optional;
  */
 public class ParseProblem {
 
-	public static enum Severity {
+	public enum Severity {
 		INFO(0), WARNING(1), ERROR(2);
 
 		private final int level;

@@ -1,6 +1,6 @@
 package org.sk.utils.io;
 
-import java.io.IOException;
+import java.io.*;
 import java.nio.file.*;
 import java.util.*;
 

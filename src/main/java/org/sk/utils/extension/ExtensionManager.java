@@ -1,8 +1,6 @@
 package org.sk.utils.extension;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
+import java.util.*;
 
 /**
  * Manages all extension of a certain extension point.

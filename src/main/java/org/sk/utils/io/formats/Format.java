@@ -1,6 +1,8 @@
 package org.sk.utils.io.formats;
 
-import org.sk.utils.extension.Extension;
+import java.util.*;
+
+import org.sk.utils.extension.*;
 
 /**
  * Interface for reading and writing data from and to arbitrary objects.
@@ -17,13 +19,17 @@ public interface Format<T> extends Extension {
 	 * passed here.
 	 *
 	 * @param source the source content.
-	 * @return A list of {@link ParseProblem problems} that occurred during the parsing
-	 *         process.
+	 * @return A list of {@link ParseProblem problems} that occurred during the
+	 *         parsing process.
 	 *
 	 * @see #supportsParse()
 	 */
-	default ParseResult<T> parse(CharSequence source) {
+	default Optional<T> parse(CharSequence source) {
 		throw new UnsupportedOperationException();
+	}
+
+	default Optional<T> parse(CharSequence source, List<ParseProblem> problems) {
+		return parse(source);
 	}
 
 	/**
@@ -56,8 +62,8 @@ public interface Format<T> extends Extension {
 
 	/**
 	 * Returns an instance of this format. Clients should always call this method
-	 * before calling {@link #parse(CharSequence)} or {@link #serialize(Object)}
-	 * and call these methods the returned value to avoid any unintended concurrent
+	 * before calling {@link #parse(CharSequence)} or {@link #serialize(Object)} and
+	 * call these methods the returned value to avoid any unintended concurrent
 	 * access.<br>
 	 * <br>
 	 * <b>Example</b> <code>
@@ -84,7 +90,8 @@ public interface Format<T> extends Extension {
 	}
 
 	/**
-	 * Returns whether this format supports the {@link #serialize(Object)} operation.
+	 * Returns whether this format supports the {@link #serialize(Object)}
+	 * operation.
 	 *
 	 * @return {@code true} if {@code write} is allowed by this format,
 	 *         {@code false} otherwise.

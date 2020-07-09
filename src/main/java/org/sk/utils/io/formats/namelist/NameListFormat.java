@@ -1,16 +1,14 @@
 package org.sk.utils.io.formats.namelist;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
 
-import org.sk.utils.io.formats.Format;
-import org.sk.utils.io.formats.ParseResult;
+import org.sk.utils.io.formats.*;
 
 /**
  * Simple format that stores a list of names as text (one per line).
  * <p>
- * Get a list of names and IDs ordered by occurrence in the file.
- * The IDs correspond to the line numbers within the file.
+ * Get a list of names and IDs ordered by occurrence in the file. The IDs
+ * correspond to the line numbers within the file.
  * <p>
  * Names in the input file can ignore by either adding a tab character in front
  * or using the marker for comments: '#' for single line comment and '###' for
@@ -45,9 +43,9 @@ public class NameListFormat implements Format<List<NameListFormat.NameEntry>> {
 	private static final String STOP_MARK = "###";
 
 	@Override
-	public ParseResult<List<NameEntry>> parse(CharSequence source) {
-		String[] lines = source.toString().split("\\R");
-		ArrayList<NameEntry> entries = new ArrayList<>(lines.length);
+	public Optional<List<NameEntry>> parse(CharSequence source) {
+		final String[] lines = source.toString().split("\\R");
+		final ArrayList<NameEntry> entries = new ArrayList<>(lines.length);
 		int lineNumber = 0;
 		boolean pause = false;
 		for (final String modelName : lines) {
@@ -64,7 +62,7 @@ public class NameListFormat implements Format<List<NameListFormat.NameEntry>> {
 			}
 			lineNumber++;
 		}
-		return ParseResult.of(entries);
+		return Optional.of(entries);
 	}
 
 	@Override
