@@ -1,6 +1,7 @@
 package org.sk.utils.io;
 
 import java.io.*;
+import java.nio.charset.*;
 import java.nio.file.*;
 import java.util.*;
 
@@ -32,7 +33,7 @@ public class CSVWriter {
 	private static final String NEWLINE = System.lineSeparator();
 	private static final String DEFAULT_SEPARATOR = ";";
 
-	private final List<List<String>> values = new ArrayList<>();
+	private final LinkedList<List<String>> values = new LinkedList<>();
 
 	private String separator = DEFAULT_SEPARATOR;
 	private List<String> header = null;
@@ -40,11 +41,9 @@ public class CSVWriter {
 	private Path outputDirectoryPath = Paths.get("");
 	private Path outputFilePath;
 
-	private boolean keepLines = false;
 	private boolean append = false;
 
 	private boolean newFile = true;
-	private int nextLine = 0;
 
 	public Path getOutputDirectory() {
 		return outputDirectoryPath;
@@ -63,25 +62,14 @@ public class CSVWriter {
 		}
 	}
 
-	public void setFileName(Path fileName) throws IOException {
-		setOutputFile(outputDirectoryPath.resolve(fileName));
-	}
-
 	public void setFileName(String fileName) throws IOException {
 		setOutputFile(outputDirectoryPath.resolve(fileName));
 	}
 
-	private void setOutputFile(Path outputFile) throws IOException {
+	public void setOutputFile(Path outputFile) throws IOException {
+		setOutputDirectory(outputFile.getParent());
 		outputFilePath = outputFile;
-		if (append) {
-			newFile = !Files.exists(outputFile);
-		} else {
-			Files.deleteIfExists(outputFile);
-			newFile = true;
-		}
-		if (newFile) {
-			Files.createFile(outputFile);
-		}
+		newFile = true;
 		reset();
 	}
 
@@ -94,19 +82,15 @@ public class CSVWriter {
 	}
 
 	public List<String> getHeader() {
-		return header;
+		return Collections.unmodifiableList(header);
+	}
+
+	public void setHeader(String... header) {
+		setHeader(Arrays.asList(header));
 	}
 
 	public void setHeader(List<String> header) {
 		this.header = new ArrayList<>(header);
-		if (values.isEmpty()) {
-			values.add(this.header);
-		} else {
-			values.set(0, this.header);
-		}
-		if (!newFile) {
-			nextLine = 1;
-		}
 	}
 
 	public void addHeaderValue(String headerValue) {
@@ -118,35 +102,37 @@ public class CSVWriter {
 	}
 
 	public void createNewLine() {
-		values.add(new ArrayList<String>());
-	}
-
-	public void flush() {
-		if (outputFilePath != null) {
-			final StringBuilder sb = new StringBuilder();
-			for (int i = nextLine; i < values.size(); i++) {
-				writer(sb, values.get(i));
-			}
-			try {
-				Files.write(outputFilePath, sb.toString().getBytes(), StandardOpenOption.APPEND);
-				if (keepLines) {
-					nextLine = values.size();
-				} else {
-					values.subList(1, values.size()).clear();
-					nextLine = 1;
-				}
-			} catch (final IOException e) {
-				e.printStackTrace();
-			}
-		}
+		values.add(header != null ? new ArrayList<>(header.size()) : new ArrayList<>());
 	}
 
 	public void addValue(Object o) {
 		values.get(values.size() - 1).add(o.toString());
 	}
 
-	public List<List<String>> getValues() {
-		return values;
+	public void flush() {
+		if (outputFilePath != null) {
+			try {
+				final StringBuilder sb = new StringBuilder();
+				if (newFile && (header != null)) {
+					if (!append || !Files.exists(outputFilePath) || (Files.size(outputFilePath) == 0)) {
+						writer(sb, header);
+					}
+				}
+				values.stream().forEach(line -> writer(sb, line));
+				final byte[] bytes = sb.toString().getBytes(StandardCharsets.UTF_8);
+				if (newFile && !append) {
+					Files.write(outputFilePath, bytes,
+						StandardOpenOption.WRITE, StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING);
+					newFile = false;
+				} else {
+					Files.write(outputFilePath, bytes,
+						StandardOpenOption.WRITE, StandardOpenOption.CREATE, StandardOpenOption.APPEND);
+				}
+				values.clear();
+			} catch (final IOException e) {
+				e.printStackTrace();
+			}
+		}
 	}
 
 	private void writer(StringBuilder sb, List<String> line) {
@@ -164,35 +150,14 @@ public class CSVWriter {
 		}
 	}
 
-	public boolean saveToFile(Path p) {
-		try {
-			Files.write(p, toString().getBytes(), StandardOpenOption.APPEND, StandardOpenOption.CREATE);
-			return true;
-		} catch (final IOException e) {
-			e.printStackTrace();
-		}
-		return false;
-	}
-
 	public void reset() {
-		if (!values.isEmpty()) {
-			values.subList(1, values.size()).clear();
-		}
-		nextLine = 0;
+		values.clear();
 	}
 
-	public void resetLine() {
+	public void removeLastLine() {
 		if (!values.isEmpty()) {
 			values.remove(values.size() - 1);
 		}
-	}
-
-	public boolean isKeepLines() {
-		return keepLines;
-	}
-
-	public void setKeepLines(boolean keepLines) {
-		this.keepLines = keepLines;
 	}
 
 	public boolean isAppend() {
@@ -221,11 +186,7 @@ public class CSVWriter {
 
 	@Override
 	public String toString() {
-		final StringBuilder sb = new StringBuilder();
-		for (final List<String> line : values) {
-			writer(sb, line);
-		}
-		return sb.toString();
+		return "CSVWriter [path = " + outputFilePath + ", header = " + header + "]";
 	}
 
 }

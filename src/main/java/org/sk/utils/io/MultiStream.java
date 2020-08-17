@@ -12,6 +12,11 @@ public class MultiStream extends OutputStream {
 		this.streamList.addAll(Arrays.asList(streamList));
 	}
 
+	public MultiStream(List<OutputStream> streamList) {
+		super();
+		this.streamList.addAll(new ArrayList<>(streamList));
+	}
+
 	@Override
 	public void flush() throws IOException {
 		for (final OutputStream outputStream : streamList) {
