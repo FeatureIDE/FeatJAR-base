@@ -1,4 +1,4 @@
-package org.spldev.utils.logging;
+package org.spldev.util.logging;
 
 @FunctionalInterface
 public interface Formatter {

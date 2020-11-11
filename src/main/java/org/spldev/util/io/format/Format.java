@@ -1,8 +1,8 @@
-package org.spldev.utils.io.formats;
+package org.spldev.util.io.format;
 
 import java.util.*;
 
-import org.spldev.utils.extension.*;
+import org.spldev.util.extension.*;
 
 /**
  * Interface for reading and writing data from and to arbitrary objects.

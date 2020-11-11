@@ -1,4 +1,4 @@
-package org.spldev.utils.io.formats;
+package org.spldev.util.io.format;
 
 import java.io.*;
 import java.nio.charset.*;

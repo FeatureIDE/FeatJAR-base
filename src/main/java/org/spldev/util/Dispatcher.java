@@ -1,4 +1,4 @@
-package org.spldev.utils;
+package org.spldev.util;
 
 import java.lang.reflect.*;
 import java.util.*;

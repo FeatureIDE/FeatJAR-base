@@ -1,4 +1,4 @@
-package org.spldev.utils.extension;
+package org.spldev.util.extension;
 
 /**
  * A FeatureIDE extension with its ID.

@@ -1,8 +1,8 @@
-package org.spldev.utils.io.formats.namelist;
+package org.spldev.util.io.format.namelist;
 
 import java.util.*;
 
-import org.spldev.utils.io.formats.*;
+import org.spldev.util.io.format.*;
 
 /**
  * Simple format that stores a list of names as text (one per line).

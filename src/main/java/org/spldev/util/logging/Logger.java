@@ -1,10 +1,10 @@
-package org.spldev.utils.logging;
+package org.spldev.util.logging;
 
 import java.io.*;
 import java.nio.file.*;
 import java.util.*;
 
-import org.spldev.utils.io.*;
+import org.spldev.util.io.*;
 
 /**
  * Extends the standard output with time codes, indentation, and log file
