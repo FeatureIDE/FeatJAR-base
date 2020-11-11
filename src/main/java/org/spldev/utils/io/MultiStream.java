@@ -1,4 +1,4 @@
-package org.sk.utils.io;
+package org.spldev.utils.io;
 
 import java.io.*;
 import java.util.*;

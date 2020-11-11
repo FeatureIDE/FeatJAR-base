@@ -1,4 +1,4 @@
-package org.sk.utils.logging;
+package org.spldev.utils.logging;
 
 public class TabFormatter implements Formatter {
 

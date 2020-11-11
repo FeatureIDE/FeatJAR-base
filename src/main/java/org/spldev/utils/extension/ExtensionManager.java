@@ -1,4 +1,4 @@
-package org.sk.utils.extension;
+package org.spldev.utils.extension;
 
 import java.util.*;
 

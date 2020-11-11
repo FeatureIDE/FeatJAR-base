@@ -1,8 +1,8 @@
-package org.sk.utils.io.formats;
+package org.spldev.utils.io.formats;
 
 import java.util.*;
 
-import org.sk.utils.extension.*;
+import org.spldev.utils.extension.*;
 
 /**
  * Interface for reading and writing data from and to arbitrary objects.

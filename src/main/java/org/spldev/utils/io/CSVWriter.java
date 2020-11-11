@@ -1,4 +1,4 @@
-package org.sk.utils.io;
+package org.spldev.utils.io;
 
 import java.io.*;
 import java.nio.charset.*;
@@ -12,9 +12,6 @@ import java.util.*;
  * {@link #setOutputDirectory(Path)} and subsequently {@link #setFileName}. Then
  * change the default values of the following properties, if necessary:
  * <ul>
- * <li>{@link #setKeepLines(boolean)}: If {@code true}, keeps the data stored
- * within the CSV Writer even after they are written to the output file.
- * (Default: {@code false})
  * <li>{@link #setAppend(boolean)}: If {@code true}, writes data at the end of
  * the output file. If {@code false}, overwrites the output file. (Default:
  * {@code false})
