@@ -2,6 +2,7 @@ package org.spldev.util.io.format.namelist;
 
 import java.util.*;
 
+import org.spldev.util.io.*;
 import org.spldev.util.io.format.*;
 
 /**
@@ -43,7 +44,7 @@ public class NameListFormat implements Format<List<NameListFormat.NameEntry>> {
 	private static final String STOP_MARK = "###";
 
 	@Override
-	public Optional<List<NameEntry>> parse(CharSequence source) {
+	public ParseResult<List<NameEntry>> parse(CharSequence source) {
 		final String[] lines = source.toString().split("\\R");
 		final ArrayList<NameEntry> entries = new ArrayList<>(lines.length);
 		int lineNumber = 0;
@@ -62,7 +63,7 @@ public class NameListFormat implements Format<List<NameListFormat.NameEntry>> {
 			}
 			lineNumber++;
 		}
-		return Optional.of(entries);
+		return ParseResult.of(entries);
 	}
 
 	@Override

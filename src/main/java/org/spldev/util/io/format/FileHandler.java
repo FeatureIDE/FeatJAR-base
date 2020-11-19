@@ -5,6 +5,8 @@ import java.nio.charset.*;
 import java.nio.file.*;
 import java.util.*;
 
+import org.spldev.util.io.*;
+
 /**
  * Enables reading and writing of a file in a certain {@link Format}.
  *
@@ -64,7 +66,7 @@ public class FileHandler<T> {
 		return (extensionIndex > 0) ? fileName.substring(extensionIndex + 1) : "";
 	}
 
-	public static <T> Optional<T> read(Path path, Format<T> format, Charset charset) throws IOException {
+	public static <T> ParseResult<T> read(Path path, Format<T> format, Charset charset) throws IOException {
 		if (!Files.exists(path)) {
 			throw new FileNotFoundException(path.toString());
 		}
@@ -79,7 +81,7 @@ public class FileHandler<T> {
 			StandardOpenOption.WRITE);
 	}
 
-	public static <T> Optional<T> read(Path path, Format<T> format) throws IOException {
+	public static <T> ParseResult<T> read(Path path, Format<T> format) throws IOException {
 		return read(path, format, DEFAULT_CHARSET);
 	}
 
@@ -108,7 +110,7 @@ public class FileHandler<T> {
 		write(object, path, format, charset);
 	}
 
-	public Optional<T> read(Path path) throws IOException {
+	public ParseResult<T> read(Path path) throws IOException {
 		return read(path, format, charset);
 	}
 

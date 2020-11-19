@@ -1,8 +1,7 @@
 package org.spldev.util.io.format;
 
-import java.util.*;
-
 import org.spldev.util.extension.*;
+import org.spldev.util.io.*;
 
 /**
  * Interface for reading and writing data from and to arbitrary objects.
@@ -24,12 +23,8 @@ public interface Format<T> extends Extension {
 	 *
 	 * @see #supportsParse()
 	 */
-	default Optional<T> parse(CharSequence source) {
+	default ParseResult<T> parse(CharSequence source) {
 		throw new UnsupportedOperationException();
-	}
-
-	default Optional<T> parse(CharSequence source, List<ParseProblem> problems) {
-		return parse(source);
 	}
 
 	/**
