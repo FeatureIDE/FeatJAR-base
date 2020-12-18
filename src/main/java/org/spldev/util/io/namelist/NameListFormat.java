@@ -1,8 +1,8 @@
-package org.spldev.util.io.format.namelist;
+package org.spldev.util.io.namelist;
 
 import java.util.*;
 
-import org.spldev.util.io.*;
+import org.spldev.util.*;
 import org.spldev.util.io.format.*;
 
 /**
@@ -44,7 +44,7 @@ public class NameListFormat implements Format<List<NameListFormat.NameEntry>> {
 	private static final String STOP_MARK = "###";
 
 	@Override
-	public ParseResult<List<NameEntry>> parse(CharSequence source) {
+	public Result<List<NameEntry>> parse(CharSequence source) {
 		final String[] lines = source.toString().split("\\R");
 		final ArrayList<NameEntry> entries = new ArrayList<>(lines.length);
 		int lineNumber = 0;
@@ -63,7 +63,7 @@ public class NameListFormat implements Format<List<NameListFormat.NameEntry>> {
 			}
 			lineNumber++;
 		}
-		return ParseResult.of(entries);
+		return Result.of(entries);
 	}
 
 	@Override

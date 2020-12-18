@@ -1,4 +1,4 @@
-package org.spldev.util.io;
+package org.spldev.util.io.csv;
 
 import java.io.*;
 import java.nio.charset.*;

@@ -4,6 +4,7 @@ import java.io.*;
 import java.nio.file.*;
 import java.util.*;
 
+import org.spldev.util.*;
 import org.spldev.util.io.*;
 
 /**
@@ -113,6 +114,13 @@ public final class Logger {
 		}
 	}
 
+	public static void logProblems(List<Problem> problems) {
+		problems.stream()
+			.map(Problem::getError)
+			.flatMap(Optional::stream)
+			.forEach(Logger::logError);
+	}
+
 	public static void logError(Throwable error) {
 		println(error);
 	}
@@ -139,20 +147,39 @@ public final class Logger {
 
 	private synchronized static void println(String message, LogType logType) {
 		final String formatedMessage = formatMessage(message);
-		for (final Log log : logs) {
-			if (log.enabledLogTypes.contains(logType)) {
-				log.out.println(formatedMessage);
+		if (installed) {
+			for (final Log log : logs) {
+				if (log.enabledLogTypes.contains(logType)) {
+					log.out.println(formatedMessage);
+				}
+			}
+		} else {
+			switch (logType) {
+			case ERROR:
+				System.err.println(formatedMessage);
+				break;
+			case DEBUG:
+			case INFO:
+			case PROGRESS:
+			default:
+				System.out.println(formatedMessage);
+				break;
 			}
 		}
 	}
 
 	private synchronized static void println(Throwable error) {
 		final String formatedMessage = formatMessage(error.getMessage());
-		for (final Log log : logs) {
-			if (log.enabledLogTypes.contains(LogType.ERROR)) {
-				log.out.println(formatedMessage);
-				error.printStackTrace(log.out);
+		if (installed) {
+			for (final Log log : logs) {
+				if (log.enabledLogTypes.contains(LogType.ERROR)) {
+					log.out.println(formatedMessage);
+					error.printStackTrace(log.out);
+				}
 			}
+		} else {
+			System.err.println(formatedMessage);
+			error.printStackTrace(System.err);
 		}
 	}
 

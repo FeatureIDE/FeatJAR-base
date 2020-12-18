@@ -1,11 +1,11 @@
-package org.spldev.util.io.format;
+package org.spldev.util.io;
 
 import java.io.*;
 import java.nio.charset.*;
 import java.nio.file.*;
-import java.util.*;
 
-import org.spldev.util.io.*;
+import org.spldev.util.*;
+import org.spldev.util.io.format.*;
 
 /**
  * Enables reading and writing of a file in a certain {@link Format}.
@@ -48,6 +48,9 @@ public class FileHandler<T> {
 	 * @see #getFileExtension(String)
 	 */
 	public static String getFileExtension(Path path) {
+		if (path == null) {
+			return "";
+		}
 		return getFileExtension(path.getFileName().toString());
 	}
 
@@ -62,15 +65,44 @@ public class FileHandler<T> {
 	 * @see #getFileExtension(Path)
 	 */
 	public static String getFileExtension(String fileName) {
+		if (fileName == null) {
+			return "";
+		}
 		final int extensionIndex = fileName.lastIndexOf('.');
 		return (extensionIndex > 0) ? fileName.substring(extensionIndex + 1) : "";
 	}
 
-	public static <T> ParseResult<T> read(Path path, Format<T> format, Charset charset) throws IOException {
+	public static String read(Path path, Charset charset) throws IOException {
 		if (!Files.exists(path)) {
 			throw new FileNotFoundException(path.toString());
 		}
-		return format.getInstance().parse(new String(Files.readAllBytes(path), charset));
+		return new String(Files.readAllBytes(path), charset);
+	}
+
+	public static String read(Path path) throws IOException {
+		return read(path, DEFAULT_CHARSET);
+	}
+
+	public static <T> Result<T> parse(Path path, Format<T> format, Charset charset) throws IOException {
+		return format.getInstance().parse(read(path, charset));
+	}
+
+	public static <T> Result<T> parse(Path path, Format<T> format) throws IOException {
+		return parse(path, format, DEFAULT_CHARSET);
+	}
+
+	public static <T> Result<T> parse(Path path, FormatSupplier<T> formatSupplier, Charset charset) {
+		try {
+			final String content = read(path, charset);
+			return formatSupplier.getFormat(content, getFileExtension(path))
+				.flatMap(f -> f.getInstance().parse(content));
+		} catch (final IOException e) {
+			return Result.empty(e);
+		}
+	}
+
+	public static <T> Result<T> parse(Path path, FormatSupplier<T> formatSupplier) {
+		return parse(path, formatSupplier, DEFAULT_CHARSET);
 	}
 
 	public static <T> void write(T object, Path path, Format<T> format, Charset charset) throws IOException {
@@ -81,64 +113,8 @@ public class FileHandler<T> {
 			StandardOpenOption.WRITE);
 	}
 
-	public static <T> ParseResult<T> read(Path path, Format<T> format) throws IOException {
-		return read(path, format, DEFAULT_CHARSET);
-	}
-
 	public static <T> void write(T object, Path path, Format<T> format) throws IOException {
 		write(object, path, format, DEFAULT_CHARSET);
-	}
-
-	private Path path;
-	private Format<T> format;
-	private Charset charset = DEFAULT_CHARSET;
-
-	public FileHandler(Format<T> format) {
-		setFormat(format);
-	}
-
-	public FileHandler(Path path, Format<T> format) {
-		setPath(path);
-		setFormat(format);
-	}
-
-	public void write(T object) throws IOException {
-		write(object, path, format, charset);
-	}
-
-	public void write(T object, Path path) throws IOException {
-		write(object, path, format, charset);
-	}
-
-	public ParseResult<T> read(Path path) throws IOException {
-		return read(path, format, charset);
-	}
-
-	public Charset getCharset() {
-		return charset;
-	}
-
-	public Format<T> getFormat() {
-		return format;
-	}
-
-	public Path getPath() {
-		return path;
-	}
-
-	public void setCharset(Charset charset) {
-		Objects.requireNonNull(charset);
-		this.charset = charset;
-	}
-
-	public void setFormat(Format<T> format) {
-		Objects.requireNonNull(format);
-		this.format = format;
-	}
-
-	public void setPath(Path path) {
-		Objects.requireNonNull(path);
-		this.path = path;
 	}
 
 }

@@ -1,7 +1,7 @@
 package org.spldev.util.io.format;
 
+import org.spldev.util.*;
 import org.spldev.util.extension.*;
-import org.spldev.util.io.*;
 
 /**
  * Interface for reading and writing data from and to arbitrary objects.
@@ -18,12 +18,12 @@ public interface Format<T> extends Extension {
 	 * passed here.
 	 *
 	 * @param source the source content.
-	 * @return A list of {@link ParseProblem problems} that occurred during the
-	 *         parsing process.
+	 * @return A list of {@link Problem problems} that occurred during the parsing
+	 *         process.
 	 *
 	 * @see #supportsParse()
 	 */
-	default ParseResult<T> parse(CharSequence source) {
+	default Result<T> parse(CharSequence source) {
 		throw new UnsupportedOperationException();
 	}
 

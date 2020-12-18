@@ -22,7 +22,7 @@ public class Dispatcher {
 		final Class<?> loadClass = systemClassLoader.loadClass(args[0]);
 		final Method method = loadClass.getMethod("main", String[].class);
 
-		method.invoke(null, new Object[] { Arrays.copyOfRange(args, 1, args.length) });
+		method.invoke(null, (Object[]) Arrays.copyOfRange(args, 1, args.length));
 	}
 
 }

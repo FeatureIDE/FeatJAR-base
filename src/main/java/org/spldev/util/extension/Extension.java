@@ -1,9 +1,7 @@
 package org.spldev.util.extension;
 
 /**
- * A FeatureIDE extension with its ID.
- * <p>
- * <b>NOTE:</b> All extensions should provide a default/nullary constructor.
+ * An extension containing a unique ID and a method for initialization
  *
  * @author Sebastian Krieter
  */
@@ -15,8 +13,8 @@ public interface Extension {
 	String getId();
 
 	/**
-	 * Is called, when the extension is loaded for the first time by the
-	 * {@link ExtensionManager}.
+	 * Is called, when the extension is loaded for the first time by an
+	 * {@link ExtensionPoint}.
 	 *
 	 * @return {@code true} if the initialization was successful, {@code false}
 	 *         otherwise.
