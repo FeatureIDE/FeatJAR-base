@@ -8,18 +8,20 @@
 	<version>1.0-SNAPSHOT</version>
 	<packaging>jar</packaging>
 
-	<name>Util Lib</name>
-	<description></description>
+	<name>Util-Lib</name>
+	<description>Miscellaneous utility functions.</description>
 	<url>https://github.com/skrieter/utils</url>
 
 	<licenses>
 		<license>
-			<name>GNU General Public License, Version 3</name>
-			<url>https://www.gnu.org/licenses/gpl-3.0.html</url>
+			<name>LGPL-3.0-or-later</name>
+			<url>https://www.gnu.org/licenses/</url>
+			<distribution>repo</distribution>
 		</license>
 	</licenses>
 
 	<properties>
+		<java.version>11</java.version>
 		<maven.compiler.source>11</maven.compiler.source>
 		<maven.compiler.target>11</maven.compiler.target>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -41,8 +43,17 @@
 	</dependencies>
 
 	<build>
-		<plugins>
+		<resources>
+			<resource>
+				<directory></directory>
+				<includes>
+					<include>COPYING</include>
+					<include>COPYING.LESSER</include>
+				</includes>
+			</resource>
+		</resources>
 
+		<plugins>
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-compiler-plugin</artifactId>
@@ -67,6 +78,7 @@
 				<version>3.2.0</version>
 				<configuration>
 					<source>11</source>
+					<detectJavaApiLink>false</detectJavaApiLink>
 				</configuration>
 				<executions>
 					<execution>
@@ -93,7 +105,6 @@
 					</execution>
 				</executions>
 			</plugin>
-
 		</plugins>
 	</build>
 </project>
