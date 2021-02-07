@@ -20,33 +20,51 @@
  * See <https://github.com/skrieter/utils> for further information.
  * -----------------------------------------------------------------------------
  */
-package org.spldev.util.io.format;
+package org.spldev.util.data;
 
-import java.nio.file.*;
-
-import org.spldev.util.*;
+import java.util.*;
 
 /**
- * Provides a format for a given file content and file path.
- * 
+ * A tuple consisting of any two elements.
+ *
+ * @param <A> class of first element
+ * @param <B> class of second element
+ *
  * @author Sebastian Krieter
  */
-@FunctionalInterface
-public interface FormatSupplier<T> {
+public class Pair<A, B> {
 
-	static <T> FormatSupplier<T> of(Format<T> format) {
-		return (path, content) -> Result.of(format);
+	private final A key;
+	private final B value;
+
+	public Pair(A key, B value) {
+		this.key = key;
+		this.value = value;
 	}
 
-	/**
-	 * Returns the format that fits the given parameter.
-	 *
-	 * @param content the file's content
-	 * @param path    the file path
-	 *
-	 * @return A {@link Format format} that uses the file extension of the given
-	 *         path. Result may be if there is no suitable format.
-	 */
-	Result<Format<T>> getFormat(Path path, CharSequence content);
+	public A getKey() {
+		return key;
+	}
+
+	public B getValue() {
+		return value;
+	}
+
+	@Override
+	public int hashCode() {
+		return Objects.hash(key, value);
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj) {
+			return true;
+		}
+		if ((obj == null) || (getClass() != obj.getClass())) {
+			return false;
+		}
+		final Pair<?, ?> other = (Pair<?, ?>) obj;
+		return Objects.equals(key, other.key) && Objects.equals(value, other.value);
+	}
 
 }

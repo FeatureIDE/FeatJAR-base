@@ -20,33 +20,34 @@
  * See <https://github.com/skrieter/utils> for further information.
  * -----------------------------------------------------------------------------
  */
-package org.spldev.util.io.format;
+package org.spldev.util.data;
 
 import java.nio.file.*;
 
 import org.spldev.util.*;
+import org.spldev.util.io.format.*;
 
 /**
- * Provides a format for a given file content and file path.
+ * Provides a factory for a given format and file path.
  * 
  * @author Sebastian Krieter
  */
 @FunctionalInterface
-public interface FormatSupplier<T> {
+public interface FactorySupplier<T> {
 
-	static <T> FormatSupplier<T> of(Format<T> format) {
-		return (path, content) -> Result.of(format);
+	static <T> FactorySupplier<T> of(Factory<T> factory) {
+		return (path, format) -> Result.of(factory);
 	}
 
 	/**
-	 * Returns the format that fits the given parameter.
+	 * Returns the factory that fits the given parameter.
 	 *
-	 * @param content the file's content
-	 * @param path    the file path
+	 * @param path   the file path
+	 * @param format the file format
 	 *
-	 * @return A {@link Format format} that uses the file extension of the given
-	 *         path. Result may be if there is no suitable format.
+	 * @return A {@link Factory factory} that uses the given extension. Result may
+	 *         be empty if there is no suitable factory.
 	 */
-	Result<Format<T>> getFormat(Path path, CharSequence content);
+	Result<Factory<T>> getFactory(Path path, Format<T> format);
 
 }

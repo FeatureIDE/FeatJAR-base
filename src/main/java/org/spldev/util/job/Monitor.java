@@ -1,6 +1,6 @@
 /* -----------------------------------------------------------------------------
  * Util-Lib - Miscellaneous utility functions.
- * Copyright (C) 2020  Sebastian Krieter
+ * Copyright (C) 2021  Sebastian Krieter
  * 
  * This file is part of Util-Lib.
  * 
@@ -44,5 +44,7 @@ public interface Monitor {
 	void cancel();
 
 	boolean isCanceled();
+
+	boolean isDone();
 
 }

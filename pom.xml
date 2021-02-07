@@ -15,7 +15,7 @@
 	<licenses>
 		<license>
 			<name>LGPL-3.0-or-later</name>
-			<url>https://www.gnu.org/licenses/</url>
+			<url>https://www.gnu.org/licenses/lgpl-3.0.html</url>
 			<distribution>repo</distribution>
 		</license>
 	</licenses>

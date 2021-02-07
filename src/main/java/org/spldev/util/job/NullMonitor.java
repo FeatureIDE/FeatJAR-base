@@ -1,6 +1,6 @@
 /* -----------------------------------------------------------------------------
  * Util-Lib - Miscellaneous utility functions.
- * Copyright (C) 2020  Sebastian Krieter
+ * Copyright (C) 2021  Sebastian Krieter
  * 
  * This file is part of Util-Lib.
  * 
@@ -32,6 +32,7 @@ package org.spldev.util.job;
 public final class NullMonitor implements InternalMonitor {
 
 	private boolean canceled = false;
+	private boolean done = false;
 
 	@Override
 	public void cancel() {
@@ -40,6 +41,7 @@ public final class NullMonitor implements InternalMonitor {
 
 	@Override
 	public void done() {
+		done = true;
 	}
 
 	@Override
@@ -82,6 +84,11 @@ public final class NullMonitor implements InternalMonitor {
 	@Override
 	public boolean isCanceled() {
 		return canceled;
+	}
+
+	@Override
+	public boolean isDone() {
+		return done;
 	}
 
 	@Override

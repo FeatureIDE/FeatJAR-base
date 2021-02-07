@@ -1,6 +1,6 @@
 /* -----------------------------------------------------------------------------
  * Util-Lib - Miscellaneous utility functions.
- * Copyright (C) 2020  Sebastian Krieter
+ * Copyright (C) 2021  Sebastian Krieter
  * 
  * This file is part of Util-Lib.
  * 
@@ -21,6 +21,8 @@
  * -----------------------------------------------------------------------------
  */
 package org.spldev.util.io.format;
+
+import java.util.function.*;
 
 import org.spldev.util.*;
 import org.spldev.util.extension.*;
@@ -47,6 +49,10 @@ public interface Format<T> extends Extension {
 	 */
 	default Result<T> parse(CharSequence source) {
 		throw new UnsupportedOperationException();
+	}
+
+	default Result<T> parse(CharSequence source, Supplier<T> supplier) {
+		return parse(source);
 	}
 
 	/**
@@ -84,7 +90,7 @@ public interface Format<T> extends Extension {
 	 * access.<br>
 	 * <br>
 	 * <b>Example</b> <code>
-	 * IPersistentFormat&lt;?&gt; format = getFormat();
+	 * Format&lt;?&gt; format = getFormat();
 	 * format.getInstance().write(new Object())</code> Implementing classes may
 	 * return {@code this}, if {@code read} and {@code write} are implemented in a
 	 * static fashion (i.e., do not use any non-static fields).

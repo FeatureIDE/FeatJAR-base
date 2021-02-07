@@ -1,6 +1,6 @@
 /* -----------------------------------------------------------------------------
  * Util-Lib - Miscellaneous utility functions.
- * Copyright (C) 2020  Sebastian Krieter
+ * Copyright (C) 2021  Sebastian Krieter
  * 
  * This file is part of Util-Lib.
  * 
@@ -20,33 +20,27 @@
  * See <https://github.com/skrieter/utils> for further information.
  * -----------------------------------------------------------------------------
  */
-package org.spldev.util;
+package org.spldev.util.data;
 
-import java.util.*;
-import java.util.function.*;
+public class Identifier<T> {
 
-import org.spldev.util.logging.*;
+	private final String name;
 
-/**
- * Abstract operation to modify elements from a {@link Cache}.
- *
- * @author Sebastian Krieter
- */
-public abstract class Operation {
+	public Identifier() {
+		this.name = null;
+	}
 
-	protected abstract Map<Identifier<?>, BiFunction<?, ?, ?>> getImplementations();
+	public Identifier(String name) {
+		this.name = name;
+	}
 
-	@SuppressWarnings("unchecked")
-	public final <T> T apply(Identifier<T> identifier, Object parameters, Object element) {
-		try {
-			final BiFunction<T, Object, T> op4Rep = (BiFunction<T, Object, T>) getImplementations().get(identifier);
-			return (op4Rep != null)
-				? op4Rep.apply((T) element, parameters)
-				: null;
-		} catch (final ClassCastException e) {
-			Logger.logError(e);
-			return null;
-		}
+	@Override
+	public String toString() {
+		return "Identifier [" +
+			(name != null
+				? name
+				: System.identityHashCode(this))
+			+ "]";
 	}
 
 }

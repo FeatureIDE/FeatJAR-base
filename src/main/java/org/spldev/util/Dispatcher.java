@@ -1,6 +1,6 @@
 /* -----------------------------------------------------------------------------
  * Util-Lib - Miscellaneous utility functions.
- * Copyright (C) 2020  Sebastian Krieter
+ * Copyright (C) 2021  Sebastian Krieter
  * 
  * This file is part of Util-Lib.
  * 
@@ -25,6 +25,8 @@ package org.spldev.util;
 import java.lang.reflect.*;
 import java.util.*;
 
+import org.spldev.util.extension.*;
+
 /**
  * Calls the main method of the class that is provided as the first parameter.
  * If there are multiple main methods within an executable jar file, use this
@@ -39,12 +41,13 @@ public class Dispatcher {
 		if (args.length < 1) {
 			throw new IllegalArgumentException("The first argument must be the name of the main class!");
 		}
+		ExtensionLoader.load();
 
 		final ClassLoader systemClassLoader = ClassLoader.getSystemClassLoader();
 		final Class<?> loadClass = systemClassLoader.loadClass(args[0]);
 		final Method method = loadClass.getMethod("main", String[].class);
 
-		method.invoke(null, (Object[]) Arrays.copyOfRange(args, 1, args.length));
+		method.invoke(null, (Object) Arrays.copyOfRange(args, 1, args.length));
 	}
 
 }

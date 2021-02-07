@@ -1,6 +1,6 @@
 /* -----------------------------------------------------------------------------
  * Util-Lib - Miscellaneous utility functions.
- * Copyright (C) 2020  Sebastian Krieter
+ * Copyright (C) 2021  Sebastian Krieter
  * 
  * This file is part of Util-Lib.
  * 
@@ -25,8 +25,10 @@ package org.spldev.util.io;
 import java.io.*;
 import java.nio.charset.*;
 import java.nio.file.*;
+import java.util.function.*;
 
 import org.spldev.util.*;
+import org.spldev.util.data.*;
 import org.spldev.util.io.format.*;
 
 /**
@@ -94,6 +96,10 @@ public class FileHandler<T> {
 		return (extensionIndex > 0) ? fileName.substring(extensionIndex + 1) : "";
 	}
 
+	public static String read(Path path) throws IOException {
+		return read(path, DEFAULT_CHARSET);
+	}
+
 	public static String read(Path path, Charset charset) throws IOException {
 		if (!Files.exists(path)) {
 			throw new FileNotFoundException(path.toString());
@@ -101,30 +107,154 @@ public class FileHandler<T> {
 		return new String(Files.readAllBytes(path), charset);
 	}
 
-	public static String read(Path path) throws IOException {
-		return read(path, DEFAULT_CHARSET);
-	}
-
-	public static <T> Result<T> parse(Path path, Format<T> format, Charset charset) throws IOException {
-		return format.getInstance().parse(read(path, charset));
-	}
-
-	public static <T> Result<T> parse(Path path, Format<T> format) throws IOException {
+	public static <T> Result<T> parse(
+		Path path,
+		Format<T> format //
+	) {
 		return parse(path, format, DEFAULT_CHARSET);
 	}
 
-	public static <T> Result<T> parse(Path path, FormatSupplier<T> formatSupplier, Charset charset) {
+	public static <T> Result<T> parse(
+		Path path,
+		Format<T> format,
+		Supplier<T> objectSupplier //
+	) {
+		return parse(path, format, objectSupplier, DEFAULT_CHARSET);
+	}
+
+	public static <T> Result<T> parse(
+		Path path,
+		FormatSupplier<T> formatSupplier //
+	) {
+		return parse(path, formatSupplier, DEFAULT_CHARSET);
+	}
+
+	public static <T> Result<T> parse(
+		Path path,
+		FormatSupplier<T> formatSupplier,
+		Supplier<T> objectSupplier //
+	) {
+		return parse(path, formatSupplier, objectSupplier, DEFAULT_CHARSET);
+	}
+
+	public static <T> Result<T> parse(
+		Path path,
+		FormatSupplier<T> formatSupplier,
+		FactorySupplier<T> factorySupplier //
+	) {
+		return parse(path, formatSupplier, factorySupplier, DEFAULT_CHARSET);
+	}
+
+	public static <T> Result<T> parse(
+		Path path,
+		Format<T> format,
+		Charset charset //
+	) {
 		try {
-			final String content = read(path, charset);
-			return formatSupplier.getFormat(content, getFileExtension(path))
-				.flatMap(f -> f.getInstance().parse(content));
+			return parseFromSource(read(path, charset), format);
 		} catch (final IOException e) {
 			return Result.empty(e);
 		}
 	}
 
-	public static <T> Result<T> parse(Path path, FormatSupplier<T> formatSupplier) {
-		return parse(path, formatSupplier, DEFAULT_CHARSET);
+	public static <T> Result<T> parse(
+		Path path,
+		Format<T> format,
+		Supplier<T> objectSupplier,
+		Charset charset //
+	) {
+		try {
+			return parseFromSource(read(path, charset), format, objectSupplier);
+		} catch (final IOException e) {
+			return Result.empty(e);
+		}
+	}
+
+	public static <T> Result<T> parse(
+		Path path,
+		FormatSupplier<T> formatSupplier,
+		Supplier<T> objectSupplier,
+		Charset charset //
+	) {
+		try {
+			return parseFromSource(read(path, charset), path, formatSupplier, objectSupplier);
+		} catch (final IOException e) {
+			return Result.empty(e);
+		}
+	}
+
+	public static <T> Result<T> parse(
+		Path path,
+		FormatSupplier<T> formatSupplier,
+		Charset charset //
+	) {
+		try {
+			return parseFromSource(read(path, charset), path, formatSupplier);
+		} catch (final IOException e) {
+			return Result.empty(e);
+		}
+	}
+
+	public static <T> Result<T> parse(
+		Path path,
+		FormatSupplier<T> formatSupplier,
+		FactorySupplier<T> factorySupplier,
+		Charset charset //
+	) {
+		try {
+			return parseFromSource(read(path, charset), path, formatSupplier, factorySupplier);
+		} catch (final IOException e) {
+			return Result.empty(e);
+		}
+	}
+
+	public static <T> Result<T> parseFromSource(
+		CharSequence content,
+		Format<T> format //
+	) {
+		return format.getInstance().parse(content);
+	}
+
+	public static <T> Result<T> parseFromSource(
+		CharSequence content,
+		Format<T> format,
+		Supplier<T> objectSupplier //
+	) {
+		return format.getInstance().parse(content, objectSupplier);
+	}
+
+	public static <T> Result<T> parseFromSource(
+		CharSequence content,
+		Path path,
+		FormatSupplier<T> formatSupplier //
+	) {
+		final Result<Format<T>> format = formatSupplier.getFormat(path, content);
+		return format.flatMap(
+			fo -> fo.getInstance().parse(content));
+	}
+
+	public static <T> Result<T> parseFromSource(
+		CharSequence content,
+		Path path,
+		FormatSupplier<T> formatSupplier,
+		Supplier<T> objectSupplier //
+	) {
+		final Result<Format<T>> format = formatSupplier.getFormat(path, content);
+		return format.flatMap(
+			fo -> fo.getInstance().parse(content, objectSupplier));
+	}
+
+	public static <T> Result<T> parseFromSource(
+		CharSequence content,
+		Path path,
+		FormatSupplier<T> formatSupplier,
+		FactorySupplier<T> factorySupplier //
+	) {
+		final Result<Format<T>> format = formatSupplier.getFormat(path, content);
+		final Result<Factory<T>> factory = format.flatMap(f -> factorySupplier.getFactory(path, f));
+		return format.flatMap(
+			fo -> factory.flatMap(
+				fa -> fo.getInstance().parse(content, fa)));
 	}
 
 	public static <T> void write(T object, Path path, Format<T> format, Charset charset) throws IOException {

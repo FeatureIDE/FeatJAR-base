@@ -1,6 +1,6 @@
 /* -----------------------------------------------------------------------------
  * Util-Lib - Miscellaneous utility functions.
- * Copyright (C) 2020  Sebastian Krieter
+ * Copyright (C) 2021  Sebastian Krieter
  * 
  * This file is part of Util-Lib.
  * 
@@ -20,9 +20,12 @@
  * See <https://github.com/skrieter/utils> for further information.
  * -----------------------------------------------------------------------------
  */
-package org.spldev.util;
+package org.spldev.util.data;
 
 import java.util.*;
+
+import org.spldev.util.*;
+import org.spldev.util.job.*;
 
 /**
  * Holds arbitrary elements that can be derived from each other.
@@ -40,39 +43,70 @@ public class Cache {
 	 * computes the requested object otherwise.
 	 *
 	 * @param <T>      the type of the element
-	 * @param provider the provider that is used in cas the element is not already
+	 * @param provider the provider that is used in case the element is not already
 	 *                 contained in the cache.
 	 * @return a {@link Result} with a suitable element.
 	 */
-	@SuppressWarnings("unchecked")
 	public <T> Result<T> get(Provider<T> provider) {
-		final Map<Object, Object> cachedElements = getCachedElements(provider.getIdentifier());
-		synchronized (cachedElements) {
-			T element = (T) cachedElements.get(provider.getParameters());
-			if (element == null) {
-				final Result<T> computedElement = computeElement(provider);
+		return get(provider, null);
+	}
+
+	/**
+	 * Get an arbitrary element that can be derived from the associated feature
+	 * model.<br>
+	 * This methods first checks whether there is a cached instance and only
+	 * computes the requested object otherwise.
+	 *
+	 * @param <T>      the type of the element
+	 * @param provider the provider that is used in case the element is not already
+	 *                 contained in the cache.
+	 * @param monitor  a monitor for keep track of progress and canceling the
+	 *                 computation of the requested element.
+	 * @return a {@link Result} with a suitable element.
+	 */
+	@SuppressWarnings("unchecked")
+	public <T> Result<T> get(Provider<T> provider, InternalMonitor monitor) {
+		monitor = monitor != null ? monitor : new NullMonitor();
+		try {
+			final Map<Object, Object> cachedElements = getCachedElement(provider.getIdentifier());
+			synchronized (cachedElements) {
+				T element = (T) cachedElements.get(provider.getParameters());
+				if (element == null) {
+					final Result<T> computedElement = computeElement(provider, monitor);
+					if (computedElement.isPresent()) {
+						element = computedElement.get();
+						cachedElements.put(provider.getParameters(), element);
+					} else {
+						return computedElement;
+					}
+				}
+				return Result.of(element);
+			}
+		} finally {
+			monitor.done();
+		}
+	}
+
+	public <T> Result<T> set(Provider<T> builder) {
+		return set(builder, null);
+	}
+
+	public <T> Result<T> set(Provider<T> builder, InternalMonitor monitor) {
+		monitor = monitor != null ? monitor : new NullMonitor();
+		try {
+			final Map<Object, Object> cachedElements = getCachedElement(builder.getIdentifier());
+			synchronized (cachedElements) {
+				final Result<T> computedElement = computeElement(builder, monitor);
 				if (computedElement.isPresent()) {
-					element = computedElement.get();
-					cachedElements.put(provider.getParameters(), element);
+					final T element = computedElement.get();
+					cachedElements.put(builder.getParameters(), element);
+					return Result.of(element);
 				} else {
 					return computedElement;
 				}
 			}
-			return Result.of(element);
-		}
-	}
-
-	public <T> Result<T> compute(Provider<T> builder) {
-		final Map<Object, Object> cachedElements = getCachedElements(builder.getIdentifier());
-		synchronized (cachedElements) {
-			final Result<T> computedElement = computeElement(builder);
-			if (computedElement.isPresent()) {
-				final T element = computedElement.get();
-				cachedElements.put(builder.getParameters(), element);
-				return Result.of(element);
-			} else {
-				return computedElement;
-			}
+		} finally {
+			monitor.done();
 		}
 	}
 
@@ -82,9 +116,33 @@ public class Cache {
 
 	@SuppressWarnings("unchecked")
 	public <T> Result<T> get(Identifier<T> identifier, Object parameters) {
-		final Map<Object, Object> cachedElements = getCachedElements(identifier);
+		final Map<Object, Object> cachedElements = getCachedElement(identifier);
 		synchronized (cachedElements) {
 			return Result.of((T) cachedElements.get(parameters));
+		}
+	}
+
+	public <T> void reset(Provider<T> builder) {
+		reset(builder, null);
+	}
+
+	public <T> void reset(Provider<T> builder, InternalMonitor monitor) {
+		Map<Object, Object> cachedElement;
+		monitor = monitor != null ? monitor : new NullMonitor();
+		try {
+			synchronized (map) {
+				map.clear();
+				cachedElement = getCachedElement(builder.getIdentifier());
+			}
+			synchronized (cachedElement) {
+				final Result<T> computedElement = computeElement(builder, monitor);
+				if (computedElement.isPresent()) {
+					final T element = computedElement.get();
+					cachedElement.put(builder.getParameters(), element);
+				}
+			}
+		} finally {
+			monitor.done();
 		}
 	}
 
@@ -109,15 +167,15 @@ public class Cache {
 		}
 	}
 
-	private <T> Result<T> computeElement(Provider<T> builder) {
+	private <T> Result<T> computeElement(Provider<T> builder, InternalMonitor monitor) {
 		try {
-			return builder.apply(this);
+			return builder.apply(this, monitor);
 		} catch (final Exception e) {
 			return Result.empty(e);
 		}
 	}
 
-	private Map<Object, Object> getCachedElements(Identifier<?> identifier) {
+	private Map<Object, Object> getCachedElement(Identifier<?> identifier) {
 		synchronized (map) {
 			Map<Object, Object> cachedElement = map.get(identifier);
 			if (cachedElement == null) {

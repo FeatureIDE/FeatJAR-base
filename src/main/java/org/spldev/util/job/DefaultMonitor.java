@@ -1,6 +1,6 @@
 /* -----------------------------------------------------------------------------
  * Util-Lib - Miscellaneous utility functions.
- * Copyright (C) 2020  Sebastian Krieter
+ * Copyright (C) 2021  Sebastian Krieter
  * 
  * This file is part of Util-Lib.
  * 
@@ -22,6 +22,9 @@
  */
 package org.spldev.util.job;
 
+import java.util.*;
+import java.util.concurrent.*;
+
 /**
  * Default implementation of {@link InternalMonitor} and {@link Monitor}.<br>
  * Provides support for reporting progress and canceling a function's execution.
@@ -30,21 +33,26 @@ package org.spldev.util.job;
  */
 public class DefaultMonitor implements InternalMonitor {
 
+	protected final List<DefaultMonitor> children = new CopyOnWriteArrayList<>();
 	protected final DefaultMonitor parent;
+	protected final int parentWork;
 
 	protected String taskName;
 
-	protected boolean canceled;
+	protected boolean canceled, done;
 	protected int currentWork;
 	protected int totalWork;
 
 	public DefaultMonitor() {
 		parent = null;
+		parentWork = 0;
 	}
 
-	public DefaultMonitor(DefaultMonitor parent, boolean canceled) {
+	private DefaultMonitor(DefaultMonitor parent, int parentWork) {
 		this.parent = parent;
-		this.canceled = canceled;
+		canceled = parent.canceled;
+		done = parent.done;
+		this.parentWork = parentWork;
 	}
 
 	protected void uncertainWorked(int work) {
@@ -57,43 +65,49 @@ public class DefaultMonitor implements InternalMonitor {
 	}
 
 	@Override
-	public synchronized final void uncertainStep() throws MethodCancelException {
+	public final void uncertainStep() throws MethodCancelException {
 		uncertainWorked(1);
 		checkCancel();
 	}
 
 	@Override
-	public synchronized final void uncertainStep(int work) throws MethodCancelException {
+	public final void uncertainStep(int work) throws MethodCancelException {
 		uncertainWorked(work);
 		checkCancel();
 	}
 
 	@Override
-	public synchronized final void step() throws MethodCancelException {
+	public final void step() throws MethodCancelException {
 		worked(1);
 		checkCancel();
 	}
 
 	@Override
-	public synchronized final void step(int work) throws MethodCancelException {
+	public final void step(int work) throws MethodCancelException {
 		worked(work);
 		checkCancel();
 	}
 
 	@Override
-	public synchronized final void setTotalWork(int work) {
+	public final void setTotalWork(int work) {
 		totalWork = work;
 		checkCancel();
 	}
 
 	@Override
-	public synchronized void done() {
+	public void done() {
 		currentWork = totalWork;
+		done = true;
 	}
 
 	@Override
 	public boolean isCanceled() {
 		return canceled;
+	}
+
+	@Override
+	public boolean isDone() {
+		return done;
 	}
 
 	@Override
@@ -106,6 +120,9 @@ public class DefaultMonitor implements InternalMonitor {
 		if (canceled) {
 			throw new MethodCancelException();
 		}
+		if (parent != null) {
+			parent.checkCancel();
+		}
 	}
 
 	@Override
@@ -115,21 +132,32 @@ public class DefaultMonitor implements InternalMonitor {
 
 	@Override
 	public int getRemainingWork() {
-		return totalWork - currentWork;
+		return totalWork - getWorkDone();
 	}
 
 	@Override
-	public synchronized int getWorkDone() {
-		return currentWork;
+	public int getWorkDone() {
+		int workDone = currentWork;
+		for (final DefaultMonitor child : children) {
+			workDone += child.getRelativeWorkDone() * child.parentWork;
+		}
+		return workDone;
 	}
 
 	@Override
-	public synchronized double getRelativeWorkDone() {
-		return currentWork / totalWork;
+	public double getRelativeWorkDone() {
+		if (totalWork == 0) {
+			return 0;
+		}
+		double workDone = currentWork;
+		for (final DefaultMonitor child : children) {
+			workDone += child.getRelativeWorkDone() * child.parentWork;
+		}
+		return workDone / totalWork;
 	}
 
 	@Override
-	public synchronized void setTaskName(String name) {
+	public void setTaskName(String name) {
 		taskName = name;
 	}
 
@@ -140,8 +168,9 @@ public class DefaultMonitor implements InternalMonitor {
 
 	@Override
 	public DefaultMonitor subTask(int size) {
-		worked(size);
-		return new DefaultMonitor(this, canceled);
+		final DefaultMonitor child = new DefaultMonitor(this, size);
+		children.add(child);
+		return child;
 	}
 
 }

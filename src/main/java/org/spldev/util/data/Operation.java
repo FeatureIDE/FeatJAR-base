@@ -1,6 +1,6 @@
 /* -----------------------------------------------------------------------------
  * Util-Lib - Miscellaneous utility functions.
- * Copyright (C) 2020  Sebastian Krieter
+ * Copyright (C) 2021  Sebastian Krieter
  * 
  * This file is part of Util-Lib.
  * 
@@ -20,59 +20,33 @@
  * See <https://github.com/skrieter/utils> for further information.
  * -----------------------------------------------------------------------------
  */
-package org.spldev.util.logging;
+package org.spldev.util.data;
+
+import java.util.*;
+import java.util.function.*;
+
+import org.spldev.util.logging.*;
 
 /**
- * Thread to run an arbitrary function at a regular time interval.
+ * Abstract operation to modify elements from a {@link Cache}.
  *
  * @author Sebastian Krieter
  */
-public class MonitorThread extends Thread {
+public abstract class Operation {
 
-	private final Runnable function;
+	protected abstract Map<Identifier<?>, BiFunction<?, ?, ?>> getImplementations();
 
-	private boolean monitorRun = true;
-	private long updateTime;
-
-	public MonitorThread(Runnable function) {
-		this(function, 1_000);
-	}
-
-	/**
-	 * @param function   is called at every update
-	 * @param updateTime in ms
-	 */
-	public MonitorThread(Runnable function, long updateTime) {
-		super();
-		this.function = function;
-		this.updateTime = updateTime;
-	}
-
-	@Override
-	public void run() {
-		function.run();
+	@SuppressWarnings("unchecked")
+	public final <T> T apply(Identifier<T> identifier, Object parameters, Object element) {
 		try {
-			while (monitorRun) {
-				Thread.sleep(updateTime);
-				function.run();
-			}
-		} catch (final InterruptedException e) {
+			final BiFunction<T, Object, T> op4Rep = (BiFunction<T, Object, T>) getImplementations().get(identifier);
+			return (op4Rep != null)
+				? op4Rep.apply((T) element, parameters)
+				: null;
+		} catch (final ClassCastException e) {
+			Logger.logError(e);
+			return null;
 		}
-		function.run();
-	}
-
-	public void finish() {
-		// to ensure to stop the monitor thread
-		monitorRun = false;
-		interrupt();
-	}
-
-	public long getUpdateTime() {
-		return updateTime;
-	}
-
-	public void setUpdateTime(long updateTime) {
-		this.updateTime = updateTime;
 	}
 
 }

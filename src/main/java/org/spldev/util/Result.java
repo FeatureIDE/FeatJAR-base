@@ -1,6 +1,6 @@
 /* -----------------------------------------------------------------------------
  * Util-Lib - Miscellaneous utility functions.
- * Copyright (C) 2020  Sebastian Krieter
+ * Copyright (C) 2021  Sebastian Krieter
  * 
  * This file is part of Util-Lib.
  * 
@@ -66,6 +66,10 @@ public class Result<T> {
 	private Result(T object, List<Problem> problems) {
 		this.object = object;
 		this.problems = problems != null ? new ArrayList<>(problems) : Collections.emptyList();
+	}
+
+	public boolean isEmpty() {
+		return object == null;
 	}
 
 	public boolean isPresent() {

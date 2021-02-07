@@ -1,6 +1,6 @@
 /* -----------------------------------------------------------------------------
  * Util-Lib - Miscellaneous utility functions.
- * Copyright (C) 2020  Sebastian Krieter
+ * Copyright (C) 2021  Sebastian Krieter
  * 
  * This file is part of Util-Lib.
  * 
@@ -40,15 +40,15 @@ public final class Executor {
 	}
 
 	public static <T> Result<T> run(MonitorableSupplier<T> supplier) {
-		return run(supplier, new NullMonitor());
+		return run(supplier, new DefaultMonitor());
 	}
 
 	public static <T, R> Result<R> run(MonitorableFunction<T, R> function, T input) {
-		return run(function, input, new NullMonitor());
+		return run(function, input, new DefaultMonitor());
 	}
 
 	public static <T> Result<T> run(MonitorableSupplier<T> supplier, InternalMonitor monitor) {
-		monitor = monitor != null ? monitor : new NullMonitor();
+		monitor = monitor != null ? monitor : new DefaultMonitor();
 		try {
 			return Result.of(supplier.execute(monitor));
 		} catch (final Exception e) {
@@ -60,10 +60,11 @@ public final class Executor {
 
 	public static <T, R> Result<R> run(MonitorableFunction<T, R> function, T input, InternalMonitor monitor)
 		throws MethodCancelException {
-		monitor = monitor != null ? monitor : new NullMonitor();
+		monitor = monitor != null ? monitor : new DefaultMonitor();
 		try {
 			return Result.of(function.execute(input, monitor));
 		} catch (final Exception e) {
+			e.printStackTrace();
 			return Result.empty(e);
 		} finally {
 			monitor.done();

@@ -20,33 +20,35 @@
  * See <https://github.com/skrieter/utils> for further information.
  * -----------------------------------------------------------------------------
  */
-package org.spldev.util.io.format;
+package org.spldev.util.job;
 
-import java.nio.file.*;
-
-import org.spldev.util.*;
+import org.spldev.util.logging.*;
 
 /**
- * Provides a format for a given file content and file path.
- * 
+ * Thread to run an arbitrary function at a regular time interval.
+ *
  * @author Sebastian Krieter
  */
-@FunctionalInterface
-public interface FormatSupplier<T> {
+public final class MonitorUpdateFunction implements UpdateFunction {
 
-	static <T> FormatSupplier<T> of(Format<T> format) {
-		return (path, content) -> Result.of(format);
+	private final Monitor monitor;
+
+	public MonitorUpdateFunction(Monitor monitor) {
+		this.monitor = monitor;
 	}
 
-	/**
-	 * Returns the format that fits the given parameter.
-	 *
-	 * @param content the file's content
-	 * @param path    the file path
-	 *
-	 * @return A {@link Format format} that uses the file extension of the given
-	 *         path. Result may be if there is no suitable format.
-	 */
-	Result<Format<T>> getFormat(Path path, CharSequence content);
+	@Override
+	public boolean update() {
+		if (monitor.isCanceled() || monitor.isDone()) {
+			return false;
+		} else {
+			Logger.logProgress((int) Math.floor(monitor.getRelativeWorkDone() * 100) + "%");
+			return true;
+		}
+	}
+
+	public Monitor getMonitor() {
+		return monitor;
+	}
 
 }

@@ -1,6 +1,6 @@
 /* -----------------------------------------------------------------------------
  * Util-Lib - Miscellaneous utility functions.
- * Copyright (C) 2020  Sebastian Krieter
+ * Copyright (C) 2021  Sebastian Krieter
  * 
  * This file is part of Util-Lib.
  * 
@@ -20,8 +20,25 @@
  * See <https://github.com/skrieter/utils> for further information.
  * -----------------------------------------------------------------------------
  */
-package org.spldev.util;
+package org.spldev.util.cli;
 
-public class Identifier<T> {
+import java.util.*;
+
+import org.spldev.util.extension.*;
+
+/**
+ * A function of FeatureIDE that can be accessed via the {@link CLI CLI}.
+ *
+ * @author Sebastian Krieter
+ */
+public interface CLIFunction extends Extension {
+
+	default String getName() {
+		return getId();
+	}
+
+	void run(List<String> args);
+
+	String getHelp();
 
 }

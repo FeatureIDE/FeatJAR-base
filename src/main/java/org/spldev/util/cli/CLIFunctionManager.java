@@ -20,33 +20,21 @@
  * See <https://github.com/skrieter/utils> for further information.
  * -----------------------------------------------------------------------------
  */
-package org.spldev.util.io.format;
+package org.spldev.util.cli;
 
-import java.nio.file.*;
-
-import org.spldev.util.*;
+import org.spldev.util.extension.*;
 
 /**
- * Provides a format for a given file content and file path.
- * 
+ * Manages all CLI functions.
+ *
  * @author Sebastian Krieter
  */
-@FunctionalInterface
-public interface FormatSupplier<T> {
+public class CLIFunctionManager extends ExtensionPoint<CLIFunction> {
 
-	static <T> FormatSupplier<T> of(Format<T> format) {
-		return (path, content) -> Result.of(format);
+	private static CLIFunctionManager instance = new CLIFunctionManager();
+
+	public static CLIFunctionManager getInstance() {
+		return instance;
 	}
-
-	/**
-	 * Returns the format that fits the given parameter.
-	 *
-	 * @param content the file's content
-	 * @param path    the file path
-	 *
-	 * @return A {@link Format format} that uses the file extension of the given
-	 *         path. Result may be if there is no suitable format.
-	 */
-	Result<Format<T>> getFormat(Path path, CharSequence content);
 
 }

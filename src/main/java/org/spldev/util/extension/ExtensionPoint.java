@@ -1,6 +1,6 @@
 /* -----------------------------------------------------------------------------
  * Util-Lib - Miscellaneous utility functions.
- * Copyright (C) 2020  Sebastian Krieter
+ * Copyright (C) 2021  Sebastian Krieter
  * 
  * This file is part of Util-Lib.
  * 
@@ -24,6 +24,8 @@ package org.spldev.util.extension;
 
 import java.util.*;
 import java.util.concurrent.*;
+
+import org.spldev.util.*;
 
 /**
  * Manages all extensions of this extension point.
@@ -59,12 +61,12 @@ public abstract class ExtensionPoint<T extends Extension> {
 		return Collections.unmodifiableList(extensions);
 	}
 
-	public Optional<T> getExtension(String id) {
+	public Result<T> getExtension(String id) {
 		Objects.requireNonNull(id, "ID must not be null!");
 		final Integer index = indexMap.get(id);
 		return index != null
-			? Optional.of(extensions.get(index))
-			: Optional.empty();
+			? Result.of(extensions.get(index))
+			: Result.empty(new NoSuchExtensionException("No extension found for ID " + id));
 	}
 
 }

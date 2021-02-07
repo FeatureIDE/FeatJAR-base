@@ -1,6 +1,6 @@
 /* -----------------------------------------------------------------------------
  * Util-Lib - Miscellaneous utility functions.
- * Copyright (C) 2020  Sebastian Krieter
+ * Copyright (C) 2021  Sebastian Krieter
  * 
  * This file is part of Util-Lib.
  * 
@@ -86,7 +86,7 @@ public class CSVWriter {
 	}
 
 	public void setOutputFile(Path outputFile) throws IOException {
-		setOutputDirectory(outputFile.getParent());
+		setOutputDirectory(outputFile.toAbsolutePath().getParent());
 		outputFilePath = outputFile;
 		newFile = true;
 		reset();
@@ -125,7 +125,7 @@ public class CSVWriter {
 	}
 
 	public void addValue(Object o) {
-		values.get(values.size() - 1).add(o.toString());
+		values.get(values.size() - 1).add(String.valueOf(o));
 	}
 
 	public void flush() {

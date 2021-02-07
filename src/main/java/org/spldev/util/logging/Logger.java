@@ -1,6 +1,6 @@
 /* -----------------------------------------------------------------------------
  * Util-Lib - Miscellaneous utility functions.
- * Copyright (C) 2020  Sebastian Krieter
+ * Copyright (C) 2021  Sebastian Krieter
  * 
  * This file is part of Util-Lib.
  * 
@@ -28,6 +28,7 @@ import java.util.*;
 
 import org.spldev.util.*;
 import org.spldev.util.io.*;
+import org.spldev.util.job.*;
 
 /**
  * Extends the standard output with time codes, indentation, and log file
@@ -136,6 +137,12 @@ public final class Logger {
 		}
 	}
 
+	public static UpdateThread startMonitorLogger(Monitor monitor) {
+		final UpdateThread updateThread = new UpdateThread(new MonitorUpdateFunction(monitor));
+		updateThread.start();
+		return updateThread;
+	}
+
 	public static void logProblems(List<Problem> problems) {
 		problems.stream()
 			.map(Problem::getError)
@@ -151,8 +158,16 @@ public final class Logger {
 		println(message, LogType.ERROR);
 	}
 
+	public static void logInfo(Object messageObject) {
+		println(String.valueOf(messageObject), LogType.INFO);
+	}
+
 	public static void logInfo(String message) {
 		println(message, LogType.INFO);
+	}
+
+	public static void logDebug(Object messageObject) {
+		println(String.valueOf(messageObject), LogType.DEBUG);
 	}
 
 	public static void logDebug(String message) {

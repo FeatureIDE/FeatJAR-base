@@ -1,6 +1,6 @@
 /* -----------------------------------------------------------------------------
  * Util-Lib - Miscellaneous utility functions.
- * Copyright (C) 2020  Sebastian Krieter
+ * Copyright (C) 2021  Sebastian Krieter
  * 
  * This file is part of Util-Lib.
  * 
@@ -20,51 +20,59 @@
  * See <https://github.com/skrieter/utils> for further information.
  * -----------------------------------------------------------------------------
  */
-package org.spldev.util;
-
-import java.util.*;
+package org.spldev.util.job;
 
 /**
- * A tuple consisting of any two elements.
- *
- * @param <A> class of first element
- * @param <B> class of second element
+ * Thread to run an arbitrary function at a regular time interval.
  *
  * @author Sebastian Krieter
  */
-public class Pair<A, B> {
+public class UpdateThread extends Thread {
 
-	private final A key;
-	private final B value;
+	private final UpdateFunction function;
 
-	public Pair(A key, B value) {
-		this.key = key;
-		this.value = value;
+	protected boolean monitorRun = true;
+	private long updateTime;
+
+	public UpdateThread(UpdateFunction function) {
+		this(function, 1_000);
 	}
 
-	public A getKey() {
-		return key;
-	}
-
-	public B getValue() {
-		return value;
+	/**
+	 * @param function   is called at every update
+	 * @param updateTime in ms
+	 */
+	public UpdateThread(UpdateFunction function, long updateTime) {
+		super();
+		this.function = function;
+		this.updateTime = updateTime;
 	}
 
 	@Override
-	public int hashCode() {
-		return Objects.hash(key, value);
+	public void run() {
+		monitorRun = function.update();
+		try {
+			while (monitorRun) {
+				Thread.sleep(updateTime);
+				monitorRun = function.update();
+			}
+		} catch (final InterruptedException e) {
+		}
+		function.update();
 	}
 
-	@Override
-	public boolean equals(Object obj) {
-		if (this == obj) {
-			return true;
-		}
-		if ((obj == null) || (getClass() != obj.getClass())) {
-			return false;
-		}
-		final Pair<?, ?> other = (Pair<?, ?>) obj;
-		return Objects.equals(key, other.key) && Objects.equals(value, other.value);
+	public void finish() {
+		// to ensure to stop the monitor thread
+		monitorRun = false;
+		interrupt();
+	}
+
+	public long getUpdateTime() {
+		return updateTime;
+	}
+
+	public void setUpdateTime(long updateTime) {
+		this.updateTime = updateTime;
 	}
 
 }

@@ -1,6 +1,6 @@
 /* -----------------------------------------------------------------------------
  * Util-Lib - Miscellaneous utility functions.
- * Copyright (C) 2020  Sebastian Krieter
+ * Copyright (C) 2021  Sebastian Krieter
  * 
  * This file is part of Util-Lib.
  * 
@@ -23,6 +23,7 @@
 package org.spldev.util.io.namelist;
 
 import java.util.*;
+import java.util.function.*;
 
 import org.spldev.util.*;
 import org.spldev.util.io.format.*;
@@ -68,7 +69,16 @@ public class NameListFormat implements Format<List<NameListFormat.NameEntry>> {
 	@Override
 	public Result<List<NameEntry>> parse(CharSequence source) {
 		final String[] lines = source.toString().split("\\R");
-		final ArrayList<NameEntry> entries = new ArrayList<>(lines.length);
+		return parse(lines, new ArrayList<>(lines.length));
+	}
+
+	@Override
+	public Result<List<NameEntry>> parse(CharSequence source, Supplier<List<NameEntry>> supplier) {
+		final String[] lines = source.toString().split("\\R");
+		return parse(lines, supplier.get());
+	}
+
+	private Result<List<NameEntry>> parse(final String[] lines, final List<NameEntry> entries) {
 		int lineNumber = 0;
 		boolean pause = false;
 		for (final String modelName : lines) {
