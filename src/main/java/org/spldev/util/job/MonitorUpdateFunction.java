@@ -42,7 +42,7 @@ public final class MonitorUpdateFunction implements UpdateFunction {
 		if (monitor.isCanceled() || monitor.isDone()) {
 			return false;
 		} else {
-			Logger.logProgress((int) Math.floor(monitor.getRelativeWorkDone() * 100) + "%");
+			Logger.logProgress((Math.floor(monitor.getRelativeWorkDone() * 1000)) / 10.0 + "%");
 			return true;
 		}
 	}

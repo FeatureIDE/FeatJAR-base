@@ -71,5 +71,13 @@ public class CLI {
 			printStream.println("\t" + availableFunction.getName());
 		}
 	}
+	
+	public static String getArgValue(final Iterator<String> iterator, final String arg) {
+		if (iterator.hasNext()) {
+			return iterator.next();
+		} else {
+			throw new IllegalArgumentException("No value specified for " + arg);
+		}
+	}
 
 }

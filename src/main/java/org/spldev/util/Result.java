@@ -117,6 +117,32 @@ public class Result<T> {
 		}
 	}
 
+	public T orElse(T alternative, Consumer<List<Problem>> errorHandler) {
+		if (object != null) {
+			return object;
+		} else {
+			errorHandler.accept(problems);
+			return alternative;
+		}
+	}
+
+	public T orElse(Supplier<T> alternativeSupplier, Consumer<List<Problem>> errorHandler) {
+		if (object != null) {
+			return object;
+		} else {
+			errorHandler.accept(problems);
+			return alternativeSupplier.get();
+		}
+	}
+
+	public <E extends Exception> T orElseThrow(Function<List<Problem>, E> errorHandler) throws E {
+		if (object != null) {
+			return object;
+		} else {
+			throw errorHandler.apply(problems);
+		}
+	}
+
 	public void ifPresent(Consumer<T> resultHandler) {
 		if (object != null) {
 			resultHandler.accept(object);

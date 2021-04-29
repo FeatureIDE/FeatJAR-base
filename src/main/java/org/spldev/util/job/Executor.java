@@ -64,7 +64,6 @@ public final class Executor {
 		try {
 			return Result.of(function.execute(input, monitor));
 		} catch (final Exception e) {
-			e.printStackTrace();
 			return Result.empty(e);
 		} finally {
 			monitor.done();
