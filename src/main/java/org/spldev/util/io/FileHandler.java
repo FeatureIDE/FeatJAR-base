@@ -257,16 +257,24 @@ public class FileHandler<T> {
 				fa -> fo.getInstance().parse(content, fa)));
 	}
 
-	public static <T> void write(T object, Path path, Format<T> format, Charset charset) throws IOException {
+	public static <T> void serialize(T object, Path path, Format<T> format, Charset charset) throws IOException {
+		write(format.getInstance().serialize(object), path, charset);
+	}
+
+	public static <T> void serialize(T object, Path path, Format<T> format) throws IOException {
+		write(format.getInstance().serialize(object), path);
+	}
+	
+	public static <T> void write(String source, Path path, Charset charset) throws IOException {
 		Files.write(path, //
-			format.getInstance().serialize(object).getBytes(charset), //
+			source.getBytes(charset), //
 			StandardOpenOption.TRUNCATE_EXISTING, //
 			StandardOpenOption.CREATE, //
 			StandardOpenOption.WRITE);
 	}
 
-	public static <T> void write(T object, Path path, Format<T> format) throws IOException {
-		write(object, path, format, DEFAULT_CHARSET);
+	public static <T> void write(String source, Path path) throws IOException {
+		write(source, path, DEFAULT_CHARSET);
 	}
 
 }

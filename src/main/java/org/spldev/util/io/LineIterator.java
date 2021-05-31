@@ -20,54 +20,52 @@
  * See <https://github.com/skrieter/utils> for further information.
  * -----------------------------------------------------------------------------
  */
-package org.spldev.util.tree.visitor;
+package org.spldev.util.io;
 
-import java.util.*;
-
-import org.spldev.util.tree.structure.*;
+import java.io.*;
+import java.util.function.*;
 
 /**
- * Visitor that computes the maximum depth of a tree.
- * 
- * @author Sebastian Krieter
+ * Reads a source line by line, skipping empty lines.
  *
+ * @author Sebastian Krieter
  */
-public class TreeDepthCounter implements TreeVisitor<Integer, Tree<?>> {
+public class LineIterator implements Supplier<String> {
 
-	private Class<? extends Tree<?>> terminalNode = null;
+	private final BufferedReader reader;
+	private String line = null;
+	private int lineCount = 0;
 
-	private int maxDepth = 0;
-
-	@Override
-	public void reset() {
-		maxDepth = 0;
+	public LineIterator(BufferedReader reader) {
+		this.reader = reader;
 	}
 
 	@Override
-	public VistorResult firstVisit(List<Tree<?>> path) {
-		final int depth = path.size();
-		if (maxDepth < depth) {
-			maxDepth = depth;
+	public String get() {
+		try {
+			do {
+				line = reader.readLine();
+				if (line == null) {
+					return null;
+				}
+				lineCount++;
+			} while (line.trim().isEmpty());
+			return line;
+		} catch (final IOException e) {
+			return null;
 		}
-		final Tree<?> node = TreeVisitor.getCurrentNode(path);
-		if ((terminalNode != null) && terminalNode.isInstance(node)) {
-			return VistorResult.SkipChildren;
-		} else {
-			return VistorResult.Continue;
-		}
 	}
 
-	@Override
-	public Integer getResult() {
-		return maxDepth;
+	public String currentLine() {
+		return line;
 	}
 
-	public Class<? extends Tree<?>> getTerminalNode() {
-		return terminalNode;
+	public void setCurrentLine(String line) {
+		this.line = line;
 	}
 
-	public void setTerminalNode(Class<? extends Tree<?>> terminalNode) {
-		this.terminalNode = terminalNode;
+	public int getLineCount() {
+		return lineCount;
 	}
 
 }

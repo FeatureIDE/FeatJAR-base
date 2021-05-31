@@ -22,31 +22,47 @@
  */
 package org.spldev.util.extension;
 
-import java.io.*;
-import java.lang.reflect.*;
-import java.nio.file.*;
-import java.util.*;
-import java.util.Map.*;
-import java.util.regex.*;
-import java.util.zip.*;
+import java.io.IOException;
+import java.lang.reflect.Method;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map.Entry;
+import java.util.Objects;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipFile;
 
-import javax.xml.parsers.*;
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
 
-import org.spldev.util.logging.*;
-import org.w3c.dom.*;
+import org.spldev.util.logging.Logger;
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
+import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
 
 public class ExtensionLoader {
 
 	private static HashMap<String, List<String>> extensionMap;
 
+	public static synchronized void unload() {
+		if (extensionMap != null) {
+			extensionMap.clear();
+			extensionMap = null;
+		}
+	}
+
 	@SuppressWarnings({ "rawtypes", "unchecked" })
-	public static void load() {
+	public static synchronized void load() {
 		if (extensionMap == null) {
 			extensionMap = new HashMap<>();
-			getResources().stream()
-				.filter(Pattern.compile(".*extensions[.]xml").asPredicate())
-				.peek(System.out::println)
-				.forEach(ExtensionLoader::load);
+			getResources().stream() //
+					.filter(ExtensionLoader::filterByFileName) //
+					.peek(Logger::logInfo) //
+					.forEach(ExtensionLoader::load);
 			for (final Entry<String, List<String>> entry : extensionMap.entrySet()) {
 				final String extensionPointId = entry.getKey();
 				try {
@@ -54,14 +70,28 @@ public class ExtensionLoader {
 					final Method instanceMethod = extensionPointClass.getDeclaredMethod("getInstance");
 					final ExtensionPoint ep = (ExtensionPoint) instanceMethod.invoke(null);
 					for (final String extensionId : entry.getValue()) {
-						final Class<?> extensionClass = ClassLoader.getSystemClassLoader().loadClass(extensionId);
-						final Extension ex = (Extension) extensionClass.getConstructor().newInstance();
-						ep.addExtension(ex);
+						try {
+							final Class<?> extensionClass = ClassLoader.getSystemClassLoader().loadClass(extensionId);
+							ep.addExtension((Extension) extensionClass.getConstructor().newInstance());
+						} catch (final Exception e) {
+							Logger.logError(e);
+						}
 					}
 				} catch (final Exception e) {
 					Logger.logError(e);
 				}
 			}
+		}
+	}
+
+	private static boolean filterByFileName(String pathName) {
+		try {
+			final String file = ClassLoader.getSystemResource(pathName).getFile();
+			final String fileName = Paths.get(file).getFileName().toString();
+			return Objects.equals(fileName, "extensions.xml");
+		} catch (final Exception e) {
+			Logger.logError(e);
+			return false;
 		}
 	}
 
@@ -107,15 +137,10 @@ public class ExtensionLoader {
 			try {
 				if (Files.isRegularFile(path)) {
 					try (ZipFile zf = new ZipFile(path.toFile())) {
-						zf.stream()
-							.map(ZipEntry::getName)
-							.forEach(resources::add);
+						zf.stream().map(ZipEntry::getName).forEach(resources::add);
 					}
 				} else if (Files.isDirectory(path)) {
-					Files.walk(path)
-						.map(path::relativize)
-						.map(Path::toString)
-						.forEach(resources::add);
+					Files.walk(path).map(path::relativize).map(Path::toString).forEach(resources::add);
 				}
 			} catch (final IOException e) {
 				Logger.logError(e);
