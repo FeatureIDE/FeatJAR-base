@@ -23,6 +23,7 @@
 package org.spldev.util.tree.visitor;
 
 import java.util.*;
+import java.util.function.Predicate;
 
 import org.spldev.util.tree.structure.*;
 
@@ -31,6 +32,7 @@ public class TreePrinter implements TreeVisitor<String, Tree<?>> {
 	private String indentation = "  ";
 
 	private StringBuilder treeStringBuilder = new StringBuilder();
+	private Predicate<Tree<?>> filter = null;
 
 	@Override
 	public void reset() {
@@ -52,16 +54,27 @@ public class TreePrinter implements TreeVisitor<String, Tree<?>> {
 
 	@Override
 	public VistorResult firstVisit(List<Tree<?>> path) {
-		try {
-			for (int i = 1; i < path.size(); i++) {
-				treeStringBuilder.append(indentation);
+		Tree<?> currentNode = TreeVisitor.getCurrentNode(path);
+		if (filter == null || filter.test(currentNode)) {
+			try {
+				for (int i = 1; i < path.size(); i++) {
+					treeStringBuilder.append(indentation);
+				}
+				treeStringBuilder.append(currentNode);
+				treeStringBuilder.append('\n');
+			} catch (final Exception e) {
+				return VistorResult.SkipAll;
 			}
-			treeStringBuilder.append(TreeVisitor.getCurrentNode(path));
-			treeStringBuilder.append('\n');
-		} catch (final Exception e) {
-			return VistorResult.SkipAll;
 		}
 		return VistorResult.Continue;
+	}
+
+	public Predicate<? extends Tree<?>> getFilter() {
+		return filter;
+	}
+
+	public void setFilter(Predicate<Tree<?>> filter) {
+		this.filter = filter;
 	}
 
 }
