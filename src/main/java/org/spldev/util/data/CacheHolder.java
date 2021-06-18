@@ -32,13 +32,12 @@ import org.spldev.util.job.*;
  *
  * @author Sebastian Krieter
  */
-public class Cache {
+public class CacheHolder {
 
 	private final HashMap<Identifier<?>, Map<Object, Object>> map = new HashMap<>();
 
 	/**
-	 * Get an arbitrary element that can be derived from the associated feature
-	 * model.<br>
+	 * Get an arbitrary element that can be derived from any element in the cache.<br>
 	 * This methods first checks whether there is a cached instance and only
 	 * computes the requested object otherwise.
 	 *

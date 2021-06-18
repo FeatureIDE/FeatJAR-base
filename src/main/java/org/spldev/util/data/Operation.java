@@ -28,7 +28,7 @@ import java.util.function.*;
 import org.spldev.util.logging.*;
 
 /**
- * Abstract operation to modify elements from a {@link Cache}.
+ * Abstract operation to modify elements from a {@link CacheHolder}.
  *
  * @author Sebastian Krieter
  */
