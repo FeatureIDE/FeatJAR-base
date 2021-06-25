@@ -196,6 +196,7 @@ public final class Logger {
 				System.err.println(formatedMessage);
 				break;
 			case DEBUG:
+				break;
 			case INFO:
 			case PROGRESS:
 			default:

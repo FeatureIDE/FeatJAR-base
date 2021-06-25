@@ -22,27 +22,18 @@
  */
 package org.spldev.util.extension;
 
-import java.io.IOException;
-import java.lang.reflect.Method;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map.Entry;
-import java.util.Objects;
-import java.util.zip.ZipEntry;
-import java.util.zip.ZipFile;
+import java.io.*;
+import java.lang.reflect.*;
+import java.net.*;
+import java.nio.file.*;
+import java.util.*;
+import java.util.Map.*;
+import java.util.zip.*;
 
-import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.*;
 
-import org.spldev.util.logging.Logger;
-import org.w3c.dom.Document;
-import org.w3c.dom.Element;
-import org.w3c.dom.Node;
-import org.w3c.dom.NodeList;
+import org.spldev.util.logging.*;
+import org.w3c.dom.*;
 
 public class ExtensionLoader {
 
@@ -60,18 +51,19 @@ public class ExtensionLoader {
 		if (extensionMap == null) {
 			extensionMap = new HashMap<>();
 			getResources().stream() //
-					.filter(ExtensionLoader::filterByFileName) //
-					.peek(Logger::logInfo) //
-					.forEach(ExtensionLoader::load);
+				.filter(ExtensionLoader::filterByFileName) //
+				.forEach(ExtensionLoader::load);
+			final ClassLoader systemClassLoader = ClassLoader.getSystemClassLoader();
 			for (final Entry<String, List<String>> entry : extensionMap.entrySet()) {
 				final String extensionPointId = entry.getKey();
 				try {
-					final Class<?> extensionPointClass = ClassLoader.getSystemClassLoader().loadClass(extensionPointId);
+					final Class<?> extensionPointClass = systemClassLoader.loadClass(extensionPointId);
 					final Method instanceMethod = extensionPointClass.getDeclaredMethod("getInstance");
 					final ExtensionPoint ep = (ExtensionPoint) instanceMethod.invoke(null);
 					for (final String extensionId : entry.getValue()) {
 						try {
-							final Class<?> extensionClass = ClassLoader.getSystemClassLoader().loadClass(extensionId);
+							final Class<?> extensionClass = systemClassLoader.loadClass(extensionId);
+							Logger.logDebug(extensionClass.toString());
 							ep.addExtension((Extension) extensionClass.getConstructor().newInstance());
 						} catch (final Exception e) {
 							Logger.logError(e);
@@ -97,30 +89,37 @@ public class ExtensionLoader {
 
 	private static void load(String file) {
 		try {
-			final DocumentBuilder documentBuilder = DocumentBuilderFactory.newInstance().newDocumentBuilder();
-			final Document document = documentBuilder.parse(ClassLoader.getSystemResourceAsStream(file));
-			document.getDocumentElement().normalize();
+			final Enumeration<URL> systemResources = ClassLoader.getSystemClassLoader().getResources(file);
+			while (systemResources.hasMoreElements()) {
+				try {
+					final DocumentBuilder documentBuilder = DocumentBuilderFactory.newInstance().newDocumentBuilder();
+					final Document document = documentBuilder.parse(systemResources.nextElement().openStream());
+					document.getDocumentElement().normalize();
 
-			final NodeList points = document.getElementsByTagName("point");
-			for (int i = 0; i < points.getLength(); i++) {
-				final Node point = points.item(i);
-				if (point.getNodeType() == Node.ELEMENT_NODE) {
-					final Element pointElement = (Element) point;
-					final String extensionPointId = pointElement.getAttribute("id");
-					List<String> extensionPoint = extensionMap.get(extensionPointId);
-					if (extensionPoint == null) {
-						extensionPoint = new ArrayList<>();
-						extensionMap.put(extensionPointId, extensionPoint);
-					}
-					final NodeList extensions = pointElement.getChildNodes();
-					for (int j = 0; j < extensions.getLength(); j++) {
-						final Node extension = extensions.item(j);
-						if (extension.getNodeType() == Node.ELEMENT_NODE) {
-							final Element extensionElement = (Element) extension;
-							final String extensionId = extensionElement.getAttribute("id");
-							extensionPoint.add(extensionId);
+					final NodeList points = document.getElementsByTagName("point");
+					for (int i = 0; i < points.getLength(); i++) {
+						final Node point = points.item(i);
+						if (point.getNodeType() == Node.ELEMENT_NODE) {
+							final Element pointElement = (Element) point;
+							final String extensionPointId = pointElement.getAttribute("id");
+							List<String> extensionPoint = extensionMap.get(extensionPointId);
+							if (extensionPoint == null) {
+								extensionPoint = new ArrayList<>();
+								extensionMap.put(extensionPointId, extensionPoint);
+							}
+							final NodeList extensions = pointElement.getChildNodes();
+							for (int j = 0; j < extensions.getLength(); j++) {
+								final Node extension = extensions.item(j);
+								if (extension.getNodeType() == Node.ELEMENT_NODE) {
+									final Element extensionElement = (Element) extension;
+									final String extensionId = extensionElement.getAttribute("id");
+									extensionPoint.add(extensionId);
+								}
+							}
 						}
 					}
+				} catch (final Exception e) {
+					Logger.logError(e);
 				}
 			}
 		} catch (final Exception e) {
@@ -129,11 +128,12 @@ public class ExtensionLoader {
 	}
 
 	public static List<String> getResources() {
-		final ArrayList<String> resources = new ArrayList<>();
+		final HashSet<String> resources = new HashSet<>();
 		final String classPathProperty = System.getProperty("java.class.path", ".");
 		final String pathSeparatorProperty = System.getProperty("path.separator");
 		for (final String element : classPathProperty.split(pathSeparatorProperty)) {
 			final Path path = Paths.get(element);
+			Logger.logDebug(path);
 			try {
 				if (Files.isRegularFile(path)) {
 					try (ZipFile zf = new ZipFile(path.toFile())) {
@@ -146,7 +146,7 @@ public class ExtensionLoader {
 				Logger.logError(e);
 			}
 		}
-		return resources;
+		return new ArrayList<>(resources);
 	}
 
 }

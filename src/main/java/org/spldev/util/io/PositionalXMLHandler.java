@@ -86,7 +86,7 @@ public class PositionalXMLHandler extends DefaultHandler {
 	}
 
 	private void addTextIfNeeded() {
-		if (!textBuffer.isEmpty()) {
+		if (textBuffer.length() > 0) {
 			elementStack.peek().appendChild(doc.createTextNode(textBuffer.toString()));
 			textBuffer.delete(0, textBuffer.length());
 		}

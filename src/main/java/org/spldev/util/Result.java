@@ -100,6 +100,16 @@ public class Result<T> {
 		}
 	}
 
+	public Result<T> peek(Consumer<T> consumer) {
+		if (object != null) {
+			try {
+				consumer.accept(object);
+			} catch (final Exception e) {
+			}
+		}
+		return this;
+	}
+
 	public T orElse(T alternative) {
 		return object != null ? object : alternative;
 	}
