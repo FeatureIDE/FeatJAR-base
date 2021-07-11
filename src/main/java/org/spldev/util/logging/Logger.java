@@ -109,7 +109,7 @@ public final class Logger {
 		formatters.remove(formatter);
 	}
 
-	public synchronized static void install() throws FileNotFoundException {
+	public synchronized static void install() {
 		if (!installed) {
 			final List<OutputStream> outStreamList = new ArrayList<>();
 			final List<OutputStream> errStreamList = new ArrayList<>();
