@@ -264,7 +264,7 @@ public class FileHandler<T> {
 	public static <T> void serialize(T object, Path path, Format<T> format) throws IOException {
 		write(format.getInstance().serialize(object), path);
 	}
-	
+
 	public static <T> void write(String source, Path path, Charset charset) throws IOException {
 		Files.write(path, //
 			source.getBytes(charset), //

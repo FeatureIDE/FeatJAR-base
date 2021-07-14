@@ -29,7 +29,7 @@ public class KeyValueMap {
 	public <T> Result<T> set(Identifier<T> identifier, T value) {
 		try {
 			return Result.of((T) properties.put(identifier, value));
-		} catch (ClassCastException e) {
+		} catch (final ClassCastException e) {
 			return Result.empty(e);
 		}
 	}
@@ -38,7 +38,7 @@ public class KeyValueMap {
 	public <T> Result<T> get(Identifier<T> identifier) {
 		try {
 			return Result.of((T) properties.get(identifier));
-		} catch (ClassCastException e) {
+		} catch (final ClassCastException e) {
 			return Result.empty(e);
 		}
 	}
@@ -47,7 +47,7 @@ public class KeyValueMap {
 	public <T> Result<T> remove(Identifier<T> identifier) {
 		try {
 			return Result.of((T) properties.remove(identifier));
-		} catch (ClassCastException e) {
+		} catch (final ClassCastException e) {
 			return Result.empty(e);
 		}
 	}

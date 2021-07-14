@@ -65,7 +65,9 @@ public class Result<T> {
 
 	private Result(T object, List<Problem> problems) {
 		this.object = object;
-		this.problems = problems != null ? new ArrayList<>(problems) : Collections.emptyList();
+		this.problems = (problems == null) || problems.isEmpty()
+			? Collections.emptyList()
+			: new ArrayList<>(problems);
 	}
 
 	public boolean isEmpty() {

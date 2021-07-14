@@ -54,8 +54,8 @@ public class TreePrinter implements TreeVisitor<String, Tree<?>> {
 
 	@Override
 	public VistorResult firstVisit(List<Tree<?>> path) {
-		Tree<?> currentNode = TreeVisitor.getCurrentNode(path);
-		if (filter == null || filter.test(currentNode)) {
+		final Tree<?> currentNode = TreeVisitor.getCurrentNode(path);
+		if ((filter == null) || filter.test(currentNode)) {
 			try {
 				for (int i = 1; i < path.size(); i++) {
 					treeStringBuilder.append(indentation);

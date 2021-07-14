@@ -31,7 +31,8 @@ import org.spldev.util.io.format.*;
 import org.spldev.util.job.*;
 
 /**
- * Abstract creator to derive an element from a {@link CacheHolder feature model}.
+ * Abstract creator to derive an element from a {@link CacheHolder feature
+ * model}.
  *
  * @param <T> The type of the element.
  *
