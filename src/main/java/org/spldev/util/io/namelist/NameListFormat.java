@@ -22,11 +22,14 @@
  */
 package org.spldev.util.io.namelist;
 
-import java.util.*;
-import java.util.function.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.function.Supplier;
+import java.util.stream.Collectors;
 
-import org.spldev.util.*;
-import org.spldev.util.io.format.*;
+import org.spldev.util.Result;
+import org.spldev.util.io.format.Format;
+import org.spldev.util.io.format.Input;
 
 /**
  * Simple format that stores a list of names as text (one per line).
@@ -67,18 +70,18 @@ public class NameListFormat implements Format<List<NameListFormat.NameEntry>> {
 	private static final String STOP_MARK = "###";
 
 	@Override
-	public Result<List<NameEntry>> parse(CharSequence source) {
-		final String[] lines = source.toString().split("\\R");
-		return parse(lines, new ArrayList<>(lines.length));
+	public Result<List<NameEntry>> parse(Input source) {
+		final List<String> lines = source.getLines().collect(Collectors.toList());
+		return parse(lines, new ArrayList<>(lines.size()));
 	}
 
 	@Override
-	public Result<List<NameEntry>> parse(CharSequence source, Supplier<List<NameEntry>> supplier) {
-		final String[] lines = source.toString().split("\\R");
+	public Result<List<NameEntry>> parse(Input source, Supplier<List<NameEntry>> supplier) {
+		final List<String> lines = source.getLines().collect(Collectors.toList());
 		return parse(lines, supplier.get());
 	}
 
-	private Result<List<NameEntry>> parse(final String[] lines, final List<NameEntry> entries) {
+	private Result<List<NameEntry>> parse(final List<String> lines, final List<NameEntry> entries) {
 		int lineNumber = 0;
 		boolean pause = false;
 		for (final String modelName : lines) {

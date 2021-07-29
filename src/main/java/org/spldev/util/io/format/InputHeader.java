@@ -22,29 +22,52 @@
  */
 package org.spldev.util.io.format;
 
-import org.spldev.util.Result;
+import java.nio.charset.Charset;
+import java.nio.file.Path;
+import java.util.stream.Stream;
 
 /**
- * Provides a format for a given file content and file path.
+ * Input header to determine whether a format can parse a particular content.
  * 
  * @author Sebastian Krieter
  */
-@FunctionalInterface
-public interface FormatSupplier<T> {
-
-	static <T> FormatSupplier<T> of(Format<T> format) {
-		return inputHeader -> Result.of(format);
-	}
+public class InputHeader {
 
 	/**
-	 * Returns the format that fits the given parameter.
-	 *
-	 * @param inputHeader the beginning of the file's content
-	 * @param path    the file path
-	 *
-	 * @return A {@link Format format} that uses the file extension of the given
-	 *         path. Result may be if there is no suitable format.
+	 * Maximum number of bytes in the header.
 	 */
-	Result<Format<T>> getFormat(InputHeader inputHeader);
+	public static final int MAX_HEADER_SIZE = 0x00100000;
+	
+	private final byte[] header;
+
+	private final Charset charset;
+	
+	private final Path path;
+	
+	public InputHeader(Path path, byte[] header, Charset charset) {
+		this.path = path;
+		this.header = header;
+		this.charset = charset;
+	}
+	
+	public Charset getCharset() {
+		return charset;
+	}
+
+	public Path getPath() {
+		return path;
+	}
+
+	public byte[] getBytes() {
+		return header;
+	}
+	
+	public String getText() {
+		return new String(header, charset);
+	}
+	
+	public Stream<String> getLines() {
+		return new String(header, charset).lines();
+	}
 
 }

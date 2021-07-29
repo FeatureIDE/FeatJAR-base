@@ -65,9 +65,7 @@ public class Result<T> {
 
 	private Result(T object, List<Problem> problems) {
 		this.object = object;
-		this.problems = (problems == null) || problems.isEmpty()
-			? Collections.emptyList()
-			: new ArrayList<>(problems);
+		this.problems = (problems == null) || problems.isEmpty() ? Collections.emptyList() : new ArrayList<>(problems);
 	}
 
 	public boolean isEmpty() {
@@ -85,11 +83,29 @@ public class Result<T> {
 	public Optional<T> toOptional() {
 		return Optional.ofNullable(object);
 	}
-
+	
+	/**
+	 * Maps the object in this result to another object using a mapper funtion that also returns an {@link Result}.
+	 * 
+	 * @param <R> The type of the mapped object.
+	 * @param mapper the mapper function.
+	 * @return A new result with the mapped object or an empty result, if any
+	 *         exceptions occur during the mapping or if this result was empty
+	 *         before.
+	 */
 	public <R> Result<R> flatMap(Function<T, Result<R>> mapper) {
 		return object != null ? mapper.apply(object) : Result.empty(problems);
 	}
 
+	/**
+	 * Maps the object in this result to another object using a mapper funtion.
+	 * 
+	 * @param <R> The type of the mapped object.
+	 * @param mapper the mapper function.
+	 * @return A new result with the mapped object or an empty result, if any
+	 *         exceptions occur during the mapping or if this result was empty
+	 *         before.
+	 */
 	public <R> Result<R> map(Function<T, R> mapper) {
 		if (object != null) {
 			try {

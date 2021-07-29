@@ -22,10 +22,11 @@
  */
 package org.spldev.util.io.format;
 
-import java.util.function.*;
+import java.io.IOException;
+import java.util.function.Supplier;
 
-import org.spldev.util.*;
-import org.spldev.util.extension.*;
+import org.spldev.util.Result;
+import org.spldev.util.extension.Extension;
 
 /**
  * Interface for reading and writing data from and to arbitrary objects.
@@ -42,16 +43,16 @@ public interface Format<T> extends Extension {
 	 * passed here.
 	 *
 	 * @param source the source content.
-	 * @return A list of {@link Problem problems} that occurred during the parsing
-	 *         process.
+	 * @return A {@link Result} containing the parsed object or a list of problems
+	 *         that occurred during the parsing process.
 	 *
 	 * @see #supportsParse()
 	 */
-	default Result<T> parse(CharSequence source) {
+	default Result<T> parse(Input source) {
 		throw new UnsupportedOperationException();
 	}
 
-	default Result<T> parse(CharSequence source, Supplier<T> supplier) {
+	default Result<T> parse(Input source, Supplier<T> supplier) {
 		return parse(source);
 	}
 
@@ -66,6 +67,10 @@ public interface Format<T> extends Extension {
 	 */
 	default String serialize(T object) {
 		throw new UnsupportedOperationException();
+	}
+
+	default void write(T object, Output out) throws IOException {
+		out.writeText(serialize(object));
 	}
 
 	/**
@@ -101,6 +106,10 @@ public interface Format<T> extends Extension {
 		return this;
 	}
 
+	default boolean isBinary() {
+		return false;
+	}
+
 	/**
 	 * Returns whether this format supports the {@link #parse(CharSequence)}
 	 * operation.
@@ -124,13 +133,24 @@ public interface Format<T> extends Extension {
 	}
 
 	/**
+	 * Returns whether this format supports the {@link #serialize(Object)}
+	 * operation.
+	 *
+	 * @return {@code true} if {@code write} is allowed by this format,
+	 *         {@code false} otherwise.
+	 */
+	default boolean supportsWrite() {
+		return supportsSerialize();
+	}
+
+	/**
 	 * Returns whether this format supports the parsing of the given content.
 	 *
-	 * @param content The content to be parsed.
+	 * @param inputHeader The beginning of the content to be parsed.
 	 * @return {@code true} if the content should be parsable by this format,
 	 *         {@code false} otherwise.
 	 */
-	default boolean supportsContent(CharSequence content) {
+	default boolean supportsContent(InputHeader inputHeader) {
 		return supportsParse();
 	}
 

@@ -22,13 +22,14 @@
  */
 package org.spldev.util.io.format;
 
-import java.nio.file.*;
-import java.util.*;
-import java.util.stream.*;
+import java.nio.file.Path;
+import java.util.Collections;
+import java.util.List;
+import java.util.stream.Collectors;
 
-import org.spldev.util.*;
-import org.spldev.util.extension.*;
-import org.spldev.util.io.*;
+import org.spldev.util.Result;
+import org.spldev.util.extension.ExtensionPoint;
+import org.spldev.util.io.FileHandler;
 
 /**
  * Manages additional formats for a certain object.
@@ -49,11 +50,11 @@ public class FormatManager<T> extends ExtensionPoint<Format<T>> implements Forma
 	}
 
 	@Override
-	public Result<Format<T>> getFormat(Path path, CharSequence content) {
-		final String fileExtension = FileHandler.getFileExtension(path);
+	public Result<Format<T>> getFormat(InputHeader inputHeader) {
+		final String fileExtension = FileHandler.getFileExtension(inputHeader.getPath());
 		return getExtensions().stream()
 			.filter(format -> fileExtension.equals(format.getFileExtension()))
-			.filter(format -> format.supportsContent(content))
+			.filter(format -> format.supportsContent(inputHeader))
 			.findFirst()
 			.map(Result::of)
 			.orElse(Result.empty(new NoSuchExtensionException("No suitable format found for file extension ."
