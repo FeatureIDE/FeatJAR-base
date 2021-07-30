@@ -38,58 +38,58 @@ import org.spldev.util.Result;
  */
 public class KeyValueMap {
 
-	private Map<Identifier<?>, Object> properties = new HashMap<>();
+	private Map<Identifier<?>, Object> elements = new HashMap<>();
 
 	public KeyValueMap() {
 	}
 
 	public KeyValueMap(KeyValueMap other) {
-		properties.putAll(other.properties);
+		elements.putAll(other.elements);
 	}
 
 	@SuppressWarnings("unchecked")
-	public <T> Result<T> set(Identifier<T> identifier, T value) {
+	public <T> Result<T> set(Identifier<T> key, T value) {
 		try {
-			return Result.of((T) properties.put(identifier, value));
+			return Result.of((T) elements.put(key, value));
 		} catch (final ClassCastException e) {
 			return Result.empty(e);
 		}
 	}
 
 	@SuppressWarnings("unchecked")
-	public <T> Result<T> get(Identifier<T> identifier) {
+	public <T> Result<T> get(Identifier<T> key) {
 		try {
-			return Result.of((T) properties.get(identifier));
+			return Result.of((T) elements.get(key));
 		} catch (final ClassCastException e) {
 			return Result.empty(e);
 		}
 	}
 
 	@SuppressWarnings("unchecked")
-	public <T> Result<T> remove(Identifier<T> identifier) {
+	public <T> Result<T> remove(Identifier<T> key) {
 		try {
-			return Result.of((T) properties.remove(identifier));
+			return Result.of((T) elements.remove(key));
 		} catch (final ClassCastException e) {
 			return Result.empty(e);
 		}
 	}
 
 	public void clear() {
-		properties.clear();
+		elements.clear();
 	}
 
-	public Set<Identifier<?>> getPropertyIdentifiers() {
-		return Collections.unmodifiableSet(properties.keySet());
+	public Set<Identifier<?>> getKeys() {
+		return Collections.unmodifiableSet(elements.keySet());
 	}
 
-	public Set<Entry<Identifier<?>, Object>> getProperties() {
-		return Collections.unmodifiableSet(properties.entrySet());
+	public Set<Entry<Identifier<?>, Object>> getElements() {
+		return Collections.unmodifiableSet(elements.entrySet());
 	}
 
 	@Override
 	public int hashCode() {
-		int result = properties.size();
-		for (final Entry<Identifier<?>, Object> entry : properties.entrySet()) {
+		int result = elements.size();
+		for (final Entry<Identifier<?>, Object> entry : elements.entrySet()) {
 			result += 37 * entry.hashCode();
 		}
 		return result;
@@ -103,7 +103,7 @@ public class KeyValueMap {
 		if ((other == null) || (getClass() != other.getClass())) {
 			return false;
 		}
-		return Objects.equals(properties, ((KeyValueMap) other).properties);
+		return Objects.equals(elements, ((KeyValueMap) other).elements);
 	}
 
 }

@@ -22,11 +22,17 @@
  */
 package org.spldev.util.data;
 
-public class Identifier<T> {
+/**
+ * A tuple consisting of any two elements.
+ *
+ * @param <T> class of the value
+ *
+ * @author Sebastian Krieter
+ */
+public class KeyValuePair<T> extends Pair<Identifier<T>, T> {
 
-	@Override
-	public String toString() {
-		return "Identifier [" + System.identityHashCode(this) + "]";
+	public KeyValuePair(Identifier<T> key, T value) {
+		super(key, value);
 	}
 
 }
