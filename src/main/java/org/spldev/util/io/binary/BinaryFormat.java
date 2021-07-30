@@ -31,8 +31,6 @@ import org.spldev.util.io.format.Format;
 
 public abstract class BinaryFormat<T> implements Format<T> {
 
-	protected final byte[] integerBytes = new byte[Integer.BYTES];
-
 	protected void writeBytes(OutputStream out, byte[] bytes) throws IOException {
 		writeInt(out, bytes.length);
 		out.write(bytes);
@@ -43,6 +41,7 @@ public abstract class BinaryFormat<T> implements Format<T> {
 	}
 
 	protected void writeInt(OutputStream out, int value) throws IOException {
+		final byte[] integerBytes = new byte[Integer.BYTES];
 		integerBytes[0] = (byte) ((value >>> 24) & 0xff);
 		integerBytes[1] = (byte) ((value >>> 16) & 0xff);
 		integerBytes[2] = (byte) ((value >>> 8) & 0xff);
@@ -72,6 +71,7 @@ public abstract class BinaryFormat<T> implements Format<T> {
 	}
 
 	protected int readInt(InputStream in) throws IOException {
+		final byte[] integerBytes = new byte[Integer.BYTES];
 		final int byteCount = in.read(integerBytes, 0, integerBytes.length);
 		if (byteCount != integerBytes.length) {
 			throw new IOException();
