@@ -1,42 +1,35 @@
 /* -----------------------------------------------------------------------------
- * Util-Lib - Miscellaneous utility functions.
+ * Util Lib - Miscellaneous utility functions.
  * Copyright (C) 2021  Sebastian Krieter
  * 
- * This file is part of Util-Lib.
+ * This file is part of Util Lib.
  * 
- * Util-Lib is free software: you can redistribute it and/or modify it
+ * Util Lib is free software: you can redistribute it and/or modify it
  * under the terms of the GNU Lesser General Public License as published by
  * the Free Software Foundation, either version 3 of the License,
  * or (at your option) any later version.
  * 
- * Util-Lib is distributed in the hope that it will be useful,
+ * Util Lib is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
  * See the GNU Lesser General Public License for more details.
  * 
  * You should have received a copy of the GNU Lesser General Public License
- * along with Util-Lib.  If not, see <https://www.gnu.org/licenses/>.
+ * along with Util Lib.  If not, see <https://www.gnu.org/licenses/>.
  * 
  * See <https://github.com/skrieter/utils> for further information.
  * -----------------------------------------------------------------------------
  */
 package org.spldev.util.io;
 
-import java.io.IOException;
-import java.nio.charset.Charset;
-import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.StandardOpenOption;
-import java.util.function.Supplier;
+import java.io.*;
+import java.nio.charset.*;
+import java.nio.file.*;
+import java.util.function.*;
 
-import org.spldev.util.Result;
-import org.spldev.util.data.Factory;
-import org.spldev.util.data.FactorySupplier;
-import org.spldev.util.io.format.Format;
-import org.spldev.util.io.format.FormatSupplier;
-import org.spldev.util.io.format.Input;
-import org.spldev.util.io.format.Output;
+import org.spldev.util.*;
+import org.spldev.util.data.*;
+import org.spldev.util.io.format.*;
 
 /**
  * Enables reading and writing of a file in a certain {@link Format}.
@@ -129,9 +122,9 @@ public class FileHandler<T> {
 	}
 
 	public static <T> Result<T> load(//
-			Path path, //
-			Format<T> format, //
-			Charset charset //
+		Path path, //
+		Format<T> format, //
+		Charset charset //
 	) {
 		try (Input in = new Input(path, charset)) {
 			return parse(in, format);
@@ -141,10 +134,10 @@ public class FileHandler<T> {
 	}
 
 	public static <T> Result<T> load(//
-			Path path, //
-			Format<T> format, //
-			Supplier<T> factory, //
-			Charset charset //
+		Path path, //
+		Format<T> format, //
+		Supplier<T> factory, //
+		Charset charset //
 	) {
 		try (Input in = new Input(path, charset)) {
 			return parse(in, format, factory);
@@ -154,10 +147,10 @@ public class FileHandler<T> {
 	}
 
 	public static <T> Result<T> load(//
-			Path path, //
-			FormatSupplier<T> formatSupplier, //
-			Supplier<T> factory, //
-			Charset charset //
+		Path path, //
+		FormatSupplier<T> formatSupplier, //
+		Supplier<T> factory, //
+		Charset charset //
 	) {
 		try (Input in = new Input(path, charset)) {
 			return parse(in, formatSupplier, factory);
@@ -167,9 +160,9 @@ public class FileHandler<T> {
 	}
 
 	public static <T> Result<T> load(//
-			Path path, //
-			FormatSupplier<T> formatSupplier, //
-			Charset charset //
+		Path path, //
+		FormatSupplier<T> formatSupplier, //
+		Charset charset //
 	) {
 		try (Input in = new Input(path, charset)) {
 			return parse(in, formatSupplier);
@@ -179,10 +172,10 @@ public class FileHandler<T> {
 	}
 
 	public static <T> Result<T> load(//
-			Path path, //
-			FormatSupplier<T> formatSupplier, //
-			FactorySupplier<T> factorySupplier, //
-			Charset charset //
+		Path path, //
+		FormatSupplier<T> formatSupplier, //
+		FactorySupplier<T> factorySupplier, //
+		Charset charset //
 	) {
 		try (Input in = new Input(path, charset)) {
 			return parse(in, formatSupplier, factorySupplier);
@@ -210,7 +203,7 @@ public class FileHandler<T> {
 	}
 
 	public static <T> Result<T> loadFromSource(String content, Path path, FormatSupplier<T> formatSupplier,
-			Factory<T> factory //
+		Factory<T> factory //
 	) {
 		try (Input in = new Input(content, path)) {
 			return parse(in, formatSupplier, factory);
@@ -229,7 +222,7 @@ public class FileHandler<T> {
 	}
 
 	public static <T> Result<T> loadFromSource(String content, Path path, FormatSupplier<T> formatSupplier,
-			FactorySupplier<T> factorySupplier //
+		FactorySupplier<T> factorySupplier //
 	) {
 		try (Input in = new Input(content, path)) {
 			return parse(in, formatSupplier, factorySupplier);
@@ -240,39 +233,39 @@ public class FileHandler<T> {
 
 	private static <T> Result<T> parse(Input in, Format<T> format, Supplier<T> factory) {
 		return format.supportsParse() ? format.getInstance().parse(in, factory)
-				: Result.empty(new UnsupportedOperationException(format.toString()));
+			: Result.empty(new UnsupportedOperationException(format.toString()));
 	}
 
 	private static <T> Result<T> parse(Input in, Format<T> format) {
 		return format.supportsParse() ? format.getInstance().parse(in)
-				: Result.empty(new UnsupportedOperationException(format.toString()));
+			: Result.empty(new UnsupportedOperationException(format.toString()));
 	}
 
 	private static <T> Result<T> parse(//
-			Input in, //
-			FormatSupplier<T> formatSupplier, //
-			Supplier<T> factory //
+		Input in, //
+		FormatSupplier<T> formatSupplier, //
+		Supplier<T> factory //
 	) {
 		return in.getInputHeader().flatMap(h -> formatSupplier.getFormat(h)) //
-				.flatMap(fo -> parse(in, fo, factory));
+			.flatMap(fo -> parse(in, fo, factory));
 	}
 
 	private static <T> Result<T> parse(//
-			Input in, //
-			FormatSupplier<T> formatSupplier //
+		Input in, //
+		FormatSupplier<T> formatSupplier //
 	) {
 		return in.getInputHeader().flatMap(h -> formatSupplier.getFormat(h)) //
-				.flatMap(fo -> parse(in, fo));
+			.flatMap(fo -> parse(in, fo));
 	}
 
 	private static <T> Result<T> parse(//
-			Input in, //
-			FormatSupplier<T> formatSupplier, //
-			FactorySupplier<T> factorySupplier //
+		Input in, //
+		FormatSupplier<T> formatSupplier, //
+		FactorySupplier<T> factorySupplier //
 	) {
 		return in.getInputHeader().flatMap(h -> formatSupplier.getFormat(h)) //
-				.flatMap(fo -> factorySupplier.getFactory(in.getPath(), fo) //
-						.flatMap(fa -> parse(in, fo, fa)));
+			.flatMap(fo -> factorySupplier.getFactory(in.getPath(), fo) //
+				.flatMap(fa -> parse(in, fo, fa)));
 	}
 
 	public static <T> void save(T object, Path path, Format<T> format) throws IOException {
@@ -295,10 +288,10 @@ public class FileHandler<T> {
 
 	public static <T> void write(String source, Path path, Charset charset) throws IOException {
 		Files.write(path, //
-				source.getBytes(charset), //
-				StandardOpenOption.TRUNCATE_EXISTING, //
-				StandardOpenOption.CREATE, //
-				StandardOpenOption.WRITE);
+			source.getBytes(charset), //
+			StandardOpenOption.TRUNCATE_EXISTING, //
+			StandardOpenOption.CREATE, //
+			StandardOpenOption.WRITE);
 	}
 
 }

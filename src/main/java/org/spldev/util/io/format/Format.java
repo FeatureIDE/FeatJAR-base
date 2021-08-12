@@ -1,32 +1,32 @@
 /* -----------------------------------------------------------------------------
- * Util-Lib - Miscellaneous utility functions.
+ * Util Lib - Miscellaneous utility functions.
  * Copyright (C) 2021  Sebastian Krieter
  * 
- * This file is part of Util-Lib.
+ * This file is part of Util Lib.
  * 
- * Util-Lib is free software: you can redistribute it and/or modify it
+ * Util Lib is free software: you can redistribute it and/or modify it
  * under the terms of the GNU Lesser General Public License as published by
  * the Free Software Foundation, either version 3 of the License,
  * or (at your option) any later version.
  * 
- * Util-Lib is distributed in the hope that it will be useful,
+ * Util Lib is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
  * See the GNU Lesser General Public License for more details.
  * 
  * You should have received a copy of the GNU Lesser General Public License
- * along with Util-Lib.  If not, see <https://www.gnu.org/licenses/>.
+ * along with Util Lib.  If not, see <https://www.gnu.org/licenses/>.
  * 
  * See <https://github.com/skrieter/utils> for further information.
  * -----------------------------------------------------------------------------
  */
 package org.spldev.util.io.format;
 
-import java.io.IOException;
-import java.util.function.Supplier;
+import java.io.*;
+import java.util.function.*;
 
-import org.spldev.util.Result;
-import org.spldev.util.extension.Extension;
+import org.spldev.util.*;
+import org.spldev.util.extension.*;
 
 /**
  * Interface for reading and writing data from and to arbitrary objects.
@@ -90,8 +90,9 @@ public interface Format<T> extends Extension {
 
 	/**
 	 * Returns an instance of this format. Clients should always call this method
-	 * before calling {@link #parse(CharSequence)} or {@link #serialize(Object)} and
-	 * call these methods the returned value to avoid any unintended concurrent
+	 * before calling any of {@link #parse(Input)}, {@link #parse(Input,
+	 * Supplier<T>)}, {@link #serialize(Object)}, or {@link #write(Object, Output)}
+	 * and call these methods the returned value to avoid any unintended concurrent
 	 * access.<br>
 	 * <br>
 	 * <b>Example</b> <code>
@@ -111,8 +112,7 @@ public interface Format<T> extends Extension {
 	}
 
 	/**
-	 * Returns whether this format supports the {@link #parse(CharSequence)}
-	 * operation.
+	 * Returns whether this format supports the {@link #parse(Input)} operation.
 	 *
 	 * @return {@code true} if {@code read} is allowed by this format, {@code false}
 	 *         otherwise.
@@ -133,7 +133,7 @@ public interface Format<T> extends Extension {
 	}
 
 	/**
-	 * Returns whether this format supports the {@link #serialize(Object)}
+	 * Returns whether this format supports the {@link #write(Object, Output)}
 	 * operation.
 	 *
 	 * @return {@code true} if {@code write} is allowed by this format,

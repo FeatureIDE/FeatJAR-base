@@ -1,28 +1,28 @@
 /* -----------------------------------------------------------------------------
- * Util-Lib - Miscellaneous utility functions.
+ * Util Lib - Miscellaneous utility functions.
  * Copyright (C) 2021  Sebastian Krieter
  * 
- * This file is part of Util-Lib.
+ * This file is part of Util Lib.
  * 
- * Util-Lib is free software: you can redistribute it and/or modify it
+ * Util Lib is free software: you can redistribute it and/or modify it
  * under the terms of the GNU Lesser General Public License as published by
  * the Free Software Foundation, either version 3 of the License,
  * or (at your option) any later version.
  * 
- * Util-Lib is distributed in the hope that it will be useful,
+ * Util Lib is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
  * See the GNU Lesser General Public License for more details.
  * 
  * You should have received a copy of the GNU Lesser General Public License
- * along with Util-Lib.  If not, see <https://www.gnu.org/licenses/>.
+ * along with Util Lib.  If not, see <https://www.gnu.org/licenses/>.
  * 
  * See <https://github.com/skrieter/utils> for further information.
  * -----------------------------------------------------------------------------
  */
 package org.spldev.util.io.format;
 
-import org.spldev.util.Result;
+import org.spldev.util.*;
 
 /**
  * Provides a format for a given file content and file path.
@@ -40,7 +40,6 @@ public interface FormatSupplier<T> {
 	 * Returns the format that fits the given parameter.
 	 *
 	 * @param inputHeader the beginning of the file's content
-	 * @param path    the file path
 	 *
 	 * @return A {@link Format format} that uses the file extension of the given
 	 *         path. Result may be if there is no suitable format.

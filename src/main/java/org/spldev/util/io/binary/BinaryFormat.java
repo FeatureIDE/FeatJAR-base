@@ -1,33 +1,31 @@
 /* -----------------------------------------------------------------------------
- * Util-Lib - Miscellaneous utility functions.
+ * Util Lib - Miscellaneous utility functions.
  * Copyright (C) 2021  Sebastian Krieter
  * 
- * This file is part of Util-Lib.
+ * This file is part of Util Lib.
  * 
- * Util-Lib is free software: you can redistribute it and/or modify it
+ * Util Lib is free software: you can redistribute it and/or modify it
  * under the terms of the GNU Lesser General Public License as published by
  * the Free Software Foundation, either version 3 of the License,
  * or (at your option) any later version.
  * 
- * Util-Lib is distributed in the hope that it will be useful,
+ * Util Lib is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
  * See the GNU Lesser General Public License for more details.
  * 
  * You should have received a copy of the GNU Lesser General Public License
- * along with Util-Lib.  If not, see <https://www.gnu.org/licenses/>.
+ * along with Util Lib.  If not, see <https://www.gnu.org/licenses/>.
  * 
  * See <https://github.com/skrieter/utils> for further information.
  * -----------------------------------------------------------------------------
  */
 package org.spldev.util.io.binary;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.nio.charset.StandardCharsets;
+import java.io.*;
+import java.nio.charset.*;
 
-import org.spldev.util.io.format.Format;
+import org.spldev.util.io.format.*;
 
 public abstract class BinaryFormat<T> implements Format<T> {
 
@@ -77,7 +75,7 @@ public abstract class BinaryFormat<T> implements Format<T> {
 			throw new IOException();
 		}
 		return ((integerBytes[0] & 0xff) << 24) | ((integerBytes[1] & 0xff) << 16) | ((integerBytes[2] & 0xff) << 8)
-				| ((integerBytes[3] & 0xff));
+			| ((integerBytes[3] & 0xff));
 	}
 
 	protected byte readByte(InputStream in) throws IOException {

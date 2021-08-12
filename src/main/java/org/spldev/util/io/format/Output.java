@@ -1,35 +1,30 @@
 /* -----------------------------------------------------------------------------
- * Util-Lib - Miscellaneous utility functions.
+ * Util Lib - Miscellaneous utility functions.
  * Copyright (C) 2021  Sebastian Krieter
  * 
- * This file is part of Util-Lib.
+ * This file is part of Util Lib.
  * 
- * Util-Lib is free software: you can redistribute it and/or modify it
+ * Util Lib is free software: you can redistribute it and/or modify it
  * under the terms of the GNU Lesser General Public License as published by
  * the Free Software Foundation, either version 3 of the License,
  * or (at your option) any later version.
  * 
- * Util-Lib is distributed in the hope that it will be useful,
+ * Util Lib is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
  * See the GNU Lesser General Public License for more details.
  * 
  * You should have received a copy of the GNU Lesser General Public License
- * along with Util-Lib.  If not, see <https://www.gnu.org/licenses/>.
+ * along with Util Lib.  If not, see <https://www.gnu.org/licenses/>.
  * 
  * See <https://github.com/skrieter/utils> for further information.
  * -----------------------------------------------------------------------------
  */
 package org.spldev.util.io.format;
 
-import java.io.BufferedOutputStream;
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.io.OutputStream;
-import java.nio.charset.Charset;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.StandardOpenOption;
+import java.io.*;
+import java.nio.charset.*;
+import java.nio.file.*;
 
 /**
  * Output for a format.
@@ -48,10 +43,10 @@ public class Output implements AutoCloseable {
 		if (!Files.exists(path)) {
 			throw new FileNotFoundException(path.toString());
 		}
-		this.target = new BufferedOutputStream(Files.newOutputStream(path, //
-				StandardOpenOption.TRUNCATE_EXISTING, //
-				StandardOpenOption.CREATE, //
-				StandardOpenOption.WRITE));
+		target = new BufferedOutputStream(Files.newOutputStream(path, //
+			StandardOpenOption.TRUNCATE_EXISTING, //
+			StandardOpenOption.CREATE, //
+			StandardOpenOption.WRITE));
 		this.path = path;
 		this.charset = charset;
 	}

@@ -1,35 +1,34 @@
 /* -----------------------------------------------------------------------------
- * Util-Lib - Miscellaneous utility functions.
+ * Util Lib - Miscellaneous utility functions.
  * Copyright (C) 2021  Sebastian Krieter
  * 
- * This file is part of Util-Lib.
+ * This file is part of Util Lib.
  * 
- * Util-Lib is free software: you can redistribute it and/or modify it
+ * Util Lib is free software: you can redistribute it and/or modify it
  * under the terms of the GNU Lesser General Public License as published by
  * the Free Software Foundation, either version 3 of the License,
  * or (at your option) any later version.
  * 
- * Util-Lib is distributed in the hope that it will be useful,
+ * Util Lib is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
  * See the GNU Lesser General Public License for more details.
  * 
  * You should have received a copy of the GNU Lesser General Public License
- * along with Util-Lib.  If not, see <https://www.gnu.org/licenses/>.
+ * along with Util Lib.  If not, see <https://www.gnu.org/licenses/>.
  * 
  * See <https://github.com/skrieter/utils> for further information.
  * -----------------------------------------------------------------------------
  */
 package org.spldev.util.io.format;
 
-import java.nio.file.Path;
-import java.util.Collections;
-import java.util.List;
-import java.util.stream.Collectors;
+import java.nio.file.*;
+import java.util.*;
+import java.util.stream.*;
 
-import org.spldev.util.Result;
-import org.spldev.util.extension.ExtensionPoint;
-import org.spldev.util.io.FileHandler;
+import org.spldev.util.*;
+import org.spldev.util.extension.*;
+import org.spldev.util.io.*;
 
 /**
  * Manages additional formats for a certain object.
@@ -52,13 +51,14 @@ public class FormatManager<T> extends ExtensionPoint<Format<T>> implements Forma
 	@Override
 	public Result<Format<T>> getFormat(InputHeader inputHeader) {
 		final String fileExtension = FileHandler.getFileExtension(inputHeader.getPath());
-		return getExtensions().stream()
+		final List<Format<T>> extensions = getExtensions();
+		return extensions.stream()
 			.filter(format -> fileExtension.equals(format.getFileExtension()))
 			.filter(format -> format.supportsContent(inputHeader))
 			.findFirst()
 			.map(Result::of)
-			.orElse(Result.empty(new NoSuchExtensionException("No suitable format found for file extension ."
-				+ fileExtension)));
+			.orElse(Result.empty(new NoSuchExtensionException("No suitable format found for file extension \"."
+				+ fileExtension + "\". Possible Formats: " + extensions)));
 	}
 
 	private List<Format<T>> getFormatList(final String fileExtension) {

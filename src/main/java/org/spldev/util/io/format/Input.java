@@ -1,44 +1,35 @@
 /* -----------------------------------------------------------------------------
- * Util-Lib - Miscellaneous utility functions.
+ * Util Lib - Miscellaneous utility functions.
  * Copyright (C) 2021  Sebastian Krieter
  * 
- * This file is part of Util-Lib.
+ * This file is part of Util Lib.
  * 
- * Util-Lib is free software: you can redistribute it and/or modify it
+ * Util Lib is free software: you can redistribute it and/or modify it
  * under the terms of the GNU Lesser General Public License as published by
  * the Free Software Foundation, either version 3 of the License,
  * or (at your option) any later version.
  * 
- * Util-Lib is distributed in the hope that it will be useful,
+ * Util Lib is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
  * See the GNU Lesser General Public License for more details.
  * 
  * You should have received a copy of the GNU Lesser General Public License
- * along with Util-Lib.  If not, see <https://www.gnu.org/licenses/>.
+ * along with Util Lib.  If not, see <https://www.gnu.org/licenses/>.
  * 
  * See <https://github.com/skrieter/utils> for further information.
  * -----------------------------------------------------------------------------
  */
 package org.spldev.util.io.format;
 
-import java.io.BufferedInputStream;
-import java.io.BufferedReader;
-import java.io.ByteArrayInputStream;
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.nio.charset.Charset;
-import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.StandardOpenOption;
-import java.util.Arrays;
-import java.util.stream.Stream;
+import java.io.*;
+import java.nio.charset.*;
+import java.nio.file.*;
+import java.util.*;
+import java.util.stream.*;
 
-import org.spldev.util.Result;
-import org.spldev.util.logging.Logger;
+import org.spldev.util.*;
+import org.spldev.util.logging.*;
 
 /**
  * Input for a format.
@@ -57,7 +48,7 @@ public final class Input implements AutoCloseable {
 		if (!Files.exists(path)) {
 			throw new FileNotFoundException(path.toString());
 		}
-		this.source = new BufferedInputStream(Files.newInputStream(path, StandardOpenOption.READ));
+		source = new BufferedInputStream(Files.newInputStream(path, StandardOpenOption.READ));
 		this.path = path;
 		this.charset = charset;
 	}
@@ -67,9 +58,9 @@ public final class Input implements AutoCloseable {
 	}
 
 	public Input(String text, Path path) {
-		this.source = new ByteArrayInputStream(text.getBytes(StandardCharsets.UTF_8));
+		source = new ByteArrayInputStream(text.getBytes(StandardCharsets.UTF_8));
 		this.path = null;
-		this.charset = StandardCharsets.UTF_8;
+		charset = StandardCharsets.UTF_8;
 	}
 
 	public Charset getCharset() {
@@ -83,7 +74,7 @@ public final class Input implements AutoCloseable {
 	public Result<String> getCompleteText() {
 		try {
 			return Result.of(new String(source.readAllBytes(), charset));
-		} catch (IOException e) {
+		} catch (final IOException e) {
 			Logger.logError(e);
 			return Result.empty(e);
 		}
@@ -105,14 +96,15 @@ public final class Input implements AutoCloseable {
 		final byte[] bytes = new byte[InputHeader.MAX_HEADER_SIZE];
 		try {
 			try {
+				source.mark(InputHeader.MAX_HEADER_SIZE);
 				final int byteCount = source.read(bytes, 0, InputHeader.MAX_HEADER_SIZE);
 				return Result.of(new InputHeader(path, //
-						byteCount == InputHeader.MAX_HEADER_SIZE ? bytes : Arrays.copyOf(bytes, byteCount), //
-						charset));
+					byteCount == InputHeader.MAX_HEADER_SIZE ? bytes : Arrays.copyOf(bytes, byteCount), //
+					charset));
 			} finally {
 				source.reset();
 			}
-		} catch (IOException e) {
+		} catch (final IOException e) {
 			return Result.empty(e);
 		}
 	}
