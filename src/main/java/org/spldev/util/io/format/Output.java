@@ -40,9 +40,6 @@ public class Output implements AutoCloseable {
 	private final Path path;
 
 	public Output(Path path, Charset charset) throws IOException {
-		if (!Files.exists(path)) {
-			throw new FileNotFoundException(path.toString());
-		}
 		target = new BufferedOutputStream(Files.newOutputStream(path, //
 			StandardOpenOption.TRUNCATE_EXISTING, //
 			StandardOpenOption.CREATE, //
