@@ -87,14 +87,14 @@ public final class Logger {
 		return false;
 	}
 
-	public synchronized static boolean addOutLog(LogType... logTypes) {
+	public synchronized static boolean setOutLog(LogType... logTypes) {
 		if (!installed) {
 			return logs.add(new Log("system:out", System.out, logTypes));
 		}
 		return false;
 	}
 
-	public synchronized static boolean addErrLog(LogType... logTypes) {
+	public synchronized static boolean setErrLog(LogType... logTypes) {
 		if (!installed) {
 			return logs.add(new Log("system:err", System.err, logTypes));
 		}
