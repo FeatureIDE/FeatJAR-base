@@ -81,7 +81,8 @@ public class ExtensionLoader {
 		try {
 			final String file = ClassLoader.getSystemResource(pathName).getFile();
 			final String fileName = Paths.get(file).getFileName().toString();
-			return Objects.equals(fileName, "extensions.xml");
+			return fileName != null && fileName.matches("extensions(-.*)?[.]xml");
+//			return Objects.equals(fileName, "extensions" + ".xml");
 		} catch (final Exception e) {
 			Logger.logError(e);
 			return false;
