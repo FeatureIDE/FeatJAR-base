@@ -44,16 +44,16 @@ public class TreeDepthCounter implements TreeVisitor<Integer, Tree<?>> {
 	}
 
 	@Override
-	public VistorResult firstVisit(List<Tree<?>> path) {
+	public VisitorResult firstVisit(List<Tree<?>> path) {
 		final int depth = path.size();
 		if (maxDepth < depth) {
 			maxDepth = depth;
 		}
 		final Tree<?> node = TreeVisitor.getCurrentNode(path);
 		if ((terminalNode != null) && terminalNode.isInstance(node)) {
-			return VistorResult.SkipChildren;
+			return VisitorResult.SkipChildren;
 		} else {
-			return VistorResult.Continue;
+			return VisitorResult.Continue;
 		}
 	}
 

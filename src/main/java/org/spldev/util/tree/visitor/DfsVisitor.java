@@ -36,8 +36,8 @@ import org.spldev.util.tree.structure.*;
  */
 public interface DfsVisitor<R, T extends Tree<?>> extends TreeVisitor<R, T> {
 
-	default VistorResult visit(List<T> path) {
-		return VistorResult.Continue;
+	default VisitorResult visit(List<T> path) {
+		return VisitorResult.Continue;
 	}
 
 }

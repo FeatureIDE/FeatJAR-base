@@ -243,7 +243,7 @@ public final class Trees {
 				final StackEntry<T> entry = stack.getLast();
 				if (entry.remainingChildren == null) {
 					path.add(entry.node);
-					final VistorResult visitorResult = visitor.firstVisit(unmodifiablePath);
+					final VisitorResult visitorResult = visitor.firstVisit(unmodifiablePath);
 					switch (visitorResult) {
 					case Continue:
 						entry.remainingChildren = new LinkedList<>((Collection<? extends T>) entry.node.getChildren());
@@ -259,7 +259,7 @@ public final class Trees {
 						throw new IllegalStateException(String.valueOf(visitorResult));
 					}
 				} else {
-					final VistorResult visitorResult = visitor.visit(unmodifiablePath);
+					final VisitorResult visitorResult = visitor.visit(unmodifiablePath);
 					switch (visitorResult) {
 					case Continue:
 						break;
@@ -279,7 +279,7 @@ public final class Trees {
 				if (!entry.remainingChildren.isEmpty()) {
 					stack.addLast(new StackEntry<>(entry.remainingChildren.remove(0)));
 				} else {
-					final VistorResult visitorResult = visitor.lastVisit(unmodifiablePath);
+					final VisitorResult visitorResult = visitor.lastVisit(unmodifiablePath);
 					switch (visitorResult) {
 					case Continue:
 					case SkipChildren:
@@ -311,7 +311,7 @@ public final class Trees {
 				final T curNode = stack.getLast();
 				if (path.isEmpty() || (curNode != path.get(path.size() - 1))) {
 					path.add(curNode);
-					final VistorResult visitorResult = visitor.firstVisit(unmodifiablePath);
+					final VisitorResult visitorResult = visitor.firstVisit(unmodifiablePath);
 					switch (visitorResult) {
 					case Continue:
 						final Collection<? extends T> children = (Collection<? extends T>) curNode.getChildren();
@@ -328,7 +328,7 @@ public final class Trees {
 						throw new IllegalStateException(String.valueOf(visitorResult));
 					}
 				} else {
-					final VistorResult visitorResult = visitor.lastVisit(unmodifiablePath);
+					final VisitorResult visitorResult = visitor.lastVisit(unmodifiablePath);
 					switch (visitorResult) {
 					case Continue:
 					case SkipChildren:

@@ -39,16 +39,16 @@ public class TreePruner implements TreeVisitor<Void, Tree<?>> {
 	}
 
 	@Override
-	public VistorResult firstVisit(List<Tree<?>> path) {
+	public VisitorResult firstVisit(List<Tree<?>> path) {
 		try {
 			if (path.size() > depthLimit) {
 				final Tree<?> node = TreeVisitor.getCurrentNode(path);
 				node.setChildren(Collections.emptyList());
-				return VistorResult.SkipChildren;
+				return VisitorResult.SkipChildren;
 			}
-			return VistorResult.Continue;
+			return VisitorResult.Continue;
 		} catch (final Exception e) {
-			return VistorResult.SkipAll;
+			return VisitorResult.SkipAll;
 		}
 	}
 

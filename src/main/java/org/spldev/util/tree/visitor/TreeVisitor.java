@@ -36,7 +36,7 @@ import org.spldev.util.tree.structure.*;
  */
 public interface TreeVisitor<R, T extends Tree<?>> {
 
-	enum VistorResult {
+	enum VisitorResult {
 		Continue, SkipChildren, SkipAll, Fail
 	}
 
@@ -48,12 +48,12 @@ public interface TreeVisitor<R, T extends Tree<?>> {
 		return (path.size() > 1) ? path.get(path.size() - 2) : null;
 	}
 
-	default VistorResult firstVisit(List<T> path) {
-		return VistorResult.Continue;
+	default VisitorResult firstVisit(List<T> path) {
+		return VisitorResult.Continue;
 	}
 
-	default VistorResult lastVisit(List<T> path) {
-		return VistorResult.Continue;
+	default VisitorResult lastVisit(List<T> path) {
+		return VisitorResult.Continue;
 	}
 
 	default void reset() {

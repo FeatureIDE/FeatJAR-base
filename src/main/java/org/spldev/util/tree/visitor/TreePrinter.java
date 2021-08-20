@@ -33,6 +33,7 @@ public class TreePrinter implements TreeVisitor<String, Tree<?>> {
 
 	private StringBuilder treeStringBuilder = new StringBuilder();
 	private Predicate<Tree<?>> filter = null;
+	private Function<Tree<?>, String> toStringFunction = Object::toString;
 
 	@Override
 	public void reset() {
@@ -53,28 +54,28 @@ public class TreePrinter implements TreeVisitor<String, Tree<?>> {
 	}
 
 	@Override
-	public VistorResult firstVisit(List<Tree<?>> path) {
+	public VisitorResult firstVisit(List<Tree<?>> path) {
 		final Tree<?> currentNode = TreeVisitor.getCurrentNode(path);
 		if ((filter == null) || filter.test(currentNode)) {
 			try {
 				for (int i = 1; i < path.size(); i++) {
 					treeStringBuilder.append(indentation);
 				}
-				treeStringBuilder.append(currentNode);
+				treeStringBuilder.append(toStringFunction.apply(currentNode));
 				treeStringBuilder.append('\n');
 			} catch (final Exception e) {
-				return VistorResult.SkipAll;
+				return VisitorResult.SkipAll;
 			}
 		}
-		return VistorResult.Continue;
-	}
-
-	public Predicate<? extends Tree<?>> getFilter() {
-		return filter;
+		return VisitorResult.Continue;
 	}
 
 	public void setFilter(Predicate<Tree<?>> filter) {
 		this.filter = filter;
+	}
+
+	public void setToStringFunction(Function<Tree<?>, String> toStringFunction) {
+		this.toStringFunction = toStringFunction;
 	}
 
 }

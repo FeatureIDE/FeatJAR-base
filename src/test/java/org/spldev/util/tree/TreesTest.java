@@ -189,19 +189,19 @@ public class TreesTest {
 			}
 
 			@Override
-			public VistorResult firstVisit(List<SimpleTree<String>> path) {
-				assertEquals(VistorResult.Continue, TreeVisitor.super.firstVisit(path));
+			public VisitorResult firstVisit(List<SimpleTree<String>> path) {
+				assertEquals(VisitorResult.Continue, TreeVisitor.super.firstVisit(path));
 				actualCallOrder.add("first");
 				preOrderCollect.add(TreeVisitor.getCurrentNode(path));
-				return VistorResult.Continue;
+				return VisitorResult.Continue;
 			}
 
 			@Override
-			public VistorResult lastVisit(List<SimpleTree<String>> path) {
-				assertEquals(VistorResult.Continue, TreeVisitor.super.lastVisit(path));
+			public VisitorResult lastVisit(List<SimpleTree<String>> path) {
+				assertEquals(VisitorResult.Continue, TreeVisitor.super.lastVisit(path));
 				actualCallOrder.add("last");
 				postOrderCollect.add(TreeVisitor.getCurrentNode(path));
-				return VistorResult.Continue;
+				return VisitorResult.Continue;
 			}
 		});
 
@@ -212,14 +212,14 @@ public class TreesTest {
 
 		assertThrows(RuntimeException.class, () -> Trees.traverse(root1, new TreeVisitor<Void, SimpleTree<?>>() {
 			@Override
-			public VistorResult firstVisit(List<SimpleTree<?>> path) {
+			public VisitorResult firstVisit(List<SimpleTree<?>> path) {
 				throw new RuntimeException();
 			}
 		}));
 
 		assertThrows(RuntimeException.class, () -> Trees.traverse(root1, new TreeVisitor<Void, SimpleTree<?>>() {
 			@Override
-			public VistorResult lastVisit(List<SimpleTree<?>> path) {
+			public VisitorResult lastVisit(List<SimpleTree<?>> path) {
 				throw new RuntimeException();
 			}
 		}));
@@ -240,15 +240,15 @@ public class TreesTest {
 
 		assertFalse(Trees.traverse(root1, new TreeVisitor<Void, SimpleTree<?>>() {
 			@Override
-			public VistorResult firstVisit(List<SimpleTree<?>> path) {
-				return VistorResult.Fail;
+			public VisitorResult firstVisit(List<SimpleTree<?>> path) {
+				return VisitorResult.Fail;
 			}
 		}).isPresent());
 
 		assertFalse(Trees.traverse(root1, new TreeVisitor<Void, SimpleTree<?>>() {
 			@Override
-			public VistorResult lastVisit(List<SimpleTree<?>> path) {
-				return VistorResult.Fail;
+			public VisitorResult lastVisit(List<SimpleTree<?>> path) {
+				return VisitorResult.Fail;
 			}
 		}).isPresent());
 	}
@@ -283,27 +283,27 @@ public class TreesTest {
 			}
 
 			@Override
-			public VistorResult firstVisit(List<SimpleTree<String>> path) {
-				assertEquals(VistorResult.Continue, DfsVisitor.super.firstVisit(path));
+			public VisitorResult firstVisit(List<SimpleTree<String>> path) {
+				assertEquals(VisitorResult.Continue, DfsVisitor.super.firstVisit(path));
 				actualCallOrder.add("first");
 				preOrderCollect.add(TreeVisitor.getCurrentNode(path));
-				return VistorResult.Continue;
+				return VisitorResult.Continue;
 			}
 
 			@Override
-			public VistorResult visit(List<SimpleTree<String>> path) {
-				assertEquals(VistorResult.Continue, DfsVisitor.super.visit(path));
+			public VisitorResult visit(List<SimpleTree<String>> path) {
+				assertEquals(VisitorResult.Continue, DfsVisitor.super.visit(path));
 				actualCallOrder.add("visit");
 				innerCollect.add(TreeVisitor.getCurrentNode(path));
-				return VistorResult.Continue;
+				return VisitorResult.Continue;
 			}
 
 			@Override
-			public VistorResult lastVisit(List<SimpleTree<String>> path) {
-				assertEquals(VistorResult.Continue, DfsVisitor.super.lastVisit(path));
+			public VisitorResult lastVisit(List<SimpleTree<String>> path) {
+				assertEquals(VisitorResult.Continue, DfsVisitor.super.lastVisit(path));
 				actualCallOrder.add("last");
 				postOrderCollect.add(TreeVisitor.getCurrentNode(path));
-				return VistorResult.Continue;
+				return VisitorResult.Continue;
 			}
 		});
 
@@ -314,21 +314,21 @@ public class TreesTest {
 
 		assertThrows(RuntimeException.class, () -> Trees.traverse(root1, new DfsVisitor<Void, SimpleTree<?>>() {
 			@Override
-			public VistorResult firstVisit(List<SimpleTree<?>> path) {
+			public VisitorResult firstVisit(List<SimpleTree<?>> path) {
 				throw new RuntimeException();
 			}
 		}));
 
 		assertThrows(RuntimeException.class, () -> Trees.traverse(root1, new DfsVisitor<Void, SimpleTree<?>>() {
 			@Override
-			public VistorResult visit(List<SimpleTree<?>> path) {
+			public VisitorResult visit(List<SimpleTree<?>> path) {
 				throw new RuntimeException();
 			}
 		}));
 
 		assertThrows(RuntimeException.class, () -> Trees.traverse(root1, new DfsVisitor<Void, SimpleTree<?>>() {
 			@Override
-			public VistorResult lastVisit(List<SimpleTree<?>> path) {
+			public VisitorResult lastVisit(List<SimpleTree<?>> path) {
 				throw new RuntimeException();
 			}
 		}));
@@ -349,22 +349,22 @@ public class TreesTest {
 
 		assertFalse(Trees.traverse(root1, new DfsVisitor<Void, SimpleTree<?>>() {
 			@Override
-			public VistorResult firstVisit(List<SimpleTree<?>> path) {
-				return VistorResult.Fail;
+			public VisitorResult firstVisit(List<SimpleTree<?>> path) {
+				return VisitorResult.Fail;
 			}
 		}).isPresent());
 
 		assertFalse(Trees.traverse(root1, new DfsVisitor<Void, SimpleTree<?>>() {
 			@Override
-			public VistorResult visit(List<SimpleTree<?>> path) {
-				return VistorResult.Fail;
+			public VisitorResult visit(List<SimpleTree<?>> path) {
+				return VisitorResult.Fail;
 			}
 		}).isPresent());
 
 		assertFalse(Trees.traverse(root1, new DfsVisitor<Void, SimpleTree<?>>() {
 			@Override
-			public VistorResult lastVisit(List<SimpleTree<?>> path) {
-				return VistorResult.Fail;
+			public VisitorResult lastVisit(List<SimpleTree<?>> path) {
+				return VisitorResult.Fail;
 			}
 		}).isPresent());
 	}
