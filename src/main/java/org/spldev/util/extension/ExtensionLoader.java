@@ -79,10 +79,13 @@ public class ExtensionLoader {
 
 	private static boolean filterByFileName(String pathName) {
 		try {
-			final String file = ClassLoader.getSystemResource(pathName).getFile();
-			final String fileName = Paths.get(file).getFileName().toString();
-			return fileName != null && fileName.matches("extensions(-.*)?[.]xml");
-//			return Objects.equals(fileName, "extensions" + ".xml");
+			if (pathName != null) {
+				final Path path = Paths.get(pathName);
+				if (path != null) {
+					return path.getFileName().toString().matches("extensions(-.*)?[.]xml");
+				}
+			}
+			return false;
 		} catch (final Exception e) {
 			Logger.logError(e);
 			return false;
