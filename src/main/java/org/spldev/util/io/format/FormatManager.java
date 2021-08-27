@@ -63,7 +63,7 @@ public class FormatManager<T> extends ExtensionPoint<Format<T>> implements Forma
 
 	private List<Format<T>> getFormatList(final String fileExtension) {
 		return getExtensions().stream()
-			.filter(format -> format.supportsParse())
+			.filter(Format::supportsParse)
 			.filter(format -> fileExtension.equals(format.getFileExtension()))
 			.collect(Collectors.toList());
 	}

@@ -26,6 +26,8 @@ import java.util.*;
 import java.util.function.*;
 import java.util.stream.*;
 
+import org.spldev.util.Problem.*;
+
 /**
  * Similar to {@link Optional} wraps an object or {@code null} that is the
  * return value of some function. Can also store any {@link problems} that
@@ -170,6 +172,22 @@ public class Result<T> {
 		} else {
 			throw errorHandler.apply(problems);
 		}
+	}
+
+	public T orElseThrow() throws Exception {
+		if (object != null) {
+			return object;
+		} else {
+			throw problems.stream() //
+				.filter(p -> p.getSeverity() == Severity.ERROR) //
+				.findFirst() //
+				.map(this::getError) //
+				.orElseGet(RuntimeException::new);
+		}
+	}
+
+	private Exception getError(Problem p) {
+		return p.getError().orElseGet(() -> p.getMessage().map(RuntimeException::new).orElseGet(RuntimeException::new));
 	}
 
 	public void ifPresent(Consumer<T> resultHandler) {

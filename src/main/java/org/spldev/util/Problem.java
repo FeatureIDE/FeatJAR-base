@@ -37,7 +37,7 @@ public class Problem {
 
 		private final int level;
 
-		private Severity(int level) {
+		Severity(int level) {
 			this.level = level;
 		}
 
@@ -50,7 +50,7 @@ public class Problem {
 
 	protected final String message;
 
-	protected final Throwable exception;
+	protected final Exception exception;
 
 	public Problem(Exception exception) {
 		this(exception.getMessage(), Severity.ERROR, exception);
@@ -79,8 +79,12 @@ public class Problem {
 		return Optional.ofNullable(message);
 	}
 
-	public Optional<Throwable> getError() {
+	public Optional<Exception> getError() {
 		return Optional.ofNullable(exception);
+	}
+
+	public boolean hasError() {
+		return exception != null;
 	}
 
 }
