@@ -67,4 +67,9 @@ public class Pair<A, B> {
 		return Objects.equals(key, other.key) && Objects.equals(value, other.value);
 	}
 
+	@Override
+	public String toString() {
+		return "Pair [" + key + " -> " + value + "]";
+	}
+
 }
