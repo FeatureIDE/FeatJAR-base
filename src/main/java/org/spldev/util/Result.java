@@ -179,16 +179,16 @@ public class Result<T> {
 			return object;
 		} else {
 			throw problems.stream() //
-					.filter(p -> p.getSeverity() == Severity.ERROR) //
-					.findFirst() //
-					.map(this::getError) //
-					.orElseGet(RuntimeException::new);
+				.filter(p -> p.getSeverity() == Severity.ERROR) //
+				.findFirst() //
+				.map(this::getError) //
+				.orElseGet(RuntimeException::new);
 		}
 	}
 
 	private RuntimeException getError(Problem p) {
 		return p.getError().map(RuntimeException::new)
-				.orElseGet(() -> p.getMessage().map(RuntimeException::new).orElseGet(RuntimeException::new));
+			.orElseGet(() -> p.getMessage().map(RuntimeException::new).orElseGet(RuntimeException::new));
 	}
 
 	public void ifPresent(Consumer<T> resultHandler) {

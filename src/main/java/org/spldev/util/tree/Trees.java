@@ -299,7 +299,7 @@ public final class Trees {
 	}
 
 	@SuppressWarnings("unchecked")
-	private static <T extends Tree<?>> void dfsPrePost(T node, TreeVisitor<?, T> visitor)
+	public static <T extends Tree<?>> void dfsPrePost(T node, TreeVisitor<?, T> visitor)
 		throws VisitorFailException {
 		if (node != null) {
 			final ArrayList<T> path = new ArrayList<>();

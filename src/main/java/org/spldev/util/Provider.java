@@ -53,6 +53,11 @@ public interface Provider<T> extends BiFunction<CacheHolder, InternalMonitor, Re
 		return cache.get(identifier).flatMap(o -> Executor.run(function, o, monitor));
 	}
 
+	static <T, R> Result<R> convert(CacheHolder cache, Provider<T> provider, MonitorableFunction<T, R> function,
+		InternalMonitor monitor) {
+		return cache.get(provider).flatMap(o -> Executor.run(function, o, monitor));
+	}
+
 	static <R> Result<R> load(Path path, FormatSupplier<R> formatSupplier, FactorySupplier<R> factorySupplier) {
 		return FileHandler.load(path, formatSupplier, factorySupplier);
 	}
