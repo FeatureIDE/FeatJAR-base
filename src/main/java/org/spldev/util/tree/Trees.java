@@ -83,8 +83,8 @@ public final class Trees {
 		return postOrderStream(node).collect(Collectors.toList());
 	}
 
-	public static <T extends Tree<T>> Stream<T> paralellStream(T node) {
-		return StreamSupport.stream(new ParalellSpliterator<>(node), true);
+	public static <T extends Tree<T>> Stream<T> parallelStream(T node) {
+		return StreamSupport.stream(new ParallelSpliterator<>(node), true);
 	}
 
 	public static <T extends X, X extends Tree<X>> Stream<X> preOrderStream(T node) {
@@ -95,11 +95,11 @@ public final class Trees {
 		return StreamSupport.stream(new PostOrderSpliterator<>(node), false);
 	}
 
-	private static class ParalellSpliterator<T extends Tree<T>> implements Spliterator<T> {
+	private static class ParallelSpliterator<T extends Tree<T>> implements Spliterator<T> {
 
 		final LinkedList<T> stack = new LinkedList<>();
 
-		public ParalellSpliterator(T node) {
+		public ParallelSpliterator(T node) {
 			if (node != null) {
 				stack.push(node);
 			}
@@ -130,7 +130,7 @@ public final class Trees {
 		@Override
 		public Spliterator<T> trySplit() {
 			if (!stack.isEmpty()) {
-				return new ParalellSpliterator<>(stack.pop());
+				return new ParallelSpliterator<>(stack.pop());
 			} else {
 				return null;
 			}

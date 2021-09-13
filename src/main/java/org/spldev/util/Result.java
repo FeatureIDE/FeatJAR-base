@@ -87,7 +87,7 @@ public class Result<T> {
 	}
 
 	/**
-	 * Maps the object in this result to another object using a mapper funtion that
+	 * Maps the object in this result to another object using a mapper function that
 	 * also returns an {@link Result}.
 	 * 
 	 * @param <R>    The type of the mapped object.
@@ -101,7 +101,7 @@ public class Result<T> {
 	}
 
 	/**
-	 * Maps the object in this result to another object using a mapper funtion.
+	 * Maps the object in this result to another object using a mapper function.
 	 * 
 	 * @param <R>    The type of the mapped object.
 	 * @param mapper the mapper function.

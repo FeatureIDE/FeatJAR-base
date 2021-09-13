@@ -38,7 +38,7 @@ public class TreesTest {
 
 	@BeforeEach
 	public void setUp() {
-		emptyRoot = new SimpleTree<>("EmpytRoot");
+		emptyRoot = new SimpleTree<>("EmptyRoot");
 		root1 = new SimpleTree<>("Root");
 		SimpleTree<String> a = new SimpleTree<>("A");
 		SimpleTree<String> b = new SimpleTree<>("B");

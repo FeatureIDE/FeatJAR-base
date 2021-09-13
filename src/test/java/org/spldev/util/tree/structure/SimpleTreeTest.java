@@ -36,7 +36,7 @@ public class SimpleTreeTest {
 
 	@BeforeEach
 	public void setUp() {
-		emptyRoot = new SimpleTree<>("EmpytRoot");
+		emptyRoot = new SimpleTree<>("EmptyRoot");
 		root = new SimpleTree<>("Root");
 		childA = new SimpleTree<>("A");
 		childB = new SimpleTree<>("B");
@@ -125,7 +125,7 @@ public class SimpleTreeTest {
 	}
 
 	@Test
-	public void modifyChildrenIllegaly() {
+	public void modifyChildrenIllegally() {
 		assertThrows(UnsupportedOperationException.class, () -> {
 			emptyRoot.getChildren().add(null);
 		});
@@ -143,7 +143,7 @@ public class SimpleTreeTest {
 	}
 
 	@Test
-	public void removeChildrenIllegaly() {
+	public void removeChildrenIllegally() {
 		assertThrows(NullPointerException.class, () -> {
 			emptyRoot.setChildren(null);
 		});

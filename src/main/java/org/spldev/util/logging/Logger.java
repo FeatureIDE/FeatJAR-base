@@ -183,40 +183,40 @@ public final class Logger {
 	}
 
 	private synchronized static void println(String message, LogType logType) {
-		final String formatedMessage = formatMessage(message);
+		final String formattedMessage = formatMessage(message);
 		if (installed) {
 			for (final Log log : logs) {
 				if (log.enabledLogTypes.contains(logType)) {
-					log.out.println(formatedMessage);
+					log.out.println(formattedMessage);
 				}
 			}
 		} else {
 			switch (logType) {
 			case ERROR:
-				System.err.println(formatedMessage);
+				System.err.println(formattedMessage);
 				break;
 			case DEBUG:
 				break;
 			case INFO:
 			case PROGRESS:
 			default:
-				System.out.println(formatedMessage);
+				System.out.println(formattedMessage);
 				break;
 			}
 		}
 	}
 
 	private synchronized static void println(Throwable error) {
-		final String formatedMessage = formatMessage(error.getMessage());
+		final String formattedMessage = formatMessage(error.getMessage());
 		if (installed) {
 			for (final Log log : logs) {
 				if (log.enabledLogTypes.contains(LogType.ERROR)) {
-					log.out.println(formatedMessage);
+					log.out.println(formattedMessage);
 					error.printStackTrace(log.out);
 				}
 			}
 		} else {
-			System.err.println(formatedMessage);
+			System.err.println(formattedMessage);
 			error.printStackTrace(System.err);
 		}
 	}
