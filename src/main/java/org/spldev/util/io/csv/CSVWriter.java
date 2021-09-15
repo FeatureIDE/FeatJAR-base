@@ -25,6 +25,9 @@ package org.spldev.util.io.csv;
 import java.io.*;
 import java.nio.charset.*;
 import java.nio.file.*;
+import java.text.DecimalFormat;
+import java.text.DecimalFormatSymbols;
+import java.text.NumberFormat;
 import java.util.*;
 
 /**
@@ -124,8 +127,27 @@ public class CSVWriter {
 		values.add(header != null ? new ArrayList<>(header.size()) : new ArrayList<>());
 	}
 
-	public void addValue(Object o) {
-		values.get(values.size() - 1).add(String.valueOf(o));
+	public void addValue(Object value) {
+		values.get(values.size() - 1).add(String.valueOf(value));
+	}
+
+	/**
+	 * Formats float values manually to avoid scientific notation and non-English punctuation.
+	 */
+	public void addValue(float value) {
+		addValue(new DecimalFormat("0", DecimalFormatSymbols.getInstance(Locale.ENGLISH)).format(value));
+	}
+
+	public void addValue(double value) {
+		addValue(new DecimalFormat("0", DecimalFormatSymbols.getInstance(Locale.ENGLISH)).format(value));
+	}
+
+	public void addValue(Float value) {
+		addValue(value.floatValue());
+	}
+
+	public void addValue(Double value) {
+		addValue(value.doubleValue());
 	}
 
 	public void flush() {
