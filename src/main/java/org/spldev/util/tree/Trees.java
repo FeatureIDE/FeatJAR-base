@@ -46,8 +46,7 @@ public final class Trees {
 	}
 
 	/**
-	 * Traverses the tree starting from the given node using a depth-first
-	 * search.
+	 * Traverses the tree starting from the given node using a depth-first search.
 	 * 
 	 * @param <T>     the type of the Tree
 	 * @param <R>     the return type of the TreeVisitor

@@ -28,15 +28,16 @@ import org.spldev.util.*;
 import org.spldev.util.job.*;
 
 /**
- * A cache that memoizes arbitrary objects (e.g., transformed formulas and analysis results).
+ * A cache that memoizes arbitrary objects (e.g., transformed formulas and
+ * analysis results).
  *
  * @author Sebastian Krieter
  */
 public class Cache {
 	/**
 	 * The actual cache. Maps an identifier and a key object to same value object.
-	 * The identifier specifies the kind of cached content (e.g., which analysis) and the
-	 * key object additional parameters (e.g., which feature model).
+	 * The identifier specifies the kind of cached content (e.g., which analysis)
+	 * and the key object additional parameters (e.g., which feature model).
 	 */
 	private final HashMap<Identifier<?>, Map<Object, Object>> map = new HashMap<>();
 

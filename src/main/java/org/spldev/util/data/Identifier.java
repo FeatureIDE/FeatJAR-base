@@ -23,8 +23,10 @@
 package org.spldev.util.data;
 
 /**
- * Serves as a unique identifier for a provided object ({@link org.spldev.util.Provider}) in a {@link Cache}.
- * Is only used for its unique reference, therefore has no attributes.
+ * Serves as a unique identifier for a provided object
+ * ({@link org.spldev.util.Provider}) in a {@link Cache}. Is only used for its
+ * unique reference, therefore has no attributes.
+ * 
  * @param <T> the type of the provided object
  */
 public class Identifier<T> {

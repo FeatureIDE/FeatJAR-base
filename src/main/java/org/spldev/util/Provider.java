@@ -31,8 +31,10 @@ import org.spldev.util.io.format.*;
 import org.spldev.util.job.*;
 
 /**
- * A function that derives objects from feature models and formulas, taking into account a {@link Cache} and {@link InternalMonitor}.
- * When the given {@link Cache} already holds the requested object, returns the cached object instead.
+ * A function that derives objects from feature models and formulas, taking into
+ * account a {@link Cache} and {@link InternalMonitor}. When the given
+ * {@link Cache} already holds the requested object, returns the cached object
+ * instead.
  *
  * @param <T> The type of the element.
  *
@@ -49,12 +51,12 @@ public interface Provider<T> extends BiFunction<Cache, InternalMonitor, Result<T
 	}
 
 	static <T, R> Result<R> convert(Cache cache, Identifier<T> identifier, MonitorableFunction<T, R> function,
-                                    InternalMonitor monitor) {
+		InternalMonitor monitor) {
 		return cache.get(identifier).flatMap(o -> Executor.run(function, o, monitor));
 	}
 
 	static <T, R> Result<R> convert(Cache cache, Provider<T> provider, MonitorableFunction<T, R> function,
-                                    InternalMonitor monitor) {
+		InternalMonitor monitor) {
 		return cache.get(provider).flatMap(o -> Executor.run(function, o, monitor));
 	}
 

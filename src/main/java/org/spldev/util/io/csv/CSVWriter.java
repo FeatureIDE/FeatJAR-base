@@ -23,12 +23,12 @@
 package org.spldev.util.io.csv;
 
 import java.io.*;
+import java.math.*;
 import java.nio.charset.*;
 import java.nio.file.*;
-import java.text.DecimalFormat;
-import java.text.DecimalFormatSymbols;
-import java.text.NumberFormat;
 import java.util.*;
+
+import org.spldev.util.logging.*;
 
 /**
  * Writer for CSV files.
@@ -132,22 +132,27 @@ public class CSVWriter {
 	}
 
 	/**
-	 * Formats float values manually to avoid scientific notation and non-English punctuation.
+	 * Formats float values manually to avoid scientific notation and non-English
+	 * punctuation.
 	 */
+	public void addValue(BigDecimal value) {
+		addValue(value != null ? value.toPlainString() : "null");
+	}
+
 	public void addValue(float value) {
-		addValue(new DecimalFormat("0", DecimalFormatSymbols.getInstance(Locale.ENGLISH)).format(value));
+		addValue(new BigDecimal(value));
 	}
 
 	public void addValue(double value) {
-		addValue(new DecimalFormat("0", DecimalFormatSymbols.getInstance(Locale.ENGLISH)).format(value));
+		addValue(new BigDecimal(value));
 	}
 
 	public void addValue(Float value) {
-		addValue(value.floatValue());
+		addValue(value);
 	}
 
 	public void addValue(Double value) {
-		addValue(value.doubleValue());
+		addValue(value);
 	}
 
 	public void flush() {
@@ -171,7 +176,7 @@ public class CSVWriter {
 				}
 				values.clear();
 			} catch (final IOException e) {
-				e.printStackTrace();
+				Logger.logError(e);
 			}
 		}
 	}
