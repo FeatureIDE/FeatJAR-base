@@ -242,30 +242,30 @@ public class FileHandler<T> {
 	}
 
 	private static <T> Result<T> parse(//
-		Input in, //
+		Input input, //
 		FormatSupplier<T> formatSupplier, //
 		Supplier<T> factory //
 	) {
-		return in.getInputHeader().flatMap(h -> formatSupplier.getFormat(h)) //
-			.flatMap(fo -> parse(in, fo, factory));
+		return input.getInputHeader().flatMap(formatSupplier::getFormat) //
+			.flatMap(format -> parse(input, format, factory));
 	}
 
 	private static <T> Result<T> parse(//
-		Input in, //
+		Input input, //
 		FormatSupplier<T> formatSupplier //
 	) {
-		return in.getInputHeader().flatMap(h -> formatSupplier.getFormat(h)) //
-			.flatMap(fo -> parse(in, fo));
+		return input.getInputHeader().flatMap(formatSupplier::getFormat) //
+			.flatMap(format -> parse(input, format));
 	}
 
 	private static <T> Result<T> parse(//
-		Input in, //
+		Input input, //
 		FormatSupplier<T> formatSupplier, //
 		FactorySupplier<T> factorySupplier //
 	) {
-		return in.getInputHeader().flatMap(h -> formatSupplier.getFormat(h)) //
-			.flatMap(fo -> factorySupplier.getFactory(in.getPath(), fo) //
-				.flatMap(fa -> parse(in, fo, fa)));
+		return input.getInputHeader().flatMap(formatSupplier::getFormat) //
+			.flatMap(format -> factorySupplier.getFactory(input.getPath(), format) //
+				.flatMap(factory -> parse(input, format, factory)));
 	}
 
 	public static <T> void save(T object, Path path, Format<T> format) throws IOException {

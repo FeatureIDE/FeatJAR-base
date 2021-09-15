@@ -80,12 +80,12 @@ public final class Input implements AutoCloseable {
 		}
 	}
 
-	public Stream<String> getLines() {
-		return new BufferedReader(new InputStreamReader(source, charset)).lines();
-	}
-
 	public BufferedReader getReader() {
 		return new BufferedReader(new InputStreamReader(source, charset));
+	}
+
+	public Stream<String> getLines() {
+		return getReader().lines();
 	}
 
 	public InputStream getInputStream() {

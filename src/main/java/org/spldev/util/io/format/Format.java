@@ -57,8 +57,8 @@ public interface Format<T> extends Extension {
 	}
 
 	/**
-	 * Writes the information of an object to a string. (Which information are
-	 * considered is specified by the implementing class).
+	 * Writes the information of an object to a string. Which information is
+	 * considered is specified by the implementing class.
 	 *
 	 * @param object the object to get the information from.
 	 * @return A string representing the object in this format.

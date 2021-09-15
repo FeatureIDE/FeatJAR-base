@@ -36,7 +36,7 @@ public class InputHeader {
 	/**
 	 * Maximum number of bytes in the header.
 	 */
-	public static final int MAX_HEADER_SIZE = 0x00100000;
+	public static final int MAX_HEADER_SIZE = 0x00100000; // 1 MiB
 
 	private final byte[] header;
 
@@ -67,7 +67,7 @@ public class InputHeader {
 	}
 
 	public Stream<String> getLines() {
-		return new String(header, charset).lines();
+		return getText().lines();
 	}
 
 }
