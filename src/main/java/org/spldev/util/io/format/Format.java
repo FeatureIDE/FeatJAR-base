@@ -30,7 +30,7 @@ import org.spldev.util.extension.*;
 
 /**
  * Interface for reading and writing data from and to arbitrary objects.
- *
+ * @param <T> type of read/written data
  * @author Sebastian Krieter
  */
 public interface Format<T> extends Extension {

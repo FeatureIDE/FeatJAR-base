@@ -28,6 +28,7 @@ package org.spldev.util.data;
  * @param <T> class of the value
  *
  * @author Sebastian Krieter
+ * @deprecated is this used anywhere?
  */
 public class KeyValuePair<T> extends Pair<Identifier<T>, T> {
 

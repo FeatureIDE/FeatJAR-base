@@ -46,7 +46,7 @@ public final class Trees {
 	}
 
 	/**
-	 * Traverses the tree starting from the given node in using a depth-first
+	 * Traverses the tree starting from the given node using a depth-first
 	 * search.
 	 * 
 	 * @param <T>     the type of the Tree

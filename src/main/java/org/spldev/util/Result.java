@@ -29,8 +29,8 @@ import java.util.stream.*;
 import org.spldev.util.Problem.*;
 
 /**
- * Similar to {@link Optional} wraps an object or {@code null} that is the
- * return value of some function. Can also store any {@link problems} that
+ * Similar to {@link Optional}, this wraps an object or {@code null} that is the
+ * return value of some function. Can also store any {@link Problem} that
  * occurred during execution of the function.
  * 
  * @author Sebastian Krieter

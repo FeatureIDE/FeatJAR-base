@@ -25,8 +25,8 @@ package org.spldev.util;
 import java.util.*;
 
 /**
- * Wraps an arbitrary problem when creating/transforming and object. Can be
- * stored in a {@link Result result wrapper}.
+ * Wraps an arbitrary problem when creating/transforming an object. Can be
+ * stored in a {@link Result}.
  *
  * @author Sebastian Krieter
  */

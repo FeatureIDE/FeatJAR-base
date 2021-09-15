@@ -31,6 +31,7 @@ import org.spldev.util.*;
  * Key-Value map for storing arbitrary data.
  *
  * @author Sebastian Krieter
+ * @deprecated is this used anywhere?
  */
 public class KeyValueMap {
 

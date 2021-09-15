@@ -31,8 +31,8 @@ import org.spldev.util.io.format.*;
 import org.spldev.util.job.*;
 
 /**
- * Abstract creator to derive an element from a {@link Cache feature
- * model}.
+ * A function that derives objects from feature models and formulas, taking into account a {@link Cache} and {@link InternalMonitor}.
+ * When the given {@link Cache} already holds the requested object, returns the cached object instead.
  *
  * @param <T> The type of the element.
  *

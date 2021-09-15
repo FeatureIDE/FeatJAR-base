@@ -22,6 +22,9 @@
  */
 package org.spldev.util.logging;
 
+/**
+ * Prepends a log message with other information (e.g., timestamps).
+ */
 @FunctionalInterface
 public interface Formatter {
 

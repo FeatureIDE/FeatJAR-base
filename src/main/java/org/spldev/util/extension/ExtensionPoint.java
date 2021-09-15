@@ -28,7 +28,7 @@ import java.util.concurrent.*;
 import org.spldev.util.*;
 
 /**
- * Manages all extensions of this extension point.
+ * An extension point can be implemented by an {@link Extension}.
  *
  * @author Sebastian Krieter
  */

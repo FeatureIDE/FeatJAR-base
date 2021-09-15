@@ -23,7 +23,8 @@
 package org.spldev.util.extension;
 
 /**
- * An extension containing a unique ID and a method for initialization
+ * An extension implements an {@link ExtensionPoint}.
+ * It contains a unique ID and a method for initialization.
  *
  * @author Sebastian Krieter
  */

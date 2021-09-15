@@ -35,6 +35,11 @@ import javax.xml.parsers.*;
 import org.spldev.util.logging.*;
 import org.w3c.dom.*;
 
+/**
+ * Initializes and loads extensions.
+ *
+ * @author Sebastian Krieter
+ */
 public class ExtensionLoader {
 
 	private static HashMap<String, List<String>> extensionMap;

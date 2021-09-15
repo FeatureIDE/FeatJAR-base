@@ -27,7 +27,7 @@ import java.util.*;
 import org.spldev.util.extension.*;
 
 /**
- * A function of FeatureIDE that can be accessed via the {@link CLI CLI}.
+ * A function of FeatureIDE that can be accessed via the {@link CLI}.
  *
  * @author Sebastian Krieter
  */
