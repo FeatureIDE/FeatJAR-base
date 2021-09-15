@@ -59,7 +59,7 @@ public final class Input implements AutoCloseable {
 
 	public Input(String text, Path path) {
 		source = new ByteArrayInputStream(text.getBytes(StandardCharsets.UTF_8));
-		this.path = null;
+		this.path = path;
 		charset = StandardCharsets.UTF_8;
 	}
 
