@@ -31,14 +31,14 @@ import org.spldev.util.io.format.*;
 import org.spldev.util.job.*;
 
 /**
- * Abstract creator to derive an element from a {@link CacheHolder feature
+ * Abstract creator to derive an element from a {@link Cache feature
  * model}.
  *
  * @param <T> The type of the element.
  *
  * @author Sebastian Krieter
  */
-public interface Provider<T> extends BiFunction<CacheHolder, InternalMonitor, Result<T>> {
+public interface Provider<T> extends BiFunction<Cache, InternalMonitor, Result<T>> {
 
 	Object defaultParameters = new Object();
 
@@ -48,13 +48,13 @@ public interface Provider<T> extends BiFunction<CacheHolder, InternalMonitor, Re
 		return defaultParameters;
 	}
 
-	static <T, R> Result<R> convert(CacheHolder cache, Identifier<T> identifier, MonitorableFunction<T, R> function,
-		InternalMonitor monitor) {
+	static <T, R> Result<R> convert(Cache cache, Identifier<T> identifier, MonitorableFunction<T, R> function,
+                                    InternalMonitor monitor) {
 		return cache.get(identifier).flatMap(o -> Executor.run(function, o, monitor));
 	}
 
-	static <T, R> Result<R> convert(CacheHolder cache, Provider<T> provider, MonitorableFunction<T, R> function,
-		InternalMonitor monitor) {
+	static <T, R> Result<R> convert(Cache cache, Provider<T> provider, MonitorableFunction<T, R> function,
+                                    InternalMonitor monitor) {
 		return cache.get(provider).flatMap(o -> Executor.run(function, o, monitor));
 	}
 
