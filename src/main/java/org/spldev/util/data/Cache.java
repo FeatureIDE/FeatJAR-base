@@ -92,19 +92,19 @@ public class Cache {
 		}
 	}
 
-	public <T> Result<T> set(Provider<T> builder) {
-		return set(builder, null);
+	public <T> Result<T> set(Provider<T> provider) {
+		return set(provider, null);
 	}
 
-	public <T> Result<T> set(Provider<T> builder, InternalMonitor monitor) {
+	public <T> Result<T> set(Provider<T> provider, InternalMonitor monitor) {
 		monitor = monitor != null ? monitor : new NullMonitor();
 		try {
-			final Map<Object, Object> cachedElements = getCachedElement(builder.getIdentifier());
+			final Map<Object, Object> cachedElements = getCachedElement(provider.getIdentifier());
 			synchronized (cachedElements) {
-				final Result<T> computedElement = computeElement(builder, monitor);
+				final Result<T> computedElement = computeElement(provider, monitor);
 				if (computedElement.isPresent()) {
 					final T element = computedElement.get();
-					cachedElements.put(builder.getParameters(), element);
+					cachedElements.put(provider.getParameters(), element);
 					return Result.of(element);
 				} else {
 					return computedElement;
@@ -127,23 +127,23 @@ public class Cache {
 		}
 	}
 
-	public <T> void reset(Provider<T> builder) {
-		reset(builder, null);
+	public <T> void reset(Provider<T> provider) {
+		reset(provider, null);
 	}
 
-	public <T> void reset(Provider<T> builder, InternalMonitor monitor) {
+	public <T> void reset(Provider<T> provider, InternalMonitor monitor) {
 		Map<Object, Object> cachedElement;
 		monitor = monitor != null ? monitor : new NullMonitor();
 		try {
 			synchronized (map) {
 				map.clear();
-				cachedElement = getCachedElement(builder.getIdentifier());
+				cachedElement = getCachedElement(provider.getIdentifier());
 			}
 			synchronized (cachedElement) {
-				final Result<T> computedElement = computeElement(builder, monitor);
+				final Result<T> computedElement = computeElement(provider, monitor);
 				if (computedElement.isPresent()) {
 					final T element = computedElement.get();
-					cachedElement.put(builder.getParameters(), element);
+					cachedElement.put(provider.getParameters(), element);
 				}
 			}
 		} finally {
@@ -172,9 +172,9 @@ public class Cache {
 		}
 	}
 
-	private <T> Result<T> computeElement(Provider<T> builder, InternalMonitor monitor) {
+	private <T> Result<T> computeElement(Provider<T> provider, InternalMonitor monitor) {
 		try {
-			return builder.apply(this, monitor);
+			return provider.apply(this, monitor);
 		} catch (final Exception e) {
 			return Result.empty(e);
 		}
