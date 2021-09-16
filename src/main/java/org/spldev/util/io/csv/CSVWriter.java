@@ -26,6 +26,7 @@ import java.io.*;
 import java.math.*;
 import java.nio.charset.*;
 import java.nio.file.*;
+import java.text.*;
 import java.util.*;
 
 import org.spldev.util.logging.*;
@@ -51,6 +52,11 @@ import org.spldev.util.logging.*;
  * @author Sebastian Krieter
  */
 public class CSVWriter {
+
+	private static final DecimalFormat df = new DecimalFormat("0", DecimalFormatSymbols.getInstance(Locale.ENGLISH));
+	static {
+		df.setMaximumFractionDigits(340);
+	}
 
 	private static final String NEWLINE = System.lineSeparator();
 	private static final String DEFAULT_SEPARATOR = ";";
@@ -135,24 +141,24 @@ public class CSVWriter {
 	 * Formats float values manually to avoid scientific notation and non-English
 	 * punctuation.
 	 */
-	public void addValue(BigDecimal value) {
-		addValue(value != null ? value.toPlainString() : "null");
-	}
-
 	public void addValue(float value) {
-		addValue(new BigDecimal(value));
+		addValue(df.format(value));
 	}
 
 	public void addValue(double value) {
-		addValue(new BigDecimal(value));
+		addValue(df.format(value));
 	}
 
 	public void addValue(Float value) {
-		addValue(value);
+		addValue(value.floatValue());
 	}
 
 	public void addValue(Double value) {
-		addValue(value);
+		addValue(value.doubleValue());
+	}
+
+	public void addValue(BigDecimal value) {
+		addValue(value.doubleValue());
 	}
 
 	public void flush() {
