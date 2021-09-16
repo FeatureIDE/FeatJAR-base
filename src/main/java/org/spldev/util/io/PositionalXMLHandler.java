@@ -30,8 +30,7 @@ import org.xml.sax.helpers.*;
 
 /**
  * This is an extension of a default xml reader, which saves the line numbers
- * via user data. Original code by:
- * http://eyalsch.wordpress.com/2010/11/30/xml-dom-2/
+ * via user data.
  *
  * @author Jens Meinicke
  * @author Sebastian Krieter
