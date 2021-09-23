@@ -30,12 +30,13 @@ import org.spldev.util.io.format.*;
 public abstract class BinaryFormat<T> implements Format<T> {
 
 	protected void writeBytes(OutputStream out, byte[] bytes) throws IOException {
-		writeInt(out, bytes.length);
 		out.write(bytes);
 	}
 
 	protected void writeString(OutputStream out, String string) throws IOException {
-		writeBytes(out, string.getBytes(StandardCharsets.UTF_8));
+		final byte[] bytes = string.getBytes(StandardCharsets.UTF_8);
+		writeInt(out, bytes.length);
+		writeBytes(out, bytes);
 	}
 
 	protected void writeInt(OutputStream out, int value) throws IOException {
