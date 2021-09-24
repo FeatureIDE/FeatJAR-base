@@ -39,6 +39,12 @@ public interface CLIFunction extends Extension {
 
 	void run(List<String> args);
 
-	String getHelp();
+	default String getDescription() {
+		return "";
+	}
+
+	default String getHelp() {
+		return "No help is available for this command.";
+	}
 
 }
