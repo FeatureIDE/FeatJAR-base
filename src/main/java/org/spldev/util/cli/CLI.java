@@ -35,18 +35,18 @@ import org.spldev.util.extension.*;
 public class CLI {
 
 	public static void main(String[] args) {
+		ExtensionLoader.load();
 		if (args.length == 0) {
-			printError("No operation specified!");
+			printError("No function specified. Please specify a function as the first argument.");
 			return;
 		}
-		ExtensionLoader.load();
 		final String functionName = args[0];
 
 		CLIFunctionManager.getInstance().getExtension(functionName)
 			.ifPresentOrElse(function -> {
 				runFunction(args, function);
 			}, problems -> {
-				printError("No function found with the name " + functionName);
+				printError("The function " + functionName + " could be found.");
 			});
 	}
 
@@ -61,14 +61,13 @@ public class CLI {
 		} catch (final IllegalArgumentException e) {
 			System.err.println(e.getMessage());
 			System.err.println(function.getHelp());
-			return;
 		}
 	}
 
 	private static void printHelp(PrintStream printStream) {
-		printStream.println("Following functions are available:");
+		printStream.println("The following functions are available:");
 		for (final CLIFunction availableFunction : CLIFunctionManager.getInstance().getExtensions()) {
-			printStream.println("\t" + availableFunction.getName());
+			printStream.printf("\t%-20s %s\n", availableFunction.getName(), availableFunction.getDescription());
 		}
 	}
 
