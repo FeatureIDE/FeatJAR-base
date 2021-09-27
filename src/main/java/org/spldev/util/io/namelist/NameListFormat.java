@@ -83,6 +83,7 @@ public class NameListFormat implements Format<List<NameListFormat.NameEntry>> {
 		int lineNumber = 0;
 		boolean pause = false;
 		for (final String modelName : lines) {
+			lineNumber++;
 			if (!modelName.trim().isEmpty()) {
 				if (!modelName.startsWith("\t")) {
 					if (modelName.startsWith(COMMENT)) {
@@ -94,7 +95,6 @@ public class NameListFormat implements Format<List<NameListFormat.NameEntry>> {
 					}
 				}
 			}
-			lineNumber++;
 		}
 		return Result.of(entries);
 	}
