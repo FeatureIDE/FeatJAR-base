@@ -38,7 +38,7 @@ import org.spldev.util.tree.visitor.TreeVisitor.*;
  */
 public final class Trees {
 
-	private static class VisitorFailException extends Exception {
+	public static class VisitorFailException extends Exception {
 		private static final long serialVersionUID = 1L;
 	}
 
@@ -382,7 +382,7 @@ public final class Trees {
 			return null;
 		}
 
-		final ArrayList<X> path = new ArrayList<>();
+		final ArrayList<T> path = new ArrayList<>();
 		final LinkedList<StackEntry<T>> stack = new LinkedList<>();
 		stack.push(new StackEntry<>(root));
 
@@ -390,7 +390,7 @@ public final class Trees {
 			final StackEntry<T> entry = stack.peek();
 			final T node = entry.node;
 			if (entry.remainingChildren == null) {
-				path.add((X) node.cloneNode());
+				path.add((T) node.cloneNode());
 				entry.remainingChildren = new LinkedList<>(node.getChildren());
 			}
 			if (!entry.remainingChildren.isEmpty()) {
@@ -398,14 +398,39 @@ public final class Trees {
 			} else {
 				final int childrenCount = node.getChildren().size();
 				if (childrenCount > 0) {
-					final List<X> subList = path.subList(path.size() - childrenCount, path.size());
+					final List<T> subList = path.subList(path.size() - childrenCount, path.size());
 					path.get(path.size() - (childrenCount + 1)).setChildren(subList);
 					subList.clear();
 				}
 				stack.pop();
 			}
 		}
-		return path.get(0);
+		return (X) path.get(0);
+	}
+
+	public static <X extends T, T extends Tree<T>> void sortTree(X root) {
+		sortTree(root, Comparator.comparing(T::toString));
+	}
+
+	public static <X extends T, T extends Tree<T>> void sortTree(X root, Comparator<T> comparator) {
+		final LinkedList<StackEntry<T>> stack = new LinkedList<>();
+		stack.push(new StackEntry<>(root));
+
+		while (!stack.isEmpty()) {
+			final StackEntry<T> entry = stack.peek();
+			final T node = entry.node;
+			if (entry.remainingChildren == null) {
+				entry.remainingChildren = new LinkedList<>(node.getChildren());
+			}
+			if (!entry.remainingChildren.isEmpty()) {
+				stack.push(new StackEntry<>(entry.remainingChildren.remove(0)));
+			} else {
+				final ArrayList<T> children = new ArrayList<>(node.getChildren());
+				children.sort(comparator);
+				node.setChildren(children);
+				stack.pop();
+			}
+		}
 	}
 
 }

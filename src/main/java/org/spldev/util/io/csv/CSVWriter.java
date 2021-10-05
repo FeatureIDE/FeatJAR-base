@@ -150,11 +150,11 @@ public class CSVWriter {
 	}
 
 	public void addValue(Float value) {
-		addValue(value.floatValue());
+		addValue(value);
 	}
 
 	public void addValue(Double value) {
-		addValue(value.doubleValue());
+		addValue(value);
 	}
 
 	public void addValue(BigDecimal value) {
