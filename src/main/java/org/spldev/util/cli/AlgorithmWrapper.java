@@ -20,21 +20,44 @@
  * See <https://github.com/skrieter/utils> for further information.
  * -----------------------------------------------------------------------------
  */
-package org.spldev.util.os;
+package org.spldev.util.cli;
 
-public final class OSType {
+import java.util.*;
 
-	public static final boolean IS_WINDOWS;
-	public static final boolean IS_MAC;
-	public static final boolean IS_UNIX;
-	static {
-		final String OS = System.getProperty("os.name").toLowerCase();
-		IS_WINDOWS = OS.matches(".*(win).*");
-		IS_MAC = OS.matches(".*(mac).*");
-		IS_UNIX = OS.matches(".*(nix|nux|aix).*");
+import org.spldev.util.*;
+import org.spldev.util.extension.*;
+
+/**
+ * Interface for an algorithm to run via a {@link CLIFunction}.
+ *
+ * @author Sebastian Krieter
+ */
+public abstract class AlgorithmWrapper<T> implements Extension {
+
+	public Result<T> parseArguments(List<String> args) {
+		final T algorithm = createAlgorithm();
+		try {
+			for (final ListIterator<String> iterator = args.listIterator(); iterator.hasNext();) {
+				final String arg = iterator.next();
+				if (!parseArgument(algorithm, arg, iterator)) {
+					throw new IllegalArgumentException("Unknown argument " + arg);
+				}
+			}
+			return Result.of(algorithm);
+		} catch (final Exception e) {
+			return Result.empty(e);
+		}
 	}
 
-	private OSType() {
+	protected abstract T createAlgorithm();
+
+	protected boolean parseArgument(T algorithm, String arg, ListIterator<String> iterator)
+		throws IllegalArgumentException {
+		return false;
 	}
+
+	public abstract String getName();
+
+	public abstract String getHelp();
 
 }

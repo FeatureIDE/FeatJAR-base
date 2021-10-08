@@ -24,6 +24,7 @@ package org.spldev.util.cli;
 
 import java.io.*;
 import java.util.*;
+import java.util.concurrent.*;
 
 import org.spldev.util.extension.*;
 
@@ -77,6 +78,22 @@ public class CLI {
 		} else {
 			throw new IllegalArgumentException("No value specified for " + arg);
 		}
+	}
+
+	public static <T> T runInThread(Callable<T> method, long timeout) {
+		final ExecutorService executor = Executors.newSingleThreadExecutor();
+		final Future<T> future = executor.submit(method);
+		try {
+			return timeout == 0 ? future.get() : future.get(timeout, TimeUnit.MILLISECONDS);
+		} catch (final TimeoutException e) {
+			System.exit(0);
+		} catch (ExecutionException | InterruptedException e) {
+			e.printStackTrace();
+			System.exit(0);
+		} finally {
+			executor.shutdownNow();
+		}
+		return null;
 	}
 
 }

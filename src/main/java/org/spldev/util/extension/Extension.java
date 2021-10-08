@@ -33,7 +33,9 @@ public interface Extension {
 	/**
 	 * @return the unique ID of this extension.
 	 */
-	String getId();
+	default String getId() {
+		return getClass().getCanonicalName();
+	}
 
 	/**
 	 * Is called, when the extension is loaded for the first time by an
