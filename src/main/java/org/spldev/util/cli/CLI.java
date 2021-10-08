@@ -43,10 +43,12 @@ public class CLI {
 		}
 		final String functionName = args[0];
 
-		CLIFunctionManager.getInstance().getExtension(functionName)
+		CLIFunctionManager.getInstance().getExtensions().stream()
+			.filter(e -> Objects.equals(functionName, e.getName()))
+			.findFirst()
 			.ifPresentOrElse(function -> {
 				runFunction(args, function);
-			}, problems -> {
+			}, () -> {
 				printError("The function " + functionName + " could be found.");
 			});
 	}
