@@ -47,7 +47,7 @@ public class CLI {
 			.ifPresentOrElse(function -> {
 				runFunction(args, function);
 			}, problems -> {
-				printError("The function " + functionName + " could be found.");
+				printError("The function " + functionName + " could not be found.");
 			});
 	}
 
