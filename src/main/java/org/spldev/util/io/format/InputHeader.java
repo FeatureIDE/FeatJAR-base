@@ -23,7 +23,6 @@
 package org.spldev.util.io.format;
 
 import java.nio.charset.*;
-import java.nio.file.*;
 import java.util.stream.*;
 
 /**
@@ -42,10 +41,10 @@ public class InputHeader {
 
 	private final Charset charset;
 
-	private final Path path;
+	private final String fileExtension;
 
-	public InputHeader(Path path, byte[] header, Charset charset) {
-		this.path = path;
+	public InputHeader(String fileExtension, byte[] header, Charset charset) {
+		this.fileExtension = fileExtension;
 		this.header = header;
 		this.charset = charset;
 	}
@@ -54,8 +53,8 @@ public class InputHeader {
 		return charset;
 	}
 
-	public Path getPath() {
-		return path;
+	public String getFileExtension() {
+		return fileExtension;
 	}
 
 	public byte[] getBytes() {

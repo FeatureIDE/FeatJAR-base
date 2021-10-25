@@ -78,11 +78,6 @@ public class SerializableObjectFormat<T> implements Format<T> {
 
 	@Override
 	public boolean supportsSerialize() {
-		return false;
-	}
-
-	@Override
-	public boolean supportsWrite() {
 		return true;
 	}
 

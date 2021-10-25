@@ -29,6 +29,7 @@ import java.util.*;
 import java.util.stream.*;
 
 import org.spldev.util.*;
+import org.spldev.util.io.*;
 import org.spldev.util.logging.*;
 
 /**
@@ -42,33 +43,32 @@ public final class Input implements AutoCloseable {
 
 	private final Charset charset;
 
-	private final Path path;
+	private final String fileExtension;
+
+	public Input(InputStream source, Charset charset, String fileExtension) {
+		this.source = source;
+		this.charset = charset;
+		this.fileExtension = fileExtension;
+	}
 
 	public Input(Path path, Charset charset) throws IOException {
-		if (!Files.exists(path)) {
-			throw new FileNotFoundException(path.toString());
-		}
-		source = new BufferedInputStream(Files.newInputStream(path, StandardOpenOption.READ));
-		this.path = path;
-		this.charset = charset;
+		this(Files.newInputStream(path, StandardOpenOption.READ), charset, FileHandler.getFileExtension(path));
+	}
+
+	public Input(String text, Charset charset, String fileExtension) {
+		this(new ByteArrayInputStream(text.getBytes(charset)), charset, fileExtension);
+	}
+
+	public Input(String text, String fileExtension) {
+		this(text, StandardCharsets.UTF_8, fileExtension);
 	}
 
 	public Input(String text) {
-		this(text, null);
-	}
-
-	public Input(String text, Path path) {
-		source = new ByteArrayInputStream(text.getBytes(StandardCharsets.UTF_8));
-		this.path = path;
-		charset = StandardCharsets.UTF_8;
+		this(text, StandardCharsets.UTF_8, null);
 	}
 
 	public Charset getCharset() {
 		return charset;
-	}
-
-	public Path getPath() {
-		return path;
 	}
 
 	public Result<String> getCompleteText() {
@@ -98,8 +98,10 @@ public final class Input implements AutoCloseable {
 			try {
 				source.mark(InputHeader.MAX_HEADER_SIZE);
 				final int byteCount = source.read(bytes, 0, InputHeader.MAX_HEADER_SIZE);
-				return Result.of(new InputHeader(path, //
-					byteCount == InputHeader.MAX_HEADER_SIZE ? bytes : Arrays.copyOf(bytes, byteCount), //
+				return Result.of(new InputHeader(fileExtension, //
+					byteCount == InputHeader.MAX_HEADER_SIZE
+						? bytes
+						: Arrays.copyOf(bytes, byteCount), //
 					charset));
 			} finally {
 				source.reset();

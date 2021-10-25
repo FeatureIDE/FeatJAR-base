@@ -50,15 +50,14 @@ public class FormatManager<T> extends ExtensionPoint<Format<T>> implements Forma
 
 	@Override
 	public Result<Format<T>> getFormat(InputHeader inputHeader) {
-		final String fileExtension = FileHandler.getFileExtension(inputHeader.getPath());
 		final List<Format<T>> extensions = getExtensions();
 		return extensions.stream()
-			.filter(format -> fileExtension.equals(format.getFileExtension()))
+			.filter(format -> inputHeader.getFileExtension().equals(format.getFileExtension()))
 			.filter(format -> format.supportsContent(inputHeader))
 			.findFirst()
 			.map(Result::of)
-			.orElse(Result.empty(new NoSuchExtensionException("No suitable format found for file extension \"."
-				+ fileExtension + "\". Possible Formats: " + extensions)));
+			.orElseGet(() -> Result.empty(new NoSuchExtensionException("No suitable format found for file extension \"."
+				+ inputHeader.getFileExtension() + "\". Possible Formats: " + getExtensions())));
 	}
 
 	private List<Format<T>> getFormatList(final String fileExtension) {

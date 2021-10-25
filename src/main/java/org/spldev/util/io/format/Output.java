@@ -37,15 +37,16 @@ public class Output implements AutoCloseable {
 
 	private final Charset charset;
 
-	private final Path path;
+	public Output(OutputStream outStream, Charset charset) throws IOException {
+		target = new BufferedOutputStream(outStream);
+		this.charset = charset;
+	}
 
 	public Output(Path path, Charset charset) throws IOException {
-		target = new BufferedOutputStream(Files.newOutputStream(path, //
+		this(Files.newOutputStream(path, //
 			StandardOpenOption.TRUNCATE_EXISTING, //
 			StandardOpenOption.CREATE, //
-			StandardOpenOption.WRITE));
-		this.path = path;
-		this.charset = charset;
+			StandardOpenOption.WRITE), charset);
 	}
 
 	public void writeText(String text) throws IOException {
@@ -59,10 +60,6 @@ public class Output implements AutoCloseable {
 
 	public Charset getCharset() {
 		return charset;
-	}
-
-	public Path getPath() {
-		return path;
 	}
 
 	@Override

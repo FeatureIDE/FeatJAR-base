@@ -96,6 +96,25 @@ public class FileHandler<T> {
 		return (extensionIndex > 0) ? fileName.substring(extensionIndex + 1) : "";
 	}
 
+	public static <T> Result<T> load(//
+		InputStream inputStream, //
+		Format<T> format //
+	) {
+		return load(inputStream, format, DEFAULT_CHARSET);
+	}
+
+	public static <T> Result<T> load(//
+		InputStream inputStream, //
+		Format<T> format, //
+		Charset charset //
+	) {
+		try (Input in = new Input(inputStream, charset, null)) {
+			return parse(in, format);
+		} catch (final IOException e) {
+			return Result.empty(e);
+		}
+	}
+
 	public static <T> Result<T> load(Path path, Format<T> format //
 	) {
 		return load(path, format, DEFAULT_CHARSET);
@@ -178,7 +197,7 @@ public class FileHandler<T> {
 		Charset charset //
 	) {
 		try (Input in = new Input(path, charset)) {
-			return parse(in, formatSupplier, factorySupplier);
+			return parse(path, in, formatSupplier, factorySupplier);
 		} catch (final IOException e) {
 			return Result.empty(e);
 		}
@@ -205,7 +224,7 @@ public class FileHandler<T> {
 	public static <T> Result<T> loadFromSource(String content, Path path, FormatSupplier<T> formatSupplier,
 		Factory<T> factory //
 	) {
-		try (Input in = new Input(content, path)) {
+		try (Input in = new Input(content, getFileExtension(path))) {
 			return parse(in, formatSupplier, factory);
 		} catch (final IOException e) {
 			return Result.empty(e);
@@ -214,7 +233,7 @@ public class FileHandler<T> {
 
 	public static <T> Result<T> loadFromSource(String content, Path path, FormatSupplier<T> formatSupplier //
 	) {
-		try (Input in = new Input(content, path)) {
+		try (Input in = new Input(content, getFileExtension(path))) {
 			return parse(in, formatSupplier);
 		} catch (final IOException e) {
 			return Result.empty(e);
@@ -224,8 +243,8 @@ public class FileHandler<T> {
 	public static <T> Result<T> loadFromSource(String content, Path path, FormatSupplier<T> formatSupplier,
 		FactorySupplier<T> factorySupplier //
 	) {
-		try (Input in = new Input(content, path)) {
-			return parse(in, formatSupplier, factorySupplier);
+		try (Input in = new Input(content, getFileExtension(path))) {
+			return parse(path, in, formatSupplier, factorySupplier);
 		} catch (final IOException e) {
 			return Result.empty(e);
 		}
@@ -259,12 +278,13 @@ public class FileHandler<T> {
 	}
 
 	private static <T> Result<T> parse(//
+		Path path, //
 		Input input, //
 		FormatSupplier<T> formatSupplier, //
 		FactorySupplier<T> factorySupplier //
 	) {
 		return input.getInputHeader().flatMap(formatSupplier::getFormat) //
-			.flatMap(format -> factorySupplier.getFactory(input.getPath(), format) //
+			.flatMap(format -> factorySupplier.getFactory(path, format) //
 				.flatMap(factory -> parse(input, format, factory)));
 	}
 
@@ -273,12 +293,24 @@ public class FileHandler<T> {
 	}
 
 	public static <T> void save(T object, Path path, Format<T> format, Charset charset) throws IOException {
-		if (format.supportsWrite()) {
+		if (format.supportsSerialize()) {
 			try (Output out = new Output(path, charset)) {
 				format.getInstance().write(object, out);
 			}
-		} else if (format.supportsSerialize()) {
-			write(format.getInstance().serialize(object), path, charset);
+		}
+	}
+
+	public static <T> void save(T object, OutputStream outStream, Format<T> format)
+		throws IOException {
+		save(object, outStream, format, DEFAULT_CHARSET);
+	}
+
+	public static <T> void save(T object, OutputStream outStream, Format<T> format, Charset charset)
+		throws IOException {
+		if (format.supportsSerialize()) {
+			try (Output out = new Output(outStream, charset)) {
+				format.getInstance().write(object, out);
+			}
 		}
 	}
 

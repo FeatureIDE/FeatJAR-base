@@ -37,22 +37,32 @@ import org.spldev.util.extension.*;
 public interface Format<T> extends Extension {
 
 	/**
-	 * Parses the contents of the given source and transfers all information onto
-	 * the given object. The object is intended to be completely overridden. A
-	 * subclass may try to reset the information already stored inside the object,
-	 * but is not obligated to do so. Thus, if possible an empty object should be
-	 * passed here.
+	 * Parses the contents of the given source and stores all information into a new
+	 * object of type T.
 	 *
 	 * @param source the source content.
 	 * @return A {@link Result} containing the parsed object or a list of problems
 	 *         that occurred during the parsing process.
 	 *
+	 * @see #parse(Input, Supplier)
 	 * @see #supportsParse()
 	 */
 	default Result<T> parse(Input source) {
 		throw new UnsupportedOperationException();
 	}
 
+	/**
+	 * Parses the contents of the given source and stores all information into a new
+	 * object of type T that is provided by the given supplier.
+	 *
+	 * @param source   the source content.
+	 * @param supplier the supplier for returned object.
+	 * @return A {@link Result} containing the parsed object or a list of problems
+	 *         that occurred during the parsing process.
+	 *
+	 * @see #parse()
+	 * @see #supportsParse()
+	 */
 	default Result<T> parse(Input source, Supplier<T> supplier) {
 		return parse(source);
 	}
@@ -70,6 +80,14 @@ public interface Format<T> extends Extension {
 		throw new UnsupportedOperationException();
 	}
 
+	/**
+	 * Writes the information of an object directly to the {@link Output} object.
+	 * 
+	 * @param object the object to get the information from.
+	 * @param out    the object to write to.
+	 *
+	 * @see #supportsWrite()
+	 */
 	default void write(T object, Output out) throws IOException {
 		out.writeText(serialize(object));
 	}
@@ -108,10 +126,6 @@ public interface Format<T> extends Extension {
 		return this;
 	}
 
-	default boolean isBinary() {
-		return false;
-	}
-
 	/**
 	 * Returns whether this format supports the {@link #parse(Input)} operation.
 	 *
@@ -131,17 +145,6 @@ public interface Format<T> extends Extension {
 	 */
 	default boolean supportsSerialize() {
 		return false;
-	}
-
-	/**
-	 * Returns whether this format supports the {@link #write(Object, Output)}
-	 * operation.
-	 *
-	 * @return {@code true} if {@code write} is allowed by this format,
-	 *         {@code false} otherwise.
-	 */
-	default boolean supportsWrite() {
-		return supportsSerialize();
 	}
 
 	/**
