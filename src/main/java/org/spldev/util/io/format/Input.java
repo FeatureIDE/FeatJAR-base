@@ -52,7 +52,8 @@ public final class Input implements AutoCloseable {
 	}
 
 	public Input(Path path, Charset charset) throws IOException {
-		this(Files.newInputStream(path, StandardOpenOption.READ), charset, FileHandler.getFileExtension(path));
+		this(new BufferedInputStream(Files.newInputStream(path, StandardOpenOption.READ)), charset, FileHandler
+			.getFileExtension(path));
 	}
 
 	public Input(String text, Charset charset, String fileExtension) {
