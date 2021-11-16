@@ -60,7 +60,6 @@ public interface Format<T> extends Extension {
 	 * @return A {@link Result} containing the parsed object or a list of problems
 	 *         that occurred during the parsing process.
 	 *
-	 * @see #parse()
 	 * @see #supportsParse()
 	 */
 	default Result<T> parse(Input source, Supplier<T> supplier) {
@@ -85,8 +84,6 @@ public interface Format<T> extends Extension {
 	 * 
 	 * @param object the object to get the information from.
 	 * @param out    the object to write to.
-	 *
-	 * @see #supportsWrite()
 	 */
 	default void write(T object, Output out) throws IOException {
 		out.writeText(serialize(object));
