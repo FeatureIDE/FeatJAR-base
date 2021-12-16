@@ -22,7 +22,6 @@
  */
 package org.spldev.util.data;
 
-import org.spldev.util.*;
 import org.spldev.util.extension.*;
 
 /**

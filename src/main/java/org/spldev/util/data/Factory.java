@@ -27,7 +27,7 @@ import java.util.function.*;
 import org.spldev.util.extension.*;
 
 /**
- * Factory to create an instance of some type T.
+ * Factory to create an instance of some type.
  *
  * @author Sebastian Krieter
  */

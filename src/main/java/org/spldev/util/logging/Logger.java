@@ -26,7 +26,7 @@ import java.io.*;
 import java.nio.file.*;
 import java.util.*;
 
-import org.spldev.util.*;
+import org.spldev.util.data.Problem;
 import org.spldev.util.io.*;
 import org.spldev.util.job.*;
 

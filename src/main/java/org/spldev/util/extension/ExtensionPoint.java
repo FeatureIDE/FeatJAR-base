@@ -25,10 +25,13 @@ package org.spldev.util.extension;
 import java.util.*;
 import java.util.concurrent.*;
 
-import org.spldev.util.*;
+import org.spldev.util.data.Result;
 
 /**
- * An extension point can be implemented by an {@link Extension}.
+ * An extension point defines an interface that can be implemented by an
+ * {@link Extension}. Subclasses must define a method "public static T
+ * getInstance()" if extensions are to be loaded at runtime by the
+ * {@link ExtensionLoader}.
  *
  * @author Sebastian Krieter
  */
@@ -46,27 +49,36 @@ public abstract class ExtensionPoint<T extends Extension> {
 	private final HashMap<String, Integer> indexMap = new HashMap<>();
 	private final List<T> extensions = new CopyOnWriteArrayList<>();
 
+	/**
+	 * Registers a new extension in this extension point.
+	 */
 	public synchronized boolean addExtension(T extension) {
 		if ((extension != null)
-			&& !indexMap.containsKey(extension.getId())
-			&& extension.initExtension()) {
-			indexMap.put(extension.getId(), extensions.size());
+			&& !indexMap.containsKey(extension.getIdentifier())
+			&& extension.initialize()) {
+			indexMap.put(extension.getIdentifier(), extensions.size());
 			extensions.add(extension);
 			return true;
 		}
 		return false;
 	}
 
+	/**
+	 * Returns all registered extensions for this extension point.
+	 */
 	public synchronized List<T> getExtensions() {
 		return Collections.unmodifiableList(extensions);
 	}
 
-	public Result<T> getExtension(String id) {
-		Objects.requireNonNull(id, "ID must not be null!");
-		final Integer index = indexMap.get(id);
+	/**
+	 * Returns extension with a given identifier, if any was registered.
+	 */
+	public Result<T> getExtension(String identifier) {
+		Objects.requireNonNull(identifier, "identifier must not be null!");
+		final Integer index = indexMap.get(identifier);
 		return index != null
 			? Result.of(extensions.get(index))
-			: Result.empty(new NoSuchExtensionException("No extension found for ID " + id));
+			: Result.empty(new NoSuchExtensionException("No extension found for identifier " + identifier));
 	}
 
 }

@@ -20,17 +20,17 @@
  * See <https://github.com/skrieter/utils> for further information.
  * -----------------------------------------------------------------------------
  */
-package org.spldev.util;
+package org.spldev.util.data;
 
 import java.util.*;
 import java.util.function.*;
 import java.util.stream.*;
 
-import org.spldev.util.Problem.*;
+import org.spldev.util.data.Problem.*;
 
 /**
- * Similar to {@link Optional}, this wraps an object or {@code null} that is the
- * return value of some function. Can also store any {@link Problem} that
+ * Similarly to {@link Optional}, this wraps an object or {@code null} that is
+ * the return value of some function. Can also store any {@link Problem} that
  * occurred during execution of the function.
  * 
  * @author Sebastian Krieter

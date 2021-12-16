@@ -27,7 +27,6 @@ import java.nio.charset.*;
 import java.nio.file.*;
 import java.util.function.*;
 
-import org.spldev.util.*;
 import org.spldev.util.data.*;
 import org.spldev.util.io.format.*;
 

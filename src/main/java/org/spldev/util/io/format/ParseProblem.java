@@ -22,7 +22,7 @@
  */
 package org.spldev.util.io.format;
 
-import org.spldev.util.*;
+import org.spldev.util.data.Problem;
 
 /**
  * Stores a problem during parsing with a line number where it occurred.

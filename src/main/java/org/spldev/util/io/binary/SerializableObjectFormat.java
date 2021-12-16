@@ -24,7 +24,7 @@ package org.spldev.util.io.binary;
 
 import java.io.*;
 
-import org.spldev.util.*;
+import org.spldev.util.data.Result;
 import org.spldev.util.io.format.*;
 import org.spldev.util.logging.*;
 
@@ -72,7 +72,7 @@ public class SerializableObjectFormat<T> implements Format<T> {
 	}
 
 	@Override
-	public String getId() {
+	public String getIdentifier() {
 		return ID;
 	}
 

@@ -34,7 +34,7 @@ import java.util.List;
 public interface CLIFunction extends Extension {
 
 	default String getName() {
-		return getId();
+		return getIdentifier();
 	}
 
 	void run(List<String> args);

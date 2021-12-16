@@ -26,7 +26,7 @@ import java.util.*;
 import java.util.function.*;
 import java.util.stream.*;
 
-import org.spldev.util.*;
+import org.spldev.util.data.Result;
 import org.spldev.util.io.format.*;
 
 /**
@@ -100,7 +100,7 @@ public class NameListFormat implements Format<List<NameListFormat.NameEntry>> {
 	}
 
 	@Override
-	public String getId() {
+	public String getIdentifier() {
 		return ID;
 	}
 

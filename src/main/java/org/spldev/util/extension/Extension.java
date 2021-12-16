@@ -23,28 +23,29 @@
 package org.spldev.util.extension;
 
 /**
- * An extension implements an {@link ExtensionPoint}. It contains a unique ID
- * and a method for initialization.
+ * An extension implements the functionality defined by an
+ * {@link ExtensionPoint}. It contains a unique ID and a method for
+ * initialization.
  *
  * @author Sebastian Krieter
  */
 public interface Extension {
 
 	/**
-	 * @return the unique ID of this extension.
+	 * Returns the unique identifier for this extension.
 	 */
-	default String getId() {
+	default String getIdentifier() {
 		return getClass().getCanonicalName();
 	}
 
 	/**
-	 * Is called, when the extension is loaded for the first time by an
+	 * Is called when the extension is loaded for the first time by an
 	 * {@link ExtensionPoint}.
 	 *
 	 * @return {@code true} if the initialization was successful, {@code false}
 	 *         otherwise.
 	 */
-	default boolean initExtension() {
+	default boolean initialize() {
 		return true;
 	}
 

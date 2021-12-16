@@ -28,7 +28,7 @@ import java.nio.file.*;
 import java.util.*;
 import java.util.stream.*;
 
-import org.spldev.util.*;
+import org.spldev.util.data.Result;
 import org.spldev.util.io.*;
 import org.spldev.util.logging.*;
 

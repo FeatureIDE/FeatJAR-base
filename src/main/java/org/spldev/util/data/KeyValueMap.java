@@ -25,8 +25,6 @@ package org.spldev.util.data;
 import java.util.*;
 import java.util.Map.*;
 
-import org.spldev.util.*;
-
 /**
  * Key-Value map for storing arbitrary data.
  *

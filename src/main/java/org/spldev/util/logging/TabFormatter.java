@@ -22,6 +22,9 @@
  */
 package org.spldev.util.logging;
 
+/**
+ * Prepends log output with an appropriate number of tab symbols.
+ */
 public class TabFormatter implements Formatter {
 
 	private int tabLevel = 0;

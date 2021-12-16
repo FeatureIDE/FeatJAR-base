@@ -22,7 +22,7 @@
  */
 package org.spldev.util.job;
 
-import org.spldev.util.*;
+import org.spldev.util.data.Result;
 import org.spldev.util.job.InternalMonitor.*;
 
 /**

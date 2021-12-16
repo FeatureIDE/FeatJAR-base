@@ -24,7 +24,6 @@ package org.spldev.util.data;
 
 import java.util.*;
 
-import org.spldev.util.*;
 import org.spldev.util.job.*;
 
 /**

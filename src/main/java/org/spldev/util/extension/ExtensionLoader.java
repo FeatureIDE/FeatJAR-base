@@ -36,14 +36,19 @@ import org.spldev.util.logging.*;
 import org.w3c.dom.*;
 
 /**
- * Initializes and loads extensions.
+ * Initializes, loads und unloads extensions.
  *
  * @author Sebastian Krieter
  */
 public class ExtensionLoader {
-
+	/**
+	 * Maps identifiers of extension points to identifiers of loaded extensions.
+	 */
 	private static HashMap<String, List<String>> extensionMap;
 
+	/**
+	 * Unloads all currently loaded extensions.
+	 */
 	public static synchronized void unload() {
 		if (extensionMap != null) {
 			extensionMap.clear();
@@ -51,6 +56,10 @@ public class ExtensionLoader {
 		}
 	}
 
+	/**
+	 * Loads all extensions that can be found in the class path. Requires
+	 * getInstance to be declared on the used extension points.
+	 */
 	@SuppressWarnings({ "rawtypes", "unchecked" })
 	public static synchronized void load() {
 		if (extensionMap == null) {
@@ -82,13 +91,14 @@ public class ExtensionLoader {
 		}
 	}
 
+	/**
+	 * Determines whether the file with the given names is an extension definition
+	 * file.
+	 */
 	private static boolean filterByFileName(String pathName) {
 		try {
 			if (pathName != null) {
-				final Path path = Paths.get(pathName);
-				if (path != null) {
-					return path.getFileName().toString().matches("extensions(-.*)?[.]xml");
-				}
+				return Paths.get(pathName).getFileName().toString().matches("extensions(-.*)?[.]xml");
 			}
 			return false;
 		} catch (final Exception e) {
@@ -97,6 +107,9 @@ public class ExtensionLoader {
 		}
 	}
 
+	/**
+	 * Loads all extensions from a given extension definition file.
+	 */
 	private static void load(String file) {
 		try {
 			final Enumeration<URL> systemResources = ClassLoader.getSystemClassLoader().getResources(file);
@@ -112,11 +125,8 @@ public class ExtensionLoader {
 						if (point.getNodeType() == Node.ELEMENT_NODE) {
 							final Element pointElement = (Element) point;
 							final String extensionPointId = pointElement.getAttribute("id");
-							List<String> extensionPoint = extensionMap.get(extensionPointId);
-							if (extensionPoint == null) {
-								extensionPoint = new ArrayList<>();
-								extensionMap.put(extensionPointId, extensionPoint);
-							}
+							List<String> extensionPoint = extensionMap
+								.computeIfAbsent(extensionPointId, k -> new ArrayList<>());
 							final NodeList extensions = pointElement.getChildNodes();
 							for (int j = 0; j < extensions.getLength(); j++) {
 								final Node extension = extensions.item(j);
@@ -137,7 +147,10 @@ public class ExtensionLoader {
 		}
 	}
 
-	public static List<String> getResources() {
+	/**
+	 * Returns all names of files in the class path.
+	 */
+	private static List<String> getResources() {
 		final HashSet<String> resources = new HashSet<>();
 		final String classPathProperty = System.getProperty("java.class.path", ".");
 		final String pathSeparatorProperty = System.getProperty("path.separator");

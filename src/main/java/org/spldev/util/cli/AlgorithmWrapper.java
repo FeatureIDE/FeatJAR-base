@@ -22,7 +22,7 @@
  */
 package org.spldev.util.cli;
 
-import org.spldev.util.Result;
+import org.spldev.util.data.Result;
 import org.spldev.util.extension.Extension;
 
 import java.util.List;

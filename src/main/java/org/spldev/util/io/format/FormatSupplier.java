@@ -22,7 +22,7 @@
  */
 package org.spldev.util.io.format;
 
-import org.spldev.util.*;
+import org.spldev.util.data.Result;
 
 /**
  * Provides a format for a given file content and file path.

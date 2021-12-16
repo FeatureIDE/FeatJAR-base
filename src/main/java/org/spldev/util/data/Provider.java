@@ -20,12 +20,11 @@
  * See <https://github.com/skrieter/utils> for further information.
  * -----------------------------------------------------------------------------
  */
-package org.spldev.util;
+package org.spldev.util.data;
 
 import java.nio.file.*;
 import java.util.function.*;
 
-import org.spldev.util.data.*;
 import org.spldev.util.io.*;
 import org.spldev.util.io.format.*;
 import org.spldev.util.job.*;

@@ -20,12 +20,12 @@
  * See <https://github.com/skrieter/utils> for further information.
  * -----------------------------------------------------------------------------
  */
-package org.spldev.util;
+package org.spldev.util.data;
 
 import java.util.*;
 
 /**
- * Wraps an arbitrary problem when creating/transforming an object. Can be
+ * Wraps an arbitrary problem when creating or transforming an object. Can be
  * stored in a {@link Result}.
  *
  * @author Sebastian Krieter

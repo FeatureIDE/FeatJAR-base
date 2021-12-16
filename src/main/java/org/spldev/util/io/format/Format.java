@@ -25,7 +25,7 @@ package org.spldev.util.io.format;
 import java.io.*;
 import java.util.function.*;
 
-import org.spldev.util.*;
+import org.spldev.util.data.Result;
 import org.spldev.util.extension.*;
 
 /**
