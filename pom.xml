@@ -15,20 +15,4 @@
 	<name>Util Lib</name>
 	<description>Miscellaneous utility functions.</description>
 	<url>https://github.com/skrieter/utils</url>
-
-	<build>
-		<plugins>
-			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-shade-plugin</artifactId>
-				<version>3.2.4</version>
-				<executions>
-					<execution>
-						<phase>none</phase>
-					</execution>
-				</executions>
-			</plugin>
-		</plugins>
-	</build>
-
 </project>
