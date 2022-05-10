@@ -1,6 +1,6 @@
 /* -----------------------------------------------------------------------------
  * Util Lib - Miscellaneous utility functions.
- * Copyright (C) 2021  Sebastian Krieter
+ * Copyright (C) 2021-2022  Sebastian Krieter
  * 
  * This file is part of Util Lib.
  * 
