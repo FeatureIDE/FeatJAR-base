@@ -72,19 +72,23 @@ public class Cache {
 	public <T> Result<T> get(Provider<T> provider, InternalMonitor monitor) {
 		monitor = monitor != null ? monitor : new NullMonitor();
 		try {
-			final Map<Object, Object> cachedElements = getCachedElement(provider.getIdentifier());
-			synchronized (cachedElements) {
-				T element = (T) cachedElements.get(provider.getParameters());
-				if (element == null) {
-					final Result<T> computedElement = computeElement(provider, monitor);
-					if (computedElement.isPresent()) {
-						element = computedElement.get();
-						cachedElements.put(provider.getParameters(), element);
-					} else {
-						return computedElement;
+			if (provider.storeInCache()) {
+				final Map<Object, Object> cachedElements = getCachedElement(provider.getIdentifier());
+				synchronized (cachedElements) {
+					T element = (T) cachedElements.get(provider.getParameters());
+					if (element == null) {
+						final Result<T> computedElement = computeElement(provider, monitor);
+						if (computedElement.isPresent()) {
+							element = computedElement.get();
+							cachedElements.put(provider.getParameters(), element);
+						} else {
+							return computedElement;
+						}
 					}
+					return Result.of(element);
 				}
-				return Result.of(element);
+			} else {
+				return computeElement(provider, monitor);
 			}
 		} finally {
 			monitor.done();
