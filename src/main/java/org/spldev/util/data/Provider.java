@@ -48,7 +48,7 @@ public interface Provider<T> extends BiFunction<Cache, InternalMonitor, Result<T
 	default Object getParameters() {
 		return defaultParameters;
 	}
-	
+
 	default boolean storeInCache() {
 		return true;
 	}
