@@ -23,10 +23,21 @@
 package org.spldev.util.cli;
 
 import java.io.*;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.*;
 import java.util.concurrent.*;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
+import org.spldev.util.data.Result;
 import org.spldev.util.extension.*;
+import org.spldev.util.io.FileHandler;
+import org.spldev.util.io.format.Format;
+import org.spldev.util.io.format.FormatSupplier;
+import org.spldev.util.logging.Logger;
 
 /**
  * Command line interface for several functions of FeatureIDE.
@@ -34,6 +45,10 @@ import org.spldev.util.extension.*;
  * @author Sebastian Krieter
  */
 public class CLI {
+	public static final String DEFAULT_INPUT = "<stdin:xml>";
+	public static final String DEFAULT_OUTPUT = "<stdout>";
+	private static final Pattern STDIN_PATTERN = Pattern.compile("<stdin:(.+)>");
+	private static final Pattern STDOUT_PATTERN = Pattern.compile("<stdout>");
 
 	public static void main(String[] args) {
 		ExtensionLoader.load();
@@ -98,4 +113,34 @@ public class CLI {
 		return null;
 	}
 
+	public static boolean isValidInput(String pathOrStdin) {
+		return STDIN_PATTERN.matcher(pathOrStdin).matches() || Files.exists(Paths.get(pathOrStdin));
+	}
+
+	public static <T> Result<T> loadFile(String pathOrStdin, FormatSupplier<T> formatSupplier) {
+		Matcher matcher = STDIN_PATTERN.matcher(pathOrStdin);
+		if (matcher.matches()) {
+			Path path = Paths.get("stdin." + matcher.group(1));
+			String content = new BufferedReader(
+				new InputStreamReader(System.in, FileHandler.DEFAULT_CHARSET))
+					.lines()
+					.collect(Collectors.joining("\n"));
+			return FileHandler.loadFromSource(content, path, formatSupplier);
+		} else {
+			return FileHandler.load(Paths.get(pathOrStdin), formatSupplier);
+		}
+	}
+
+	public static <T> void saveFile(T object, String pathOrStdout, Format<T> format) {
+		Matcher matcher = STDOUT_PATTERN.matcher(pathOrStdout);
+		try {
+			if (matcher.matches()) {
+				FileHandler.save(object, System.out, format);
+			} else {
+				FileHandler.save(object, Paths.get(pathOrStdout), format);
+			}
+		} catch (final IOException e) {
+			Logger.logError(e);
+		}
+	}
 }

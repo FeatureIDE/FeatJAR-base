@@ -57,6 +57,10 @@ public abstract class AlgorithmWrapper<T> implements Extension {
 		return false;
 	}
 
+	public Object parseResult(Object result, Object arg) {
+		return result;
+	}
+
 	public abstract String getName();
 
 	public abstract String getHelp();
