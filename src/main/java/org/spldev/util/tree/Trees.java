@@ -74,6 +74,10 @@ public final class Trees {
 		}
 	}
 
+	public static <T extends Tree<?>> String print(T node) {
+		return traverse(node, new TreePrinter()).orElse("");
+	}
+
 	public static <T extends Tree<T>> List<T> getPreOrderList(T node) {
 		return preOrderStream(node).collect(Collectors.toList());
 	}
