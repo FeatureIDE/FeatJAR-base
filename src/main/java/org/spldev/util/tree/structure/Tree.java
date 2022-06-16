@@ -42,18 +42,22 @@ public interface Tree<T extends Tree<T>> {
 		return !getChildren().isEmpty();
 	}
 
-	Collection<? extends T> getChildren();
+	List<? extends T> getChildren();
 
-	void setChildren(Collection<? extends T> children);
+	void setChildren(List<? extends T> children);
 
-	default void flatMapChildren(Function<T, Collection<? extends T>> mapper) {
+	default int getNumberOfChildren() {
+		return getChildren().size();
+	}
+
+	default void flatMapChildren(Function<T, List<? extends T>> mapper) {
 		Objects.requireNonNull(mapper);
-		final Collection<? extends T> oldChildren = getChildren();
+		final List<? extends T> oldChildren = getChildren();
 		if (!oldChildren.isEmpty()) {
 			final ArrayList<T> newChildren = new ArrayList<>(oldChildren.size());
 			boolean modified = false;
 			for (final T child : oldChildren) {
-				final Collection<? extends T> replacement = mapper.apply(child);
+				final List<? extends T> replacement = mapper.apply(child);
 				if (replacement != null) {
 					newChildren.addAll(replacement);
 					modified = true;
@@ -69,7 +73,7 @@ public interface Tree<T extends Tree<T>> {
 
 	default void mapChildren(Function<T, ? extends T> mapper) {
 		Objects.requireNonNull(mapper);
-		final Collection<? extends T> oldChildren = getChildren();
+		final List<? extends T> oldChildren = getChildren();
 		if (!oldChildren.isEmpty()) {
 			final List<T> newChildren = new ArrayList<>(oldChildren.size());
 			boolean modified = false;
@@ -88,4 +92,17 @@ public interface Tree<T extends Tree<T>> {
 		}
 	}
 
+	default Optional<T> getFirstChild() {
+		if (getChildren().isEmpty()) {
+			return Optional.empty();
+		}
+		return Optional.of(getChildren().get(0));
+	}
+
+	default Optional<T> getLastChild() {
+		if (getChildren().isEmpty()) {
+			return Optional.empty();
+		}
+		return Optional.of(getChildren().get(getNumberOfChildren() - 1));
+	}
 }
