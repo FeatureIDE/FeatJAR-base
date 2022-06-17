@@ -101,4 +101,8 @@ public abstract class RootedTree<T extends RootedTree<T>> extends AbstractNonTer
 		}
 		return false;
 	}
+
+	public Optional<Integer> getIndex() {
+		return getParent().flatMap(parent -> parent.getChildIndex((T) this));
+	}
 }

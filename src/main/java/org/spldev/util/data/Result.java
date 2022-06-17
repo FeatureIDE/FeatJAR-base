@@ -213,4 +213,7 @@ public class Result<T> {
 		return !problems.isEmpty();
 	}
 
+	public static Optional<Integer> indexToOptional(int index) {
+		return index == -1 ? Optional.empty() : Optional.of(index);
+	}
 }

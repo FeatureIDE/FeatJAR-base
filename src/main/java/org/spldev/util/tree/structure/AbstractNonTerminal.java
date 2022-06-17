@@ -22,6 +22,8 @@
  */
 package org.spldev.util.tree.structure;
 
+import org.spldev.util.data.Result;
+
 import java.util.*;
 
 public abstract class AbstractNonTerminal<T extends Tree<T>> implements Tree<T> {
@@ -40,12 +42,12 @@ public abstract class AbstractNonTerminal<T extends Tree<T>> implements Tree<T> 
 		return Collections.unmodifiableList(children);
 	}
 
-	public int getChildIndex(T child) {
-		return children.indexOf(child);
+	public Optional<Integer> getChildIndex(T child) {
+		return Result.indexToOptional(children.indexOf(child));
 	}
 
 	public boolean isFirstChild(T child) {
-		return getChildIndex(child) == 0;
+		return getChildIndex(child).filter(index -> index == 0).isPresent();
 	}
 
 	public void addChild(int index, T newChild) {
