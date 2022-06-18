@@ -48,6 +48,10 @@ public abstract class RootedTree<T extends RootedTree<T>> extends AbstractNonTer
 		return parent != null;
 	}
 
+	public boolean isRoot() {
+		return !hasParent();
+	}
+
 	@Override
 	public void setChildren(List<? extends T> children) {
 		for (final T child : getChildren()) {
@@ -100,6 +104,14 @@ public abstract class RootedTree<T extends RootedTree<T>> extends AbstractNonTer
 			currentParent = currentParent.get().getParent();
 		}
 		return false;
+	}
+
+	public T getRoot() {
+		T currentTree = (T) this;
+		while (currentTree.getParent().isPresent()) {
+			currentTree = currentTree.getParent().get();
+		}
+		return currentTree;
 	}
 
 	public Optional<Integer> getIndex() {
