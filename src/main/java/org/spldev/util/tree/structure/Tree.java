@@ -22,6 +22,8 @@
  */
 package org.spldev.util.tree.structure;
 
+import org.spldev.util.tree.Trees;
+
 import java.util.*;
 import java.util.function.*;
 
@@ -30,7 +32,7 @@ import java.util.function.*;
  *
  * @author Sebastian Krieter
  */
-public interface Tree<T extends Tree<T>> {
+public interface Tree<T extends Tree<T>> extends Cloneable {
 
 	Tree<T> cloneNode();
 
