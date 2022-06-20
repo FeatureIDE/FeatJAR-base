@@ -23,6 +23,9 @@
 package org.spldev.util.tree.structure;
 
 import org.spldev.util.tree.Trees;
+import org.spldev.util.tree.visitor.DfsVisitor;
+import org.spldev.util.tree.visitor.TreePrinter;
+import org.spldev.util.tree.visitor.TreeVisitor;
 
 import java.util.*;
 import java.util.function.*;
@@ -106,5 +109,21 @@ public interface Tree<T extends Tree<T>> extends Cloneable {
 			return Optional.empty();
 		}
 		return Optional.of(getChildren().get(getNumberOfChildren() - 1));
+	}
+
+	default <R> Optional<R> traverse(DfsVisitor<R, Tree<T>> visitor) {
+		return Trees.traverse(this, visitor);
+	}
+
+	default <R> Optional<R> traverse(TreeVisitor<R, Tree<T>> visitor) {
+		return Trees.traverse(this, visitor);
+	}
+
+	default String print() {
+		return Trees.print(this);
+	}
+
+	default boolean equals(T other) {
+		return false; // todo Trees.equals(this, other);
 	}
 }
