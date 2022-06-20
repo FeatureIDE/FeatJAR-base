@@ -46,6 +46,10 @@ public abstract class AbstractNonTerminal<T extends Tree<T>> implements Tree<T> 
 		return Result.indexToOptional(children.indexOf(child));
 	}
 
+	public boolean hasChild(T child) {
+		return getChildIndex(child).isPresent();
+	}
+
 	public boolean isFirstChild(T child) {
 		return getChildIndex(child).filter(index -> index == 0).isPresent();
 	}
