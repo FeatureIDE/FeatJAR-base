@@ -22,12 +22,11 @@
  */
 package org.spldev.util.tree.structure;
 
-import org.spldev.util.tree.Trees;
-import org.spldev.util.tree.visitor.DfsVisitor;
-import org.spldev.util.tree.visitor.TreeVisitor;
-
-import java.util.*;
-import java.util.function.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Objects;
+import java.util.Optional;
+import java.util.function.Function;
 
 /**
  * Interface for a tree node.

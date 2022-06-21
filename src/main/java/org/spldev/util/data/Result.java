@@ -216,4 +216,9 @@ public class Result<T> {
 	public static Optional<Integer> indexToOptional(int index) {
 		return index == -1 ? Optional.empty() : Optional.of(index);
 	}
+
+	@Override
+	public String toString() {
+		return "Result{" + get() + "}";
+	}
 }
