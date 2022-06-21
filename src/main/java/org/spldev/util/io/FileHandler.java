@@ -313,6 +313,12 @@ public class FileHandler<T> {
 		}
 	}
 
+	public static <T> String print(T object, Format<T> format) throws IOException {
+		ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+		save(object, outputStream, format);
+		return outputStream.toString();
+	}
+
 	public static <T> void write(String source, Path path) throws IOException {
 		write(source, path, DEFAULT_CHARSET);
 	}
