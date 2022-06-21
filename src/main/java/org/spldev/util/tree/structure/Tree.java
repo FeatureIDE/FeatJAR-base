@@ -24,7 +24,6 @@ package org.spldev.util.tree.structure;
 
 import org.spldev.util.tree.Trees;
 import org.spldev.util.tree.visitor.DfsVisitor;
-import org.spldev.util.tree.visitor.TreePrinter;
 import org.spldev.util.tree.visitor.TreeVisitor;
 
 import java.util.*;
@@ -124,6 +123,6 @@ public interface Tree<T extends Tree<T>> extends Cloneable {
 	}
 
 	default boolean equals(T other) {
-		return false; // todo Trees.equals(this, other);
+		return false; //Trees.equals(this, other);
 	}
 }
