@@ -109,20 +109,4 @@ public interface Tree<T extends Tree<T>> extends Cloneable {
 		}
 		return Optional.of(getChildren().get(getNumberOfChildren() - 1));
 	}
-
-	default <R> Optional<R> traverse(DfsVisitor<R, Tree<T>> visitor) {
-		return Trees.traverse(this, visitor);
-	}
-
-	default <R> Optional<R> traverse(TreeVisitor<R, Tree<T>> visitor) {
-		return Trees.traverse(this, visitor);
-	}
-
-	default String print() {
-		return Trees.print(this);
-	}
-
-	default boolean equals(T other) {
-		return false; //Trees.equals(this, other);
-	}
 }
