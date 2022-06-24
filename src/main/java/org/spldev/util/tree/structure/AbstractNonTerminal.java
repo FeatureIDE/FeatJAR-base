@@ -31,13 +31,6 @@ public abstract class AbstractNonTerminal<T extends Tree<T>> implements Tree<T> 
 	protected final List<T> children = new ArrayList<>();
 
 	@Override
-	public void setChildren(List<? extends T> children) {
-		Objects.requireNonNull(children);
-		this.children.clear();
-		this.children.addAll(children);
-	}
-
-	@Override
 	public List<? extends T> getChildren() {
 		return Collections.unmodifiableList(children);
 	}
@@ -52,6 +45,13 @@ public abstract class AbstractNonTerminal<T extends Tree<T>> implements Tree<T> 
 
 	public boolean isFirstChild(T child) {
 		return getChildIndex(child).filter(index -> index == 0).isPresent();
+	}
+
+	@Override
+	public void setChildren(List<? extends T> children) {
+		Objects.requireNonNull(children);
+		this.children.clear();
+		this.children.addAll(children);
 	}
 
 	public void addChild(int index, T newChild) {
