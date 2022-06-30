@@ -41,7 +41,7 @@ public abstract class XMLFormat<T> implements Format<T> {
 	protected static final Pattern completeTagPattern = Pattern.compile("<(\\w+)[^\\/]*>.*<\\/\\1.*>");
 	protected static final Pattern incompleteTagPattern = Pattern.compile("(<\\w+[^\\/>]*>)|(<\\/\\w+[^>]*>)");
 
-	List<Problem> parseProblems = new ArrayList<>();
+	protected List<Problem> parseProblems = new ArrayList<>();
 
 	abstract protected T parseDocument(Document document) throws ParseException;
 

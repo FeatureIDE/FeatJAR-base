@@ -22,6 +22,8 @@
  */
 package org.spldev.util.tree.structure;
 
+import org.spldev.util.tree.Trees;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -33,13 +35,17 @@ import java.util.function.Function;
  *
  * @author Sebastian Krieter
  */
-public interface Tree<T extends Tree<T>> extends Cloneable {
+public interface Tree<T extends Tree<T>> {
 
 	Tree<T> cloneNode();
 
 	default boolean equalsNode(Object other) {
 		return getClass() == other.getClass();
 	}
+
+	// todo: equals as in NonTerminal
+
+	// todo: clone as in Trees.clone?
 
 	default boolean hasChildren() {
 		return !getChildren().isEmpty();
