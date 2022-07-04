@@ -86,6 +86,10 @@ public final class Trees {
 		return postOrderStream(node).collect(Collectors.toList());
 	}
 
+	public static <T extends Tree<T>> List<T> getLevelOrderList(T node) {
+		return levelOrderStream(node).collect(Collectors.toList());
+	}
+
 	public static <T extends Tree<T>> Stream<T> parallelStream(T node) {
 		return StreamSupport.stream(new ParallelSpliterator<>(node), true);
 	}
@@ -96,6 +100,10 @@ public final class Trees {
 
 	public static <T extends Tree<T>> Stream<T> postOrderStream(T node) {
 		return StreamSupport.stream(new PostOrderSpliterator<>(node), false);
+	}
+
+	public static <T extends X, X extends Tree<X>> Stream<X> levelOrderStream(T node) {
+		return StreamSupport.stream(new LevelOrderSpliterator<>(node), false);
 	}
 
 	private static class ParallelSpliterator<T extends Tree<T>> implements Spliterator<T> {
@@ -229,6 +237,44 @@ public final class Trees {
 
 		@Override
 		public Spliterator<T> trySplit() {
+			return null;
+		}
+	}
+
+	private static class LevelOrderSpliterator<T extends X, X extends Tree<X>> implements Spliterator<X> {
+
+		final LinkedList<X> queue = new LinkedList<>();
+
+		public LevelOrderSpliterator(T node) {
+			if (node != null) {
+				queue.addFirst(node);
+			}
+		}
+
+		@Override
+		public int characteristics() {
+			return Spliterator.ORDERED | Spliterator.IMMUTABLE;
+		}
+
+		@Override
+		public long estimateSize() {
+			return Long.MAX_VALUE;
+		}
+
+		@Override
+		public boolean tryAdvance(Consumer<? super X> consumer) {
+			if (queue.isEmpty()) {
+				return false;
+			} else {
+				final X node = queue.removeFirst();
+				consumer.accept(node);
+				queue.addAll(node.getChildren());
+				return true;
+			}
+		}
+
+		@Override
+		public Spliterator<X> trySplit() {
 			return null;
 		}
 	}
