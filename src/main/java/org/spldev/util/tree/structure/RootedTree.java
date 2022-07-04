@@ -30,6 +30,7 @@ import java.util.*;
  *
  * @author Elias Kuiter
  */
+@SuppressWarnings("unchecked")
 public abstract class RootedTree<T extends RootedTree<T>> extends AbstractNonTerminal<T> {
 	protected T parent = null;
 

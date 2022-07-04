@@ -23,22 +23,17 @@
 package org.spldev.util.cli;
 
 import java.io.*;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
+import java.nio.file.*;
 import java.util.*;
 import java.util.concurrent.*;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-import java.util.stream.Collectors;
+import java.util.regex.*;
+import java.util.stream.*;
 
-import org.spldev.util.data.Result;
+import org.spldev.util.data.*;
 import org.spldev.util.extension.*;
-import org.spldev.util.io.FileHandler;
-import org.spldev.util.io.format.Format;
-import org.spldev.util.io.format.FormatSupplier;
-import org.spldev.util.logging.Logger;
-import org.spldev.util.logging.TimeStampFormatter;
+import org.spldev.util.io.*;
+import org.spldev.util.io.format.*;
+import org.spldev.util.logging.*;
 
 /**
  * Command line interface for several functions of FeatureIDE.
