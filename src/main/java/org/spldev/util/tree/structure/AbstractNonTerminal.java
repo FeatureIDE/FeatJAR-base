@@ -22,6 +22,8 @@
  */
 package org.spldev.util.tree.structure;
 
+import org.spldev.util.data.Result;
+
 import java.util.*;
 import java.util.function.*;
 
@@ -30,15 +32,54 @@ public abstract class AbstractNonTerminal<T extends Tree<T>> implements Tree<T> 
 	protected final List<T> children = new ArrayList<>();
 
 	@Override
-	public void setChildren(Collection<? extends T> children) {
+	public List<? extends T> getChildren() {
+		return Collections.unmodifiableList(children);
+	}
+
+	public Optional<Integer> getChildIndex(T child) {
+		return Result.indexToOptional(children.indexOf(child));
+	}
+
+	public boolean hasChild(T child) {
+		return getChildIndex(child).isPresent();
+	}
+
+	public boolean isFirstChild(T child) {
+		return getChildIndex(child).filter(index -> index == 0).isPresent();
+	}
+
+	@Override
+	public void setChildren(List<? extends T> children) {
 		Objects.requireNonNull(children);
 		this.children.clear();
 		this.children.addAll(children);
 	}
 
-	@Override
-	public List<? extends T> getChildren() {
-		return Collections.unmodifiableList(children);
+	public void addChild(int index, T newChild) {
+		if (index > getNumberOfChildren()) {
+			children.add(newChild);
+		} else {
+			children.add(index, newChild);
+		}
+	}
+
+	public void addChild(T newChild) {
+		children.add(newChild);
+	}
+
+	public void removeChild(T child) {
+		if (!children.remove(child)) {
+			throw new NoSuchElementException();
+		}
+	}
+
+	public T removeChild(int index) {
+		return children.remove(index);
+	}
+
+	public void replaceChild(T oldChild, T newChild) {
+		final int index = children.indexOf(oldChild);
+		children.set(index, newChild);
 	}
 
 	public void mapChildren(Function<T, ? extends T> mapper) {

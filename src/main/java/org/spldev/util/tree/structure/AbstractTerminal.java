@@ -27,7 +27,7 @@ import java.util.*;
 public abstract class AbstractTerminal<T extends Tree<T>> implements Tree<T> {
 
 	@Override
-	public void setChildren(Collection<? extends T> children) {
+	public void setChildren(List<? extends T> children) {
 	}
 
 	@Override

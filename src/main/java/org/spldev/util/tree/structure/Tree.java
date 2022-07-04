@@ -22,8 +22,13 @@
  */
 package org.spldev.util.tree.structure;
 
-import java.util.*;
-import java.util.function.*;
+import org.spldev.util.tree.Trees;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Objects;
+import java.util.Optional;
+import java.util.function.Function;
 
 /**
  * Interface for a tree node.
@@ -38,22 +43,30 @@ public interface Tree<T extends Tree<T>> {
 		return getClass() == other.getClass();
 	}
 
+	// todo: equals as in NonTerminal
+
+	// todo: clone as in Trees.clone?
+
 	default boolean hasChildren() {
 		return !getChildren().isEmpty();
 	}
 
 	List<? extends T> getChildren();
 
-	void setChildren(Collection<? extends T> children);
+	void setChildren(List<? extends T> children);
 
-	default void flatMapChildren(Function<T, Collection<? extends T>> mapper) {
+	default int getNumberOfChildren() {
+		return getChildren().size();
+	}
+
+	default void flatMapChildren(Function<T, List<? extends T>> mapper) {
 		Objects.requireNonNull(mapper);
-		final Collection<? extends T> oldChildren = getChildren();
+		final List<? extends T> oldChildren = getChildren();
 		if (!oldChildren.isEmpty()) {
 			final ArrayList<T> newChildren = new ArrayList<>(oldChildren.size());
 			boolean modified = false;
 			for (final T child : oldChildren) {
-				final Collection<? extends T> replacement = mapper.apply(child);
+				final List<? extends T> replacement = mapper.apply(child);
 				if (replacement != null) {
 					newChildren.addAll(replacement);
 					modified = true;
@@ -88,4 +101,17 @@ public interface Tree<T extends Tree<T>> {
 		}
 	}
 
+	default Optional<T> getFirstChild() {
+		if (getChildren().isEmpty()) {
+			return Optional.empty();
+		}
+		return Optional.of(getChildren().get(0));
+	}
+
+	default Optional<T> getLastChild() {
+		if (getChildren().isEmpty()) {
+			return Optional.empty();
+		}
+		return Optional.of(getChildren().get(getNumberOfChildren() - 1));
+	}
 }

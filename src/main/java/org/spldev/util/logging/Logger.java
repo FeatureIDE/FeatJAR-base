@@ -26,6 +26,7 @@ import java.io.*;
 import java.nio.file.*;
 import java.util.*;
 
+import org.spldev.util.cli.CLI;
 import org.spldev.util.data.Problem;
 import org.spldev.util.io.*;
 import org.spldev.util.job.*;
@@ -89,14 +90,14 @@ public final class Logger {
 
 	public synchronized static boolean setOutLog(LogType... logTypes) {
 		if (!installed) {
-			return logs.add(new Log("system:out", System.out, logTypes));
+			return logs.add(new Log(CLI.SYSTEM_OUTPUT, System.out, logTypes));
 		}
 		return false;
 	}
 
 	public synchronized static boolean setErrLog(LogType... logTypes) {
 		if (!installed) {
-			return logs.add(new Log("system:err", System.err, logTypes));
+			return logs.add(new Log(CLI.SYSTEM_ERROR, System.err, logTypes));
 		}
 		return false;
 	}
@@ -114,9 +115,7 @@ public final class Logger {
 			final List<OutputStream> outStreamList = new ArrayList<>();
 			final List<OutputStream> errStreamList = new ArrayList<>();
 			for (final Log log : logs) {
-				if (log.enabledLogTypes.contains(LogType.DEBUG)) {
-					outStreamList.add(log.out);
-				}
+				outStreamList.add(log.out);
 				if (log.enabledLogTypes.contains(LogType.ERROR)) {
 					errStreamList.add(log.out);
 				}

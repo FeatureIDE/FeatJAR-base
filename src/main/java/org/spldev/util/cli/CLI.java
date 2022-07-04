@@ -23,10 +23,22 @@
 package org.spldev.util.cli;
 
 import java.io.*;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.*;
 import java.util.concurrent.*;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
+import org.spldev.util.data.Result;
 import org.spldev.util.extension.*;
+import org.spldev.util.io.FileHandler;
+import org.spldev.util.io.format.Format;
+import org.spldev.util.io.format.FormatSupplier;
+import org.spldev.util.logging.Logger;
+import org.spldev.util.logging.TimeStampFormatter;
 
 /**
  * Command line interface for several functions of FeatureIDE.
@@ -34,6 +46,11 @@ import org.spldev.util.extension.*;
  * @author Sebastian Krieter
  */
 public class CLI {
+	public static final String DEFAULT_VERBOSITY = "info";
+	public static final String SYSTEM_INPUT = "system:in.xml";
+	public static final String SYSTEM_OUTPUT = "system:out";
+	public static final String SYSTEM_ERROR = "system:err";
+	private static final Pattern SYSTEM_INPUT_PATTERN = Pattern.compile("system:in\\.(.+)");
 
 	public static void main(String[] args) {
 		ExtensionLoader.load();
@@ -51,6 +68,27 @@ public class CLI {
 			}, () -> {
 				printError("The function " + functionName + " could not be found.");
 			});
+	}
+
+	public static void installLogger(String verbosity) {
+		String[] verbosities = new String[] { "none", "error", "info", "debug", "progress" };
+		if (!Arrays.asList(verbosities).contains(verbosity))
+			throw new IllegalArgumentException("invalid verbosity " + verbosity);
+		if (verbosity.equals("none")) {
+			Logger.setErrLog();
+		} else {
+			Logger.setErrLog(Logger.LogType.ERROR);
+		}
+		if (verbosity.equals("progress")) {
+			Logger.setOutLog(Logger.LogType.INFO, Logger.LogType.DEBUG, Logger.LogType.PROGRESS);
+		} else if (verbosity.equals("debug")) {
+			Logger.setOutLog(Logger.LogType.INFO, Logger.LogType.DEBUG);
+		} else if (verbosity.equals("info")) {
+			Logger.setOutLog(Logger.LogType.INFO);
+		} else if (verbosity.equals("error")) {
+			Logger.setOutLog();
+		}
+		Logger.install();
 	}
 
 	private static void printError(String errorMessage) {
@@ -98,4 +136,33 @@ public class CLI {
 		return null;
 	}
 
+	public static boolean isValidInput(String pathOrStdin) {
+		return SYSTEM_INPUT_PATTERN.matcher(pathOrStdin).matches() || Files.exists(Paths.get(pathOrStdin));
+	}
+
+	public static <T> Result<T> loadFile(String pathOrStdin, FormatSupplier<T> formatSupplier) {
+		Matcher matcher = SYSTEM_INPUT_PATTERN.matcher(pathOrStdin);
+		if (matcher.matches()) {
+			Path path = Paths.get("stdin." + matcher.group(1));
+			String content = new BufferedReader(
+				new InputStreamReader(System.in, FileHandler.DEFAULT_CHARSET))
+					.lines()
+					.collect(Collectors.joining("\n"));
+			return FileHandler.loadFromSource(content, path, formatSupplier);
+		} else {
+			return FileHandler.load(Paths.get(pathOrStdin), formatSupplier);
+		}
+	}
+
+	public static <T> void saveFile(T object, String pathOrStdout, Format<T> format) {
+		try {
+			if (pathOrStdout.equals(SYSTEM_OUTPUT)) {
+				FileHandler.save(object, System.out, format);
+			} else {
+				FileHandler.save(object, Paths.get(pathOrStdout), format);
+			}
+		} catch (final IOException e) {
+			Logger.logError(e);
+		}
+	}
 }

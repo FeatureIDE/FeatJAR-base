@@ -27,6 +27,7 @@ import java.util.function.*;
 import java.util.stream.*;
 
 import org.spldev.util.data.Problem.*;
+import org.spldev.util.io.format.ParseException;
 
 /**
  * Similarly to {@link Optional}, this wraps an object or {@code null} that is
@@ -47,6 +48,10 @@ public class Result<T> {
 
 	public static <T> Result<T> of(T object, List<Problem> problems) {
 		return new Result<>(object, problems);
+	}
+
+	public static <T> Result<T> ofOptional(Optional<T> optional) {
+		return new Result<>(optional.get(), null);
 	}
 
 	public static <T> Result<T> empty(List<Problem> problems) {
@@ -213,4 +218,16 @@ public class Result<T> {
 		return !problems.isEmpty();
 	}
 
+	public static Optional<Integer> indexToOptional(int index) {
+		return index == -1 ? Optional.empty() : Optional.of(index);
+	}
+
+	public static <U, V> Function<U, Optional<V>> wrapInOptional(Function<U, V> function) {
+		return t -> Optional.ofNullable(t).flatMap(t2 -> Optional.ofNullable(function.apply(t2)));
+	}
+
+	@Override
+	public String toString() {
+		return "Result{" + get() + "}";
+	}
 }
