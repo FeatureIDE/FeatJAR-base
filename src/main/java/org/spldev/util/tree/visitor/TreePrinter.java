@@ -41,8 +41,8 @@ public class TreePrinter implements TreeVisitor<String, Tree<?>> {
 	}
 
 	@Override
-	public String getResult() {
-		return treeStringBuilder.toString();
+	public Optional<String> getResult() {
+		return Optional.of(treeStringBuilder.toString());
 	}
 
 	public String getIndentation() {

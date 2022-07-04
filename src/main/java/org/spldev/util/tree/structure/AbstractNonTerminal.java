@@ -23,6 +23,7 @@
 package org.spldev.util.tree.structure;
 
 import java.util.*;
+import java.util.function.*;
 
 public abstract class AbstractNonTerminal<T extends Tree<T>> implements Tree<T> {
 
@@ -38,6 +39,17 @@ public abstract class AbstractNonTerminal<T extends Tree<T>> implements Tree<T> 
 	@Override
 	public List<? extends T> getChildren() {
 		return Collections.unmodifiableList(children);
+	}
+
+	public void mapChildren(Function<T, ? extends T> mapper) {
+		Objects.requireNonNull(mapper);
+		for (ListIterator<T> it = children.listIterator(); it.hasNext();) {
+			final T child = it.next();
+			final T replacement = mapper.apply(child);
+			if ((replacement != null) && (replacement != child)) {
+				it.set(replacement);
+			}
+		}
 	}
 
 }

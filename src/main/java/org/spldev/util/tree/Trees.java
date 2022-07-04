@@ -58,7 +58,7 @@ public final class Trees {
 		visitor.reset();
 		try {
 			dfsComplete(node, visitor);
-			return Optional.ofNullable(visitor.getResult());
+			return visitor.getResult();
 		} catch (final VisitorFailException e) {
 			return Optional.empty();
 		}
@@ -68,7 +68,7 @@ public final class Trees {
 		visitor.reset();
 		try {
 			dfsPrePost(node, visitor);
-			return Optional.ofNullable(visitor.getResult());
+			return visitor.getResult();
 		} catch (final VisitorFailException e) {
 			return Optional.empty();
 		}

@@ -42,7 +42,7 @@ public interface Tree<T extends Tree<T>> {
 		return !getChildren().isEmpty();
 	}
 
-	Collection<? extends T> getChildren();
+	List<? extends T> getChildren();
 
 	void setChildren(Collection<? extends T> children);
 
@@ -69,7 +69,7 @@ public interface Tree<T extends Tree<T>> {
 
 	default void mapChildren(Function<T, ? extends T> mapper) {
 		Objects.requireNonNull(mapper);
-		final Collection<? extends T> oldChildren = getChildren();
+		final List<? extends T> oldChildren = getChildren();
 		if (!oldChildren.isEmpty()) {
 			final List<T> newChildren = new ArrayList<>(oldChildren.size());
 			boolean modified = false;

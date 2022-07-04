@@ -58,8 +58,8 @@ public class TreeDepthCounter implements TreeVisitor<Integer, Tree<?>> {
 	}
 
 	@Override
-	public Integer getResult() {
-		return maxDepth;
+	public Optional<Integer> getResult() {
+		return Optional.of(maxDepth);
 	}
 
 	public Class<? extends Tree<?>> getTerminalNode() {

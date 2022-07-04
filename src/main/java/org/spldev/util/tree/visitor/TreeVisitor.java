@@ -59,8 +59,8 @@ public interface TreeVisitor<R, T extends Tree<?>> {
 	default void reset() {
 	}
 
-	default R getResult() {
-		return null;
+	default Optional<R> getResult() {
+		return Optional.empty();
 	}
 
 }
