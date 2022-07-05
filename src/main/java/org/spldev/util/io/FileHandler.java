@@ -35,7 +35,7 @@ import org.spldev.util.io.format.*;
  *
  * @author Sebastian Krieter
  */
-public class FileHandler<T> {
+public class FileHandler {
 
 	public static final Charset DEFAULT_CHARSET = StandardCharsets.UTF_8;
 
