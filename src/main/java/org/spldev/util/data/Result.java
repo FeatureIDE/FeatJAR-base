@@ -27,7 +27,6 @@ import java.util.function.*;
 import java.util.stream.*;
 
 import org.spldev.util.data.Problem.*;
-import org.spldev.util.io.format.ParseException;
 
 /**
  * Similarly to {@link Optional}, this wraps an object or {@code null} that is

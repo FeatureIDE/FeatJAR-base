@@ -25,6 +25,7 @@ package org.spldev.util.tree.structure;
 import org.spldev.util.data.Result;
 
 import java.util.*;
+import java.util.function.*;
 
 public abstract class AbstractNonTerminal<T extends Tree<T>> implements Tree<T> {
 
@@ -79,6 +80,17 @@ public abstract class AbstractNonTerminal<T extends Tree<T>> implements Tree<T> 
 	public void replaceChild(T oldChild, T newChild) {
 		final int index = children.indexOf(oldChild);
 		children.set(index, newChild);
+	}
+
+	public void mapChildren(Function<T, ? extends T> mapper) {
+		Objects.requireNonNull(mapper);
+		for (ListIterator<T> it = children.listIterator(); it.hasNext();) {
+			final T child = it.next();
+			final T replacement = mapper.apply(child);
+			if ((replacement != null) && (replacement != child)) {
+				it.set(replacement);
+			}
+		}
 	}
 
 }

@@ -13,6 +13,6 @@
 	<packaging>jar</packaging>
 
 	<name>Util Lib</name>
-	<description>Miscellaneous utility functions.</description>
+	<description>Miscellaneous utility functions</description>
 	<url>https://github.com/skrieter/utils</url>
 </project>

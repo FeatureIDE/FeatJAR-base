@@ -1,9 +1,0 @@
-license:
-  name: lgpl
-  version: 3
-program:
-  name: Util Lib
-  description: Miscellaneous utility functions.
-  authors: Sebastian Krieter
-  url: https://github.com/skrieter/utils
-  year: 2021-2022

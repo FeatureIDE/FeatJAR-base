@@ -22,13 +22,8 @@
  */
 package org.spldev.util.tree.structure;
 
-import org.spldev.util.tree.Trees;
-
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Objects;
-import java.util.Optional;
-import java.util.function.Function;
+import java.util.*;
+import java.util.function.*;
 
 /**
  * Interface for a tree node.

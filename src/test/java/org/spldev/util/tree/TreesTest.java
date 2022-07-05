@@ -175,9 +175,9 @@ public class TreesTest {
 
 		final Optional<Void> result = Trees.traverse(root1, new TreeVisitor<Void, SimpleTree<String>>() {
 			@Override
-			public Void getResult() {
-				final Void result = TreeVisitor.super.getResult();
-				assertNull(result);
+			public Optional<Void> getResult() {
+				final Optional<Void> result = TreeVisitor.super.getResult();
+				assertTrue(result.isEmpty());
 				actualCallOrder.add("result");
 				return result;
 			}
@@ -226,7 +226,7 @@ public class TreesTest {
 
 		assertThrows(RuntimeException.class, () -> Trees.traverse(root1, new TreeVisitor<Void, SimpleTree<?>>() {
 			@Override
-			public Void getResult() {
+			public Optional<Void> getResult() {
 				throw new RuntimeException();
 			}
 		}));
@@ -269,9 +269,9 @@ public class TreesTest {
 
 		final Optional<Void> result = Trees.traverse(root1, new DfsVisitor<Void, SimpleTree<String>>() {
 			@Override
-			public Void getResult() {
-				final Void result = DfsVisitor.super.getResult();
-				assertNull(result);
+			public Optional<Void> getResult() {
+				final Optional<Void> result = DfsVisitor.super.getResult();
+				assertTrue(result.isEmpty());
 				actualCallOrder.add("result");
 				return result;
 			}
@@ -335,7 +335,7 @@ public class TreesTest {
 
 		assertThrows(RuntimeException.class, () -> Trees.traverse(root1, new DfsVisitor<Void, SimpleTree<?>>() {
 			@Override
-			public Void getResult() {
+			public Optional<Void> getResult() {
 				throw new RuntimeException();
 			}
 		}));
