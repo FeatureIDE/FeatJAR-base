@@ -47,6 +47,7 @@ public abstract class FileMapper<T extends File> implements AutoCloseable {
 
 	protected static List<Path> walkDirectory(Path rootPath) throws IOException {
 		List<Path> paths;
+		rootPath = rootPath != null ? rootPath : Paths.get("");
 		try (Stream<Path> walk = Files.walk(rootPath)) {
 			paths = walk.filter(Files::isRegularFile).collect(Collectors.toList());
 		}

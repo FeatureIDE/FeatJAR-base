@@ -84,9 +84,10 @@ public interface Format<T> extends Extension {
 	}
 
 	/**
-	 * Writes the information of an object directly to the {@link org.spldev.util.io.file.OutputFile} object.
+	 * Writes the information of an object directly to the
+	 * {@link org.spldev.util.io.file.OutputFile} object.
 	 * 
-	 * @param object     the object to get the information from.
+	 * @param object           the object to get the information from.
 	 * @param outputFileMapper the source mapper to write to.
 	 */
 	default void write(T object, OutputFileMapper outputFileMapper) throws IOException {

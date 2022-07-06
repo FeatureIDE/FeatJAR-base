@@ -67,4 +67,10 @@ public class InputFileMapper extends FileMapper<InputFile> {
 		return ofStrings(Map.of(DEFAULT_MAIN_PATH, text), null, DEFAULT_MAIN_PATH, charset, fileExtension,
 			options);
 	}
+
+	public InputFileMapper withMainFile(Path newMainPath) { // todo: return Result?
+		if (getFile(newMainPath).isEmpty())
+			throw new IllegalArgumentException("file " + newMainPath + " not mapped");
+		return new InputFileMapper(fileMap, newMainPath);
+	}
 }

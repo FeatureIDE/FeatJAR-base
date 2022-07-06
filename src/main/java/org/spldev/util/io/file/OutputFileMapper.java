@@ -69,12 +69,17 @@ public class OutputFileMapper extends FileMapper<OutputFile> {
 			path -> Result.of(new OutputFile(charset)));
 	}
 
+	public OutputFileMapper withMainFile(Path newMainPath) { // todo: return Result?
+		if (createFile(newMainPath).isEmpty())
+			throw new IllegalArgumentException("not allowed to create new files");
+		return new OutputFileMapper(fileMap, newMainPath, fileCreator);
+	}
+
 	public Result<OutputFile> createFile(Path path) {
 		Optional<OutputFile> file = getFile(path);
 		if (file.isPresent())
 			return Result.of(file.get());
 		Result<OutputFile> fileResult = fileCreator.apply(path);
-		fileResult.addProblem(new Problem("created new file at " + path, Problem.Severity.INFO));
 		if (fileResult.isPresent())
 			fileMap.put(path, fileResult.get());
 		return fileResult;
