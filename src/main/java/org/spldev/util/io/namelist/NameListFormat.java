@@ -68,14 +68,14 @@ public class NameListFormat implements Format<List<NameListFormat.NameEntry>> {
 	private static final String STOP_MARK = "###";
 
 	@Override
-	public Result<List<NameEntry>> parse(Input source) {
-		final List<String> lines = source.getLines().collect(Collectors.toList());
+	public Result<List<NameEntry>> parse(SourceMapper sourceMapper) {
+		final List<String> lines = sourceMapper.getMainSource().getLines().collect(Collectors.toList());
 		return parse(lines, new ArrayList<>(lines.size()));
 	}
 
 	@Override
-	public Result<List<NameEntry>> parse(Input source, Supplier<List<NameEntry>> supplier) {
-		final List<String> lines = source.getLines().collect(Collectors.toList());
+	public Result<List<NameEntry>> parse(SourceMapper sourceMapper, Supplier<List<NameEntry>> supplier) {
+		final List<String> lines = sourceMapper.getMainSource().getLines().collect(Collectors.toList());
 		return parse(lines, supplier.get());
 	}
 

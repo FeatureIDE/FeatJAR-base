@@ -26,11 +26,11 @@ import java.nio.charset.*;
 import java.util.stream.*;
 
 /**
- * Input header to determine whether a format can parse a particular content.
+ * Source header to determine whether a format can parse a particular content.
  * 
  * @author Sebastian Krieter
  */
-public class InputHeader {
+public class SourceHeader {
 
 	/**
 	 * Maximum number of bytes in the header.
@@ -43,7 +43,7 @@ public class InputHeader {
 
 	private final String fileExtension;
 
-	public InputHeader(String fileExtension, byte[] header, Charset charset) {
+	public SourceHeader(String fileExtension, byte[] header, Charset charset) {
 		this.fileExtension = fileExtension;
 		this.header = header;
 		this.charset = charset;

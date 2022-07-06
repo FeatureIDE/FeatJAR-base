@@ -213,6 +213,10 @@ public class Result<T> {
 		return Collections.unmodifiableList(problems);
 	}
 
+	public void addProblem(Problem problem) {
+		problems.add(problem);
+	}
+
 	public boolean hasProblems() {
 		return !problems.isEmpty();
 	}

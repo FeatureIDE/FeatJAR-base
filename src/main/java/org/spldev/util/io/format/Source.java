@@ -33,48 +33,47 @@ import org.spldev.util.io.*;
 import org.spldev.util.logging.*;
 
 /**
- * Input for a format.
- * 
+ * Source of data for a {@link Format}, which can be read or written to.
+ * Intended for a single parse or write operation - writes to the outputStream
+ * are not necessarily reflected in the inputStream.
+ *
  * @author Sebastian Krieter
+ * @author Elias Kuiter
  */
-public final class Input implements AutoCloseable {
-
-	private final InputStream source;
-
+public final class Source implements AutoCloseable {
+	private final InputStream inputStream;
+	private final OutputStream outputStream;
 	private final Charset charset;
-
 	private final String fileExtension;
 
-	public Input(InputStream source, Charset charset, String fileExtension) {
-		this.source = source;
+	public Source(InputStream inputStream, OutputStream outputStream, Charset charset, String fileExtension) {
+		this.inputStream = inputStream; // new BufferedInputStream(inputStream);
+		this.outputStream = outputStream; // new BufferedOutputStream(outputStream);
 		this.charset = charset;
 		this.fileExtension = fileExtension;
 	}
 
-	public Input(Path path, Charset charset) throws IOException {
-		this(new BufferedInputStream(Files.newInputStream(path, StandardOpenOption.READ)), charset, FileHandler
-			.getFileExtension(path));
+	public Source(Path path, Charset charset) throws IOException {
+		this(Files.newInputStream(path, StandardOpenOption.READ),
+			Files.newOutputStream(path,
+				StandardOpenOption.TRUNCATE_EXISTING,
+				StandardOpenOption.CREATE,
+				StandardOpenOption.WRITE),
+			charset,
+			FileHandler.getFileExtension(path));
 	}
 
-	public Input(String text, Charset charset, String fileExtension) {
-		this(new ByteArrayInputStream(text.getBytes(charset)), charset, fileExtension);
-	}
-
-	public Input(String text, String fileExtension) {
-		this(text, StandardCharsets.UTF_8, fileExtension);
-	}
-
-	public Input(String text) {
-		this(text, StandardCharsets.UTF_8, null);
+	public Source(String text, Charset charset, String fileExtension) {
+		this(new ByteArrayInputStream(text.getBytes(charset)), new ByteArrayOutputStream(), charset, fileExtension);
 	}
 
 	public Charset getCharset() {
 		return charset;
 	}
 
-	public Result<String> getCompleteText() {
+	public Result<String> readText() {
 		try {
-			return Result.of(new String(source.readAllBytes(), charset));
+			return Result.of(new String(inputStream.readAllBytes(), charset));
 		} catch (final IOException e) {
 			Logger.logError(e);
 			return Result.empty(e);
@@ -82,7 +81,7 @@ public final class Input implements AutoCloseable {
 	}
 
 	public BufferedReader getReader() {
-		return new BufferedReader(new InputStreamReader(source, charset));
+		return new BufferedReader(new InputStreamReader(inputStream, charset));
 	}
 
 	public Stream<String> getLines() {
@@ -90,31 +89,41 @@ public final class Input implements AutoCloseable {
 	}
 
 	public InputStream getInputStream() {
-		return source;
+		return inputStream;
 	}
 
-	public Result<InputHeader> getInputHeader() {
-		final byte[] bytes = new byte[InputHeader.MAX_HEADER_SIZE];
+	public Result<SourceHeader> getSourceHeader() {
+		final byte[] bytes = new byte[SourceHeader.MAX_HEADER_SIZE];
 		try {
 			try {
-				source.mark(InputHeader.MAX_HEADER_SIZE);
-				final int byteCount = source.read(bytes, 0, InputHeader.MAX_HEADER_SIZE);
-				return Result.of(new InputHeader(fileExtension, //
-					byteCount == InputHeader.MAX_HEADER_SIZE
+				inputStream.mark(SourceHeader.MAX_HEADER_SIZE);
+				final int byteCount = inputStream.read(bytes, 0, SourceHeader.MAX_HEADER_SIZE);
+				return Result.of(new SourceHeader(fileExtension, //
+					byteCount == SourceHeader.MAX_HEADER_SIZE
 						? bytes
 						: Arrays.copyOf(bytes, byteCount), //
 					charset));
 			} finally {
-				source.reset();
+				inputStream.reset();
 			}
 		} catch (final IOException e) {
 			return Result.empty(e);
 		}
 	}
 
+	public void writeText(String text) throws IOException {
+		outputStream.write(text.getBytes(charset));
+		outputStream.flush();
+	}
+
+	public OutputStream getOutputStream() {
+		return outputStream;
+	}
+
 	@Override
 	public void close() throws IOException {
-		source.close();
+		inputStream.close();
+		outputStream.close();
 	}
 
 }

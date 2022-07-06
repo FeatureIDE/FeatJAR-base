@@ -143,7 +143,7 @@ public class CLI {
 				new InputStreamReader(System.in, FileHandler.DEFAULT_CHARSET))
 					.lines()
 					.collect(Collectors.joining("\n"));
-			return FileHandler.loadFromSource(content, path, formatSupplier);
+			return FileHandler.load(content, path, formatSupplier);
 		} else {
 			return FileHandler.load(Paths.get(pathOrStdin), formatSupplier);
 		}

@@ -55,8 +55,8 @@ public abstract class XMLFormat<T> implements Format<T> {
 	}
 
 	@Override
-	public boolean supportsContent(InputHeader inputHeader) {
-		return supportsParse() && getInputHeaderPattern().matcher(inputHeader.getText()).find();
+	public boolean supportsContent(SourceHeader sourceHeader) {
+		return supportsParse() && getInputHeaderPattern().matcher(sourceHeader.getText()).find();
 	}
 
 	/**
@@ -124,11 +124,12 @@ public abstract class XMLFormat<T> implements Format<T> {
 	}
 
 	@Override
-	public Result<T> parse(Input source) {
+	public Result<T> parse(SourceMapper sourceMapper) {
 		try {
 			parseProblems.clear();
 			final Document document = DocumentBuilderFactory.newInstance().newDocumentBuilder().newDocument();
-			SAXParserFactory.newInstance().newSAXParser().parse(new InputSource(source.getReader()),
+			SAXParserFactory.newInstance().newSAXParser().parse(new InputSource(sourceMapper.getMainSource()
+				.getReader()),
 				new org.spldev.util.io.PositionalXMLHandler(document));
 			document.getDocumentElement().normalize();
 			return Result.of(parseDocument(document), parseProblems);

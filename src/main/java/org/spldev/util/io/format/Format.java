@@ -33,6 +33,7 @@ import org.spldev.util.extension.*;
  * 
  * @param <T> type of read/written data
  * @author Sebastian Krieter
+ * @author Elias Kuiter
  */
 public interface Format<T> extends Extension {
 
@@ -40,14 +41,14 @@ public interface Format<T> extends Extension {
 	 * Parses the contents of the given source and stores all information into a new
 	 * object of type T.
 	 *
-	 * @param source the source content.
+	 * @param sourceMapper the source mapper that provides the source content.
 	 * @return A {@link Result} containing the parsed object or a list of problems
 	 *         that occurred during the parsing process.
 	 *
-	 * @see #parse(Input, Supplier)
+	 * @see #parse(SourceMapper, Supplier)
 	 * @see #supportsParse()
 	 */
-	default Result<T> parse(Input source) {
+	default Result<T> parse(SourceMapper sourceMapper) {
 		throw new UnsupportedOperationException();
 	}
 
@@ -55,15 +56,15 @@ public interface Format<T> extends Extension {
 	 * Parses the contents of the given source and stores all information into a new
 	 * object of type T that is provided by the given supplier.
 	 *
-	 * @param source   the source content.
-	 * @param supplier the supplier for returned object.
+	 * @param sourceMapper the source mapper that provides the source content.
+	 * @param supplier     the supplier for returned object.
 	 * @return A {@link Result} containing the parsed object or a list of problems
 	 *         that occurred during the parsing process.
 	 *
 	 * @see #supportsParse()
 	 */
-	default Result<T> parse(Input source, Supplier<T> supplier) {
-		return parse(source);
+	default Result<T> parse(SourceMapper sourceMapper, Supplier<T> supplier) {
+		return parse(sourceMapper);
 	}
 
 	/**
@@ -80,13 +81,13 @@ public interface Format<T> extends Extension {
 	}
 
 	/**
-	 * Writes the information of an object directly to the {@link Output} object.
+	 * Writes the information of an object directly to the {@link Source} object.
 	 * 
-	 * @param object the object to get the information from.
-	 * @param out    the object to write to.
+	 * @param object       the object to get the information from.
+	 * @param sourceMapper the source mapper to write to.
 	 */
-	default void write(T object, Output out) throws IOException {
-		out.writeText(serialize(object));
+	default void write(T object, SourceMapper sourceMapper) throws IOException {
+		sourceMapper.getMainSource().writeText(serialize(object));
 	}
 
 	/**
@@ -106,10 +107,10 @@ public interface Format<T> extends Extension {
 
 	/**
 	 * Returns an instance of this format. Clients should always call this method
-	 * before calling any of {@link #parse(Input)}, {@link #parse(Input,
-	 * Supplier<T>)}, {@link #serialize(Object)}, or {@link #write(Object, Output)}
-	 * and call these methods the returned value to avoid any unintended concurrent
-	 * access.<br>
+	 * before calling any of {@link #parse(SourceMapper)},
+	 * {@link #parse(SourceMapper, Supplier<T>)}, {@link #serialize(Object)}, or
+	 * {@link #write(Object, SourceMapper)} and call these methods the returned
+	 * value to avoid any unintended concurrent access.<br>
 	 * <br>
 	 * <b>Example</b> <code>
 	 * Format&lt;?&gt; format = getFormat();
@@ -124,7 +125,8 @@ public interface Format<T> extends Extension {
 	}
 
 	/**
-	 * Returns whether this format supports the {@link #parse(Input)} operation.
+	 * Returns whether this format supports the {@link #parse(SourceMapper)}
+	 * operation.
 	 *
 	 * @return {@code true} if {@code read} is allowed by this format, {@code false}
 	 *         otherwise.
@@ -147,11 +149,11 @@ public interface Format<T> extends Extension {
 	/**
 	 * Returns whether this format supports the parsing of the given content.
 	 *
-	 * @param inputHeader The beginning of the content to be parsed.
+	 * @param sourceHeader The beginning of the content to be parsed.
 	 * @return {@code true} if the content should be parsable by this format,
 	 *         {@code false} otherwise.
 	 */
-	default boolean supportsContent(InputHeader inputHeader) {
+	default boolean supportsContent(SourceHeader sourceHeader) {
 		return supportsParse();
 	}
 

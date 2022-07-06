@@ -39,11 +39,11 @@ public interface FormatSupplier<T> {
 	/**
 	 * Returns the format that fits the given parameter.
 	 *
-	 * @param inputHeader the beginning of the file's content
+	 * @param sourceHeader the beginning of the file's content
 	 *
 	 * @return A {@link Format format} that uses the file extension of the given
 	 *         path. Result may be if there is no suitable format.
 	 */
-	Result<Format<T>> getFormat(InputHeader inputHeader);
+	Result<Format<T>> getFormat(SourceHeader sourceHeader);
 
 }
