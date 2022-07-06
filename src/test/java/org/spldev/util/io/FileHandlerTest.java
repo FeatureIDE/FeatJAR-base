@@ -18,6 +18,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
@@ -165,6 +166,9 @@ public class FileHandlerTest {
             assertEquals(2, result.get().getFirstChild().get().getData());
 			assertEquals(3, result.get().getLastChild().get().getData());
 			assertEquals(4, result.get().getLastChild().get().getFirstChild().get().getData());
+
+			Map<Path, String> stringMap = FileHandler.printHierarchy(result.get(), new IntegerTreeFormat());
+			assertTrue(stringMap.get(Paths.get("__main__")).startsWith("1"));
 		} finally {
 			Files.walk(Paths.get(""), 1).forEach(path -> {
 				if (path.getFileName().toString().endsWith(".dat")) {
@@ -177,4 +181,6 @@ public class FileHandlerTest {
 			});
 		}
 	}
+
+	// todo: subdirs
 }

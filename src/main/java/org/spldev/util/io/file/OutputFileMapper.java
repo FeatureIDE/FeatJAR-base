@@ -9,6 +9,7 @@ import java.nio.charset.Charset;
 import java.nio.file.Path;
 import java.util.*;
 import java.util.function.Function;
+import java.util.stream.Collectors;
 
 public class OutputFileMapper extends FileMapper<OutputFile> {
 	protected final Function<Path, Result<OutputFile>> fileCreator;
@@ -69,7 +70,7 @@ public class OutputFileMapper extends FileMapper<OutputFile> {
 			path -> Result.of(new OutputFile(charset)));
 	}
 
-	public OutputFileMapper withMainFile(Path newMainPath) { // todo: return Result?
+	public OutputFileMapper withMainFile(Path newMainPath) { // todo: return Result? // todo: handle relative paths / subdirs?
 		if (createFile(newMainPath).isEmpty())
 			throw new IllegalArgumentException("not allowed to create new files");
 		return new OutputFileMapper(fileMap, newMainPath, fileCreator);
@@ -83,5 +84,10 @@ public class OutputFileMapper extends FileMapper<OutputFile> {
 		if (fileResult.isPresent())
 			fileMap.put(path, fileResult.get());
 		return fileResult;
+	}
+
+	public Map<Path, OutputStream> getOutputStreams() {
+		return fileMap.entrySet().stream()
+				.collect(Collectors.toMap(Map.Entry::getKey, e -> e.getValue().getOutputStream()));
 	}
 }

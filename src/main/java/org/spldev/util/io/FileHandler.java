@@ -25,7 +25,10 @@ package org.spldev.util.io;
 import java.io.*;
 import java.nio.charset.*;
 import java.nio.file.*;
+import java.util.Collections;
+import java.util.Map;
 import java.util.function.*;
+import java.util.stream.Collectors;
 
 import org.spldev.util.data.*;
 import org.spldev.util.io.file.FileMapper;
@@ -329,7 +332,7 @@ public class FileHandler {
 	}
 
 	public static <T> String print(T object, Format<T> format, FileMapper.Options... fileMapperOptions)
-		throws IOException {
+			throws IOException {
 		if (format.supportsSerialize()) {
 			try (OutputFileMapper outputFileMapper = OutputFileMapper.ofString(DEFAULT_CHARSET, fileMapperOptions)) {
 				format.getInstance().write(object, outputFileMapper);
@@ -337,6 +340,18 @@ public class FileHandler {
 			}
 		}
 		return "";
+	}
+
+	public static <T> Map<Path, String> printHierarchy(T object, Format<T> format, FileMapper.Options... fileMapperOptions)
+			throws IOException {
+		if (format.supportsSerialize()) {
+			try (OutputFileMapper outputFileMapper = OutputFileMapper.ofString(DEFAULT_CHARSET, fileMapperOptions)) {
+				format.getInstance().write(object, outputFileMapper);
+				return outputFileMapper.getOutputStreams().entrySet().stream()
+						.collect(Collectors.toMap(Map.Entry::getKey, e -> e.getValue().toString()));
+			}
+		}
+		return Collections.emptyMap();
 	}
 
 	public static <T> void write(String content, Path path, Charset charset) throws IOException {

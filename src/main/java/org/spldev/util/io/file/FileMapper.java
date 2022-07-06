@@ -90,7 +90,7 @@ public abstract class FileMapper<T extends File> implements AutoCloseable {
 
 	public Optional<T> resolveFile(T relativeTo, Path path) {
 		return getFile(getPath(relativeTo)
-			.orElseThrow(() -> new IllegalArgumentException("can only resolve against known file"))
+			.orElseThrow(() -> new IllegalArgumentException("can only resolve against known file")) // todo: throw?
 			.resolve(path));
 	}
 
