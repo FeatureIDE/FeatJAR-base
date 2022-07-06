@@ -25,6 +25,8 @@ package org.spldev.util.io.binary;
 import java.io.*;
 
 import org.spldev.util.data.Result;
+import org.spldev.util.io.file.InputFileMapper;
+import org.spldev.util.io.file.OutputFileMapper;
 import org.spldev.util.io.format.*;
 import org.spldev.util.logging.*;
 
@@ -38,8 +40,8 @@ public class SerializableObjectFormat<T> implements Format<T> {
 	public static final String ID = SerializableObjectFormat.class.getCanonicalName();
 
 	@Override
-	public void write(T object, SourceMapper sourceMapper) throws IOException {
-		final OutputStream outputStream = sourceMapper.getMainSource().getOutputStream();
+	public void write(T object, OutputFileMapper outputFileMapper) throws IOException {
+		final OutputStream outputStream = outputFileMapper.getMainFile().getOutputStream();
 		try (ObjectOutputStream oos = new ObjectOutputStream(outputStream)) {
 			oos.writeObject(object);
 			oos.flush();
@@ -50,8 +52,8 @@ public class SerializableObjectFormat<T> implements Format<T> {
 	}
 
 	@Override
-	public Result<T> parse(SourceMapper sourceMapper) {
-		try (ObjectInputStream in = new ObjectInputStream(sourceMapper.getMainSource().getInputStream())) {
+	public Result<T> parse(InputFileMapper inputFileMapper) {
+		try (ObjectInputStream in = new ObjectInputStream(inputFileMapper.getMainFile().getInputStream())) {
 			@SuppressWarnings("unchecked")
 			final T readObject = (T) in.readObject();
 			return Result.of(readObject);

@@ -29,6 +29,7 @@ import java.util.stream.*;
 import org.spldev.util.data.Result;
 import org.spldev.util.extension.*;
 import org.spldev.util.io.*;
+import org.spldev.util.io.file.InputFileHeader;
 
 /**
  * Manages additional formats for a certain object.
@@ -49,15 +50,15 @@ public class FormatManager<T> extends ExtensionPoint<Format<T>> implements Forma
 	}
 
 	@Override
-	public Result<Format<T>> getFormat(SourceHeader sourceHeader) {
+	public Result<Format<T>> getFormat(InputFileHeader inputFileHeader) {
 		final List<Format<T>> extensions = getExtensions();
 		return extensions.stream()
-			.filter(format -> Objects.equals(sourceHeader.getFileExtension(), format.getFileExtension()))
-			.filter(format -> format.supportsContent(sourceHeader))
+			.filter(format -> Objects.equals(inputFileHeader.getFileExtension(), format.getFileExtension()))
+			.filter(format -> format.supportsContent(inputFileHeader))
 			.findFirst()
 			.map(Result::of)
 			.orElseGet(() -> Result.empty(new NoSuchExtensionException("No suitable format found for file extension \"."
-				+ sourceHeader.getFileExtension() + "\". Possible Formats: " + getExtensions())));
+				+ inputFileHeader.getFileExtension() + "\". Possible Formats: " + getExtensions())));
 	}
 
 	private List<Format<T>> getFormatList(final String fileExtension) {

@@ -20,17 +20,18 @@
  * See <https://github.com/skrieter/utils> for further information.
  * -----------------------------------------------------------------------------
  */
-package org.spldev.util.io.format;
+package org.spldev.util.io.file;
 
 import java.nio.charset.*;
 import java.util.stream.*;
 
 /**
- * Source header to determine whether a format can parse a particular content.
+ * Input file header to determine whether a format can parse a particular
+ * content.
  * 
  * @author Sebastian Krieter
  */
-public class SourceHeader {
+public class InputFileHeader {
 
 	/**
 	 * Maximum number of bytes in the header.
@@ -43,7 +44,7 @@ public class SourceHeader {
 
 	private final String fileExtension;
 
-	public SourceHeader(String fileExtension, byte[] header, Charset charset) {
+	public InputFileHeader(String fileExtension, byte[] header, Charset charset) {
 		this.fileExtension = fileExtension;
 		this.header = header;
 		this.charset = charset;

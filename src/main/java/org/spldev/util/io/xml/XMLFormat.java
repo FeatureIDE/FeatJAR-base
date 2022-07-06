@@ -3,6 +3,8 @@ package org.spldev.util.io.xml;
 import org.spldev.util.data.Problem;
 import org.spldev.util.data.Result;
 import org.spldev.util.io.PositionalXMLHandler;
+import org.spldev.util.io.file.InputFileHeader;
+import org.spldev.util.io.file.InputFileMapper;
 import org.spldev.util.io.format.*;
 import org.spldev.util.logging.Logger;
 import org.w3c.dom.Document;
@@ -55,8 +57,8 @@ public abstract class XMLFormat<T> implements Format<T> {
 	}
 
 	@Override
-	public boolean supportsContent(SourceHeader sourceHeader) {
-		return supportsParse() && getInputHeaderPattern().matcher(sourceHeader.getText()).find();
+	public boolean supportsContent(InputFileHeader inputFileHeader) {
+		return supportsParse() && getInputHeaderPattern().matcher(inputFileHeader.getText()).find();
 	}
 
 	/**
@@ -124,11 +126,11 @@ public abstract class XMLFormat<T> implements Format<T> {
 	}
 
 	@Override
-	public Result<T> parse(SourceMapper sourceMapper) {
+	public Result<T> parse(InputFileMapper inputFileMapper) {
 		try {
 			parseProblems.clear();
 			final Document document = DocumentBuilderFactory.newInstance().newDocumentBuilder().newDocument();
-			SAXParserFactory.newInstance().newSAXParser().parse(new InputSource(sourceMapper.getMainSource()
+			SAXParserFactory.newInstance().newSAXParser().parse(new InputSource(inputFileMapper.getMainFile()
 				.getReader()),
 				new org.spldev.util.io.PositionalXMLHandler(document));
 			document.getDocumentElement().normalize();

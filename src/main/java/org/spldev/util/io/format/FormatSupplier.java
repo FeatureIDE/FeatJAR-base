@@ -23,6 +23,7 @@
 package org.spldev.util.io.format;
 
 import org.spldev.util.data.Result;
+import org.spldev.util.io.file.InputFileHeader;
 
 /**
  * Provides a format for a given file content and file path.
@@ -39,11 +40,11 @@ public interface FormatSupplier<T> {
 	/**
 	 * Returns the format that fits the given parameter.
 	 *
-	 * @param sourceHeader the beginning of the file's content
+	 * @param inputFileHeader the beginning of the file's content
 	 *
 	 * @return A {@link Format format} that uses the file extension of the given
 	 *         path. Result may be if there is no suitable format.
 	 */
-	Result<Format<T>> getFormat(SourceHeader sourceHeader);
+	Result<Format<T>> getFormat(InputFileHeader inputFileHeader);
 
 }

@@ -20,51 +20,47 @@
  * See <https://github.com/skrieter/utils> for further information.
  * -----------------------------------------------------------------------------
  */
-package org.spldev.util.io.format;
-
-import java.io.*;
-import java.nio.charset.*;
-import java.nio.file.*;
-import java.util.*;
-import java.util.stream.*;
+package org.spldev.util.io.file;
 
 import org.spldev.util.data.Result;
-import org.spldev.util.io.*;
-import org.spldev.util.logging.*;
+import org.spldev.util.io.FileHandler;
+import org.spldev.util.io.format.Format;
+import org.spldev.util.logging.Logger;
+
+import java.io.*;
+import java.nio.charset.Charset;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.StandardOpenOption;
+import java.util.Arrays;
+import java.util.stream.Stream;
 
 /**
- * Source of data for a {@link Format}, which can be read or written to.
- * Intended for a single parse or write operation - writes to the outputStream
- * are not necessarily reflected in the inputStream.
+ * Input file for a {@link Format}, which can be read from. Can be a physical
+ * file, string, or arbitrary input stream.
  *
  * @author Sebastian Krieter
  * @author Elias Kuiter
  */
-public final class Source implements AutoCloseable {
+public final class InputFile implements File {
 	private final InputStream inputStream;
-	private final OutputStream outputStream;
 	private final Charset charset;
 	private final String fileExtension;
 
-	public Source(InputStream inputStream, OutputStream outputStream, Charset charset, String fileExtension) {
+	public InputFile(InputStream inputStream, Charset charset, String fileExtension) {
 		this.inputStream = inputStream; // new BufferedInputStream(inputStream);
-		this.outputStream = outputStream; // new BufferedOutputStream(outputStream);
 		this.charset = charset;
 		this.fileExtension = fileExtension;
 	}
 
-	public Source(Path path, Charset charset) throws IOException {
+	public InputFile(Path path, Charset charset) throws IOException {
 		this(Files.newInputStream(path, StandardOpenOption.READ),
-			Files.newOutputStream(path,
-				StandardOpenOption.TRUNCATE_EXISTING,
-				StandardOpenOption.CREATE,
-				StandardOpenOption.WRITE),
 			charset,
 			FileHandler.getFileExtension(path));
 	}
 
-	public Source(String text, Charset charset, String fileExtension) {
-		this(new ByteArrayInputStream(text.getBytes(charset)), new ByteArrayOutputStream(), charset, fileExtension);
+	public InputFile(String text, Charset charset, String fileExtension) {
+		this(new ByteArrayInputStream(text.getBytes(charset)), charset, fileExtension);
 	}
 
 	public Charset getCharset() {
@@ -92,14 +88,14 @@ public final class Source implements AutoCloseable {
 		return inputStream;
 	}
 
-	public Result<SourceHeader> getSourceHeader() {
-		final byte[] bytes = new byte[SourceHeader.MAX_HEADER_SIZE];
+	public Result<InputFileHeader> getInputFileHeader() {
+		final byte[] bytes = new byte[InputFileHeader.MAX_HEADER_SIZE];
 		try {
 			try {
-				inputStream.mark(SourceHeader.MAX_HEADER_SIZE);
-				final int byteCount = inputStream.read(bytes, 0, SourceHeader.MAX_HEADER_SIZE);
-				return Result.of(new SourceHeader(fileExtension, //
-					byteCount == SourceHeader.MAX_HEADER_SIZE
+				inputStream.mark(InputFileHeader.MAX_HEADER_SIZE);
+				final int byteCount = inputStream.read(bytes, 0, InputFileHeader.MAX_HEADER_SIZE);
+				return Result.of(new InputFileHeader(fileExtension, //
+					byteCount == InputFileHeader.MAX_HEADER_SIZE
 						? bytes
 						: Arrays.copyOf(bytes, byteCount), //
 					charset));
@@ -111,19 +107,9 @@ public final class Source implements AutoCloseable {
 		}
 	}
 
-	public void writeText(String text) throws IOException {
-		outputStream.write(text.getBytes(charset));
-		outputStream.flush();
-	}
-
-	public OutputStream getOutputStream() {
-		return outputStream;
-	}
-
 	@Override
 	public void close() throws IOException {
 		inputStream.close();
-		outputStream.close();
 	}
 
 }

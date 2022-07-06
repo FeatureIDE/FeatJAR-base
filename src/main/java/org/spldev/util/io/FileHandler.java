@@ -28,6 +28,9 @@ import java.nio.file.*;
 import java.util.function.*;
 
 import org.spldev.util.data.*;
+import org.spldev.util.io.file.FileMapper;
+import org.spldev.util.io.file.InputFileMapper;
+import org.spldev.util.io.file.OutputFileMapper;
 import org.spldev.util.io.format.*;
 
 /**
@@ -108,46 +111,46 @@ public class FileHandler {
 		Format<T> format, //
 		Charset charset //
 	) {
-		try (SourceMapper sourceMapper = SourceMapper.of(inputStream, OutputStream.nullOutputStream(), charset,
+		try (InputFileMapper inputFileMapper = InputFileMapper.ofInputStream(inputStream, charset,
 			EMPTY_FILE_EXTENSION)) {
-			return parse(sourceMapper, format);
+			return parse(inputFileMapper, format);
 		} catch (final IOException e) {
 			return Result.empty(e);
 		}
 	}
 
 	public static <T> Result<T> load(Path path, Format<T> format, //
-		SourceMapper.Options... sourceMapperOptions) {
-		return load(path, format, DEFAULT_CHARSET, sourceMapperOptions);
+		FileMapper.Options... fileMapperOptions) {
+		return load(path, format, DEFAULT_CHARSET, fileMapperOptions);
 	}
 
 	public static <T> Result<T> load(Path path, Format<T> format, Supplier<T> objectSupplier, //
-		SourceMapper.Options... sourceMapperOptions) {
-		return load(path, format, objectSupplier, DEFAULT_CHARSET, sourceMapperOptions);
+		FileMapper.Options... fileMapperOptions) {
+		return load(path, format, objectSupplier, DEFAULT_CHARSET, fileMapperOptions);
 	}
 
 	public static <T> Result<T> load(Path path, FormatSupplier<T> formatSupplier, //
-		SourceMapper.Options... sourceMapperOptions) {
-		return load(path, formatSupplier, DEFAULT_CHARSET, sourceMapperOptions);
+		FileMapper.Options... fileMapperOptions) {
+		return load(path, formatSupplier, DEFAULT_CHARSET, fileMapperOptions);
 	}
 
 	public static <T> Result<T> load(Path path, FormatSupplier<T> formatSupplier, Supplier<T> objectSupplier, //
-		SourceMapper.Options... sourceMapperOptions) {
-		return load(path, formatSupplier, objectSupplier, DEFAULT_CHARSET, sourceMapperOptions);
+		FileMapper.Options... fileMapperOptions) {
+		return load(path, formatSupplier, objectSupplier, DEFAULT_CHARSET, fileMapperOptions);
 	}
 
 	public static <T> Result<T> load(Path path, FormatSupplier<T> formatSupplier, FactorySupplier<T> factorySupplier, //
-		SourceMapper.Options... sourceMapperOptions) {
-		return load(path, formatSupplier, factorySupplier, DEFAULT_CHARSET, sourceMapperOptions);
+		FileMapper.Options... fileMapperOptions) {
+		return load(path, formatSupplier, factorySupplier, DEFAULT_CHARSET, fileMapperOptions);
 	}
 
 	public static <T> Result<T> load(//
 		Path path, //
 		Format<T> format, //
 		Charset charset, //
-		SourceMapper.Options... sourceMapperOptions) {
-		try (SourceMapper sourceMapper = SourceMapper.of(path, charset, sourceMapperOptions)) {
-			return parse(sourceMapper, format);
+		FileMapper.Options... fileMapperOptions) {
+		try (InputFileMapper inputFileMapper = InputFileMapper.of(path, charset, fileMapperOptions)) {
+			return parse(inputFileMapper, format);
 		} catch (final IOException e) {
 			return Result.empty(e);
 		}
@@ -158,9 +161,9 @@ public class FileHandler {
 		Format<T> format, //
 		Supplier<T> factory, //
 		Charset charset, //
-		SourceMapper.Options... sourceMapperOptions) {
-		try (SourceMapper sourceMapper = SourceMapper.of(path, charset, sourceMapperOptions)) {
-			return parse(sourceMapper, format, factory);
+		FileMapper.Options... fileMapperOptions) {
+		try (InputFileMapper inputFileMapper = InputFileMapper.of(path, charset, fileMapperOptions)) {
+			return parse(inputFileMapper, format, factory);
 		} catch (final IOException e) {
 			return Result.empty(e);
 		}
@@ -171,9 +174,9 @@ public class FileHandler {
 		FormatSupplier<T> formatSupplier, //
 		Supplier<T> factory, //
 		Charset charset, //
-		SourceMapper.Options... sourceMapperOptions) {
-		try (SourceMapper sourceMapper = SourceMapper.of(path, charset, sourceMapperOptions)) {
-			return parse(sourceMapper, formatSupplier, factory);
+		FileMapper.Options... fileMapperOptions) {
+		try (InputFileMapper inputFileMapper = InputFileMapper.of(path, charset, fileMapperOptions)) {
+			return parse(inputFileMapper, formatSupplier, factory);
 		} catch (final IOException e) {
 			return Result.empty(e);
 		}
@@ -183,9 +186,9 @@ public class FileHandler {
 		Path path, //
 		FormatSupplier<T> formatSupplier, //
 		Charset charset, //
-		SourceMapper.Options... sourceMapperOptions) {
-		try (SourceMapper sourceMapper = SourceMapper.of(path, charset, sourceMapperOptions)) {
-			return parse(sourceMapper, formatSupplier);
+		FileMapper.Options... fileMapperOptions) {
+		try (InputFileMapper inputFileMapper = InputFileMapper.of(path, charset, fileMapperOptions)) {
+			return parse(inputFileMapper, formatSupplier);
 		} catch (final IOException e) {
 			return Result.empty(e);
 		}
@@ -196,9 +199,9 @@ public class FileHandler {
 		FormatSupplier<T> formatSupplier, //
 		FactorySupplier<T> factorySupplier, //
 		Charset charset, //
-		SourceMapper.Options... sourceMapperOptions) {
-		try (SourceMapper sourceMapper = SourceMapper.of(path, charset, sourceMapperOptions)) {
-			return parse(path, sourceMapper, formatSupplier, factorySupplier);
+		FileMapper.Options... fileMapperOptions) {
+		try (InputFileMapper inputFileMapper = InputFileMapper.of(path, charset, fileMapperOptions)) {
+			return parse(path, inputFileMapper, formatSupplier, factorySupplier);
 		} catch (final IOException e) {
 			return Result.empty(e);
 		}
@@ -206,8 +209,9 @@ public class FileHandler {
 
 	public static <T> Result<T> load(String content, Format<T> format //
 	) {
-		try (SourceMapper sourceMapper = SourceMapper.of(content, DEFAULT_CHARSET, EMPTY_FILE_EXTENSION)) {
-			return parse(sourceMapper, format);
+		try (InputFileMapper inputFileMapper = InputFileMapper.ofString(content, DEFAULT_CHARSET,
+			EMPTY_FILE_EXTENSION)) {
+			return parse(inputFileMapper, format);
 		} catch (final IOException e) {
 			return Result.empty(e);
 		}
@@ -215,8 +219,9 @@ public class FileHandler {
 
 	public static <T> Result<T> load(String content, Format<T> format, Factory<T> factory //
 	) {
-		try (SourceMapper sourceMapper = SourceMapper.of(content, DEFAULT_CHARSET, EMPTY_FILE_EXTENSION)) {
-			return parse(sourceMapper, format, factory);
+		try (InputFileMapper inputFileMapper = InputFileMapper.ofString(content, DEFAULT_CHARSET,
+			EMPTY_FILE_EXTENSION)) {
+			return parse(inputFileMapper, format, factory);
 		} catch (final IOException e) {
 			return Result.empty(e);
 		}
@@ -225,8 +230,9 @@ public class FileHandler {
 	public static <T> Result<T> load(String content, Path path, FormatSupplier<T> formatSupplier,
 		Factory<T> factory //
 	) {
-		try (SourceMapper sourceMapper = SourceMapper.of(content, DEFAULT_CHARSET, getFileExtension(path))) {
-			return parse(sourceMapper, formatSupplier, factory);
+		try (InputFileMapper inputFileMapper = InputFileMapper.ofString(content, DEFAULT_CHARSET, getFileExtension(
+			path))) {
+			return parse(inputFileMapper, formatSupplier, factory);
 		} catch (final IOException e) {
 			return Result.empty(e);
 		}
@@ -234,8 +240,9 @@ public class FileHandler {
 
 	public static <T> Result<T> load(String content, Path path, FormatSupplier<T> formatSupplier //
 	) {
-		try (SourceMapper sourceMapper = SourceMapper.of(content, DEFAULT_CHARSET, getFileExtension(path))) {
-			return parse(sourceMapper, formatSupplier);
+		try (InputFileMapper inputFileMapper = InputFileMapper.ofString(content, DEFAULT_CHARSET, getFileExtension(
+			path))) {
+			return parse(inputFileMapper, formatSupplier);
 		} catch (final IOException e) {
 			return Result.empty(e);
 		}
@@ -244,89 +251,89 @@ public class FileHandler {
 	public static <T> Result<T> load(String content, Path path, FormatSupplier<T> formatSupplier,
 		FactorySupplier<T> factorySupplier //
 	) {
-		try (SourceMapper sourceMapper = SourceMapper.of(content, DEFAULT_CHARSET, getFileExtension(path))) {
-			return parse(path, sourceMapper, formatSupplier, factorySupplier);
+		try (InputFileMapper inputFileMapper = InputFileMapper.ofString(content, DEFAULT_CHARSET, getFileExtension(
+			path))) {
+			return parse(path, inputFileMapper, formatSupplier, factorySupplier);
 		} catch (final IOException e) {
 			return Result.empty(e);
 		}
 	}
 
-	private static <T> Result<T> parse(SourceMapper sourceMapper, Format<T> format, Supplier<T> factory) {
-		return format.supportsParse() ? format.getInstance().parse(sourceMapper, factory)
+	private static <T> Result<T> parse(InputFileMapper inputFileMapper, Format<T> format, Supplier<T> factory) {
+		return format.supportsParse() ? format.getInstance().parse(inputFileMapper, factory)
 			: Result.empty(new UnsupportedOperationException(format.toString()));
 	}
 
-	private static <T> Result<T> parse(SourceMapper sourceMapper, Format<T> format) {
-		return format.supportsParse() ? format.getInstance().parse(sourceMapper)
+	private static <T> Result<T> parse(InputFileMapper inputFileMapper, Format<T> format) {
+		return format.supportsParse() ? format.getInstance().parse(inputFileMapper)
 			: Result.empty(new UnsupportedOperationException(format.toString()));
 	}
 
 	private static <T> Result<T> parse(//
-		SourceMapper sourceMapper, //
+		InputFileMapper inputFileMapper, //
 		FormatSupplier<T> formatSupplier, //
 		Supplier<T> factory //
 	) {
-		return sourceMapper.getMainSource().getSourceHeader().flatMap(formatSupplier::getFormat) //
-			.flatMap(format -> parse(sourceMapper, format, factory));
+		return inputFileMapper.getMainFile().getInputFileHeader().flatMap(formatSupplier::getFormat) //
+			.flatMap(format -> parse(inputFileMapper, format, factory));
 	}
 
 	private static <T> Result<T> parse(//
-		SourceMapper sourceMapper, //
+		InputFileMapper inputFileMapper, //
 		FormatSupplier<T> formatSupplier //
 	) {
-		return sourceMapper.getMainSource().getSourceHeader().flatMap(formatSupplier::getFormat) //
-			.flatMap(format -> parse(sourceMapper, format));
+		return inputFileMapper.getMainFile().getInputFileHeader().flatMap(formatSupplier::getFormat) //
+			.flatMap(format -> parse(inputFileMapper, format));
 	}
 
 	private static <T> Result<T> parse(//
 		Path path, //
-		SourceMapper sourceMapper, //
+		InputFileMapper inputFileMapper, //
 		FormatSupplier<T> formatSupplier, //
 		FactorySupplier<T> factorySupplier //
 	) {
-		return sourceMapper.getMainSource().getSourceHeader().flatMap(formatSupplier::getFormat) //
+		return inputFileMapper.getMainFile().getInputFileHeader().flatMap(formatSupplier::getFormat) //
 			.flatMap(format -> factorySupplier.getFactory(path, format) //
-				.flatMap(factory -> parse(sourceMapper, format, factory)));
+				.flatMap(factory -> parse(inputFileMapper, format, factory)));
 	}
 
-	public static <T> void save(T object, Path path, Format<T> format, SourceMapper.Options... sourceMapperOptions)
+	public static <T> void save(T object, Path path, Format<T> format, FileMapper.Options... fileMapperOptions)
 		throws IOException {
-		save(object, path, format, DEFAULT_CHARSET, sourceMapperOptions);
+		save(object, path, format, DEFAULT_CHARSET, fileMapperOptions);
 	}
 
 	public static <T> void save(T object, Path path, Format<T> format, Charset charset,
-		SourceMapper.Options... sourceMapperOptions) throws IOException {
+		FileMapper.Options... fileMapperOptions) throws IOException {
 		if (format.supportsSerialize()) {
-			try (SourceMapper sourceMapper = SourceMapper.of(path, charset, sourceMapperOptions)) {
-				format.getInstance().write(object, sourceMapper);
+			try (OutputFileMapper outputFileMapper = OutputFileMapper.of(path, charset, fileMapperOptions)) {
+				format.getInstance().write(object, outputFileMapper);
 			}
 		}
 	}
 
 	public static <T> void save(T object, OutputStream outStream, Format<T> format,
-		SourceMapper.Options... sourceMapperOptions)
+		FileMapper.Options... fileMapperOptions)
 		throws IOException {
-		save(object, outStream, format, DEFAULT_CHARSET, sourceMapperOptions);
+		save(object, outStream, format, DEFAULT_CHARSET, fileMapperOptions);
 	}
 
 	public static <T> void save(T object, OutputStream outStream, Format<T> format, Charset charset,
-		SourceMapper.Options... sourceMapperOptions)
+		FileMapper.Options... fileMapperOptions)
 		throws IOException {
 		if (format.supportsSerialize()) {
-			try (SourceMapper sourceMapper = SourceMapper.of(InputStream.nullInputStream(), outStream, charset,
-				EMPTY_FILE_EXTENSION, sourceMapperOptions)) {
-				format.getInstance().write(object, sourceMapper);
+			try (OutputFileMapper outputFileMapper = OutputFileMapper.ofOutputStream(outStream, charset,
+				fileMapperOptions)) {
+				format.getInstance().write(object, outputFileMapper);
 			}
 		}
 	}
 
-	public static <T> String print(T object, Format<T> format, SourceMapper.Options... sourceMapperOptions)
+	public static <T> String print(T object, Format<T> format, FileMapper.Options... fileMapperOptions)
 		throws IOException {
 		if (format.supportsSerialize()) {
-			try (SourceMapper sourceMapper = SourceMapper.ofString("", DEFAULT_CHARSET, EMPTY_FILE_EXTENSION,
-				sourceMapperOptions)) {
-				format.getInstance().write(object, sourceMapper);
-				return sourceMapper.getMainSource().getOutputStream().toString();
+			try (OutputFileMapper outputFileMapper = OutputFileMapper.ofString(DEFAULT_CHARSET, fileMapperOptions)) {
+				format.getInstance().write(object, outputFileMapper);
+				return outputFileMapper.getMainFile().getOutputStream().toString();
 			}
 		}
 		return "";
