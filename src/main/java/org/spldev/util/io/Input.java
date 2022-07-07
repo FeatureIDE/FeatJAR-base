@@ -37,8 +37,8 @@ import java.util.Objects;
 import java.util.stream.Collectors;
 
 /**
- * Input for a {@link Format}, which can be read from. Can be a physical
- * file, string, or arbitrary input stream.
+ * Input for a {@link Format}, which can be read from. Can be a physical file,
+ * string, or arbitrary input stream.
  *
  * @author Sebastian Krieter
  * @author Elias Kuiter
@@ -52,7 +52,7 @@ public abstract class Input implements IOObject {
 		Objects.requireNonNull(inputStream);
 		Objects.requireNonNull(charset);
 		Objects.requireNonNull(fileExtension);
-		this.inputStream = inputStream;
+		this.inputStream = new BufferedInputStream(inputStream);
 		this.charset = charset;
 		this.fileExtension = fileExtension;
 	}
@@ -66,8 +66,8 @@ public abstract class Input implements IOObject {
 	public static class File extends Input {
 		public File(Path path, Charset charset) throws IOException {
 			super(Files.newInputStream(path, StandardOpenOption.READ),
-					charset,
-					IOObject.getFileExtension(path));
+				charset,
+				IOObject.getFileExtension(path));
 		}
 	}
 

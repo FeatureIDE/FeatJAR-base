@@ -7,7 +7,8 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 
 /**
- * Input or output (e.g., physical file, string, or stream) mapped by a {@link IOMapper}.
+ * Input or output (e.g., physical file, string, or stream) mapped by a
+ * {@link IOMapper}.
  *
  * @author Elias Kuiter
  */

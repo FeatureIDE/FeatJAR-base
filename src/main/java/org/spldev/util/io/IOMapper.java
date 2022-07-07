@@ -12,8 +12,9 @@ import java.util.stream.Stream;
 /**
  * Maps paths (e.g., on the physical file system) to inputs or outputs (e.g.,
  * physical files) to represent hierarchies of data (e.g., a fragmented feature
- * model). Has at least one main {@link IOObject}. Formats can freely decide whether to
- * process any other IO objects. Can represent the physical or a virtual file system.
+ * model). Has at least one main {@link IOObject}. Formats can freely decide
+ * whether to process any other IO objects. Can represent the physical or a
+ * virtual file system.
  *
  * @param <T>
  * @author Elias Kuiter
@@ -22,7 +23,8 @@ public abstract class IOMapper<T extends IOObject> implements AutoCloseable, Sup
 	public enum Options {
 		/**
 		 * Whether to map not only the given main file, but also all other files
-		 * residing in the same directory. Only supported for parsing {@link org.spldev.util.io.Input.File} objects.
+		 * residing in the same directory. Only supported for parsing
+		 * {@link org.spldev.util.io.Input.File} objects.
 		 */
 		INPUT_FILE_HIERARCHY,
 		/**
@@ -73,7 +75,7 @@ public abstract class IOMapper<T extends IOObject> implements AutoCloseable, Sup
 
 	protected static void checkParameters(Collection<Path> paths, Path rootPath, Path mainPath) {
 		if (rootPath != null && paths.stream().anyMatch(path -> !path.startsWith(
-				rootPath))) {
+			rootPath))) {
 			throw new IllegalArgumentException("all paths must start with the root path");
 		} else if (!paths.contains(mainPath)) {
 			throw new IllegalArgumentException("main path must be included");

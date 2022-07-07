@@ -61,7 +61,7 @@ public interface Format<T> extends Extension {
 	 * object of type T that is provided by the given supplier.
 	 *
 	 * @param inputMapper the source mapper that provides the source content.
-	 * @param supplier        the supplier for returned object.
+	 * @param supplier    the supplier for returned object.
 	 * @return A {@link Result} containing the parsed object or a list of problems
 	 *         that occurred during the parsing process.
 	 *
@@ -85,10 +85,9 @@ public interface Format<T> extends Extension {
 	}
 
 	/**
-	 * Writes the information of an object directly to the
-	 * {@link Output} object.
+	 * Writes the information of an object directly to the {@link Output} object.
 	 * 
-	 * @param object           the object to get the information from.
+	 * @param object       the object to get the information from.
 	 * @param outputMapper the source mapper to write to.
 	 */
 	default void write(T object, OutputMapper outputMapper) throws IOException {
@@ -112,8 +111,8 @@ public interface Format<T> extends Extension {
 
 	/**
 	 * Returns an instance of this format. Clients should always call this method
-	 * before calling any of {@link #parse(InputMapper)},
-	 * {@link #parse(InputMapper, Supplier<T>)}, {@link #serialize(Object)}, or
+	 * before calling any of {@link #parse(InputMapper)}, {@link #parse(InputMapper,
+	 * Supplier<T>)}, {@link #serialize(Object)}, or
 	 * {@link #write(Object, OutputMapper)} and call these methods the returned
 	 * value to avoid any unintended concurrent access.<br>
 	 * <br>

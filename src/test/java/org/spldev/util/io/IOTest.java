@@ -5,6 +5,7 @@ import org.opentest4j.AssertionFailedError;
 import org.spldev.util.data.Problem;
 import org.spldev.util.data.Result;
 import org.spldev.util.io.format.Format;
+import org.spldev.util.io.format.FormatSupplier;
 import org.spldev.util.tree.structure.SimpleTree;
 
 import java.io.ByteArrayInputStream;
@@ -88,7 +89,8 @@ public class IOTest {
 				return Result.empty();
 			SimpleTree<Integer> integerTree = new SimpleTree<>(Integer.valueOf(lines.remove(0)));
 			for (String line : lines) {
-				Result<SimpleTree<Integer>> result = inputMapper.withMainPath(IOObject.getPathWithExtension(line, getFileExtension()), () -> getInstance().parse(inputMapper));
+				Result<SimpleTree<Integer>> result = inputMapper.withMainPath(IOObject.getPathWithExtension(line,
+					getFileExtension()), () -> getInstance().parse(inputMapper));
 				if (result.isPresent())
 					integerTree.addChild(result.get());
 				else
@@ -105,9 +107,11 @@ public class IOTest {
 		@Override
 		public void write(SimpleTree<Integer> object, OutputMapper outputMapper) throws IOException {
 			outputMapper.get().writeText(serialize(object) + "\n" +
-					object.getChildren().stream().map(Object::hashCode).map(Objects::toString).collect(Collectors.joining("\n")));
+				object.getChildren().stream().map(Object::hashCode).map(Objects::toString).collect(Collectors.joining(
+					"\n")));
 			for (SimpleTree<Integer> child : object.getChildren()) {
-				outputMapper.withMainPath(IOObject.getPathWithExtension(String.valueOf(child.hashCode()), getFileExtension()), () -> getInstance().write(child, outputMapper));
+				outputMapper.withMainPath(IOObject.getPathWithExtension(String.valueOf(child.hashCode()),
+					getFileExtension()), () -> getInstance().write(child, outputMapper));
 			}
 		}
 	}
@@ -137,8 +141,9 @@ public class IOTest {
 		public void write(List<Integer> object, OutputMapper outputMapper) throws IOException {
 			if (!object.isEmpty()) {
 				outputMapper.withMainPath(
-						outputMapper.getPath(outputMapper.get()).get().resolveSibling(IOObject.getPathWithExtension(String.valueOf(object.remove(0)), getFileExtension()).resolve("index")),
-						() -> getInstance().write(object, outputMapper));
+					outputMapper.getPath(outputMapper.get()).get().resolveSibling(IOObject.getPathWithExtension(String
+						.valueOf(object.remove(0)), getFileExtension()).resolve("index")),
+					() -> getInstance().write(object, outputMapper));
 			}
 		}
 	}
@@ -153,6 +158,9 @@ public class IOTest {
 			assertEquals(42, result.get());
 
 			assertDoesNotThrow(() -> IO.save(42, testPath, new IntegerFormat()));
+			result = IO.load(testPath, FormatSupplier.of(new IntegerFormat()));
+			assertTrue(result.isPresent());
+
 			result = IO.load(testPath, new IntegerFormat());
 			assertTrue(result.isPresent());
 			assertEquals(42, result.get());
@@ -199,18 +207,21 @@ public class IOTest {
 			assertTrue(result.isPresent());
 			assertEquals(1, result.get().getData());
 			assertEquals(2, result.get().getChildren().size());
-            assertEquals(2, result.get().getFirstChild().get().getData());
+			assertEquals(2, result.get().getFirstChild().get().getData());
 			assertEquals(3, result.get().getLastChild().get().getData());
 			assertEquals(4, result.get().getLastChild().get().getFirstChild().get().getData());
 
 			Map<Path, String> stringMap = IO.printHierarchy(result.get(), new IntegerTreeFormat());
 			assertTrue(stringMap.get(Paths.get("__main__")).startsWith("1"));
 
-			assertDoesNotThrow(() -> IO.save(integerTree, testPath, new IntegerTreeFormat(), IOMapper.Options.OUTPUT_FILE_ZIP));
-			assertDoesNotThrow(() -> IO.save(integerTree, testPath, new IntegerTreeFormat(), IOMapper.Options.OUTPUT_FILE_JAR));
+			assertDoesNotThrow(() -> IO.save(integerTree, testPath, new IntegerTreeFormat(),
+				IOMapper.Options.OUTPUT_FILE_ZIP));
+			assertDoesNotThrow(() -> IO.save(integerTree, testPath, new IntegerTreeFormat(),
+				IOMapper.Options.OUTPUT_FILE_JAR));
 		} finally {
 			Files.walk(testPath.getParent() == null ? Paths.get("") : testPath.getParent(), 1).forEach(path -> {
-				if (path.getFileName().toString().endsWith(".dat") || path.getFileName().toString().endsWith(".jar") || path.getFileName().toString().endsWith(".zip")) {
+				if (path.getFileName().toString().endsWith(".dat") || path.getFileName().toString().endsWith(".jar")
+					|| path.getFileName().toString().endsWith(".zip")) {
 					try {
 						Files.delete(path);
 					} catch (IOException e) {

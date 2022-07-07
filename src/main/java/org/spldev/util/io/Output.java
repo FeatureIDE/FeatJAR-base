@@ -36,8 +36,8 @@ import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
 /**
- * Output for a {@link Format}, which can be written to. Can be a physical
- * file or arbitrary output stream.
+ * Output for a {@link Format}, which can be written to. Can be a physical file
+ * or arbitrary output stream.
  *
  * @author Sebastian Krieter
  * @author Elias Kuiter
@@ -62,16 +62,16 @@ public abstract class Output implements IOObject {
 	public static class File extends Output {
 		public File(Path path, Charset charset) throws IOException {
 			super(createOutputStream(path),
-					charset);
+				charset);
 		}
 
 		private static OutputStream createOutputStream(Path path) throws IOException {
 			if (path.getParent() != null)
 				path.getParent().toFile().mkdirs();
 			return Files.newOutputStream(path,
-					StandardOpenOption.TRUNCATE_EXISTING,
-					StandardOpenOption.CREATE,
-					StandardOpenOption.WRITE);
+				StandardOpenOption.TRUNCATE_EXISTING,
+				StandardOpenOption.CREATE,
+				StandardOpenOption.WRITE);
 		}
 	}
 

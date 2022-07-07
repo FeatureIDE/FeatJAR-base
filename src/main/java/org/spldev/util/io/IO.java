@@ -213,27 +213,27 @@ public class IO {
 	}
 
 	private static <T> Result<T> parse(//
-									   InputMapper inputMapper, //
-									   FormatSupplier<T> formatSupplier, //
-									   Supplier<T> factory //
+		InputMapper inputMapper, //
+		FormatSupplier<T> formatSupplier, //
+		Supplier<T> factory //
 	) {
 		return inputMapper.get().getInputHeader().flatMap(formatSupplier::getFormat) //
 			.flatMap(format -> parse(inputMapper, format, factory));
 	}
 
 	private static <T> Result<T> parse(//
-									   InputMapper inputMapper, //
-									   FormatSupplier<T> formatSupplier //
+		InputMapper inputMapper, //
+		FormatSupplier<T> formatSupplier //
 	) {
 		return inputMapper.get().getInputHeader().flatMap(formatSupplier::getFormat) //
 			.flatMap(format -> parse(inputMapper, format));
 	}
 
 	private static <T> Result<T> parse(//
-									   Path path, //
-									   InputMapper inputMapper, //
-									   FormatSupplier<T> formatSupplier, //
-									   FactorySupplier<T> factorySupplier //
+		Path path, //
+		InputMapper inputMapper, //
+		FormatSupplier<T> formatSupplier, //
+		FactorySupplier<T> factorySupplier //
 	) {
 		return inputMapper.get().getInputHeader().flatMap(formatSupplier::getFormat) //
 			.flatMap(format -> factorySupplier.getFactory(path, format) //
@@ -245,7 +245,8 @@ public class IO {
 		save(object, path, format, DEFAULT_CHARSET, ioMapperOptions);
 	}
 
-	public static <T> void save(T object, Path path, Format<T> format, Charset charset, IOMapper.Options... ioMapperOptions) throws IOException {
+	public static <T> void save(T object, Path path, Format<T> format, Charset charset,
+		IOMapper.Options... ioMapperOptions) throws IOException {
 		if (format.supportsSerialize()) {
 			try (OutputMapper outputMapper = OutputMapper.of(path, charset, ioMapperOptions)) {
 				format.getInstance().write(object, outputMapper);
@@ -268,7 +269,7 @@ public class IO {
 	}
 
 	public static <T> String print(T object, Format<T> format)
-			throws IOException {
+		throws IOException {
 		if (format.supportsSerialize()) {
 			try (OutputMapper outputMapper = new OutputMapper.String(DEFAULT_CHARSET)) {
 				format.getInstance().write(object, outputMapper);
@@ -279,7 +280,7 @@ public class IO {
 	}
 
 	public static <T> Map<Path, String> printHierarchy(T object, Format<T> format)
-			throws IOException {
+		throws IOException {
 		if (format.supportsSerialize()) {
 			try (OutputMapper.String outputMapper = new OutputMapper.String(DEFAULT_CHARSET)) {
 				format.getInstance().write(object, outputMapper);
