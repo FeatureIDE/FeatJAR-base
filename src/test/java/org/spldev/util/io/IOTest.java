@@ -1,6 +1,7 @@
 package org.spldev.util.io;
 
 import org.junit.jupiter.api.Test;
+import org.opentest4j.AssertionFailedError;
 import org.spldev.util.data.Problem;
 import org.spldev.util.data.Result;
 import org.spldev.util.io.format.Format;
@@ -8,7 +9,6 @@ import org.spldev.util.tree.structure.SimpleTree;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
-import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -112,6 +112,37 @@ public class IOTest {
 		}
 	}
 
+	static class NestedFormat implements Format<List<Integer>> {
+		@Override
+		public String getFileExtension() {
+			return "dat";
+		}
+
+		@Override
+		public String getName() {
+			return "Nested";
+		}
+
+		@Override
+		public boolean supportsSerialize() {
+			return true;
+		}
+
+		@Override
+		public Format<List<Integer>> getInstance() {
+			return new NestedFormat();
+		}
+
+		@Override
+		public void write(List<Integer> object, OutputMapper outputMapper) throws IOException {
+			if (!object.isEmpty()) {
+				outputMapper.withMainPath(
+						outputMapper.getPath(outputMapper.get()).get().resolveSibling(IOObject.getPathWithExtension(String.valueOf(object.remove(0)), getFileExtension()).resolve("index")),
+						() -> getInstance().write(object, outputMapper));
+			}
+		}
+	}
+
 	public void testInteger(Path testPath) throws IOException {
 		try {
 			Result<Integer> result = IO.load("42x", new IntegerFormat());
@@ -121,10 +152,11 @@ public class IOTest {
 			assertTrue(result.isPresent());
 			assertEquals(42, result.get());
 
-			IO.save(42, testPath, new IntegerFormat());
+			assertDoesNotThrow(() -> IO.save(42, testPath, new IntegerFormat()));
 			result = IO.load(testPath, new IntegerFormat());
 			assertTrue(result.isPresent());
 			assertEquals(42, result.get());
+			assertTrue(Files.isRegularFile(testPath));
 
 			String str = IO.print(42, new IntegerFormat());
 			result = IO.load(str, new IntegerFormat());
@@ -143,9 +175,10 @@ public class IOTest {
 
 	@Test
 	public void integer() throws IOException {
-		testInteger(Paths.get("fileHandlerTest.dat"));
-		testInteger(Paths.get("./fileHandlerTest.dat"));
-		//testInteger(Paths.get("temp/fileHandlerTest.dat"));
+		testInteger(Paths.get("ioTest.dat"));
+		testInteger(Paths.get("./ioTest.dat"));
+		testInteger(Paths.get("temp/ioTest.dat"));
+		Files.delete(Paths.get("temp"));
 	}
 
 	public void testIntegerTree(Path testPath) throws IOException {
@@ -190,12 +223,36 @@ public class IOTest {
 
 	@Test
 	public void integerTree() throws IOException {
-		testIntegerTree(Paths.get("fileHandlerTest.dat"));
-		testIntegerTree(Paths.get("./fileHandlerTest.dat"));
-		//testInteger(Paths.get("temp/fileHandlerTest.dat"));
+		testIntegerTree(Paths.get("ioTest.dat"));
+		testIntegerTree(Paths.get("./ioTest.dat"));
+		testIntegerTree(Paths.get("temp/ioTest.dat"));
+		Files.delete(Paths.get("temp"));
 	}
 
-	// todo: subdirs
+	public void testNested(Path testPath) throws IOException {
+		List<Integer> integers = new ArrayList<>();
+		integers.add(1);
+		integers.add(2);
+		assertDoesNotThrow(() -> IO.save(integers, testPath, new NestedFormat()));
+		assertTrue(Files.isRegularFile(testPath));
+		assertTrue(Files.isDirectory(testPath.resolveSibling("1.dat")));
+		assertTrue(Files.isRegularFile(testPath.resolveSibling("1.dat").resolve("index")));
+		assertTrue(Files.isDirectory(testPath.resolveSibling("1.dat").resolve("2.dat")));
+		assertTrue(Files.isRegularFile(testPath.resolveSibling("1.dat").resolve("2.dat").resolve("index")));
+		Files.delete(testPath.resolveSibling("1.dat").resolve("2.dat").resolve("index"));
+		Files.delete(testPath.resolveSibling("1.dat").resolve("2.dat"));
+		Files.delete(testPath.resolveSibling("1.dat").resolve("index"));
+		Files.delete(testPath.resolveSibling("1.dat"));
+		Files.delete(testPath);
+	}
+
+	@Test
+	public void nested() throws IOException {
+		testNested(Paths.get("ioTest.dat"));
+		testNested(Paths.get("./ioTest.dat"));
+		testNested(Paths.get("temp/ioTest.dat"));
+		Files.delete(Paths.get("temp"));
+	}
 
 	// todo: absolute paths
 
