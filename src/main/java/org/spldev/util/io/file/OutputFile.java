@@ -29,6 +29,8 @@ import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipOutputStream;
 
 /**
  * Output file for a {@link Format}, which can be written to. Can be a physical
@@ -37,9 +39,9 @@ import java.nio.file.StandardOpenOption;
  * @author Sebastian Krieter
  * @author Elias Kuiter
  */
-public final class OutputFile implements File {
-	private final OutputStream outputStream;
-	private final Charset charset;
+public class OutputFile implements File {
+	protected final OutputStream outputStream;
+	protected final Charset charset;
 
 	public OutputFile(OutputStream outputStream, Charset charset) {
 		this.outputStream = outputStream; // new BufferedOutputStream(outputStream);
@@ -76,4 +78,20 @@ public final class OutputFile implements File {
 		outputStream.close();
 	}
 
+	public static class ZIP extends OutputFile {
+		protected final Path path;
+
+		public ZIP(Path path, ZipOutputStream zipOutputStream, Charset charset) {
+			super(zipOutputStream, charset);
+			this.path = path;
+		}
+
+		@Override
+		public void writeText(String text) throws IOException {
+			ZipEntry zipEntry = new ZipEntry(path.toString());
+			((ZipOutputStream) outputStream).putNextEntry(zipEntry);
+			super.writeText(text);
+			((ZipOutputStream) outputStream).closeEntry();
+		}
+	}
 }

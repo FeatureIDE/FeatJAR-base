@@ -42,10 +42,10 @@ import java.util.stream.Stream;
  * @author Sebastian Krieter
  * @author Elias Kuiter
  */
-public final class InputFile implements File {
-	private final InputStream inputStream;
-	private final Charset charset;
-	private final String fileExtension;
+public class InputFile implements File {
+	protected final InputStream inputStream;
+	protected final Charset charset;
+	protected final String fileExtension;
 
 	public InputFile(InputStream inputStream, Charset charset, String fileExtension) {
 		this.inputStream = inputStream; // new BufferedInputStream(inputStream);

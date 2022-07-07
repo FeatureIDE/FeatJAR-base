@@ -12,7 +12,6 @@ import org.spldev.util.tree.structure.SimpleTree;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.io.OutputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -182,5 +181,19 @@ public class FileHandlerTest {
 		}
 	}
 
+	@Test
+	public void zip() throws IOException {
+		try (OutputFileMapper outputFileMapper = OutputFileMapper.ZIP.ofZipFile(Paths.get("bla.zip"), FileHandler.DEFAULT_CHARSET)) {
+			SimpleTree<Integer> integerTree = new SimpleTree<>(1);
+			integerTree.addChild(new SimpleTree<>(2));
+			SimpleTree<Integer> child = new SimpleTree<>(3);
+			integerTree.addChild(child);
+			child.addChild(new SimpleTree<>(4));
+			new IntegerTreeFormat().getInstance().write(integerTree, outputFileMapper);
+		}
+	}
+
 	// todo: subdirs
+
+	// todo: absolute paths
 }

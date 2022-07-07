@@ -27,9 +27,14 @@ public abstract class FileMapper<T extends File> implements AutoCloseable {
 		INCLUDE_HIERARCHY,
 		/**
 		 * Whether creating new files on the physical file system is allowed. Only
-		 * considered by the OutputFileMapper.of(Path, ...) methods.
+		 * considered by the OutputFileMapper.of(Path, ...) method.
 		 */
-		ALLOW_CREATE
+		ALLOW_CREATE,
+		/**
+		 * Whether to write files into a ZIP archive instead of physical files.
+		 * Only considered by the OutputFileMapper.of(Path, ...) method.
+		 */
+		CREATE_ZIP
 	}
 
 	protected static final Path DEFAULT_MAIN_PATH = Paths.get("__main__");
