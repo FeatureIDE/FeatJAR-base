@@ -22,50 +22,52 @@
  */
 package org.spldev.util.io;
 
-import java.io.*;
-import java.util.function.*;
+import java.nio.charset.*;
+import java.util.stream.*;
 
 /**
- * Reads a source line by line, skipping empty lines.
- *
+ * Input file header to determine whether a format can parse a particular
+ * content.
+ * 
  * @author Sebastian Krieter
  */
-public class LineIterator implements Supplier<String> {
+public class InputHeader {
 
-	private final BufferedReader reader;
-	private String line = null;
-	private int lineCount = 0;
+	/**
+	 * Maximum number of bytes in the header.
+	 */
+	public static final int MAX_HEADER_SIZE = 0x00100000; // 1 MiB
 
-	public LineIterator(BufferedReader reader) {
-		this.reader = reader;
+	private final byte[] header;
+
+	private final Charset charset;
+
+	private final String fileExtension;
+
+	public InputHeader(String fileExtension, byte[] header, Charset charset) {
+		this.fileExtension = fileExtension;
+		this.header = header;
+		this.charset = charset;
 	}
 
-	@Override
-	public String get() {
-		try {
-			do {
-				line = reader.readLine();
-				if (line == null) {
-					return null;
-				}
-				lineCount++;
-			} while (line.trim().isEmpty());
-			return line;
-		} catch (final IOException e) {
-			return null;
-		}
+	public Charset getCharset() {
+		return charset;
 	}
 
-	public String currentLine() {
-		return line;
+	public String getFileExtension() {
+		return fileExtension;
 	}
 
-	public void setCurrentLine(String line) {
-		this.line = line;
+	public byte[] getBytes() {
+		return header;
 	}
 
-	public int getLineCount() {
-		return lineCount;
+	public String getText() {
+		return new String(header, charset);
+	}
+
+	public Stream<String> getLines() {
+		return getText().lines();
 	}
 
 }

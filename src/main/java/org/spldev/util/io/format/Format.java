@@ -27,9 +27,10 @@ import java.util.function.*;
 
 import org.spldev.util.data.Result;
 import org.spldev.util.extension.*;
-import org.spldev.util.io.file.InputFileHeader;
-import org.spldev.util.io.file.InputFileMapper;
-import org.spldev.util.io.file.OutputFileMapper;
+import org.spldev.util.io.InputHeader;
+import org.spldev.util.io.InputMapper;
+import org.spldev.util.io.Output;
+import org.spldev.util.io.OutputMapper;
 
 /**
  * Interface for reading and writing data from and to arbitrary objects.
@@ -44,14 +45,14 @@ public interface Format<T> extends Extension {
 	 * Parses the contents of the given source and stores all information into a new
 	 * object of type T.
 	 *
-	 * @param inputFileMapper the source mapper that provides the source content.
+	 * @param inputMapper the source mapper that provides the source content.
 	 * @return A {@link Result} containing the parsed object or a list of problems
 	 *         that occurred during the parsing process.
 	 *
-	 * @see #parse(InputFileMapper, Supplier)
+	 * @see #parse(InputMapper, Supplier)
 	 * @see #supportsParse()
 	 */
-	default Result<T> parse(InputFileMapper inputFileMapper) {
+	default Result<T> parse(InputMapper inputMapper) {
 		throw new UnsupportedOperationException();
 	}
 
@@ -59,15 +60,15 @@ public interface Format<T> extends Extension {
 	 * Parses the contents of the given source and stores all information into a new
 	 * object of type T that is provided by the given supplier.
 	 *
-	 * @param inputFileMapper the source mapper that provides the source content.
+	 * @param inputMapper the source mapper that provides the source content.
 	 * @param supplier        the supplier for returned object.
 	 * @return A {@link Result} containing the parsed object or a list of problems
 	 *         that occurred during the parsing process.
 	 *
 	 * @see #supportsParse()
 	 */
-	default Result<T> parse(InputFileMapper inputFileMapper, Supplier<T> supplier) {
-		return parse(inputFileMapper);
+	default Result<T> parse(InputMapper inputMapper, Supplier<T> supplier) {
+		return parse(inputMapper);
 	}
 
 	/**
@@ -85,13 +86,13 @@ public interface Format<T> extends Extension {
 
 	/**
 	 * Writes the information of an object directly to the
-	 * {@link org.spldev.util.io.file.OutputFile} object.
+	 * {@link Output} object.
 	 * 
 	 * @param object           the object to get the information from.
-	 * @param outputFileMapper the source mapper to write to.
+	 * @param outputMapper the source mapper to write to.
 	 */
-	default void write(T object, OutputFileMapper outputFileMapper) throws IOException {
-		outputFileMapper.getMainFile().writeText(serialize(object));
+	default void write(T object, OutputMapper outputMapper) throws IOException {
+		outputMapper.get().writeText(serialize(object));
 	}
 
 	/**
@@ -111,9 +112,9 @@ public interface Format<T> extends Extension {
 
 	/**
 	 * Returns an instance of this format. Clients should always call this method
-	 * before calling any of {@link #parse(InputFileMapper)},
-	 * {@link #parse(InputFileMapper, Supplier<T>)}, {@link #serialize(Object)}, or
-	 * {@link #write(Object, OutputFileMapper)} and call these methods the returned
+	 * before calling any of {@link #parse(InputMapper)},
+	 * {@link #parse(InputMapper, Supplier<T>)}, {@link #serialize(Object)}, or
+	 * {@link #write(Object, OutputMapper)} and call these methods the returned
 	 * value to avoid any unintended concurrent access.<br>
 	 * <br>
 	 * <b>Example</b> <code>
@@ -129,7 +130,7 @@ public interface Format<T> extends Extension {
 	}
 
 	/**
-	 * Returns whether this format supports the {@link #parse(InputFileMapper)}
+	 * Returns whether this format supports the {@link #parse(InputMapper)}
 	 * operation.
 	 *
 	 * @return {@code true} if {@code read} is allowed by this format, {@code false}
@@ -153,11 +154,11 @@ public interface Format<T> extends Extension {
 	/**
 	 * Returns whether this format supports the parsing of the given content.
 	 *
-	 * @param inputFileHeader The beginning of the content to be parsed.
+	 * @param inputHeader The beginning of the content to be parsed.
 	 * @return {@code true} if the content should be parsable by this format,
 	 *         {@code false} otherwise.
 	 */
-	default boolean supportsContent(InputFileHeader inputFileHeader) {
+	default boolean supportsContent(InputHeader inputHeader) {
 		return supportsParse();
 	}
 

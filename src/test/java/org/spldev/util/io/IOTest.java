@@ -3,14 +3,12 @@ package org.spldev.util.io;
 import org.junit.jupiter.api.Test;
 import org.spldev.util.data.Problem;
 import org.spldev.util.data.Result;
-import org.spldev.util.io.file.InputFileMapper;
-import org.spldev.util.io.file.OutputFileMapper;
 import org.spldev.util.io.format.Format;
-import org.spldev.util.io.file.FileMapper;
 import org.spldev.util.tree.structure.SimpleTree;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
+import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -23,9 +21,7 @@ import java.util.stream.Collectors;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-public class FileHandlerTest {
-	Path testPath = Paths.get("fileHandlerTest.dat");
-
+public class IOTest {
 	static class IntegerFormat implements Format<Integer> {
 		@Override
 		public String getFileExtension() {
@@ -48,8 +44,8 @@ public class FileHandlerTest {
 		}
 
 		@Override
-		public Result<Integer> parse(InputFileMapper inputFileMapper) {
-			return inputFileMapper.getMainFile().readText().map(Integer::valueOf);
+		public Result<Integer> parse(InputMapper inputMapper) {
+			return inputMapper.get().readText().map(Integer::valueOf);
 		}
 
 		@Override
@@ -61,7 +57,7 @@ public class FileHandlerTest {
 	static class IntegerTreeFormat implements Format<SimpleTree<Integer>> {
 		@Override
 		public String getFileExtension() {
-			return "int-tree";
+			return "dat";
 		}
 
 		@Override
@@ -85,14 +81,14 @@ public class FileHandlerTest {
 		}
 
 		@Override
-		public Result<SimpleTree<Integer>> parse(InputFileMapper inputFileMapper) {
+		public Result<SimpleTree<Integer>> parse(InputMapper inputMapper) {
 			List<Problem> problems = new ArrayList<>();
-			List<String> lines = inputFileMapper.getMainFile().getLines().collect(Collectors.toList());
+			List<String> lines = inputMapper.get().readLines();
 			if (lines.isEmpty())
 				return Result.empty();
 			SimpleTree<Integer> integerTree = new SimpleTree<>(Integer.valueOf(lines.remove(0)));
 			for (String line : lines) {
-				Result<SimpleTree<Integer>> result = getInstance().parse(inputFileMapper.withMainFile(Paths.get(line + ".dat")));
+				Result<SimpleTree<Integer>> result = inputMapper.withMainPath(IOObject.getPathWithExtension(line, getFileExtension()), () -> getInstance().parse(inputMapper));
 				if (result.isPresent())
 					integerTree.addChild(result.get());
 				else
@@ -107,38 +103,37 @@ public class FileHandlerTest {
 		}
 
 		@Override
-		public void write(SimpleTree<Integer> object, OutputFileMapper outputFileMapper) throws IOException {
-			outputFileMapper.getMainFile().writeText(serialize(object) + "\n" +
+		public void write(SimpleTree<Integer> object, OutputMapper outputMapper) throws IOException {
+			outputMapper.get().writeText(serialize(object) + "\n" +
 					object.getChildren().stream().map(Object::hashCode).map(Objects::toString).collect(Collectors.joining("\n")));
 			for (SimpleTree<Integer> child : object.getChildren()) {
-				getInstance().write(child, outputFileMapper.withMainFile(Paths.get(child.hashCode() + ".dat")));
+				outputMapper.withMainPath(IOObject.getPathWithExtension(String.valueOf(child.hashCode()), getFileExtension()), () -> getInstance().write(child, outputMapper));
 			}
 		}
 	}
 
-	@Test
-	public void integer() throws IOException {
+	public void testInteger(Path testPath) throws IOException {
 		try {
-			Result<Integer> result = FileHandler.load("42x", new IntegerFormat());
+			Result<Integer> result = IO.load("42x", new IntegerFormat());
 			assertFalse(result.isPresent());
 
-			result = FileHandler.load("42", new IntegerFormat());
+			result = IO.load("42", new IntegerFormat());
 			assertTrue(result.isPresent());
 			assertEquals(42, result.get());
 
-			FileHandler.save(42, testPath, new IntegerFormat());
-			result = FileHandler.load(testPath, new IntegerFormat());
+			IO.save(42, testPath, new IntegerFormat());
+			result = IO.load(testPath, new IntegerFormat());
 			assertTrue(result.isPresent());
 			assertEquals(42, result.get());
 
-			String str = FileHandler.print(42, new IntegerFormat());
-			result = FileHandler.load(str, new IntegerFormat());
+			String str = IO.print(42, new IntegerFormat());
+			result = IO.load(str, new IntegerFormat());
 			assertTrue(result.isPresent());
 			assertEquals(42, result.get());
 
 			ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
-			FileHandler.save(42, outputStream, new IntegerFormat());
-			result = FileHandler.load(new ByteArrayInputStream(outputStream.toByteArray()), new IntegerFormat());
+			IO.save(42, outputStream, new IntegerFormat());
+			result = IO.load(new ByteArrayInputStream(outputStream.toByteArray()), new IntegerFormat());
 			assertTrue(result.isPresent());
 			assertEquals(42, result.get());
 		} finally {
@@ -147,18 +142,27 @@ public class FileHandlerTest {
 	}
 
 	@Test
-	public void integerTree() throws IOException {
+	public void integer() throws IOException {
+		testInteger(Paths.get("fileHandlerTest.dat"));
+		testInteger(Paths.get("./fileHandlerTest.dat"));
+		//testInteger(Paths.get("temp/fileHandlerTest.dat"));
+	}
+
+	public void testIntegerTree(Path testPath) throws IOException {
 		try {
 			SimpleTree<Integer> integerTree = new SimpleTree<>(1);
 			integerTree.addChild(new SimpleTree<>(2));
 			SimpleTree<Integer> child = new SimpleTree<>(3);
 			integerTree.addChild(child);
 			child.addChild(new SimpleTree<>(4));
-			assertThrows(IllegalArgumentException.class, () -> FileHandler.save(integerTree, testPath, new IntegerTreeFormat()));
-			assertDoesNotThrow(() -> FileHandler.save(integerTree, testPath, new IntegerTreeFormat(), FileMapper.Options.ALLOW_CREATE));
+			assertDoesNotThrow(() -> IO.save(integerTree, testPath, new IntegerTreeFormat()));
 
-			assertThrows(IllegalArgumentException.class, () -> FileHandler.load(testPath, new IntegerTreeFormat()));
-			Result<SimpleTree<Integer>> result = FileHandler.load(testPath, new IntegerTreeFormat(), FileMapper.Options.INCLUDE_HIERARCHY);
+			Result<SimpleTree<Integer>> result = IO.load(testPath, new IntegerTreeFormat());
+			assertTrue(result.isPresent());
+			assertEquals(1, result.get().getData());
+			assertEquals(0, result.get().getChildren().size());
+			assertEquals(2, result.getProblems().size());
+			result = IO.load(testPath, new IntegerTreeFormat(), IOMapper.Options.INPUT_FILE_HIERARCHY);
 			assertTrue(result.isPresent());
 			assertEquals(1, result.get().getData());
 			assertEquals(2, result.get().getChildren().size());
@@ -166,11 +170,14 @@ public class FileHandlerTest {
 			assertEquals(3, result.get().getLastChild().get().getData());
 			assertEquals(4, result.get().getLastChild().get().getFirstChild().get().getData());
 
-			Map<Path, String> stringMap = FileHandler.printHierarchy(result.get(), new IntegerTreeFormat());
+			Map<Path, String> stringMap = IO.printHierarchy(result.get(), new IntegerTreeFormat());
 			assertTrue(stringMap.get(Paths.get("__main__")).startsWith("1"));
+
+			assertDoesNotThrow(() -> IO.save(integerTree, testPath, new IntegerTreeFormat(), IOMapper.Options.OUTPUT_FILE_ZIP));
+			assertDoesNotThrow(() -> IO.save(integerTree, testPath, new IntegerTreeFormat(), IOMapper.Options.OUTPUT_FILE_JAR));
 		} finally {
-			Files.walk(Paths.get(""), 1).forEach(path -> {
-				if (path.getFileName().toString().endsWith(".dat")) {
+			Files.walk(testPath.getParent() == null ? Paths.get("") : testPath.getParent(), 1).forEach(path -> {
+				if (path.getFileName().toString().endsWith(".dat") || path.getFileName().toString().endsWith(".jar") || path.getFileName().toString().endsWith(".zip")) {
 					try {
 						Files.delete(path);
 					} catch (IOException e) {
@@ -182,18 +189,14 @@ public class FileHandlerTest {
 	}
 
 	@Test
-	public void zip() throws IOException {
-		try (OutputFileMapper outputFileMapper = OutputFileMapper.ZIP.ofZipFile(Paths.get("bla.zip"), FileHandler.DEFAULT_CHARSET)) {
-			SimpleTree<Integer> integerTree = new SimpleTree<>(1);
-			integerTree.addChild(new SimpleTree<>(2));
-			SimpleTree<Integer> child = new SimpleTree<>(3);
-			integerTree.addChild(child);
-			child.addChild(new SimpleTree<>(4));
-			new IntegerTreeFormat().getInstance().write(integerTree, outputFileMapper);
-		}
+	public void integerTree() throws IOException {
+		testIntegerTree(Paths.get("fileHandlerTest.dat"));
+		testIntegerTree(Paths.get("./fileHandlerTest.dat"));
+		//testInteger(Paths.get("temp/fileHandlerTest.dat"));
 	}
 
 	// todo: subdirs
 
 	// todo: absolute paths
+
 }

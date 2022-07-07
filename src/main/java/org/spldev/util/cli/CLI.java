@@ -140,21 +140,21 @@ public class CLI {
 		if (matcher.matches()) {
 			Path path = Paths.get("stdin." + matcher.group(1));
 			String content = new BufferedReader(
-				new InputStreamReader(System.in, FileHandler.DEFAULT_CHARSET))
+				new InputStreamReader(System.in, IOObject.DEFAULT_CHARSET))
 					.lines()
 					.collect(Collectors.joining("\n"));
-			return FileHandler.load(content, path, formatSupplier);
+			return IO.load(content, path, formatSupplier);
 		} else {
-			return FileHandler.load(Paths.get(pathOrStdin), formatSupplier);
+			return IO.load(Paths.get(pathOrStdin), formatSupplier);
 		}
 	}
 
 	public static <T> void saveFile(T object, String pathOrStdout, Format<T> format) {
 		try {
 			if (pathOrStdout.equals(SYSTEM_OUTPUT)) {
-				FileHandler.save(object, System.out, format);
+				IO.save(object, System.out, format);
 			} else {
-				FileHandler.save(object, Paths.get(pathOrStdout), format);
+				IO.save(object, Paths.get(pathOrStdout), format);
 			}
 		} catch (final IOException e) {
 			Logger.logError(e);

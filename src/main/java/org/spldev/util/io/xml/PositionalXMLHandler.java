@@ -20,7 +20,7 @@
  * See <https://github.com/skrieter/utils> for further information.
  * -----------------------------------------------------------------------------
  */
-package org.spldev.util.io;
+package org.spldev.util.io.xml;
 
 import java.util.*;
 

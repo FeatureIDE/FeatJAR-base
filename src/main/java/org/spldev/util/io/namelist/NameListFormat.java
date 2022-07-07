@@ -27,7 +27,7 @@ import java.util.function.*;
 import java.util.stream.*;
 
 import org.spldev.util.data.Result;
-import org.spldev.util.io.file.InputFileMapper;
+import org.spldev.util.io.InputMapper;
 import org.spldev.util.io.format.*;
 
 /**
@@ -69,14 +69,14 @@ public class NameListFormat implements Format<List<NameListFormat.NameEntry>> {
 	private static final String STOP_MARK = "###";
 
 	@Override
-	public Result<List<NameEntry>> parse(InputFileMapper inputFileMapper) {
-		final List<String> lines = inputFileMapper.getMainFile().getLines().collect(Collectors.toList());
+	public Result<List<NameEntry>> parse(InputMapper inputMapper) {
+		final List<String> lines = inputMapper.get().readLines();
 		return parse(lines, new ArrayList<>(lines.size()));
 	}
 
 	@Override
-	public Result<List<NameEntry>> parse(InputFileMapper inputFileMapper, Supplier<List<NameEntry>> supplier) {
-		final List<String> lines = inputFileMapper.getMainFile().getLines().collect(Collectors.toList());
+	public Result<List<NameEntry>> parse(InputMapper inputMapper, Supplier<List<NameEntry>> supplier) {
+		final List<String> lines = inputMapper.get().readLines();
 		return parse(lines, supplier.get());
 	}
 

@@ -20,10 +20,9 @@
  * See <https://github.com/skrieter/utils> for further information.
  * -----------------------------------------------------------------------------
  */
-package org.spldev.util.io.file;
+package org.spldev.util.io;
 
 import org.spldev.util.data.Result;
-import org.spldev.util.io.FileHandler;
 import org.spldev.util.io.format.Format;
 import org.spldev.util.logging.Logger;
 
@@ -33,43 +32,58 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
 import java.util.Arrays;
-import java.util.stream.Stream;
+import java.util.List;
+import java.util.Objects;
+import java.util.stream.Collectors;
 
 /**
- * Input file for a {@link Format}, which can be read from. Can be a physical
+ * Input for a {@link Format}, which can be read from. Can be a physical
  * file, string, or arbitrary input stream.
  *
  * @author Sebastian Krieter
  * @author Elias Kuiter
  */
-public class InputFile implements File {
+public abstract class Input implements IOObject {
 	protected final InputStream inputStream;
 	protected final Charset charset;
-	protected final String fileExtension;
+	protected final java.lang.String fileExtension;
 
-	public InputFile(InputStream inputStream, Charset charset, String fileExtension) {
-		this.inputStream = inputStream; // new BufferedInputStream(inputStream);
+	protected Input(InputStream inputStream, Charset charset, java.lang.String fileExtension) {
+		Objects.requireNonNull(inputStream);
+		Objects.requireNonNull(charset);
+		Objects.requireNonNull(fileExtension);
+		this.inputStream = inputStream;
 		this.charset = charset;
 		this.fileExtension = fileExtension;
 	}
 
-	public InputFile(Path path, Charset charset) throws IOException {
-		this(Files.newInputStream(path, StandardOpenOption.READ),
-			charset,
-			FileHandler.getFileExtension(path));
+	public static class Stream extends Input {
+		public Stream(InputStream inputStream, Charset charset, java.lang.String fileExtension) {
+			super(inputStream, charset, fileExtension);
+		}
 	}
 
-	public InputFile(String text, Charset charset, String fileExtension) {
-		this(new ByteArrayInputStream(text.getBytes(charset)), charset, fileExtension);
+	public static class File extends Input {
+		public File(Path path, Charset charset) throws IOException {
+			super(Files.newInputStream(path, StandardOpenOption.READ),
+					charset,
+					IOObject.getFileExtension(path));
+		}
+	}
+
+	public static class String extends Input {
+		public String(java.lang.String text, Charset charset, java.lang.String fileExtension) {
+			super(new ByteArrayInputStream(text.getBytes(charset)), charset, fileExtension);
+		}
 	}
 
 	public Charset getCharset() {
 		return charset;
 	}
 
-	public Result<String> readText() {
+	public Result<java.lang.String> readText() {
 		try {
-			return Result.of(new String(inputStream.readAllBytes(), charset));
+			return Result.of(new java.lang.String(inputStream.readAllBytes(), charset));
 		} catch (final IOException e) {
 			Logger.logError(e);
 			return Result.empty(e);
@@ -80,22 +94,30 @@ public class InputFile implements File {
 		return new BufferedReader(new InputStreamReader(inputStream, charset));
 	}
 
-	public Stream<String> getLines() {
+	public java.util.stream.Stream<java.lang.String> getLineStream() {
 		return getReader().lines();
+	}
+
+	public NonEmptyLineIterator getNonEmptyLineIterator() {
+		return new NonEmptyLineIterator(getReader());
+	}
+
+	public List<java.lang.String> readLines() {
+		return getLineStream().collect(Collectors.toList());
 	}
 
 	public InputStream getInputStream() {
 		return inputStream;
 	}
 
-	public Result<InputFileHeader> getInputFileHeader() {
-		final byte[] bytes = new byte[InputFileHeader.MAX_HEADER_SIZE];
+	public Result<InputHeader> getInputHeader() {
+		final byte[] bytes = new byte[InputHeader.MAX_HEADER_SIZE];
 		try {
 			try {
-				inputStream.mark(InputFileHeader.MAX_HEADER_SIZE);
-				final int byteCount = inputStream.read(bytes, 0, InputFileHeader.MAX_HEADER_SIZE);
-				return Result.of(new InputFileHeader(fileExtension, //
-					byteCount == InputFileHeader.MAX_HEADER_SIZE
+				inputStream.mark(InputHeader.MAX_HEADER_SIZE);
+				final int byteCount = inputStream.read(bytes, 0, InputHeader.MAX_HEADER_SIZE);
+				return Result.of(new InputHeader(fileExtension, //
+					byteCount == InputHeader.MAX_HEADER_SIZE
 						? bytes
 						: Arrays.copyOf(bytes, byteCount), //
 					charset));

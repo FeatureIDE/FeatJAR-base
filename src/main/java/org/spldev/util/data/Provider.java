@@ -64,15 +64,15 @@ public interface Provider<T> extends BiFunction<Cache, InternalMonitor, Result<T
 	}
 
 	static <R> Result<R> load(Path path, FormatSupplier<R> formatSupplier, FactorySupplier<R> factorySupplier) {
-		return FileHandler.load(path, formatSupplier, factorySupplier);
+		return IO.load(path, formatSupplier, factorySupplier);
 	}
 
 	static <R> Result<R> load(Path path, FormatSupplier<R> formatSupplier) {
-		return FileHandler.load(path, formatSupplier);
+		return IO.load(path, formatSupplier);
 	}
 
 	static <R> Result<R> load(Path path, Format<R> format) {
-		return FileHandler.load(path, format);
+		return IO.load(path, format);
 	}
 
 }

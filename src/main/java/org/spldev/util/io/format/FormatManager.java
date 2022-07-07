@@ -29,7 +29,7 @@ import java.util.stream.*;
 import org.spldev.util.data.Result;
 import org.spldev.util.extension.*;
 import org.spldev.util.io.*;
-import org.spldev.util.io.file.InputFileHeader;
+import org.spldev.util.io.InputHeader;
 
 /**
  * Manages additional formats for a certain object.
@@ -46,19 +46,19 @@ public class FormatManager<T> extends ExtensionPoint<Format<T>> implements Forma
 		if (path == null) {
 			return Collections.emptyList();
 		}
-		return getFormatList(FileHandler.getFileExtension(path));
+		return getFormatList(IOObject.getFileExtension(path));
 	}
 
 	@Override
-	public Result<Format<T>> getFormat(InputFileHeader inputFileHeader) {
+	public Result<Format<T>> getFormat(InputHeader inputHeader) {
 		final List<Format<T>> extensions = getExtensions();
 		return extensions.stream()
-			.filter(format -> Objects.equals(inputFileHeader.getFileExtension(), format.getFileExtension()))
-			.filter(format -> format.supportsContent(inputFileHeader))
+			.filter(format -> Objects.equals(inputHeader.getFileExtension(), format.getFileExtension()))
+			.filter(format -> format.supportsContent(inputHeader))
 			.findFirst()
 			.map(Result::of)
 			.orElseGet(() -> Result.empty(new NoSuchExtensionException("No suitable format found for file extension \"."
-				+ inputFileHeader.getFileExtension() + "\". Possible Formats: " + getExtensions())));
+				+ inputHeader.getFileExtension() + "\". Possible Formats: " + getExtensions())));
 	}
 
 	private List<Format<T>> getFormatList(final String fileExtension) {
