@@ -191,7 +191,7 @@ public class Result<T> {
 	}
 
 	private RuntimeException getError(Problem p) {
-		return p.getError().map(RuntimeException::new)
+		return p.getException().map(RuntimeException::new)
 			.orElseGet(() -> p.getMessage().map(RuntimeException::new).orElseGet(RuntimeException::new));
 	}
 

@@ -144,7 +144,7 @@ public final class Logger {
 
 	public static void logProblems(List<Problem> problems) {
 		problems.stream()
-			.map(Problem::getError)
+			.map(Problem::getException)
 			.flatMap(Optional::stream)
 			.forEach(Logger::logError);
 	}

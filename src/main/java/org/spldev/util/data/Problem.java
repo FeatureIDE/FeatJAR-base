@@ -79,7 +79,7 @@ public class Problem {
 		return Optional.ofNullable(message);
 	}
 
-	public Optional<Exception> getError() {
+	public Optional<Exception> getException() {
 		return Optional.ofNullable(exception);
 	}
 
