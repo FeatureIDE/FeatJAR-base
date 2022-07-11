@@ -83,6 +83,10 @@ public class Problem {
 		return Optional.ofNullable(exception);
 	}
 
+	public Exception toException() {
+		return getException().orElseGet(() -> getMessage().map(RuntimeException::new).orElseGet(RuntimeException::new));
+	}
+
 	public boolean hasError() {
 		return exception != null;
 	}
