@@ -22,9 +22,9 @@
  */
 package de.featjar.util.cli;
 
-import de.featjar.util.extension.Extension;
-
 import java.util.List;
+
+import de.featjar.util.extension.Extension;
 
 /**
  * A function of FeatureIDE that can be accessed via the {@link CLI}.

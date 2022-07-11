@@ -22,11 +22,12 @@
  */
 package de.featjar.util.io;
 
-import de.featjar.util.data.Result;
-import de.featjar.util.io.format.Format;
-import de.featjar.util.logging.Logger;
-
-import java.io.*;
+import java.io.BufferedInputStream;
+import java.io.BufferedReader;
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -35,6 +36,10 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
+
+import de.featjar.util.data.Result;
+import de.featjar.util.io.format.Format;
+import de.featjar.util.logging.Logger;
 
 /**
  * Input for a {@link Format}, which can be read from. Can be a physical file,

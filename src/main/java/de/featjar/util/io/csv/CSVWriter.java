@@ -22,15 +22,24 @@
  */
 package de.featjar.util.io.csv;
 
-import java.io.*;
-import java.math.*;
-import java.nio.charset.*;
-import java.nio.file.*;
-import java.text.*;
-import java.util.*;
+import java.io.IOException;
+import java.math.BigDecimal;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.nio.file.StandardOpenOption;
+import java.text.DecimalFormat;
+import java.text.DecimalFormatSymbols;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Locale;
+import java.util.Objects;
 
 import de.featjar.util.logging.Logger;
-import de.featjar.util.logging.*;
 
 /**
  * Writer for CSV files.

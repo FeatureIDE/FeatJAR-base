@@ -22,7 +22,8 @@
  */
 package de.featjar.util.tree.structure;
 
-import java.util.*;
+import java.util.List;
+import java.util.Optional;
 
 /**
  * A rooted tree where each node has an optional parent and any number of

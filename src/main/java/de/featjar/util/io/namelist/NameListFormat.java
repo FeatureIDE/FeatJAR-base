@@ -22,13 +22,13 @@
  */
 package de.featjar.util.io.namelist;
 
-import java.util.*;
-import java.util.function.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.function.Supplier;
 
 import de.featjar.util.data.Result;
 import de.featjar.util.io.InputMapper;
 import de.featjar.util.io.format.Format;
-import de.featjar.util.io.format.*;
 
 /**
  * Simple format that stores a list of names as text (one per line).

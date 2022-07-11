@@ -22,19 +22,30 @@
  */
 package de.featjar.util.extension;
 
-import java.io.*;
-import java.lang.reflect.*;
-import java.net.*;
-import java.nio.file.*;
-import java.util.*;
-import java.util.Map.*;
-import java.util.zip.*;
+import java.io.IOException;
+import java.lang.reflect.Method;
+import java.net.URL;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.ArrayList;
+import java.util.Enumeration;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map.Entry;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipFile;
 
-import javax.xml.parsers.*;
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
+import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
 
 import de.featjar.util.logging.Logger;
-import de.featjar.util.logging.*;
-import org.w3c.dom.*;
 
 /**
  * Initializes, loads und unloads extensions.

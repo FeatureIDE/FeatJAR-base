@@ -22,8 +22,8 @@
  */
 package de.featjar.util.io.format;
 
-import java.io.*;
-import java.util.function.*;
+import java.io.IOException;
+import java.util.function.Supplier;
 
 import de.featjar.util.data.Result;
 import de.featjar.util.extension.Extension;
@@ -31,7 +31,6 @@ import de.featjar.util.io.InputHeader;
 import de.featjar.util.io.InputMapper;
 import de.featjar.util.io.Output;
 import de.featjar.util.io.OutputMapper;
-import de.featjar.util.extension.*;
 
 /**
  * Interface for reading and writing data from and to arbitrary objects.

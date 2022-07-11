@@ -22,7 +22,8 @@
  */
 package de.featjar.util.tree.structure;
 
-import java.util.*;
+import java.util.Collections;
+import java.util.List;
 
 public abstract class AbstractTerminal<T extends Tree<T>> implements Tree<T> {
 

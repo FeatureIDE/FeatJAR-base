@@ -22,8 +22,8 @@
  */
 package de.featjar.util.io;
 
-import java.nio.charset.*;
-import java.util.stream.*;
+import java.nio.charset.Charset;
+import java.util.stream.Stream;
 
 /**
  * Input file header to determine whether a format can parse a particular

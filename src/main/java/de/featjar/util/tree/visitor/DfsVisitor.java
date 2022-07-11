@@ -22,12 +22,10 @@
  */
 package de.featjar.util.tree.visitor;
 
-import java.util.*;
+import java.util.List;
 
 import de.featjar.util.tree.Trees;
 import de.featjar.util.tree.structure.Tree;
-import de.featjar.util.tree.*;
-import de.featjar.util.tree.structure.*;
 
 /**
  * Interface for a visitor used in the traversal of a tree.

@@ -23,7 +23,6 @@
 package de.featjar.util.job;
 
 import de.featjar.util.logging.Logger;
-import de.featjar.util.logging.*;
 
 /**
  * Thread to run an arbitrary function at a regular time interval.

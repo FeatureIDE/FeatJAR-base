@@ -22,7 +22,7 @@
  */
 package de.featjar.util.data;
 
-import java.util.*;
+import java.util.Optional;
 
 /**
  * Wraps an arbitrary problem when creating or transforming an object. Can be

@@ -22,8 +22,11 @@
  */
 package de.featjar.util.extension;
 
-import java.util.*;
-import java.util.concurrent.*;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Objects;
+import java.util.concurrent.CopyOnWriteArrayList;
 
 import de.featjar.util.data.Result;
 

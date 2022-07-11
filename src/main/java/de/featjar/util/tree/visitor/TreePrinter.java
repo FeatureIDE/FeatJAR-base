@@ -22,11 +22,12 @@
  */
 package de.featjar.util.tree.visitor;
 
-import java.util.*;
-import java.util.function.*;
+import java.util.List;
+import java.util.Optional;
+import java.util.function.Function;
+import java.util.function.Predicate;
 
 import de.featjar.util.tree.structure.Tree;
-import de.featjar.util.tree.structure.*;
 
 public class TreePrinter implements TreeVisitor<String, Tree<?>> {
 

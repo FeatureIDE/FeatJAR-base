@@ -22,10 +22,9 @@
  */
 package de.featjar.util.data;
 
-import java.util.function.*;
+import java.util.function.Supplier;
 
 import de.featjar.util.extension.Extension;
-import de.featjar.util.extension.*;
 
 /**
  * Factory to create an instance of some type.

@@ -22,11 +22,12 @@
  */
 package de.featjar.util.io.binary;
 
-import java.io.*;
-import java.nio.charset.*;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.nio.charset.StandardCharsets;
 
 import de.featjar.util.io.format.Format;
-import de.featjar.util.io.format.*;
 
 public abstract class BinaryFormat<T> implements Format<T> {
 

@@ -22,11 +22,11 @@
  */
 package de.featjar.util.cli;
 
-import de.featjar.util.data.Result;
-import de.featjar.util.extension.Extension;
-
 import java.util.List;
 import java.util.ListIterator;
+
+import de.featjar.util.data.Result;
+import de.featjar.util.extension.Extension;
 
 /**
  * Interface for an algorithm to run via a {@link CLIFunction}.

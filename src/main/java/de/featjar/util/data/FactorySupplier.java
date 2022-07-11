@@ -22,10 +22,9 @@
  */
 package de.featjar.util.data;
 
-import java.nio.file.*;
+import java.nio.file.Path;
 
 import de.featjar.util.io.format.Format;
-import de.featjar.util.io.format.*;
 
 /**
  * Provides a factory for a given format and file path.

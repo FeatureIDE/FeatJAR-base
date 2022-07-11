@@ -22,8 +22,8 @@
  */
 package de.featjar.util.logging;
 
-import java.sql.*;
-import java.text.*;
+import java.sql.Timestamp;
+import java.text.SimpleDateFormat;
 
 /**
  * Prepends log output with time stamps.

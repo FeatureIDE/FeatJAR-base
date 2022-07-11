@@ -22,7 +22,7 @@
  */
 package de.featjar.util.data;
 
-import java.util.*;
+import java.util.Objects;
 
 /**
  * A tuple consisting of any two elements.

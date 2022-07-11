@@ -22,8 +22,9 @@
  */
 package de.featjar.util.io;
 
-import java.io.*;
-import java.util.function.*;
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.util.function.Supplier;
 
 /**
  * Reads a source line by line, skipping empty lines.

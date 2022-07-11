@@ -22,12 +22,26 @@
  */
 package de.featjar.util.cli;
 
-import java.io.*;
-import java.nio.file.*;
-import java.util.*;
-import java.util.concurrent.*;
-import java.util.regex.*;
-import java.util.stream.*;
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.PrintStream;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.Arrays;
+import java.util.Iterator;
+import java.util.Objects;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 import de.featjar.util.data.Result;
 import de.featjar.util.extension.ExtensionLoader;
@@ -36,11 +50,6 @@ import de.featjar.util.io.IOObject;
 import de.featjar.util.io.format.Format;
 import de.featjar.util.io.format.FormatSupplier;
 import de.featjar.util.logging.Logger;
-import de.featjar.util.data.*;
-import de.featjar.util.extension.*;
-import de.featjar.util.io.*;
-import de.featjar.util.io.format.*;
-import de.featjar.util.logging.*;
 
 /**
  * Command line interface for several functions of FeatureIDE.

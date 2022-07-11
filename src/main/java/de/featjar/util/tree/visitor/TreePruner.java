@@ -22,10 +22,10 @@
  */
 package de.featjar.util.tree.visitor;
 
-import java.util.*;
+import java.util.Collections;
+import java.util.List;
 
 import de.featjar.util.tree.structure.Tree;
-import de.featjar.util.tree.structure.*;
 
 public class TreePruner implements TreeVisitor<Void, Tree<?>> {
 

@@ -22,9 +22,9 @@
  */
 package de.featjar.util.io;
 
-import de.featjar.util.io.format.Format;
-
-import java.io.*;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.OutputStream;
 import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -34,6 +34,8 @@ import java.util.jar.JarEntry;
 import java.util.jar.JarOutputStream;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
+
+import de.featjar.util.io.format.Format;
 
 /**
  * Output for a {@link Format}, which can be written to. Can be a physical file

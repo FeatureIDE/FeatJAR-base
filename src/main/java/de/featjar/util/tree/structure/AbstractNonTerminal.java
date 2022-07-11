@@ -22,10 +22,16 @@
  */
 package de.featjar.util.tree.structure;
 
-import de.featjar.util.data.Result;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.ListIterator;
+import java.util.NoSuchElementException;
+import java.util.Objects;
+import java.util.Optional;
+import java.util.function.Function;
 
-import java.util.*;
-import java.util.function.*;
+import de.featjar.util.data.Result;
 
 public abstract class AbstractNonTerminal<T extends Tree<T>> implements Tree<T> {
 

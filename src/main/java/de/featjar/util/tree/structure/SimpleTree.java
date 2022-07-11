@@ -22,7 +22,7 @@
  */
 package de.featjar.util.tree.structure;
 
-import java.util.*;
+import java.util.Objects;
 
 public class SimpleTree<D> extends AbstractNonTerminal<SimpleTree<D>> {
 

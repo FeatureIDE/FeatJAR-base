@@ -22,17 +22,25 @@
  */
 package de.featjar.util.tree;
 
-import java.util.*;
-import java.util.function.*;
-import java.util.stream.*;
+import java.util.ArrayDeque;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Optional;
+import java.util.Spliterator;
+import java.util.function.Consumer;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
+import java.util.stream.StreamSupport;
 
 import de.featjar.util.tree.structure.Tree;
 import de.featjar.util.tree.visitor.DfsVisitor;
 import de.featjar.util.tree.visitor.TreePrinter;
 import de.featjar.util.tree.visitor.TreeVisitor;
-import de.featjar.util.tree.structure.*;
-import de.featjar.util.tree.visitor.*;
-import de.featjar.util.tree.visitor.TreeVisitor.*;
+import de.featjar.util.tree.visitor.TreeVisitor.VisitorResult;
 
 /**
  * Convenience class that implements some static methods to manipulate and

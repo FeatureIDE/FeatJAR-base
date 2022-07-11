@@ -22,11 +22,14 @@
  */
 package de.featjar.util.io.xml;
 
-import java.util.*;
+import java.util.ArrayDeque;
 
-import org.w3c.dom.*;
-import org.xml.sax.*;
-import org.xml.sax.helpers.*;
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
+import org.xml.sax.Attributes;
+import org.xml.sax.Locator;
+import org.xml.sax.SAXException;
+import org.xml.sax.helpers.DefaultHandler;
 
 /**
  * This is an extension of a default xml reader, which saves the line numbers

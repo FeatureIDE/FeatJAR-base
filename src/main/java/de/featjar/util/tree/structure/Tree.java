@@ -22,8 +22,11 @@
  */
 package de.featjar.util.tree.structure;
 
-import java.util.*;
-import java.util.function.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Objects;
+import java.util.Optional;
+import java.util.function.Function;
 
 /**
  * Interface for a tree node.

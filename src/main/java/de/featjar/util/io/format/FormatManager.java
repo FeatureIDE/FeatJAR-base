@@ -22,16 +22,16 @@
  */
 package de.featjar.util.io.format;
 
-import java.nio.file.*;
-import java.util.*;
-import java.util.stream.*;
+import java.nio.file.Path;
+import java.util.Collections;
+import java.util.List;
+import java.util.Objects;
+import java.util.stream.Collectors;
 
 import de.featjar.util.data.Result;
 import de.featjar.util.extension.ExtensionPoint;
 import de.featjar.util.io.IOObject;
 import de.featjar.util.io.InputHeader;
-import de.featjar.util.extension.*;
-import de.featjar.util.io.*;
 
 /**
  * Manages additional formats for a certain object.

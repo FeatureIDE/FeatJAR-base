@@ -22,9 +22,18 @@
  */
 package de.featjar.util.logging;
 
-import java.io.*;
-import java.nio.file.*;
-import java.util.*;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.OutputStream;
+import java.io.PrintStream;
+import java.nio.file.Path;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.LinkedHashSet;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Objects;
+import java.util.Optional;
 
 import de.featjar.util.cli.CLI;
 import de.featjar.util.data.Problem;
@@ -32,8 +41,6 @@ import de.featjar.util.io.MultiStream;
 import de.featjar.util.job.Monitor;
 import de.featjar.util.job.MonitorUpdateFunction;
 import de.featjar.util.job.UpdateThread;
-import de.featjar.util.io.*;
-import de.featjar.util.job.*;
 
 /**
  * Extends the standard output with time codes, indentation, and log file

@@ -22,12 +22,10 @@
  */
 package de.featjar.util.io;
 
-import de.featjar.util.data.Problem;
-import de.featjar.util.data.Result;
-import org.junit.jupiter.api.Test;
-import de.featjar.util.io.format.Format;
-import de.featjar.util.io.format.FormatSupplier;
-import de.featjar.util.tree.structure.SimpleTree;
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -41,7 +39,13 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
-import static org.junit.jupiter.api.Assertions.*;
+import org.junit.jupiter.api.Test;
+
+import de.featjar.util.data.Problem;
+import de.featjar.util.data.Result;
+import de.featjar.util.io.format.Format;
+import de.featjar.util.io.format.FormatSupplier;
+import de.featjar.util.tree.structure.SimpleTree;
 
 public class IOTest {
 	static class IntegerFormat implements Format<Integer> {

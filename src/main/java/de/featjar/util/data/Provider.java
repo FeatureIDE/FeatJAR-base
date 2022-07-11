@@ -22,8 +22,8 @@
  */
 package de.featjar.util.data;
 
-import java.nio.file.*;
-import java.util.function.*;
+import java.nio.file.Path;
+import java.util.function.BiFunction;
 
 import de.featjar.util.io.IO;
 import de.featjar.util.io.format.Format;
@@ -31,9 +31,6 @@ import de.featjar.util.io.format.FormatSupplier;
 import de.featjar.util.job.Executor;
 import de.featjar.util.job.InternalMonitor;
 import de.featjar.util.job.MonitorableFunction;
-import de.featjar.util.io.*;
-import de.featjar.util.io.format.*;
-import de.featjar.util.job.*;
 
 /**
  * A function that derives objects from feature models and formulas, taking into

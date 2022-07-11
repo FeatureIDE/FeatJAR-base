@@ -22,8 +22,11 @@
  */
 package de.featjar.util.io;
 
-import java.io.*;
-import java.util.*;
+import java.io.IOException;
+import java.io.OutputStream;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 
 public class MultiStream extends OutputStream {
 

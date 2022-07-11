@@ -22,11 +22,17 @@
  */
 package de.featjar.util.data;
 
-import java.util.*;
-import java.util.function.*;
-import java.util.stream.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
+import java.util.Optional;
+import java.util.function.Consumer;
+import java.util.function.Function;
+import java.util.function.Supplier;
+import java.util.stream.Collectors;
 
-import de.featjar.util.data.Problem.*;
+import de.featjar.util.data.Problem.Severity;
 
 /**
  * Similarly to {@link Optional}, this wraps an object or {@code null} that is

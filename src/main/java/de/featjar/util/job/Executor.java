@@ -23,7 +23,7 @@
 package de.featjar.util.job;
 
 import de.featjar.util.data.Result;
-import de.featjar.util.job.InternalMonitor.*;
+import de.featjar.util.job.InternalMonitor.MethodCancelException;
 
 /**
  * Class that can execute instances of {@link MonitorableSupplier} and

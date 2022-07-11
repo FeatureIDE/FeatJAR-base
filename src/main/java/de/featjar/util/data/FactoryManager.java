@@ -23,7 +23,6 @@
 package de.featjar.util.data;
 
 import de.featjar.util.extension.ExtensionPoint;
-import de.featjar.util.extension.*;
 
 /**
  * Manages additional formats for a certain object.

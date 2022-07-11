@@ -22,11 +22,12 @@
  */
 package de.featjar.util.data;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
 
 import de.featjar.util.job.InternalMonitor;
 import de.featjar.util.job.NullMonitor;
-import de.featjar.util.job.*;
 
 /**
  * A cache that memoizes arbitrary objects (e.g., transformed formulas and

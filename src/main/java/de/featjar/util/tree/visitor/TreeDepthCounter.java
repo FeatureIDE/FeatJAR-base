@@ -22,10 +22,10 @@
  */
 package de.featjar.util.tree.visitor;
 
-import java.util.*;
+import java.util.List;
+import java.util.Optional;
 
 import de.featjar.util.tree.structure.Tree;
-import de.featjar.util.tree.structure.*;
 
 /**
  * Visitor that computes the maximum depth of a tree.

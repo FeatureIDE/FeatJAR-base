@@ -22,8 +22,8 @@
  */
 package de.featjar.util.job;
 
-import java.util.*;
-import java.util.concurrent.*;
+import java.util.List;
+import java.util.concurrent.CopyOnWriteArrayList;
 
 /**
  * Default implementation of {@link InternalMonitor} and {@link Monitor}.<br>

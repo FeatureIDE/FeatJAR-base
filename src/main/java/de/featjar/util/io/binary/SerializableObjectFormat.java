@@ -22,15 +22,16 @@
  */
 package de.featjar.util.io.binary;
 
-import java.io.*;
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+import java.io.OutputStream;
 
 import de.featjar.util.data.Result;
 import de.featjar.util.io.InputMapper;
 import de.featjar.util.io.OutputMapper;
 import de.featjar.util.io.format.Format;
 import de.featjar.util.logging.Logger;
-import de.featjar.util.io.format.*;
-import de.featjar.util.logging.*;
 
 /**
  * Reads / Writes a list of configuration.

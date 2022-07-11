@@ -22,11 +22,10 @@
  */
 package de.featjar.util.data;
 
-import java.util.*;
-import java.util.function.*;
+import java.util.Map;
+import java.util.function.BiFunction;
 
 import de.featjar.util.logging.Logger;
-import de.featjar.util.logging.*;
 
 /**
  * Abstract operation to modify elements from a {@link Cache}.

@@ -22,20 +22,22 @@
  */
 package de.featjar.util.io;
 
-import java.io.*;
-import java.nio.charset.*;
-import java.nio.file.*;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.nio.charset.Charset;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.StandardOpenOption;
 import java.util.Collections;
 import java.util.Map;
-import java.util.function.*;
+import java.util.function.Supplier;
 
 import de.featjar.util.data.Factory;
 import de.featjar.util.data.FactorySupplier;
 import de.featjar.util.data.Result;
 import de.featjar.util.io.format.Format;
 import de.featjar.util.io.format.FormatSupplier;
-import de.featjar.util.data.*;
-import de.featjar.util.io.format.*;
 
 /**
  * Enables reading and writing of a file in a certain {@link Format}.

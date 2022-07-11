@@ -22,9 +22,6 @@
  */
 package de.featjar.util.io;
 
-import de.featjar.util.data.Problem;
-import de.featjar.util.data.Result;
-
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.Charset;
@@ -33,6 +30,9 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Supplier;
+
+import de.featjar.util.data.Problem;
+import de.featjar.util.data.Result;
 
 public abstract class InputMapper extends IOMapper<Input> {
 	protected InputMapper(Path mainPath) {

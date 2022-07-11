@@ -22,19 +22,15 @@
  */
 package de.featjar.util.io.xml;
 
-import de.featjar.util.data.Problem;
-import de.featjar.util.data.Result;
-import de.featjar.util.io.InputHeader;
-import de.featjar.util.io.InputMapper;
-import de.featjar.util.io.format.Format;
-import de.featjar.util.io.format.ParseException;
-import de.featjar.util.io.format.ParseProblem;
-import de.featjar.util.logging.Logger;
-import de.featjar.util.io.format.*;
-import org.w3c.dom.Document;
-import org.w3c.dom.Element;
-import org.w3c.dom.NodeList;
-import org.xml.sax.InputSource;
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.StringReader;
+import java.io.StringWriter;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
@@ -46,15 +42,20 @@ import javax.xml.transform.TransformerException;
 import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.StringReader;
-import java.io.StringWriter;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
+
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
+import org.w3c.dom.NodeList;
+import org.xml.sax.InputSource;
+
+import de.featjar.util.data.Problem;
+import de.featjar.util.data.Result;
+import de.featjar.util.io.InputHeader;
+import de.featjar.util.io.InputMapper;
+import de.featjar.util.io.format.Format;
+import de.featjar.util.io.format.ParseException;
+import de.featjar.util.io.format.ParseProblem;
+import de.featjar.util.logging.Logger;
 
 /**
  * Implements common behaviours for parsing and writing XML files.
