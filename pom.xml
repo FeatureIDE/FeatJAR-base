@@ -3,16 +3,30 @@
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 
+	<name>util</name>
+	<description>Common utilities and data structures</description>
+	<url>https://github.com/FeatJAR/util</url>
+	<inceptionYear>2020</inceptionYear>
+	<developers>
+		<developer>
+			<name>Sebastian Krieter</name>
+		</developer>
+	</developers>
+	<licenses>
+		<license>
+			<name>LGPL-3.0-or-later</name>
+			<url>https://www.gnu.org/licenses/lgpl-3.0.html</url>
+			<distribution>repo</distribution>
+			<comments>lgpl30</comments>
+		</license>
+	</licenses>
+
+	<artifactId>util</artifactId>
+	<packaging>jar</packaging>
+
 	<parent>
 		<groupId>org.spldev</groupId>
 		<artifactId>spldev</artifactId>
 		<version>1.0-SNAPSHOT</version>
 	</parent>
-
-	<artifactId>util</artifactId>
-	<packaging>jar</packaging>
-
-	<name>Util Lib</name>
-	<description>Miscellaneous utility functions</description>
-	<url>https://github.com/skrieter/utils</url>
 </project>
