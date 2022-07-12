@@ -242,7 +242,7 @@ public class SimpleTreeTest {
 
 		root.mapChildren(oldChild -> childD);
 
-		assertThrows(ConcurrentModificationException.class, () -> {
+		assertDoesNotThrow(() -> {
 			failFastIterator.next();
 		});
 		final Iterator<?> iterator = root.getChildren().iterator();
@@ -259,7 +259,7 @@ public class SimpleTreeTest {
 
 		root.mapChildren(oldChild -> oldChild == childB ? childD : null);
 
-		assertThrows(ConcurrentModificationException.class, () -> {
+		assertDoesNotThrow(() -> {
 			failFastIterator.next();
 		});
 		final Iterator<?> iterator = root.getChildren().iterator();
