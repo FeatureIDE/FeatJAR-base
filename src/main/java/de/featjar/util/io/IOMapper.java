@@ -125,8 +125,12 @@ public abstract class IOMapper<T extends IOObject> implements AutoCloseable, Sup
 			.map(Map.Entry::getKey);
 	}
 
-	public Optional<Path> resolve(T relativeTo, Path path) {
-		return getPath(relativeTo).map(_path -> _path.resolve(path));
+	public Optional<Path> resolve(T sibling, Path path) {
+		return getPath(sibling).map(_path -> _path.resolveSibling(path));
+	}
+
+	public Optional<Path> resolve(Path path) {
+		return resolve(get(), path);
 	}
 
 	@Override
