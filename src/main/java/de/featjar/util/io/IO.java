@@ -25,6 +25,7 @@ package de.featjar.util.io;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.net.URL;
 import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -61,6 +62,72 @@ public class IO {
 		try (InputMapper inputMapper = new InputMapper.Stream(inputStream, charset,
 			IOObject.EMPTY_FILE_EXTENSION)) {
 			return parse(inputMapper, format);
+		} catch (final IOException e) {
+			return Result.empty(e);
+		}
+	}
+
+	public static <T> Result<T> load(URL url, Format<T> format) {
+		return load(url, format, IOObject.DEFAULT_CHARSET);
+	}
+
+	public static <T> Result<T> load(URL url, Format<T> format, Supplier<T> objectSupplier) {
+		return load(url, format, objectSupplier, IOObject.DEFAULT_CHARSET);
+	}
+
+	public static <T> Result<T> load(URL url, FormatSupplier<T> formatSupplier) {
+		return load(url, formatSupplier, IOObject.DEFAULT_CHARSET);
+	}
+
+	public static <T> Result<T> load(URL url, FormatSupplier<T> formatSupplier, Supplier<T> objectSupplier) {
+		return load(url, formatSupplier, objectSupplier, IOObject.DEFAULT_CHARSET);
+	}
+
+	public static <T> Result<T> load(//
+		URL url, //
+		Format<T> format, //
+		Charset charset) {
+		try (InputMapper inputMapper = new InputMapper.Stream(url.openStream(), charset, IOObject.getFileExtension(url
+			.getFile()))) {
+			return parse(inputMapper, format);
+		} catch (final IOException e) {
+			return Result.empty(e);
+		}
+	}
+
+	public static <T> Result<T> load(//
+		URL url, //
+		Format<T> format, //
+		Supplier<T> factory, //
+		Charset charset) {
+		try (InputMapper inputMapper = new InputMapper.Stream(url.openStream(), charset, IOObject.getFileExtension(url
+			.getFile()))) {
+			return parse(inputMapper, format, factory);
+		} catch (final IOException e) {
+			return Result.empty(e);
+		}
+	}
+
+	public static <T> Result<T> load(//
+		URL url, //
+		FormatSupplier<T> formatSupplier, //
+		Supplier<T> factory, //
+		Charset charset) {
+		try (InputMapper inputMapper = new InputMapper.Stream(url.openStream(), charset, IOObject.getFileExtension(url
+			.getFile()))) {
+			return parse(inputMapper, formatSupplier, factory);
+		} catch (final IOException e) {
+			return Result.empty(e);
+		}
+	}
+
+	public static <T> Result<T> load(//
+		URL url, //
+		FormatSupplier<T> formatSupplier, //
+		Charset charset) {
+		try (InputMapper inputMapper = new InputMapper.Stream(url.openStream(), charset, IOObject.getFileExtension(url
+			.getFile()))) {
+			return parse(inputMapper, formatSupplier);
 		} catch (final IOException e) {
 			return Result.empty(e);
 		}

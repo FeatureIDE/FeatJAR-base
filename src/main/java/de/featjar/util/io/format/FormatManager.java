@@ -40,7 +40,7 @@ import de.featjar.util.io.InputHeader;
  */
 public class FormatManager<T> extends ExtensionPoint<Format<T>> implements FormatSupplier<T> {
 
-	public Result<Format<T>> getFormatById(String id) throws NoSuchExtensionException {
+	public Result<Format<T>> getFormatById(String id) {
 		return getExtension(id);
 	}
 
