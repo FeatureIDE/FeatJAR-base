@@ -111,8 +111,8 @@ public interface Format<T> extends Extension {
 
 	/**
 	 * Returns an instance of this format. Clients should always call this method
-	 * before calling any of {@link #parse(InputMapper)}, {@link #parse(InputMapper,
-	 * Supplier)}, {@link #serialize(Object)}, or
+	 * before calling any of {@link #parse(InputMapper)},
+	 * {@link #parse(InputMapper, Supplier)}, {@link #serialize(Object)}, or
 	 * {@link #write(Object, OutputMapper)} and call these methods the returned
 	 * value to avoid any unintended concurrent access.<br>
 	 * <br>
