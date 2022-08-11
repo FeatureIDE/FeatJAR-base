@@ -20,18 +20,21 @@
  * See <https://github.com/FeatJAR/util> for further information.
  * -----------------------------------------------------------------------------
  */
-package de.featjar.util.os;
+package de.featjar.util.bin;
 
-public final class OperatingSystem {
+import de.featjar.util.extension.ExtensionPoint;
 
-	public static final boolean IS_WINDOWS;
-	public static final boolean IS_MAC;
-	public static final boolean IS_UNIX;
+/**
+ * Manages all native binaries.
+ *
+ * @author Elias Kuiter
+ */
+public class BinaryManager extends ExtensionPoint<Binary> {
 
-	static {
-		final String OS = System.getProperty("os.name").toLowerCase();
-		IS_WINDOWS = OS.matches(".*(win).*");
-		IS_MAC = OS.matches(".*(mac).*");
-		IS_UNIX = OS.matches(".*(nix|nux|aix).*");
+	private static final BinaryManager instance = new BinaryManager();
+
+	public static BinaryManager getInstance() {
+		return instance;
 	}
+
 }
