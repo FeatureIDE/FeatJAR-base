@@ -42,7 +42,7 @@ public abstract class Binary implements Extension {
 		extractResources();
 	}
 
-	public abstract Set<Path> getResourcePaths();
+	public abstract Set<String> getResourceNames();
 
 	public Path getPath() {
 		return null;
@@ -50,11 +50,13 @@ public abstract class Binary implements Extension {
 
 	public void extractResources() {
 		BINARY_DIRECTORY.toFile().mkdirs();
-		for (Path resourcePath : getResourcePaths()) {
+		for (String resourceName : getResourceNames()) {
 			try {
-				Path outputPath = BINARY_DIRECTORY.resolve(resourcePath.getFileName());
-				if (Files.notExists(outputPath))
-					JAR.extractResource(resourcePath, outputPath);
+				Path outputPath = BINARY_DIRECTORY.resolve(resourceName);
+				if (Files.notExists(outputPath)) {
+					JAR.extractResource("bin/" + resourceName, outputPath);
+					outputPath.toFile().setExecutable(true);
+				}
 			} catch (IOException e) {
 				throw new RuntimeException(e);
 			}
