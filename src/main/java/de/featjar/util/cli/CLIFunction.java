@@ -20,9 +20,8 @@
  */
 package de.featjar.util.cli;
 
-import java.util.List;
-
 import de.featjar.util.extension.Extension;
+import java.util.List;
 
 /**
  * A function of FeatureIDE that can be accessed via the {@link CLI}.
@@ -31,18 +30,17 @@ import de.featjar.util.extension.Extension;
  */
 public interface CLIFunction extends Extension {
 
-	default String getName() {
-		return getIdentifier();
-	}
+    default String getName() {
+        return getIdentifier();
+    }
 
-	void run(List<String> args);
+    void run(List<String> args);
 
-	default String getDescription() {
-		return "";
-	}
+    default String getDescription() {
+        return "";
+    }
 
-	default String getHelp() {
-		return "No help is available for this command.";
-	}
-
+    default String getHelp() {
+        return "No help is available for this command.";
+    }
 }

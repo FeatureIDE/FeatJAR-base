@@ -29,20 +29,19 @@ package de.featjar.util.job;
  */
 public interface Monitor {
 
-	int getTotalWork();
+    int getTotalWork();
 
-	int getRemainingWork();
+    int getRemainingWork();
 
-	int getWorkDone();
+    int getWorkDone();
 
-	double getRelativeWorkDone();
+    double getRelativeWorkDone();
 
-	String getTaskName();
+    String getTaskName();
 
-	void cancel();
+    void cancel();
 
-	boolean isCanceled();
+    boolean isCanceled();
 
-	boolean isDone();
-
+    boolean isDone();
 }

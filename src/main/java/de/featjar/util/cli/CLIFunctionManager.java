@@ -29,10 +29,9 @@ import de.featjar.util.extension.ExtensionPoint;
  */
 public class CLIFunctionManager extends ExtensionPoint<CLIFunction> {
 
-	private static CLIFunctionManager instance = new CLIFunctionManager();
+    private static CLIFunctionManager instance = new CLIFunctionManager();
 
-	public static CLIFunctionManager getInstance() {
-		return instance;
-	}
-
+    public static CLIFunctionManager getInstance() {
+        return instance;
+    }
 }

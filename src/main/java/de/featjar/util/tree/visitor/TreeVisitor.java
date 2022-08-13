@@ -20,46 +20,46 @@
  */
 package de.featjar.util.tree.visitor;
 
+import de.featjar.util.tree.Trees;
+import de.featjar.util.tree.structure.Tree;
 import java.util.List;
 import java.util.Optional;
 
-import de.featjar.util.tree.Trees;
-import de.featjar.util.tree.structure.Tree;
-
 /**
  * Interface for a visitor used in the traversal of a tree.
- * 
+ *
  * @see Trees
- * 
+ *
  * @author Sebastian Krieter
  */
 public interface TreeVisitor<R, T extends Tree<?>> {
 
-	enum VisitorResult {
-		Continue, SkipChildren, SkipAll, Fail
-	}
+    enum VisitorResult {
+        Continue,
+        SkipChildren,
+        SkipAll,
+        Fail
+    }
 
-	static <T> T getCurrentNode(List<T> path) {
-		return path.get(path.size() - 1);
-	}
+    static <T> T getCurrentNode(List<T> path) {
+        return path.get(path.size() - 1);
+    }
 
-	static <T> T getParentNode(List<T> path) {
-		return (path.size() > 1) ? path.get(path.size() - 2) : null;
-	}
+    static <T> T getParentNode(List<T> path) {
+        return (path.size() > 1) ? path.get(path.size() - 2) : null;
+    }
 
-	default VisitorResult firstVisit(List<T> path) {
-		return VisitorResult.Continue;
-	}
+    default VisitorResult firstVisit(List<T> path) {
+        return VisitorResult.Continue;
+    }
 
-	default VisitorResult lastVisit(List<T> path) {
-		return VisitorResult.Continue;
-	}
+    default VisitorResult lastVisit(List<T> path) {
+        return VisitorResult.Continue;
+    }
 
-	default void reset() {
-	}
+    default void reset() {}
 
-	default Optional<R> getResult() {
-		return Optional.empty();
-	}
-
+    default Optional<R> getResult() {
+        return Optional.empty();
+    }
 }

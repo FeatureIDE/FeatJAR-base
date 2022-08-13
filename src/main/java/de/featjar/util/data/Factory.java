@@ -20,15 +20,12 @@
  */
 package de.featjar.util.data;
 
-import java.util.function.Supplier;
-
 import de.featjar.util.extension.Extension;
+import java.util.function.Supplier;
 
 /**
  * Factory to create an instance of some type.
  *
  * @author Sebastian Krieter
  */
-public interface Factory<T> extends Extension, Supplier<T> {
-
-}
+public interface Factory<T> extends Extension, Supplier<T> {}

@@ -20,15 +20,14 @@
  */
 package de.featjar.util.data;
 
-import java.nio.file.Path;
-import java.util.function.BiFunction;
-
 import de.featjar.util.io.IO;
 import de.featjar.util.io.format.Format;
 import de.featjar.util.io.format.FormatSupplier;
 import de.featjar.util.job.Executor;
 import de.featjar.util.job.InternalMonitor;
 import de.featjar.util.job.MonitorableFunction;
+import java.nio.file.Path;
+import java.util.function.BiFunction;
 
 /**
  * A function that derives objects from feature models and formulas, taking into
@@ -42,38 +41,37 @@ import de.featjar.util.job.MonitorableFunction;
  */
 public interface Provider<T> extends BiFunction<Cache, InternalMonitor, Result<T>> {
 
-	Object defaultParameters = new Object();
+    Object defaultParameters = new Object();
 
-	Identifier<T> getIdentifier();
+    Identifier<T> getIdentifier();
 
-	default Object getParameters() {
-		return defaultParameters;
-	}
+    default Object getParameters() {
+        return defaultParameters;
+    }
 
-	default boolean storeInCache() {
-		return true;
-	}
+    default boolean storeInCache() {
+        return true;
+    }
 
-	static <T, R> Result<R> convert(Cache cache, Identifier<T> identifier, MonitorableFunction<T, R> function,
-		InternalMonitor monitor) {
-		return cache.get(identifier).flatMap(o -> Executor.run(function, o, monitor));
-	}
+    static <T, R> Result<R> convert(
+            Cache cache, Identifier<T> identifier, MonitorableFunction<T, R> function, InternalMonitor monitor) {
+        return cache.get(identifier).flatMap(o -> Executor.run(function, o, monitor));
+    }
 
-	static <T, R> Result<R> convert(Cache cache, Provider<T> provider, MonitorableFunction<T, R> function,
-		InternalMonitor monitor) {
-		return cache.get(provider).flatMap(o -> Executor.run(function, o, monitor));
-	}
+    static <T, R> Result<R> convert(
+            Cache cache, Provider<T> provider, MonitorableFunction<T, R> function, InternalMonitor monitor) {
+        return cache.get(provider).flatMap(o -> Executor.run(function, o, monitor));
+    }
 
-	static <R> Result<R> load(Path path, FormatSupplier<R> formatSupplier, FactorySupplier<R> factorySupplier) {
-		return IO.load(path, formatSupplier, factorySupplier);
-	}
+    static <R> Result<R> load(Path path, FormatSupplier<R> formatSupplier, FactorySupplier<R> factorySupplier) {
+        return IO.load(path, formatSupplier, factorySupplier);
+    }
 
-	static <R> Result<R> load(Path path, FormatSupplier<R> formatSupplier) {
-		return IO.load(path, formatSupplier);
-	}
+    static <R> Result<R> load(Path path, FormatSupplier<R> formatSupplier) {
+        return IO.load(path, formatSupplier);
+    }
 
-	static <R> Result<R> load(Path path, Format<R> format) {
-		return IO.load(path, format);
-	}
-
+    static <R> Result<R> load(Path path, Format<R> format) {
+        return IO.load(path, format);
+    }
 }

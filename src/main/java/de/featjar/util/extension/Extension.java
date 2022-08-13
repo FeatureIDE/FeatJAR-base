@@ -29,22 +29,21 @@ package de.featjar.util.extension;
  */
 public interface Extension {
 
-	/**
-	 * Returns the unique identifier for this extension.
-	 */
-	default String getIdentifier() {
-		return getClass().getCanonicalName();
-	}
+    /**
+     * Returns the unique identifier for this extension.
+     */
+    default String getIdentifier() {
+        return getClass().getCanonicalName();
+    }
 
-	/**
-	 * Is called when the extension is loaded for the first time by an
-	 * {@link ExtensionPoint}.
-	 *
-	 * @return {@code true} if the initialization was successful, {@code false}
-	 *         otherwise.
-	 */
-	default boolean initialize() {
-		return true;
-	}
-
+    /**
+     * Is called when the extension is loaded for the first time by an
+     * {@link ExtensionPoint}.
+     *
+     * @return {@code true} if the initialization was successful, {@code false}
+     *         otherwise.
+     */
+    default boolean initialize() {
+        return true;
+    }
 }

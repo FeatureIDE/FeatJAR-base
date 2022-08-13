@@ -29,6 +29,5 @@ package de.featjar.util.job;
 @FunctionalInterface
 public interface MonitorableFunction<T, R> {
 
-	R execute(T input, InternalMonitor monitor) throws Exception;
-
+    R execute(T input, InternalMonitor monitor) throws Exception;
 }

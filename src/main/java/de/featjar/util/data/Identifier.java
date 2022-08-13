@@ -24,14 +24,13 @@ package de.featjar.util.data;
  * Serves as a unique identifier for a provided object ({@link Provider}) in a
  * {@link Cache}. Is only used for its unique reference, therefore has no
  * attributes.
- * 
+ *
  * @param <T> the type of the provided object
  */
 public class Identifier<T> {
 
-	@Override
-	public String toString() {
-		return "Identifier [" + System.identityHashCode(this) + "]";
-	}
-
+    @Override
+    public String toString() {
+        return "Identifier [" + System.identityHashCode(this) + "]";
+    }
 }

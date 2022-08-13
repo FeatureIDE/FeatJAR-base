@@ -23,6 +23,5 @@ package de.featjar.util.job;
 @FunctionalInterface
 public interface UpdateFunction {
 
-	boolean update();
-
+    boolean update();
 }

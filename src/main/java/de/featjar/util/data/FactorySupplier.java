@@ -20,31 +20,29 @@
  */
 package de.featjar.util.data;
 
-import java.nio.file.Path;
-
 import de.featjar.util.io.format.Format;
+import java.nio.file.Path;
 
 /**
  * Provides a factory for a given format and file path.
- * 
+ *
  * @author Sebastian Krieter
  */
 @FunctionalInterface
 public interface FactorySupplier<T> {
 
-	static <T> FactorySupplier<T> of(Factory<T> factory) {
-		return (path, format) -> Result.of(factory);
-	}
+    static <T> FactorySupplier<T> of(Factory<T> factory) {
+        return (path, format) -> Result.of(factory);
+    }
 
-	/**
-	 * Returns the factory that fits the given parameter.
-	 *
-	 * @param path   the file path
-	 * @param format the file format
-	 *
-	 * @return A {@link Factory factory} that uses the given extension. Result may
-	 *         be empty if there is no suitable factory.
-	 */
-	Result<Factory<T>> getFactory(Path path, Format<T> format);
-
+    /**
+     * Returns the factory that fits the given parameter.
+     *
+     * @param path   the file path
+     * @param format the file format
+     *
+     * @return A {@link Factory factory} that uses the given extension. Result may
+     *         be empty if there is no suitable factory.
+     */
+    Result<Factory<T>> getFactory(Path path, Format<T> format);
 }

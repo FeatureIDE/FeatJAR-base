@@ -31,144 +31,143 @@ import java.util.concurrent.CopyOnWriteArrayList;
  */
 public class DefaultMonitor implements InternalMonitor {
 
-	protected final List<DefaultMonitor> children = new CopyOnWriteArrayList<>();
-	protected final DefaultMonitor parent;
-	protected final int parentWork;
+    protected final List<DefaultMonitor> children = new CopyOnWriteArrayList<>();
+    protected final DefaultMonitor parent;
+    protected final int parentWork;
 
-	protected String taskName;
+    protected String taskName;
 
-	protected boolean canceled, done;
-	protected int currentWork;
-	protected int totalWork;
+    protected boolean canceled, done;
+    protected int currentWork;
+    protected int totalWork;
 
-	public DefaultMonitor() {
-		parent = null;
-		parentWork = 0;
-	}
+    public DefaultMonitor() {
+        parent = null;
+        parentWork = 0;
+    }
 
-	private DefaultMonitor(DefaultMonitor parent, int parentWork) {
-		this.parent = parent;
-		canceled = parent.canceled;
-		done = parent.done;
-		this.parentWork = parentWork;
-	}
+    private DefaultMonitor(DefaultMonitor parent, int parentWork) {
+        this.parent = parent;
+        canceled = parent.canceled;
+        done = parent.done;
+        this.parentWork = parentWork;
+    }
 
-	protected void uncertainWorked(int work) {
-		currentWork += work;
-		totalWork += work;
-	}
+    protected void uncertainWorked(int work) {
+        currentWork += work;
+        totalWork += work;
+    }
 
-	protected void worked(int work) {
-		currentWork += work;
-	}
+    protected void worked(int work) {
+        currentWork += work;
+    }
 
-	@Override
-	public final void uncertainStep() throws MethodCancelException {
-		uncertainWorked(1);
-		checkCancel();
-	}
+    @Override
+    public final void uncertainStep() throws MethodCancelException {
+        uncertainWorked(1);
+        checkCancel();
+    }
 
-	@Override
-	public final void uncertainStep(int work) throws MethodCancelException {
-		uncertainWorked(work);
-		checkCancel();
-	}
+    @Override
+    public final void uncertainStep(int work) throws MethodCancelException {
+        uncertainWorked(work);
+        checkCancel();
+    }
 
-	@Override
-	public final void step() throws MethodCancelException {
-		worked(1);
-		checkCancel();
-	}
+    @Override
+    public final void step() throws MethodCancelException {
+        worked(1);
+        checkCancel();
+    }
 
-	@Override
-	public final void step(int work) throws MethodCancelException {
-		worked(work);
-		checkCancel();
-	}
+    @Override
+    public final void step(int work) throws MethodCancelException {
+        worked(work);
+        checkCancel();
+    }
 
-	@Override
-	public final void setTotalWork(int work) {
-		totalWork = work;
-		checkCancel();
-	}
+    @Override
+    public final void setTotalWork(int work) {
+        totalWork = work;
+        checkCancel();
+    }
 
-	@Override
-	public void done() {
-		currentWork = totalWork;
-		done = true;
-	}
+    @Override
+    public void done() {
+        currentWork = totalWork;
+        done = true;
+    }
 
-	@Override
-	public boolean isCanceled() {
-		return canceled;
-	}
+    @Override
+    public boolean isCanceled() {
+        return canceled;
+    }
 
-	@Override
-	public boolean isDone() {
-		return done;
-	}
+    @Override
+    public boolean isDone() {
+        return done;
+    }
 
-	@Override
-	public void cancel() {
-		canceled = true;
-	}
+    @Override
+    public void cancel() {
+        canceled = true;
+    }
 
-	@Override
-	public void checkCancel() throws MethodCancelException {
-		if (canceled) {
-			throw new MethodCancelException();
-		}
-		if (parent != null) {
-			parent.checkCancel();
-		}
-	}
+    @Override
+    public void checkCancel() throws MethodCancelException {
+        if (canceled) {
+            throw new MethodCancelException();
+        }
+        if (parent != null) {
+            parent.checkCancel();
+        }
+    }
 
-	@Override
-	public int getTotalWork() {
-		return totalWork;
-	}
+    @Override
+    public int getTotalWork() {
+        return totalWork;
+    }
 
-	@Override
-	public int getRemainingWork() {
-		return totalWork - getWorkDone();
-	}
+    @Override
+    public int getRemainingWork() {
+        return totalWork - getWorkDone();
+    }
 
-	@Override
-	public int getWorkDone() {
-		int workDone = currentWork;
-		for (final DefaultMonitor child : children) {
-			workDone += child.getRelativeWorkDone() * child.parentWork;
-		}
-		return workDone;
-	}
+    @Override
+    public int getWorkDone() {
+        int workDone = currentWork;
+        for (final DefaultMonitor child : children) {
+            workDone += child.getRelativeWorkDone() * child.parentWork;
+        }
+        return workDone;
+    }
 
-	@Override
-	public double getRelativeWorkDone() {
-		if (totalWork == 0) {
-			return 0;
-		}
-		double workDone = currentWork;
-		for (final DefaultMonitor child : children) {
-			workDone += child.getRelativeWorkDone() * child.parentWork;
-		}
-		return workDone / totalWork;
-	}
+    @Override
+    public double getRelativeWorkDone() {
+        if (totalWork == 0) {
+            return 0;
+        }
+        double workDone = currentWork;
+        for (final DefaultMonitor child : children) {
+            workDone += child.getRelativeWorkDone() * child.parentWork;
+        }
+        return workDone / totalWork;
+    }
 
-	@Override
-	public void setTaskName(String name) {
-		taskName = name;
-	}
+    @Override
+    public void setTaskName(String name) {
+        taskName = name;
+    }
 
-	@Override
-	public String getTaskName() {
-		return String.valueOf(taskName);
-	}
+    @Override
+    public String getTaskName() {
+        return String.valueOf(taskName);
+    }
 
-	@Override
-	public DefaultMonitor subTask(int size) {
-		final DefaultMonitor child = new DefaultMonitor(this, size);
-		children.add(child);
-		return child;
-	}
-
+    @Override
+    public DefaultMonitor subTask(int size) {
+        final DefaultMonitor child = new DefaultMonitor(this, size);
+        children.add(child);
+        return child;
+    }
 }

@@ -26,46 +26,45 @@ import java.util.stream.Stream;
 /**
  * Input file header to determine whether a format can parse a particular
  * content.
- * 
+ *
  * @author Sebastian Krieter
  */
 public class InputHeader {
 
-	/**
-	 * Maximum number of bytes in the header.
-	 */
-	public static final int MAX_HEADER_SIZE = 0x00100000; // 1 MiB
+    /**
+     * Maximum number of bytes in the header.
+     */
+    public static final int MAX_HEADER_SIZE = 0x00100000; // 1 MiB
 
-	private final byte[] header;
+    private final byte[] header;
 
-	private final Charset charset;
+    private final Charset charset;
 
-	private final String fileExtension;
+    private final String fileExtension;
 
-	public InputHeader(String fileExtension, byte[] header, Charset charset) {
-		this.fileExtension = fileExtension;
-		this.header = header;
-		this.charset = charset;
-	}
+    public InputHeader(String fileExtension, byte[] header, Charset charset) {
+        this.fileExtension = fileExtension;
+        this.header = header;
+        this.charset = charset;
+    }
 
-	public Charset getCharset() {
-		return charset;
-	}
+    public Charset getCharset() {
+        return charset;
+    }
 
-	public String getFileExtension() {
-		return fileExtension;
-	}
+    public String getFileExtension() {
+        return fileExtension;
+    }
 
-	public byte[] getBytes() {
-		return header;
-	}
+    public byte[] getBytes() {
+        return header;
+    }
 
-	public String getText() {
-		return new String(header, charset);
-	}
+    public String getText() {
+        return new String(header, charset);
+    }
 
-	public Stream<String> getLines() {
-		return getText().lines();
-	}
-
+    public Stream<String> getLines() {
+        return getText().lines();
+    }
 }

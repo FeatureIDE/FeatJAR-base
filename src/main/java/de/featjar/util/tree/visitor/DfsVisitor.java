@@ -20,22 +20,20 @@
  */
 package de.featjar.util.tree.visitor;
 
-import java.util.List;
-
 import de.featjar.util.tree.Trees;
 import de.featjar.util.tree.structure.Tree;
+import java.util.List;
 
 /**
  * Interface for a visitor used in the traversal of a tree.
- * 
+ *
  * @see Trees
- * 
+ *
  * @author Sebastian Krieter
  */
 public interface DfsVisitor<R, T extends Tree<?>> extends TreeVisitor<R, T> {
 
-	default VisitorResult visit(List<T> path) {
-		return VisitorResult.Continue;
-	}
-
+    default VisitorResult visit(List<T> path) {
+        return VisitorResult.Continue;
+    }
 }

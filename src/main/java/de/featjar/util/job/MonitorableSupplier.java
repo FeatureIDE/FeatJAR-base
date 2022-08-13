@@ -29,6 +29,5 @@ package de.featjar.util.job;
 @FunctionalInterface
 public interface MonitorableSupplier<T> {
 
-	T execute(InternalMonitor monitor) throws Exception;
-
+    T execute(InternalMonitor monitor) throws Exception;
 }

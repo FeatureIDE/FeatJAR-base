@@ -29,24 +29,23 @@ import de.featjar.util.logging.Logger;
  */
 public final class MonitorUpdateFunction implements UpdateFunction {
 
-	private final Monitor monitor;
+    private final Monitor monitor;
 
-	public MonitorUpdateFunction(Monitor monitor) {
-		this.monitor = monitor;
-	}
+    public MonitorUpdateFunction(Monitor monitor) {
+        this.monitor = monitor;
+    }
 
-	@Override
-	public boolean update() {
-		if (monitor.isCanceled() || monitor.isDone()) {
-			return false;
-		} else {
-			Logger.logProgress(((Math.floor(monitor.getRelativeWorkDone() * 1000)) / 10.0) + "%");
-			return true;
-		}
-	}
+    @Override
+    public boolean update() {
+        if (monitor.isCanceled() || monitor.isDone()) {
+            return false;
+        } else {
+            Logger.logProgress(((Math.floor(monitor.getRelativeWorkDone() * 1000)) / 10.0) + "%");
+            return true;
+        }
+    }
 
-	public Monitor getMonitor() {
-		return monitor;
-	}
-
+    public Monitor getMonitor() {
+        return monitor;
+    }
 }

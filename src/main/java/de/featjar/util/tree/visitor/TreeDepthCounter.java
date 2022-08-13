@@ -20,53 +20,51 @@
  */
 package de.featjar.util.tree.visitor;
 
+import de.featjar.util.tree.structure.Tree;
 import java.util.List;
 import java.util.Optional;
 
-import de.featjar.util.tree.structure.Tree;
-
 /**
  * Visitor that computes the maximum depth of a tree.
- * 
+ *
  * @author Sebastian Krieter
  *
  */
 public class TreeDepthCounter implements TreeVisitor<Integer, Tree<?>> {
 
-	private Class<? extends Tree<?>> terminalNode = null;
+    private Class<? extends Tree<?>> terminalNode = null;
 
-	private int maxDepth = 0;
+    private int maxDepth = 0;
 
-	@Override
-	public void reset() {
-		maxDepth = 0;
-	}
+    @Override
+    public void reset() {
+        maxDepth = 0;
+    }
 
-	@Override
-	public VisitorResult firstVisit(List<Tree<?>> path) {
-		final int depth = path.size();
-		if (maxDepth < depth) {
-			maxDepth = depth;
-		}
-		final Tree<?> node = TreeVisitor.getCurrentNode(path);
-		if ((terminalNode != null) && terminalNode.isInstance(node)) {
-			return VisitorResult.SkipChildren;
-		} else {
-			return VisitorResult.Continue;
-		}
-	}
+    @Override
+    public VisitorResult firstVisit(List<Tree<?>> path) {
+        final int depth = path.size();
+        if (maxDepth < depth) {
+            maxDepth = depth;
+        }
+        final Tree<?> node = TreeVisitor.getCurrentNode(path);
+        if ((terminalNode != null) && terminalNode.isInstance(node)) {
+            return VisitorResult.SkipChildren;
+        } else {
+            return VisitorResult.Continue;
+        }
+    }
 
-	@Override
-	public Optional<Integer> getResult() {
-		return Optional.of(maxDepth);
-	}
+    @Override
+    public Optional<Integer> getResult() {
+        return Optional.of(maxDepth);
+    }
 
-	public Class<? extends Tree<?>> getTerminalNode() {
-		return terminalNode;
-	}
+    public Class<? extends Tree<?>> getTerminalNode() {
+        return terminalNode;
+    }
 
-	public void setTerminalNode(Class<? extends Tree<?>> terminalNode) {
-		this.terminalNode = terminalNode;
-	}
-
+    public void setTerminalNode(Class<? extends Tree<?>> terminalNode) {
+        this.terminalNode = terminalNode;
+    }
 }

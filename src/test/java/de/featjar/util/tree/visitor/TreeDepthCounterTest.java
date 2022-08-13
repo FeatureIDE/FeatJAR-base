@@ -20,6 +20,4 @@
  */
 package de.featjar.util.tree.visitor;
 
-public class TreeDepthCounterTest {
-
-}
+public class TreeDepthCounterTest {}

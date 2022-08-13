@@ -28,315 +28,316 @@ import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import de.featjar.util.tree.Trees;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.ConcurrentModificationException;
 import java.util.Iterator;
 import java.util.List;
-
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import de.featjar.util.tree.Trees;
-
 public class SimpleTreeTest {
 
-	SimpleTree<String> emptyRoot, root, childA, childB, childC, childD, childE, childF;
-	List<SimpleTree<String>> firstChildren, secondChildren, thirdChildren, fourthChildren, fifthChildren;
+    SimpleTree<String> emptyRoot, root, childA, childB, childC, childD, childE, childF;
+    List<SimpleTree<String>> firstChildren, secondChildren, thirdChildren, fourthChildren, fifthChildren;
 
-	@BeforeEach
-	public void setUp() {
-		emptyRoot = new SimpleTree<>("EmptyRoot");
-		root = new SimpleTree<>("Root");
-		childA = new SimpleTree<>("A");
-		childB = new SimpleTree<>("B");
-		childC = new SimpleTree<>("C");
-		childD = new SimpleTree<>("D");
-		childE = new SimpleTree<>("E");
-		childF = new SimpleTree<>("F");
+    @BeforeEach
+    public void setUp() {
+        emptyRoot = new SimpleTree<>("EmptyRoot");
+        root = new SimpleTree<>("Root");
+        childA = new SimpleTree<>("A");
+        childB = new SimpleTree<>("B");
+        childC = new SimpleTree<>("C");
+        childD = new SimpleTree<>("D");
+        childE = new SimpleTree<>("E");
+        childF = new SimpleTree<>("F");
 
-		firstChildren = Arrays.asList(childA);
-		secondChildren = Arrays.asList(childB, childC);
-		thirdChildren = Arrays.asList(childA, childB, childC);
-		fourthChildren = Arrays.asList(childD);
-		fifthChildren = Arrays.asList(childE, childF);
+        firstChildren = Arrays.asList(childA);
+        secondChildren = Arrays.asList(childB, childC);
+        thirdChildren = Arrays.asList(childA, childB, childC);
+        fourthChildren = Arrays.asList(childD);
+        fifthChildren = Arrays.asList(childE, childF);
 
-		root.setChildren(thirdChildren);
-	}
+        root.setChildren(thirdChildren);
+    }
 
-	@Test
-	public void createTreeWithoutData() {
-		final String treeToString = "SimpleTree [null]";
+    @Test
+    public void createTreeWithoutData() {
+        final String treeToString = "SimpleTree [null]";
 
-		final SimpleTree<String> newRoot = new SimpleTree<>();
-		assertNull(newRoot.getData());
-		assertFalse(newRoot.hasChildren());
-		assertNotNull(newRoot.getChildren());
-		assertTrue(newRoot.getChildren().isEmpty());
-		assertEquals(treeToString, newRoot.toString());
-	}
+        final SimpleTree<String> newRoot = new SimpleTree<>();
+        assertNull(newRoot.getData());
+        assertFalse(newRoot.hasChildren());
+        assertNotNull(newRoot.getChildren());
+        assertTrue(newRoot.getChildren().isEmpty());
+        assertEquals(treeToString, newRoot.toString());
+    }
 
-	@Test
-	public void createTreeWithData() {
-		final String newData = "NewRoot";
-		final String treeToString = "SimpleTree [" + newData + "]";
+    @Test
+    public void createTreeWithData() {
+        final String newData = "NewRoot";
+        final String treeToString = "SimpleTree [" + newData + "]";
 
-		final SimpleTree<String> newRoot = new SimpleTree<>(newData);
-		assertEquals(newData, newRoot.getData());
-		assertFalse(newRoot.hasChildren());
-		assertNotNull(newRoot.getChildren());
-		assertTrue(newRoot.getChildren().isEmpty());
-		assertEquals(treeToString, newRoot.toString());
-	}
+        final SimpleTree<String> newRoot = new SimpleTree<>(newData);
+        assertEquals(newData, newRoot.getData());
+        assertFalse(newRoot.hasChildren());
+        assertNotNull(newRoot.getChildren());
+        assertTrue(newRoot.getChildren().isEmpty());
+        assertEquals(treeToString, newRoot.toString());
+    }
 
-	@Test
-	public void setData() {
-		final String exampleData = "Example";
-		final String treeToString = "SimpleTree [" + exampleData + "]";
+    @Test
+    public void setData() {
+        final String exampleData = "Example";
+        final String treeToString = "SimpleTree [" + exampleData + "]";
 
-		final SimpleTree<String> newRoot = new SimpleTree<>();
-		newRoot.setData(exampleData);
-		assertEquals(exampleData, newRoot.getData());
-		assertEquals(treeToString, newRoot.toString());
-	}
+        final SimpleTree<String> newRoot = new SimpleTree<>();
+        newRoot.setData(exampleData);
+        assertEquals(exampleData, newRoot.getData());
+        assertEquals(treeToString, newRoot.toString());
+    }
 
-	@Test
-	public void replaceData() {
-		final String exampleData = "Example";
-		final String treeToString = "SimpleTree [" + exampleData + "]";
+    @Test
+    public void replaceData() {
+        final String exampleData = "Example";
+        final String treeToString = "SimpleTree [" + exampleData + "]";
 
-		root.setData(exampleData);
-		assertEquals(exampleData, root.getData());
-		assertEquals(treeToString, root.toString());
-	}
+        root.setData(exampleData);
+        assertEquals(exampleData, root.getData());
+        assertEquals(treeToString, root.toString());
+    }
 
-	@Test
-	public void setChildrenOnce() {
-		emptyRoot.setChildren(firstChildren);
-		assertTrue(emptyRoot.hasChildren());
-		assertEquals(firstChildren, emptyRoot.getChildren());
-	}
+    @Test
+    public void setChildrenOnce() {
+        emptyRoot.setChildren(firstChildren);
+        assertTrue(emptyRoot.hasChildren());
+        assertEquals(firstChildren, emptyRoot.getChildren());
+    }
 
-	@Test
-	public void setChildrenTwice() {
-		emptyRoot.setChildren(firstChildren);
-		emptyRoot.setChildren(secondChildren);
-		assertTrue(emptyRoot.hasChildren());
-		assertEquals(secondChildren, emptyRoot.getChildren());
-	}
+    @Test
+    public void setChildrenTwice() {
+        emptyRoot.setChildren(firstChildren);
+        emptyRoot.setChildren(secondChildren);
+        assertTrue(emptyRoot.hasChildren());
+        assertEquals(secondChildren, emptyRoot.getChildren());
+    }
 
-	@Test
-	public void setChildrenThrice() {
-		emptyRoot.setChildren(firstChildren);
-		emptyRoot.setChildren(secondChildren);
-		emptyRoot.setChildren(thirdChildren);
-		assertTrue(emptyRoot.hasChildren());
-		assertEquals(thirdChildren, emptyRoot.getChildren());
-	}
+    @Test
+    public void setChildrenThrice() {
+        emptyRoot.setChildren(firstChildren);
+        emptyRoot.setChildren(secondChildren);
+        emptyRoot.setChildren(thirdChildren);
+        assertTrue(emptyRoot.hasChildren());
+        assertEquals(thirdChildren, emptyRoot.getChildren());
+    }
 
-	@Test
-	public void modifyChildrenIllegally() {
-		assertThrows(UnsupportedOperationException.class, () -> {
-			emptyRoot.getChildren().add(null);
-		});
-		emptyRoot.setChildren(firstChildren);
-		assertThrows(UnsupportedOperationException.class, () -> {
-			emptyRoot.getChildren().add(null);
-		});
-	}
+    @Test
+    public void modifyChildrenIllegally() {
+        assertThrows(UnsupportedOperationException.class, () -> {
+            emptyRoot.getChildren().add(null);
+        });
+        emptyRoot.setChildren(firstChildren);
+        assertThrows(UnsupportedOperationException.class, () -> {
+            emptyRoot.getChildren().add(null);
+        });
+    }
 
-	@Test
-	public void removeChildren() {
-		root.setChildren(Collections.emptyList());
-		assertFalse(root.hasChildren());
-		assertEquals(Collections.emptyList(), root.getChildren());
-	}
+    @Test
+    public void removeChildren() {
+        root.setChildren(Collections.emptyList());
+        assertFalse(root.hasChildren());
+        assertEquals(Collections.emptyList(), root.getChildren());
+    }
 
-	@Test
-	public void removeChildrenIllegally() {
-		assertThrows(NullPointerException.class, () -> {
-			emptyRoot.setChildren(null);
-		});
-		emptyRoot.setChildren(firstChildren);
-		assertThrows(NullPointerException.class, () -> {
-			emptyRoot.setChildren(null);
-		});
-	}
+    @Test
+    public void removeChildrenIllegally() {
+        assertThrows(NullPointerException.class, () -> {
+            emptyRoot.setChildren(null);
+        });
+        emptyRoot.setChildren(firstChildren);
+        assertThrows(NullPointerException.class, () -> {
+            emptyRoot.setChildren(null);
+        });
+    }
 
-	@Test
-	public void cloneEmptyTree() {
-		final SimpleTree<String> clonedRoot = Trees.cloneTree(emptyRoot);
+    @Test
+    public void cloneEmptyTree() {
+        final SimpleTree<String> clonedRoot = Trees.cloneTree(emptyRoot);
 
-		assertEquals(emptyRoot.getClass(), clonedRoot.getClass());
-		assertEquals(0, emptyRoot.getChildren().size());
-		assertEquals(0, clonedRoot.getChildren().size());
-	}
+        assertEquals(emptyRoot.getClass(), clonedRoot.getClass());
+        assertEquals(0, emptyRoot.getChildren().size());
+        assertEquals(0, clonedRoot.getChildren().size());
+    }
 
-	@Test
-	public void cloneTree() {
-		final SimpleTree<String> clonedRoot = Trees.cloneTree(root);
+    @Test
+    public void cloneTree() {
+        final SimpleTree<String> clonedRoot = Trees.cloneTree(root);
 
-		assertEquals(root.getData(), clonedRoot.getData());
-		assertEquals(thirdChildren.size(), root.getChildren().size());
-		assertEquals(thirdChildren.size(), clonedRoot.getChildren().size());
-		final Iterator<? extends SimpleTree<String>> iterator = root.getChildren().iterator();
-		final Iterator<? extends SimpleTree<String>> clonedIterator = clonedRoot.getChildren().iterator();
-		while (iterator.hasNext()) {
-			assertEquals(iterator.next().getData(), clonedIterator.next().getData());
-		}
-	}
+        assertEquals(root.getData(), clonedRoot.getData());
+        assertEquals(thirdChildren.size(), root.getChildren().size());
+        assertEquals(thirdChildren.size(), clonedRoot.getChildren().size());
+        final Iterator<? extends SimpleTree<String>> iterator =
+                root.getChildren().iterator();
+        final Iterator<? extends SimpleTree<String>> clonedIterator =
+                clonedRoot.getChildren().iterator();
+        while (iterator.hasNext()) {
+            assertEquals(iterator.next().getData(), clonedIterator.next().getData());
+        }
+    }
 
-	@Test
-	public void replaceChildrenInEmptyTree() {
-		final List<?> children = emptyRoot.children;
+    @Test
+    public void replaceChildrenInEmptyTree() {
+        final List<?> children = emptyRoot.children;
 
-		emptyRoot.mapChildren(oldChild -> new SimpleTree<>());
+        emptyRoot.mapChildren(oldChild -> new SimpleTree<>());
 
-		assertTrue(children == emptyRoot.children);
-		assertTrue(emptyRoot.getChildren().isEmpty());
-	}
+        assertTrue(children == emptyRoot.children);
+        assertTrue(emptyRoot.getChildren().isEmpty());
+    }
 
-	@Test
-	public void replaceAllChildrenWithNull() {
-		final List<?> children = root.children;
-		final Iterator<?> failFastIterator = root.getChildren().iterator();
+    @Test
+    public void replaceAllChildrenWithNull() {
+        final List<?> children = root.children;
+        final Iterator<?> failFastIterator = root.getChildren().iterator();
 
-		root.mapChildren(oldChild -> null);
+        root.mapChildren(oldChild -> null);
 
-		assertTrue(children == root.children);
-		assertDoesNotThrow(() -> {
-			failFastIterator.next();
-		});
-		final Iterator<?> iterator = root.getChildren().iterator();
-		assertEquals(thirdChildren.size(), root.getChildren().size());
-		assertEquals(childA, iterator.next());
-		assertEquals(childB, iterator.next());
-		assertEquals(childC, iterator.next());
-		assertFalse(iterator.hasNext());
-	}
+        assertTrue(children == root.children);
+        assertDoesNotThrow(() -> {
+            failFastIterator.next();
+        });
+        final Iterator<?> iterator = root.getChildren().iterator();
+        assertEquals(thirdChildren.size(), root.getChildren().size());
+        assertEquals(childA, iterator.next());
+        assertEquals(childB, iterator.next());
+        assertEquals(childC, iterator.next());
+        assertFalse(iterator.hasNext());
+    }
 
-	@Test
-	public void replaceAllChildrenWithThemselves() {
-		final List<?> children = root.children;
-		final Iterator<?> failFastIterator = root.getChildren().iterator();
+    @Test
+    public void replaceAllChildrenWithThemselves() {
+        final List<?> children = root.children;
+        final Iterator<?> failFastIterator = root.getChildren().iterator();
 
-		root.mapChildren(oldChild -> oldChild);
+        root.mapChildren(oldChild -> oldChild);
 
-		assertTrue(children == root.children);
-		assertDoesNotThrow(() -> {
-			failFastIterator.next();
-		});
-		final Iterator<?> iterator = root.getChildren().iterator();
-		assertEquals(thirdChildren.size(), root.getChildren().size());
-		assertEquals(childA, iterator.next());
-		assertEquals(childB, iterator.next());
-		assertEquals(childC, iterator.next());
-		assertFalse(iterator.hasNext());
-	}
+        assertTrue(children == root.children);
+        assertDoesNotThrow(() -> {
+            failFastIterator.next();
+        });
+        final Iterator<?> iterator = root.getChildren().iterator();
+        assertEquals(thirdChildren.size(), root.getChildren().size());
+        assertEquals(childA, iterator.next());
+        assertEquals(childB, iterator.next());
+        assertEquals(childC, iterator.next());
+        assertFalse(iterator.hasNext());
+    }
 
-	@Test
-	public void replaceAllChildrenWithOneOtherChild() {
-		final Iterator<?> failFastIterator = root.getChildren().iterator();
+    @Test
+    public void replaceAllChildrenWithOneOtherChild() {
+        final Iterator<?> failFastIterator = root.getChildren().iterator();
 
-		root.mapChildren(oldChild -> childD);
+        root.mapChildren(oldChild -> childD);
 
-		assertDoesNotThrow(() -> {
-			failFastIterator.next();
-		});
-		final Iterator<?> iterator = root.getChildren().iterator();
-		assertEquals(thirdChildren.size(), root.getChildren().size());
-		assertEquals(childD, iterator.next());
-		assertEquals(childD, iterator.next());
-		assertEquals(childD, iterator.next());
-		assertFalse(iterator.hasNext());
-	}
+        assertDoesNotThrow(() -> {
+            failFastIterator.next();
+        });
+        final Iterator<?> iterator = root.getChildren().iterator();
+        assertEquals(thirdChildren.size(), root.getChildren().size());
+        assertEquals(childD, iterator.next());
+        assertEquals(childD, iterator.next());
+        assertEquals(childD, iterator.next());
+        assertFalse(iterator.hasNext());
+    }
 
-	@Test
-	public void replaceOnlyOneChildWithAnother() {
-		final Iterator<?> failFastIterator = root.getChildren().iterator();
+    @Test
+    public void replaceOnlyOneChildWithAnother() {
+        final Iterator<?> failFastIterator = root.getChildren().iterator();
 
-		root.mapChildren(oldChild -> oldChild == childB ? childD : null);
+        root.mapChildren(oldChild -> oldChild == childB ? childD : null);
 
-		assertDoesNotThrow(() -> {
-			failFastIterator.next();
-		});
-		final Iterator<?> iterator = root.getChildren().iterator();
-		assertEquals(thirdChildren.size(), root.getChildren().size());
-		assertEquals(childA, iterator.next());
-		assertEquals(childD, iterator.next());
-		assertEquals(childC, iterator.next());
-		assertFalse(iterator.hasNext());
-	}
+        assertDoesNotThrow(() -> {
+            failFastIterator.next();
+        });
+        final Iterator<?> iterator = root.getChildren().iterator();
+        assertEquals(thirdChildren.size(), root.getChildren().size());
+        assertEquals(childA, iterator.next());
+        assertEquals(childD, iterator.next());
+        assertEquals(childC, iterator.next());
+        assertFalse(iterator.hasNext());
+    }
 
-	@Test
-	public void replaceChildrenInEmptyTreeWithList() {
-		final List<?> children = emptyRoot.children;
+    @Test
+    public void replaceChildrenInEmptyTreeWithList() {
+        final List<?> children = emptyRoot.children;
 
-		emptyRoot.flatMapChildren(oldChild -> Arrays.asList(new SimpleTree<>()));
+        emptyRoot.flatMapChildren(oldChild -> Arrays.asList(new SimpleTree<>()));
 
-		assertTrue(children == emptyRoot.children);
-		assertTrue(emptyRoot.getChildren().isEmpty());
-	}
+        assertTrue(children == emptyRoot.children);
+        assertTrue(emptyRoot.getChildren().isEmpty());
+    }
 
-	@Test
-	public void replaceAllChildrenWithNullList() {
-		final List<?> children = root.children;
-		final Iterator<?> failFastIterator = root.getChildren().iterator();
+    @Test
+    public void replaceAllChildrenWithNullList() {
+        final List<?> children = root.children;
+        final Iterator<?> failFastIterator = root.getChildren().iterator();
 
-		root.flatMapChildren(oldChild -> null);
+        root.flatMapChildren(oldChild -> null);
 
-		assertTrue(children == root.children);
-		assertDoesNotThrow(() -> {
-			failFastIterator.next();
-		});
-		final Iterator<?> iterator = root.getChildren().iterator();
-		assertEquals(thirdChildren.size(), root.getChildren().size());
-		assertEquals(childA, iterator.next());
-		assertEquals(childB, iterator.next());
-		assertEquals(childC, iterator.next());
-		assertFalse(iterator.hasNext());
-	}
+        assertTrue(children == root.children);
+        assertDoesNotThrow(() -> {
+            failFastIterator.next();
+        });
+        final Iterator<?> iterator = root.getChildren().iterator();
+        assertEquals(thirdChildren.size(), root.getChildren().size());
+        assertEquals(childA, iterator.next());
+        assertEquals(childB, iterator.next());
+        assertEquals(childC, iterator.next());
+        assertFalse(iterator.hasNext());
+    }
 
-	@Test
-	public void replaceAllChildrenWithEmptyList() {
-		final List<?> children = root.children;
-		final Iterator<?> failFastIterator = root.getChildren().iterator();
+    @Test
+    public void replaceAllChildrenWithEmptyList() {
+        final List<?> children = root.children;
+        final Iterator<?> failFastIterator = root.getChildren().iterator();
 
-		root.flatMapChildren(oldChild -> Collections.emptyList());
+        root.flatMapChildren(oldChild -> Collections.emptyList());
 
-		assertTrue(children == root.children);
-		assertThrows(ConcurrentModificationException.class, () -> {
-			failFastIterator.next();
-		});
-		assertTrue(emptyRoot.getChildren().isEmpty());
-	}
+        assertTrue(children == root.children);
+        assertThrows(ConcurrentModificationException.class, () -> {
+            failFastIterator.next();
+        });
+        assertTrue(emptyRoot.getChildren().isEmpty());
+    }
 
-	@Test
-	public void replaceAllChildrenWithOtherLists() {
-		final Iterator<?> failFastIterator = root.getChildren().iterator();
+    @Test
+    public void replaceAllChildrenWithOtherLists() {
+        final Iterator<?> failFastIterator = root.getChildren().iterator();
 
-		root.flatMapChildren(oldChild -> oldChild == childB ? fifthChildren : fourthChildren);
+        root.flatMapChildren(oldChild -> oldChild == childB ? fifthChildren : fourthChildren);
 
-		assertThrows(ConcurrentModificationException.class, () -> {
-			failFastIterator.next();
-		});
-		final Iterator<?> iterator = root.getChildren().iterator();
-		assertEquals((2 * fourthChildren.size()) + fifthChildren.size(), root.getChildren().size());
-		assertEquals(childD, iterator.next());
-		assertEquals(childE, iterator.next());
-		assertEquals(childF, iterator.next());
-		assertEquals(childD, iterator.next());
-		assertFalse(iterator.hasNext());
-	}
+        assertThrows(ConcurrentModificationException.class, () -> {
+            failFastIterator.next();
+        });
+        final Iterator<?> iterator = root.getChildren().iterator();
+        assertEquals(
+                (2 * fourthChildren.size()) + fifthChildren.size(),
+                root.getChildren().size());
+        assertEquals(childD, iterator.next());
+        assertEquals(childE, iterator.next());
+        assertEquals(childF, iterator.next());
+        assertEquals(childD, iterator.next());
+        assertFalse(iterator.hasNext());
+    }
 
-	@Test
-	public void replaceChildrenUsingAnIllegalReplacer() {
-		assertThrows(NullPointerException.class, () -> {
-			root.mapChildren(null);
-		});
-		assertThrows(NullPointerException.class, () -> {
-			root.flatMapChildren(null);
-		});
-	}
-
+    @Test
+    public void replaceChildrenUsingAnIllegalReplacer() {
+        assertThrows(NullPointerException.class, () -> {
+            root.mapChildren(null);
+        });
+        assertThrows(NullPointerException.class, () -> {
+            root.flatMapChildren(null);
+        });
+    }
 }

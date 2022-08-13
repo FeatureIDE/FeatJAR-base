@@ -20,6 +20,7 @@
  */
 package de.featjar.util.io.csv;
 
+import de.featjar.util.logging.Logger;
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.nio.charset.StandardCharsets;
@@ -36,8 +37,6 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Locale;
 import java.util.Objects;
-
-import de.featjar.util.logging.Logger;
 
 /**
  * Writer for CSV files.
@@ -56,197 +55,205 @@ import de.featjar.util.logging.Logger;
  * </ul>
  * Add data with {@link #addValue(Object)} to and write everything to the output
  * file with {@link #flush()}.
- * 
+ *
  * @author Sebastian Krieter
  */
 public class CSVWriter {
 
-	private static final DecimalFormat df = new DecimalFormat("0", DecimalFormatSymbols.getInstance(Locale.ENGLISH));
-	static {
-		df.setMaximumFractionDigits(340);
-	}
+    private static final DecimalFormat df = new DecimalFormat("0", DecimalFormatSymbols.getInstance(Locale.ENGLISH));
 
-	private static final String NEWLINE = System.lineSeparator();
-	private static final String DEFAULT_SEPARATOR = ";";
+    static {
+        df.setMaximumFractionDigits(340);
+    }
 
-	private final LinkedList<List<String>> values = new LinkedList<>();
+    private static final String NEWLINE = System.lineSeparator();
+    private static final String DEFAULT_SEPARATOR = ";";
 
-	private String separator = DEFAULT_SEPARATOR;
-	private List<String> header = null;
+    private final LinkedList<List<String>> values = new LinkedList<>();
 
-	private Path outputDirectoryPath = Paths.get("");
-	private Path outputFilePath;
+    private String separator = DEFAULT_SEPARATOR;
+    private List<String> header = null;
 
-	private boolean append = false;
+    private Path outputDirectoryPath = Paths.get("");
+    private Path outputFilePath;
 
-	private boolean newFile = true;
+    private boolean append = false;
 
-	public Path getOutputDirectory() {
-		return outputDirectoryPath;
-	}
+    private boolean newFile = true;
 
-	public boolean setOutputDirectory(Path outputPath) throws IOException {
-		if (Files.isDirectory(outputPath)) {
-			outputDirectoryPath = outputPath;
-			return true;
-		} else if (!Files.exists(outputPath)) {
-			Files.createDirectories(outputPath);
-			outputDirectoryPath = outputPath;
-			return true;
-		} else {
-			return false;
-		}
-	}
+    public Path getOutputDirectory() {
+        return outputDirectoryPath;
+    }
 
-	public void setFileName(String fileName) throws IOException {
-		setOutputFile(outputDirectoryPath.resolve(fileName));
-	}
+    public boolean setOutputDirectory(Path outputPath) throws IOException {
+        if (Files.isDirectory(outputPath)) {
+            outputDirectoryPath = outputPath;
+            return true;
+        } else if (!Files.exists(outputPath)) {
+            Files.createDirectories(outputPath);
+            outputDirectoryPath = outputPath;
+            return true;
+        } else {
+            return false;
+        }
+    }
 
-	public void setOutputFile(Path outputFile) throws IOException {
-		setOutputDirectory(outputFile.toAbsolutePath().getParent());
-		outputFilePath = outputFile;
-		newFile = true;
-		reset();
-	}
+    public void setFileName(String fileName) throws IOException {
+        setOutputFile(outputDirectoryPath.resolve(fileName));
+    }
 
-	public String getSeparator() {
-		return separator;
-	}
+    public void setOutputFile(Path outputFile) throws IOException {
+        setOutputDirectory(outputFile.toAbsolutePath().getParent());
+        outputFilePath = outputFile;
+        newFile = true;
+        reset();
+    }
 
-	public void setSeparator(String separator) {
-		this.separator = separator;
-	}
+    public String getSeparator() {
+        return separator;
+    }
 
-	public List<String> getHeader() {
-		return Collections.unmodifiableList(header);
-	}
+    public void setSeparator(String separator) {
+        this.separator = separator;
+    }
 
-	public void setHeader(String... header) {
-		setHeader(Arrays.asList(header));
-	}
+    public List<String> getHeader() {
+        return Collections.unmodifiableList(header);
+    }
 
-	public void setHeader(List<String> header) {
-		this.header = new ArrayList<>(header);
-	}
+    public void setHeader(String... header) {
+        setHeader(Arrays.asList(header));
+    }
 
-	public void addHeaderValue(String headerValue) {
-		header.add(headerValue);
-	}
+    public void setHeader(List<String> header) {
+        this.header = new ArrayList<>(header);
+    }
 
-	public void addLine(List<String> line) {
-		values.add(line);
-	}
+    public void addHeaderValue(String headerValue) {
+        header.add(headerValue);
+    }
 
-	public void createNewLine() {
-		values.add(header != null ? new ArrayList<>(header.size()) : new ArrayList<>());
-	}
+    public void addLine(List<String> line) {
+        values.add(line);
+    }
 
-	public void addValue(Object value) {
-		values.get(values.size() - 1).add(String.valueOf(value));
-	}
+    public void createNewLine() {
+        values.add(header != null ? new ArrayList<>(header.size()) : new ArrayList<>());
+    }
 
-	/**
-	 * Formats float values manually to avoid scientific notation and non-English
-	 * punctuation.
-	 */
-	public void addValue(float value) {
-		addValue(df.format(value));
-	}
+    public void addValue(Object value) {
+        values.get(values.size() - 1).add(String.valueOf(value));
+    }
 
-	public void addValue(double value) {
-		addValue(df.format(value));
-	}
+    /**
+     * Formats float values manually to avoid scientific notation and non-English
+     * punctuation.
+     */
+    public void addValue(float value) {
+        addValue(df.format(value));
+    }
 
-	public void addValue(Float value) {
-		addValue(value);
-	}
+    public void addValue(double value) {
+        addValue(df.format(value));
+    }
 
-	public void addValue(Double value) {
-		addValue(value);
-	}
+    public void addValue(Float value) {
+        addValue(value);
+    }
 
-	public void addValue(BigDecimal value) {
-		addValue(value.doubleValue());
-	}
+    public void addValue(Double value) {
+        addValue(value);
+    }
 
-	public void flush() {
-		if (outputFilePath != null) {
-			try {
-				final StringBuilder sb = new StringBuilder();
-				if (newFile && (header != null)) {
-					if (!append || !Files.exists(outputFilePath) || (Files.size(outputFilePath) == 0)) {
-						writer(sb, header);
-					}
-				}
-				values.stream().forEach(line -> writer(sb, line));
-				final byte[] bytes = sb.toString().getBytes(StandardCharsets.UTF_8);
-				if (newFile && !append) {
-					Files.write(outputFilePath, bytes,
-						StandardOpenOption.WRITE, StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING);
-					newFile = false;
-				} else {
-					Files.write(outputFilePath, bytes,
-						StandardOpenOption.WRITE, StandardOpenOption.CREATE, StandardOpenOption.APPEND);
-				}
-				values.clear();
-			} catch (final IOException e) {
-				Logger.logError(e);
-			}
-		}
-	}
+    public void addValue(BigDecimal value) {
+        addValue(value.doubleValue());
+    }
 
-	private void writer(StringBuilder sb, List<String> line) {
-		for (final String value : line) {
-			if (value != null) {
-				sb.append(value);
-			}
-			sb.append(separator);
-		}
-		if (line.isEmpty()) {
-			sb.append(NEWLINE);
-		} else {
-			final int length = sb.length() - 1;
-			sb.replace(length, length + separator.length(), NEWLINE);
-		}
-	}
+    public void flush() {
+        if (outputFilePath != null) {
+            try {
+                final StringBuilder sb = new StringBuilder();
+                if (newFile && (header != null)) {
+                    if (!append || !Files.exists(outputFilePath) || (Files.size(outputFilePath) == 0)) {
+                        writer(sb, header);
+                    }
+                }
+                values.stream().forEach(line -> writer(sb, line));
+                final byte[] bytes = sb.toString().getBytes(StandardCharsets.UTF_8);
+                if (newFile && !append) {
+                    Files.write(
+                            outputFilePath,
+                            bytes,
+                            StandardOpenOption.WRITE,
+                            StandardOpenOption.CREATE,
+                            StandardOpenOption.TRUNCATE_EXISTING);
+                    newFile = false;
+                } else {
+                    Files.write(
+                            outputFilePath,
+                            bytes,
+                            StandardOpenOption.WRITE,
+                            StandardOpenOption.CREATE,
+                            StandardOpenOption.APPEND);
+                }
+                values.clear();
+            } catch (final IOException e) {
+                Logger.logError(e);
+            }
+        }
+    }
 
-	public void reset() {
-		values.clear();
-	}
+    private void writer(StringBuilder sb, List<String> line) {
+        for (final String value : line) {
+            if (value != null) {
+                sb.append(value);
+            }
+            sb.append(separator);
+        }
+        if (line.isEmpty()) {
+            sb.append(NEWLINE);
+        } else {
+            final int length = sb.length() - 1;
+            sb.replace(length, length + separator.length(), NEWLINE);
+        }
+    }
 
-	public void removeLastLine() {
-		if (!values.isEmpty()) {
-			values.remove(values.size() - 1);
-		}
-	}
+    public void reset() {
+        values.clear();
+    }
 
-	public boolean isAppend() {
-		return append;
-	}
+    public void removeLastLine() {
+        if (!values.isEmpty()) {
+            values.remove(values.size() - 1);
+        }
+    }
 
-	public void setAppend(boolean append) {
-		this.append = append;
-	}
+    public boolean isAppend() {
+        return append;
+    }
 
-	@Override
-	public int hashCode() {
-		return outputFilePath.hashCode();
-	}
+    public void setAppend(boolean append) {
+        this.append = append;
+    }
 
-	@Override
-	public boolean equals(Object obj) {
-		if (this == obj) {
-			return true;
-		}
-		if ((obj == null) || (getClass() != obj.getClass())) {
-			return false;
-		}
-		return Objects.equals(outputFilePath, ((CSVWriter) obj).outputFilePath);
-	}
+    @Override
+    public int hashCode() {
+        return outputFilePath.hashCode();
+    }
 
-	@Override
-	public String toString() {
-		return "CSVWriter [path = " + outputFilePath + ", header = " + header + "]";
-	}
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) {
+            return true;
+        }
+        if ((obj == null) || (getClass() != obj.getClass())) {
+            return false;
+        }
+        return Objects.equals(outputFilePath, ((CSVWriter) obj).outputFilePath);
+    }
 
+    @Override
+    public String toString() {
+        return "CSVWriter [path = " + outputFilePath + ", header = " + header + "]";
+    }
 }

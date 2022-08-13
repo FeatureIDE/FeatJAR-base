@@ -26,6 +26,5 @@ package de.featjar.util.logging;
 @FunctionalInterface
 public interface Formatter {
 
-	void format(StringBuilder message);
-
+    void format(StringBuilder message);
 }

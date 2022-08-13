@@ -29,10 +29,9 @@ import de.featjar.util.extension.ExtensionPoint;
  */
 public class BinaryManager extends ExtensionPoint<Binary> {
 
-	private static final BinaryManager instance = new BinaryManager();
+    private static final BinaryManager instance = new BinaryManager();
 
-	public static BinaryManager getInstance() {
-		return instance;
-	}
-
+    public static BinaryManager getInstance() {
+        return instance;
+    }
 }
