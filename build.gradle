@@ -1,3 +1,10 @@
 plugins {
     id 'de.featjar.java-library'
 }
+
+license {
+    ext {
+        author = 'Sebastian Krieter, Elias Kuiter'
+        url = 'https://github.com/FeatJAR/util'
+    }
+}
