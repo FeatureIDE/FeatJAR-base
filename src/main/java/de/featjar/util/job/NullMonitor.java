@@ -16,7 +16,7 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with util. If not, see <https://www.gnu.org/licenses/>.
  *
- * See <https://github.com/FeatJAR/util> for further information.
+ * See <https://github.com/FeatureIDE/FeatJAR-util> for further information.
  */
 package de.featjar.util.job;
 

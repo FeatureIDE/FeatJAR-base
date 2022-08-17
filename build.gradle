@@ -5,6 +5,6 @@ plugins {
 license {
     ext {
         author = 'Sebastian Krieter, Elias Kuiter'
-        url = 'https://github.com/FeatJAR/util'
+        url = 'https://github.com/FeatureIDE/FeatJAR-util'
     }
 }
