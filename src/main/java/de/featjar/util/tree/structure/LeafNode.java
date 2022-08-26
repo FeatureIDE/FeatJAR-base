@@ -18,22 +18,34 @@
  *
  * See <https://github.com/FeatureIDE/FeatJAR-util> for further information.
  */
-package de.featjar.util.tree.visitor;
+package de.featjar.util.tree.structure;
 
-import de.featjar.util.tree.Trees;
-import de.featjar.util.tree.structure.Tree;
+import java.util.Collections;
 import java.util.List;
 
 /**
- * Interface for a visitor used in the traversal of a tree.
+ * A leaf node of a tree.
+ * A leaf does not have any children. Nonetheless, it captures a children type,
+ * such that it can be added as a child to a non-leaf node.
  *
- * @see Trees
- *
+ * @param <T> type of children, the implementing type must be castable to T
  * @author Sebastian Krieter
  */
-public interface DfsVisitor<R, T extends Tree<?>> extends TreeVisitor<R, T> {
+public abstract class LeafNode<T extends Traversable<T>> implements Traversable<T> {
 
-    default VisitorResult visit(List<T> path) {
-        return VisitorResult.Continue;
+    /**
+     * {@return an empty list of children}
+     */
+    @Override
+    public List<? extends T> getChildren() {
+        return Collections.emptyList();
     }
+
+    /**
+     * Does nothing.
+     *
+     * @param children ignored
+     */
+    @Override
+    public void setChildren(List<? extends T> children) {}
 }

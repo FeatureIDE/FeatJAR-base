@@ -20,11 +20,11 @@
  */
 package de.featjar.util.tree;
 
-import de.featjar.util.tree.structure.Tree;
-import de.featjar.util.tree.visitor.DfsVisitor;
+import de.featjar.util.tree.structure.Traversable;
+import de.featjar.util.tree.visitor.InOrderTreeVisitor;
 import de.featjar.util.tree.visitor.TreePrinter;
 import de.featjar.util.tree.visitor.TreeVisitor;
-import de.featjar.util.tree.visitor.TreeVisitor.VisitorResult;
+import de.featjar.util.tree.visitor.TreeVisitor.TraversalAction;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -40,29 +40,28 @@ import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
 /**
- * Convenience class that implements some static methods to manipulate and
- * traverse nodes.
+ * Convenience methods for manipulating and traversing trees.
  *
  * @author Sebastian Krieter
  */
 public final class Trees {
 
+    /**
+     * Thrown when a visitor requests the {@link TreeVisitor.TraversalAction#FAIL} action.
+     */
     public static class VisitorFailException extends Exception {
-        private static final long serialVersionUID = 1L;
     }
 
-    private Trees() {}
-
     /**
-     * Traverses the tree starting from the given node using a depth-first search.
+     * Traverses a tree using depth-first search, allowing for pre-, in-, and postorder traversal.
      *
-     * @param <T>     the type of the Tree
-     * @param <R>     the return type of the TreeVisitor
-     * @param node    the starting node
-     * @param visitor the TreeVisitor
-     * @return the optional result from the tree visitor
+     * @param node the starting node of the tree
+     * @param visitor the visitor
+     * @return the optional result from the visitor
+     * @param <R> type of result
+     * @param <T> type of tree
      */
-    public static <R, T extends Tree<?>> Optional<R> traverse(T node, DfsVisitor<R, T> visitor) {
+    public static <R, T extends Traversable<?>> Optional<R> traverse(T node, InOrderTreeVisitor<R, T> visitor) {
         visitor.reset();
         try {
             dfsComplete(node, visitor);
@@ -72,7 +71,17 @@ public final class Trees {
         }
     }
 
-    public static <R, T extends Tree<?>> Optional<R> traverse(T node, TreeVisitor<R, T> visitor) {
+    /**
+     * Traverses a tree using depth-first search, allowing for pre- and postorder traversal.
+     * This is equivalent to using a trivial {@link InOrderTreeVisitor}, but more efficient.
+     *
+     * @param node the starting node of the tree
+     * @param visitor the visitor
+     * @return the optional result from the visitor
+     * @param <R> type of result
+     * @param <T> type of tree
+     */
+    public static <R, T extends Traversable<?>> Optional<R> traverse(T node, TreeVisitor<R, T> visitor) {
         visitor.reset();
         try {
             dfsPrePost(node, visitor);
@@ -82,39 +91,39 @@ public final class Trees {
         }
     }
 
-    public static <T extends Tree<?>> String print(T node) {
+    public static <T extends Traversable<?>> String print(T node) {
         return traverse(node, new TreePrinter()).orElse("");
     }
 
-    public static <T extends Tree<T>> List<T> getPreOrderList(T node) {
+    public static <T extends Traversable<T>> List<T> getPreOrderList(T node) {
         return preOrderStream(node).collect(Collectors.toList());
     }
 
-    public static <T extends Tree<T>> List<T> getPostOrderList(T node) {
+    public static <T extends Traversable<T>> List<T> getPostOrderList(T node) {
         return postOrderStream(node).collect(Collectors.toList());
     }
 
-    public static <T extends Tree<T>> List<T> getLevelOrderList(T node) {
+    public static <T extends Traversable<T>> List<T> getLevelOrderList(T node) {
         return levelOrderStream(node).collect(Collectors.toList());
     }
 
-    public static <T extends Tree<T>> Stream<T> parallelStream(T node) {
+    public static <T extends Traversable<T>> Stream<T> parallelStream(T node) {
         return StreamSupport.stream(new ParallelSpliterator<>(node), true);
     }
 
-    public static <T extends X, X extends Tree<X>> Stream<X> preOrderStream(T node) {
+    public static <T extends X, X extends Traversable<X>> Stream<X> preOrderStream(T node) {
         return StreamSupport.stream(new PreOrderSpliterator<>(node), false);
     }
 
-    public static <T extends Tree<T>> Stream<T> postOrderStream(T node) {
+    public static <T extends Traversable<T>> Stream<T> postOrderStream(T node) {
         return StreamSupport.stream(new PostOrderSpliterator<>(node), false);
     }
 
-    public static <T extends X, X extends Tree<X>> Stream<X> levelOrderStream(T node) {
+    public static <T extends X, X extends Traversable<X>> Stream<X> levelOrderStream(T node) {
         return StreamSupport.stream(new LevelOrderSpliterator<>(node), false);
     }
 
-    private static class ParallelSpliterator<T extends Tree<T>> implements Spliterator<T> {
+    private static class ParallelSpliterator<T extends Traversable<T>> implements Spliterator<T> {
 
         final LinkedList<T> stack = new LinkedList<>();
 
@@ -156,7 +165,7 @@ public final class Trees {
         }
     }
 
-    private static class PreOrderSpliterator<T extends X, X extends Tree<X>> implements Spliterator<X> {
+    private static class PreOrderSpliterator<T extends X, X extends Traversable<X>> implements Spliterator<X> {
 
         final LinkedList<X> stack = new LinkedList<>();
 
@@ -195,7 +204,7 @@ public final class Trees {
     }
 
     private static class StackEntry<T> {
-        private T node;
+        private final T node;
         private List<T> remainingChildren;
 
         public StackEntry(T node) {
@@ -203,7 +212,7 @@ public final class Trees {
         }
     }
 
-    private static class PostOrderSpliterator<T extends Tree<T>> implements Spliterator<T> {
+    private static class PostOrderSpliterator<T extends Traversable<T>> implements Spliterator<T> {
 
         final LinkedList<StackEntry<T>> stack = new LinkedList<>();
 
@@ -249,7 +258,7 @@ public final class Trees {
         }
     }
 
-    private static class LevelOrderSpliterator<T extends X, X extends Tree<X>> implements Spliterator<X> {
+    private static class LevelOrderSpliterator<T extends X, X extends Traversable<X>> implements Spliterator<X> {
 
         final LinkedList<X> queue = new LinkedList<>();
 
@@ -288,77 +297,77 @@ public final class Trees {
     }
 
     @SuppressWarnings("unchecked")
-    private static <X extends Tree<?>, T extends X> void dfsComplete(T node, DfsVisitor<?, X> visitor)
+    private static <X extends Traversable<?>, T extends X> void dfsComplete(T node, InOrderTreeVisitor<?, X> visitor)
             throws VisitorFailException {
-        if (node != null) {
-            final ArrayList<T> path = new ArrayList<>();
-            final List<X> unmodifiablePath = Collections.unmodifiableList(path);
+        if (node == null) {
+            return;
+        }
+        final ArrayList<T> path = new ArrayList<>();
+        final List<X> unmodifiablePath = Collections.unmodifiableList(path);
 
-            final ArrayDeque<StackEntry<T>> stack = new ArrayDeque<>();
-            stack.addLast(new StackEntry<>(node));
-            loop:
-            while (!stack.isEmpty()) {
-                final StackEntry<T> entry = stack.getLast();
-                if (entry.remainingChildren == null) {
-                    path.add(entry.node);
-                    final VisitorResult visitorResult = visitor.firstVisit(unmodifiablePath);
-                    switch (visitorResult) {
-                        case Continue:
-                            entry.remainingChildren =
-                                    new LinkedList<>((Collection<? extends T>) entry.node.getChildren());
-                            break;
-                        case SkipChildren:
-                            entry.remainingChildren = Collections.emptyList();
-                            break;
-                        case SkipAll:
-                            return;
-                        case Fail:
-                            throw new VisitorFailException();
-                        default:
-                            throw new IllegalStateException(String.valueOf(visitorResult));
-                    }
-                } else {
-                    final VisitorResult visitorResult = visitor.visit(unmodifiablePath);
-                    switch (visitorResult) {
-                        case Continue:
-                            break;
-                        case SkipChildren:
-                            stack.removeLast();
-                            path.remove(path.size() - 1);
-                            continue loop;
-                        case SkipAll:
-                            return;
-                        case Fail:
-                            throw new VisitorFailException();
-                        default:
-                            throw new IllegalStateException(String.valueOf(visitorResult));
-                    }
+        final ArrayDeque<StackEntry<T>> stack = new ArrayDeque<>();
+        stack.addLast(new StackEntry<>(node));
+        while (!stack.isEmpty()) {
+            final StackEntry<T> entry = stack.getLast();
+            if (entry.remainingChildren == null) {
+                path.add(entry.node);
+                final TraversalAction traversalAction = visitor.firstVisit(unmodifiablePath);
+                switch (traversalAction) {
+                    case CONTINUE:
+                        entry.remainingChildren =
+                                new LinkedList<>((Collection<? extends T>) entry.node.getChildren());
+                        break;
+                    case SKIP_CHILDREN:
+                        entry.remainingChildren = Collections.emptyList();
+                        break;
+                    case SKIP_ALL:
+                        return;
+                    case FAIL:
+                        throw new VisitorFailException();
+                    default:
+                        throw new IllegalStateException(String.valueOf(traversalAction));
                 }
+            } else {
+                final TraversalAction traversalAction = visitor.visit(unmodifiablePath);
+                switch (traversalAction) {
+                    case CONTINUE:
+                        break;
+                    case SKIP_CHILDREN:
+                        stack.removeLast();
+                        path.remove(path.size() - 1);
+                        continue;
+                    case SKIP_ALL:
+                        return;
+                    case FAIL:
+                        throw new VisitorFailException();
+                    default:
+                        throw new IllegalStateException(String.valueOf(traversalAction));
+                }
+            }
 
-                if (!entry.remainingChildren.isEmpty()) {
-                    stack.addLast(new StackEntry<>(entry.remainingChildren.remove(0)));
-                } else {
-                    final VisitorResult visitorResult = visitor.lastVisit(unmodifiablePath);
-                    switch (visitorResult) {
-                        case Continue:
-                        case SkipChildren:
-                            break;
-                        case SkipAll:
-                            return;
-                        case Fail:
-                            throw new VisitorFailException();
-                        default:
-                            throw new IllegalStateException(String.valueOf(visitorResult));
-                    }
-                    stack.removeLast();
-                    path.remove(path.size() - 1);
+            if (!entry.remainingChildren.isEmpty()) {
+                stack.addLast(new StackEntry<>(entry.remainingChildren.remove(0)));
+            } else {
+                final TraversalAction traversalAction = visitor.lastVisit(unmodifiablePath);
+                switch (traversalAction) {
+                    case CONTINUE:
+                    case SKIP_CHILDREN:
+                        break;
+                    case SKIP_ALL:
+                        return;
+                    case FAIL:
+                        throw new VisitorFailException();
+                    default:
+                        throw new IllegalStateException(String.valueOf(traversalAction));
                 }
+                stack.removeLast();
+                path.remove(path.size() - 1);
             }
         }
     }
 
     @SuppressWarnings("unchecked")
-    public static <T extends Tree<?>> void dfsPrePost(T node, TreeVisitor<?, T> visitor) throws VisitorFailException {
+    public static <T extends Traversable<?>> void dfsPrePost(T node, TreeVisitor<?, T> visitor) throws VisitorFailException {
         if (node != null) {
             final ArrayList<T> path = new ArrayList<>();
             final List<T> unmodifiablePath = Collections.unmodifiableList(path);
@@ -369,34 +378,34 @@ public final class Trees {
                 final T curNode = stack.getLast();
                 if (path.isEmpty() || (curNode != path.get(path.size() - 1))) {
                     path.add(curNode);
-                    final VisitorResult visitorResult = visitor.firstVisit(unmodifiablePath);
-                    switch (visitorResult) {
-                        case Continue:
+                    final TraversalAction traversalAction = visitor.firstVisit(unmodifiablePath);
+                    switch (traversalAction) {
+                        case CONTINUE:
                             final Collection<? extends T> children = (Collection<? extends T>) curNode.getChildren();
                             children.forEach(stack::addFirst);
                             children.forEach(c -> stack.addLast(stack.removeFirst()));
                             break;
-                        case SkipChildren:
+                        case SKIP_CHILDREN:
                             break;
-                        case SkipAll:
+                        case SKIP_ALL:
                             return;
-                        case Fail:
+                        case FAIL:
                             throw new VisitorFailException();
                         default:
-                            throw new IllegalStateException(String.valueOf(visitorResult));
+                            throw new IllegalStateException(String.valueOf(traversalAction));
                     }
                 } else {
-                    final VisitorResult visitorResult = visitor.lastVisit(unmodifiablePath);
-                    switch (visitorResult) {
-                        case Continue:
-                        case SkipChildren:
+                    final TraversalAction traversalAction = visitor.lastVisit(unmodifiablePath);
+                    switch (traversalAction) {
+                        case CONTINUE:
+                        case SKIP_CHILDREN:
                             break;
-                        case SkipAll:
+                        case SKIP_ALL:
                             return;
-                        case Fail:
+                        case FAIL:
                             throw new VisitorFailException();
                         default:
-                            throw new IllegalStateException(String.valueOf(visitorResult));
+                            throw new IllegalStateException(String.valueOf(traversalAction));
                     }
                     stack.removeLast();
                     path.remove(path.size() - 1);
@@ -405,7 +414,7 @@ public final class Trees {
         }
     }
 
-    public static <T extends Tree<T>> boolean equals(T node1, T node2) {
+    public static <T extends Traversable<T>> boolean equals(T node1, T node2) {
         if (node1 == node2) {
             return true;
         }
@@ -436,7 +445,7 @@ public final class Trees {
     }
 
     @SuppressWarnings("unchecked")
-    public static <X extends T, T extends Tree<T>> X cloneTree(X root) {
+    public static <T extends Traversable<T>> T clone(T root) {
         if (root == null) {
             return null;
         }
@@ -464,14 +473,14 @@ public final class Trees {
                 stack.pop();
             }
         }
-        return (X) path.get(0);
+        return path.get(0);
     }
 
-    public static <X extends T, T extends Tree<T>> void sortTree(X root) {
+    public static <X extends T, T extends Traversable<T>> void sortTree(X root) {
         sortTree(root, Comparator.comparing(T::toString));
     }
 
-    public static <X extends T, T extends Tree<T>> void sortTree(X root, Comparator<T> comparator) {
+    public static <X extends T, T extends Traversable<T>> void sortTree(X root, Comparator<T> comparator) {
         final LinkedList<StackEntry<T>> stack = new LinkedList<>();
         stack.push(new StackEntry<>(root));
 

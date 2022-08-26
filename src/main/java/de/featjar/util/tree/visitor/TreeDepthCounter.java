@@ -20,7 +20,7 @@
  */
 package de.featjar.util.tree.visitor;
 
-import de.featjar.util.tree.structure.Tree;
+import de.featjar.util.tree.structure.Traversable;
 import java.util.List;
 import java.util.Optional;
 
@@ -30,9 +30,9 @@ import java.util.Optional;
  * @author Sebastian Krieter
  *
  */
-public class TreeDepthCounter implements TreeVisitor<Integer, Tree<?>> {
+public class TreeDepthCounter implements TreeVisitor<Integer, Traversable<?>> {
 
-    private Class<? extends Tree<?>> terminalNode = null;
+    private Class<? extends Traversable<?>> terminalNode = null;
 
     private int maxDepth = 0;
 
@@ -42,16 +42,16 @@ public class TreeDepthCounter implements TreeVisitor<Integer, Tree<?>> {
     }
 
     @Override
-    public VisitorResult firstVisit(List<Tree<?>> path) {
+    public TraversalAction firstVisit(List<Traversable<?>> path) {
         final int depth = path.size();
         if (maxDepth < depth) {
             maxDepth = depth;
         }
-        final Tree<?> node = TreeVisitor.getCurrentNode(path);
+        final Traversable<?> node = TreeVisitor.getCurrentNode(path);
         if ((terminalNode != null) && terminalNode.isInstance(node)) {
-            return VisitorResult.SkipChildren;
+            return TraversalAction.SKIP_CHILDREN;
         } else {
-            return VisitorResult.Continue;
+            return TraversalAction.CONTINUE;
         }
     }
 
@@ -60,11 +60,11 @@ public class TreeDepthCounter implements TreeVisitor<Integer, Tree<?>> {
         return Optional.of(maxDepth);
     }
 
-    public Class<? extends Tree<?>> getTerminalNode() {
+    public Class<? extends Traversable<?>> getTerminalNode() {
         return terminalNode;
     }
 
-    public void setTerminalNode(Class<? extends Tree<?>> terminalNode) {
+    public void setTerminalNode(Class<? extends Traversable<?>> terminalNode) {
         this.terminalNode = terminalNode;
     }
 }

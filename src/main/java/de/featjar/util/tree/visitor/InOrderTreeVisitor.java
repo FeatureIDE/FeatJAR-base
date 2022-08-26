@@ -18,18 +18,22 @@
  *
  * See <https://github.com/FeatureIDE/FeatJAR-util> for further information.
  */
-package de.featjar.util.tree.structure;
+package de.featjar.util.tree.visitor;
 
-import java.util.Collections;
+import de.featjar.util.tree.Trees;
+import de.featjar.util.tree.structure.Traversable;
 import java.util.List;
 
-public abstract class AbstractTerminal<T extends Tree<T>> implements Tree<T> {
+/**
+ * Interface for a visitor used in the traversal of a tree.
+ *
+ * @see Trees
+ *
+ * @author Sebastian Krieter
+ */
+public interface InOrderTreeVisitor<R, T extends Traversable<?>> extends TreeVisitor<R, T> {
 
-    @Override
-    public void setChildren(List<? extends T> children) {}
-
-    @Override
-    public List<? extends T> getChildren() {
-        return Collections.emptyList();
+    default TraversalAction visit(List<T> path) {
+        return TraversalAction.CONTINUE;
     }
 }

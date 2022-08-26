@@ -20,19 +20,19 @@
  */
 package de.featjar.util.tree.visitor;
 
-import de.featjar.util.tree.structure.Tree;
+import de.featjar.util.tree.structure.Traversable;
 import java.util.List;
 import java.util.Optional;
 import java.util.function.Function;
 import java.util.function.Predicate;
 
-public class TreePrinter implements TreeVisitor<String, Tree<?>> {
+public class TreePrinter implements TreeVisitor<String, Traversable<?>> {
 
     private String indentation = "  ";
 
     private StringBuilder treeStringBuilder = new StringBuilder();
-    private Predicate<Tree<?>> filter = null;
-    private Function<Tree<?>, String> toStringFunction = Object::toString;
+    private Predicate<Traversable<?>> filter = null;
+    private Function<Traversable<?>, String> toStringFunction = Object::toString;
 
     @Override
     public void reset() {
@@ -53,8 +53,8 @@ public class TreePrinter implements TreeVisitor<String, Tree<?>> {
     }
 
     @Override
-    public VisitorResult firstVisit(List<Tree<?>> path) {
-        final Tree<?> currentNode = TreeVisitor.getCurrentNode(path);
+    public TraversalAction firstVisit(List<Traversable<?>> path) {
+        final Traversable<?> currentNode = TreeVisitor.getCurrentNode(path);
         if ((filter == null) || filter.test(currentNode)) {
             try {
                 for (int i = 1; i < path.size(); i++) {
@@ -63,17 +63,17 @@ public class TreePrinter implements TreeVisitor<String, Tree<?>> {
                 treeStringBuilder.append(toStringFunction.apply(currentNode));
                 treeStringBuilder.append('\n');
             } catch (final Exception e) {
-                return VisitorResult.SkipAll;
+                return TraversalAction.SKIP_ALL;
             }
         }
-        return VisitorResult.Continue;
+        return TraversalAction.CONTINUE;
     }
 
-    public void setFilter(Predicate<Tree<?>> filter) {
+    public void setFilter(Predicate<Traversable<?>> filter) {
         this.filter = filter;
     }
 
-    public void setToStringFunction(Function<Tree<?>, String> toStringFunction) {
+    public void setToStringFunction(Function<Traversable<?>, String> toStringFunction) {
         this.toStringFunction = toStringFunction;
     }
 }

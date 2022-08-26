@@ -22,41 +22,43 @@ package de.featjar.util.tree.structure;
 
 import java.util.Objects;
 
-public class SimpleTree<D> extends AbstractNonTerminal<SimpleTree<D>> {
+/**
+ * A tree of nodes labeled with some data.
+ * Can be used, for example, to represent a tree of integers or strings.
+ *
+ * @param <T> type of label
+ * @author Sebastian Krieter
+ */
+public class LabeledTree<T> extends Tree<LabeledTree<T>> {
+    protected T label;
 
-    protected D data;
-
-    public SimpleTree() {
-        super();
+    public LabeledTree() {
     }
 
-    public SimpleTree(D data) {
-        super();
-        this.data = data;
+    public LabeledTree(T label) {
+        this.label = label;
     }
 
-    public D getData() {
-        return data;
+    public T getLabel() {
+        return label;
     }
 
-    public void setData(D data) {
-        this.data = data;
-    }
-
-    @Override
-    public SimpleTree<D> cloneNode() {
-        final SimpleTree<D> clone = new SimpleTree<>();
-        clone.data = data;
-        return clone;
+    public void setLabel(T label) {
+        this.label = label;
     }
 
     @Override
-    public boolean equalsNode(Object other) {
-        return (getClass() == other.getClass()) && Objects.equals(getData(), ((SimpleTree<?>) other).getData());
+    public LabeledTree<T> cloneNode() {
+        return new LabeledTree<>(label);
+    }
+
+    @Override
+    public boolean equalsNode(LabeledTree<T> other) {
+        return Objects.equals(getLabel(), other.getLabel());
     }
 
     @Override
     public String toString() {
-        return "SimpleTree [" + data + "]";
+        return String.format("LabeledTree[%s]", label);
     }
 }

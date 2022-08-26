@@ -24,19 +24,31 @@ import java.util.List;
 import java.util.Optional;
 
 /**
- * A rooted tree where each node has an optional parent and any number of
- * children. Weak parents are used to model containment hierarchies.
+ * A tree of nodes, each of which has an optional parent.
+ * Use this only if nodes need to know about their parents.
+ * If possible, use {@link Tree} instead, which allows reusing subtrees.
  *
+ * @param <T> type of children, the implementing type must be castable to T
  * @author Elias Kuiter
  */
-@SuppressWarnings("unchecked")
-public abstract class RootedTree<T extends RootedTree<T>> extends AbstractNonTerminal<T> {
+public abstract class RootedTree<T extends RootedTree<T>> extends Tree<T> {
+    /**
+     * the parent node of this node
+     */
     protected T parent = null;
 
+    /**
+     * {@return the parent node of this node, if any}
+     */
     public Optional<T> getParent() {
         return Optional.ofNullable(parent);
     }
 
+    /**
+     * Sets the parent node of this node.
+     *
+     * @param newParent the new parent node
+     */
     protected void setParent(T newParent) {
         if (newParent == parent) {
             return;
@@ -44,10 +56,19 @@ public abstract class RootedTree<T extends RootedTree<T>> extends AbstractNonTer
         parent = newParent;
     }
 
+    /**
+     * {@return whether this node has a parent node}
+     */
     public boolean hasParent() {
         return parent != null;
     }
 
+    /**
+     * {@inheritDoc}
+     * The old children are changed to have no parent node.
+     * The new children are changed to have this node as parent node.
+     */
+    @SuppressWarnings("unchecked")
     @Override
     public void setChildren(List<? extends T> children) {
         for (final T child : getChildren()) {
@@ -59,24 +80,42 @@ public abstract class RootedTree<T extends RootedTree<T>> extends AbstractNonTer
         }
     }
 
+    /**
+     * {@inheritDoc}
+     * The new child is changed to have this node as parent node.
+     */
+    @SuppressWarnings("unchecked")
     @Override
     public void addChild(T newChild) {
         super.addChild(newChild);
         newChild.setParent((T) this);
     }
 
+    /**
+     * {@inheritDoc}
+     * The new child is changed to have this node as parent node.
+     */
+    @SuppressWarnings("unchecked")
     @Override
     public void addChild(int index, T newChild) {
         super.addChild(index, newChild);
         newChild.setParent((T) this);
     }
 
+    /**
+     * {@inheritDoc}
+     * The old child is changed to have no node.
+     */
     @Override
     public void removeChild(T child) {
         super.removeChild(child);
         child.setParent(null);
     }
 
+    /**
+     * {@inheritDoc}
+     * The old child is changed to have no node.
+     */
     @Override
     public T removeChild(int index) {
         T child = super.removeChild(index);
@@ -84,6 +123,12 @@ public abstract class RootedTree<T extends RootedTree<T>> extends AbstractNonTer
         return child;
     }
 
+    /**
+     * {@inheritDoc}
+     * The old child is changed to have no node.
+     * The new child is changed to have this node as parent node.
+     */
+    @SuppressWarnings("unchecked")
     @Override
     public void replaceChild(T oldChild, T newChild) {
         super.replaceChild(oldChild, newChild);
@@ -91,10 +136,15 @@ public abstract class RootedTree<T extends RootedTree<T>> extends AbstractNonTer
         newChild.setParent((T) this);
     }
 
-    public boolean isAncestor(RootedTree<T> parent) {
+    /**
+     * {@return whether the given node is an ancestor of this node}
+     *
+     * @param node the node
+     */
+    public boolean isAncestor(RootedTree<T> node) {
         Optional<T> currentParent = getParent();
         while (currentParent.isPresent()) {
-            if (parent == currentParent.get()) {
+            if (node == currentParent.get()) {
                 return true;
             }
             currentParent = currentParent.get().getParent();
@@ -102,6 +152,10 @@ public abstract class RootedTree<T extends RootedTree<T>> extends AbstractNonTer
         return false;
     }
 
+    /**
+     * {@return the root node of this tree}
+     */
+    @SuppressWarnings("unchecked")
     public T getRoot() {
         T currentTree = (T) this;
         while (currentTree.getParent().isPresent()) {
@@ -110,6 +164,10 @@ public abstract class RootedTree<T extends RootedTree<T>> extends AbstractNonTer
         return currentTree;
     }
 
+    /**
+     * {@return the index of this node in its parent's list of children, if any}
+     */
+    @SuppressWarnings("unchecked")
     public Optional<Integer> getIndex() {
         return getParent().flatMap(parent -> parent.getChildIndex((T) this));
     }

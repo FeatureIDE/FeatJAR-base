@@ -21,24 +21,25 @@
 package de.featjar.util.tree.visitor;
 
 import de.featjar.util.tree.Trees;
-import de.featjar.util.tree.structure.Tree;
+import de.featjar.util.tree.structure.Traversable;
 import java.util.List;
 import java.util.Optional;
 
 /**
- * Interface for a visitor used in the traversal of a tree.
+ * Visits each node of a tree in a depth-first search.
+ * The actual traversal algorithm is implemented in {@link Trees#dfsPrePost(Traversable, TreeVisitor)}.
  *
- * @see Trees
- *
+ * @param <R> type of result
+ * @param <T> type of tree
  * @author Sebastian Krieter
  */
-public interface TreeVisitor<R, T extends Tree<?>> {
+public interface TreeVisitor<R, T extends Traversable<?>> {
 
-    enum VisitorResult {
-        Continue,
-        SkipChildren,
-        SkipAll,
-        Fail
+    enum TraversalAction {
+        CONTINUE,
+        SKIP_CHILDREN,
+        SKIP_ALL,
+        FAIL
     }
 
     static <T> T getCurrentNode(List<T> path) {
@@ -49,12 +50,26 @@ public interface TreeVisitor<R, T extends Tree<?>> {
         return (path.size() > 1) ? path.get(path.size() - 2) : null;
     }
 
-    default VisitorResult firstVisit(List<T> path) {
-        return VisitorResult.Continue;
+    /**
+     * Called when a node is visited the first time.
+     * Override this to implement a preorder traversal.
+     *
+     * @param path the path to the visited node
+     * @return the action the traversal algorithm must take next
+     */
+    default TraversalAction firstVisit(List<T> path) {
+        return TraversalAction.CONTINUE;
     }
 
-    default VisitorResult lastVisit(List<T> path) {
-        return VisitorResult.Continue;
+    /**
+     * Called when a node is visited the last time.
+     * Override this to implement a postorder traversal.
+     *
+     * @param path the path to the visited node
+     * @return the action the traversal algorithm must take next
+     */
+    default TraversalAction lastVisit(List<T> path) {
+        return TraversalAction.CONTINUE;
     }
 
     default void reset() {}

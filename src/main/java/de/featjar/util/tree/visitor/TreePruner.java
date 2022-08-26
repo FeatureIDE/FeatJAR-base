@@ -20,11 +20,11 @@
  */
 package de.featjar.util.tree.visitor;
 
-import de.featjar.util.tree.structure.Tree;
+import de.featjar.util.tree.structure.Traversable;
 import java.util.Collections;
 import java.util.List;
 
-public class TreePruner implements TreeVisitor<Void, Tree<?>> {
+public class TreePruner implements TreeVisitor<Void, Traversable<?>> {
 
     private int depthLimit = Integer.MAX_VALUE;
 
@@ -37,16 +37,16 @@ public class TreePruner implements TreeVisitor<Void, Tree<?>> {
     }
 
     @Override
-    public VisitorResult firstVisit(List<Tree<?>> path) {
+    public TraversalAction firstVisit(List<Traversable<?>> path) {
         try {
             if (path.size() > depthLimit) {
-                final Tree<?> node = TreeVisitor.getCurrentNode(path);
+                final Traversable<?> node = TreeVisitor.getCurrentNode(path);
                 node.setChildren(Collections.emptyList());
-                return VisitorResult.SkipChildren;
+                return TraversalAction.SKIP_CHILDREN;
             }
-            return VisitorResult.Continue;
+            return TraversalAction.CONTINUE;
         } catch (final Exception e) {
-            return VisitorResult.SkipAll;
+            return TraversalAction.SKIP_ALL;
         }
     }
 }

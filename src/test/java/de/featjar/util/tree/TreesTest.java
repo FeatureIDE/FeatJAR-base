@@ -25,8 +25,8 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-import de.featjar.util.tree.structure.SimpleTree;
-import de.featjar.util.tree.visitor.DfsVisitor;
+import de.featjar.util.tree.structure.LabeledTree;
+import de.featjar.util.tree.visitor.InOrderTreeVisitor;
 import de.featjar.util.tree.visitor.TreeVisitor;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -40,29 +40,29 @@ import org.junit.jupiter.api.Test;
 
 public class TreesTest {
 
-    SimpleTree<String> emptyRoot, root1, root2, root3;
-    List<SimpleTree<String>> preOrderList, postOrderList, innerList;
+    LabeledTree<String> emptyRoot, root1, root2, root3;
+    List<LabeledTree<String>> preOrderList, postOrderList, innerList;
 
     @BeforeEach
     public void setUp() {
-        emptyRoot = new SimpleTree<>("EmptyRoot");
-        root1 = new SimpleTree<>("Root");
-        SimpleTree<String> a = new SimpleTree<>("A");
-        SimpleTree<String> b = new SimpleTree<>("B");
-        SimpleTree<String> c = new SimpleTree<>("C");
-        SimpleTree<String> b1 = new SimpleTree<>("B1");
-        SimpleTree<String> b2 = new SimpleTree<>("B2");
-        SimpleTree<String> b3 = new SimpleTree<>("B3");
-        SimpleTree<String> b1a = new SimpleTree<>("B1A");
-        SimpleTree<String> b1b = new SimpleTree<>("B1B");
-        SimpleTree<String> b1c = new SimpleTree<>("B1C");
-        SimpleTree<String> b3a = new SimpleTree<>("B3A");
-        SimpleTree<String> b3b = new SimpleTree<>("B3B");
-        SimpleTree<String> c1 = new SimpleTree<>("C1");
-        SimpleTree<String> c1a = new SimpleTree<>("C1A");
-        SimpleTree<String> c1b = new SimpleTree<>("C1B");
-        SimpleTree<String> c1c = new SimpleTree<>("C1C");
-        SimpleTree<String> c1d = new SimpleTree<>("C1D");
+        emptyRoot = new LabeledTree<>("EmptyRoot");
+        root1 = new LabeledTree<>("Root");
+        LabeledTree<String> a = new LabeledTree<>("A");
+        LabeledTree<String> b = new LabeledTree<>("B");
+        LabeledTree<String> c = new LabeledTree<>("C");
+        LabeledTree<String> b1 = new LabeledTree<>("B1");
+        LabeledTree<String> b2 = new LabeledTree<>("B2");
+        LabeledTree<String> b3 = new LabeledTree<>("B3");
+        LabeledTree<String> b1a = new LabeledTree<>("B1A");
+        LabeledTree<String> b1b = new LabeledTree<>("B1B");
+        LabeledTree<String> b1c = new LabeledTree<>("B1C");
+        LabeledTree<String> b3a = new LabeledTree<>("B3A");
+        LabeledTree<String> b3b = new LabeledTree<>("B3B");
+        LabeledTree<String> c1 = new LabeledTree<>("C1");
+        LabeledTree<String> c1a = new LabeledTree<>("C1A");
+        LabeledTree<String> c1b = new LabeledTree<>("C1B");
+        LabeledTree<String> c1c = new LabeledTree<>("C1C");
+        LabeledTree<String> c1d = new LabeledTree<>("C1D");
 
         root1.setChildren(Arrays.asList(a, b, c));
         b.setChildren(Arrays.asList(b1, b2, b3));
@@ -76,23 +76,23 @@ public class TreesTest {
         innerList = Arrays.asList(
                 a, root1, b1a, b1, b1b, b1, b1c, b, b3a, b3, b3b, root1, c1a, c1, c1b, c1, c1c, c1, c1d, c);
 
-        root2 = new SimpleTree<>("Root");
-        a = new SimpleTree<>("A");
-        b = new SimpleTree<>("B");
-        c = new SimpleTree<>("C");
-        b1 = new SimpleTree<>("B1");
-        b2 = new SimpleTree<>("B2");
-        b3 = new SimpleTree<>("B3");
-        b1a = new SimpleTree<>("B1A");
-        b1b = new SimpleTree<>("B1B");
-        b1c = new SimpleTree<>("B1C");
-        b3a = new SimpleTree<>("B3A");
-        b3b = new SimpleTree<>("B3B");
-        c1 = new SimpleTree<>("C1");
-        c1a = new SimpleTree<>("C1A");
-        c1b = new SimpleTree<>("C1B");
-        c1c = new SimpleTree<>("C1C");
-        c1d = new SimpleTree<>("C1D");
+        root2 = new LabeledTree<>("Root");
+        a = new LabeledTree<>("A");
+        b = new LabeledTree<>("B");
+        c = new LabeledTree<>("C");
+        b1 = new LabeledTree<>("B1");
+        b2 = new LabeledTree<>("B2");
+        b3 = new LabeledTree<>("B3");
+        b1a = new LabeledTree<>("B1A");
+        b1b = new LabeledTree<>("B1B");
+        b1c = new LabeledTree<>("B1C");
+        b3a = new LabeledTree<>("B3A");
+        b3b = new LabeledTree<>("B3B");
+        c1 = new LabeledTree<>("C1");
+        c1a = new LabeledTree<>("C1A");
+        c1b = new LabeledTree<>("C1B");
+        c1c = new LabeledTree<>("C1C");
+        c1d = new LabeledTree<>("C1D");
 
         root2.setChildren(Arrays.asList(a, b, c));
         b.setChildren(Arrays.asList(b1, b2, b3));
@@ -101,23 +101,23 @@ public class TreesTest {
         b3.setChildren(Arrays.asList(b3a, b3b));
         c1.setChildren(Arrays.asList(c1a, c1b, c1c, c1d));
 
-        root3 = new SimpleTree<>("Root");
-        a = new SimpleTree<>("A");
-        b = new SimpleTree<>("B");
-        c = new SimpleTree<>("C");
-        b1 = new SimpleTree<>("B1");
-        b2 = new SimpleTree<>("B2");
-        b3 = new SimpleTree<>("B3");
-        b1a = new SimpleTree<>("B1A");
-        b1b = new SimpleTree<>("B1B");
-        b1c = new SimpleTree<>("B1C");
-        b3a = new SimpleTree<>("B3A");
-        b3b = new SimpleTree<>("B3B");
-        c1 = new SimpleTree<>("C1");
-        c1a = new SimpleTree<>("C1A");
-        c1b = new SimpleTree<>("C1B");
-        c1c = new SimpleTree<>("C1C");
-        c1d = new SimpleTree<>("C1D");
+        root3 = new LabeledTree<>("Root");
+        a = new LabeledTree<>("A");
+        b = new LabeledTree<>("B");
+        c = new LabeledTree<>("C");
+        b1 = new LabeledTree<>("B1");
+        b2 = new LabeledTree<>("B2");
+        b3 = new LabeledTree<>("B3");
+        b1a = new LabeledTree<>("B1A");
+        b1b = new LabeledTree<>("B1B");
+        b1c = new LabeledTree<>("B1C");
+        b3a = new LabeledTree<>("B3A");
+        b3b = new LabeledTree<>("B3B");
+        c1 = new LabeledTree<>("C1");
+        c1a = new LabeledTree<>("C1A");
+        c1b = new LabeledTree<>("C1B");
+        c1c = new LabeledTree<>("C1C");
+        c1d = new LabeledTree<>("C1D");
 
         root3.setChildren(Arrays.asList(a, b, c));
         b.setChildren(Arrays.asList(b3, b2, b1));
@@ -164,8 +164,8 @@ public class TreesTest {
 
     @Test
     public void cloneTree() {
-        assertTrue(Trees.equals(emptyRoot, Trees.cloneTree(emptyRoot)));
-        assertTrue(Trees.equals(root1, Trees.cloneTree(root1)));
+        assertTrue(Trees.equals(emptyRoot, Trees.clone(emptyRoot)));
+        assertTrue(Trees.equals(root1, Trees.clone(root1)));
     }
 
     @Test
@@ -177,10 +177,10 @@ public class TreesTest {
         expectedCallOrder.add("last");
         expectedCallOrder.add("result");
 
-        final ArrayList<SimpleTree<String>> preOrderCollect = new ArrayList<>();
-        final ArrayList<SimpleTree<String>> postOrderCollect = new ArrayList<>();
+        final ArrayList<LabeledTree<String>> preOrderCollect = new ArrayList<>();
+        final ArrayList<LabeledTree<String>> postOrderCollect = new ArrayList<>();
 
-        final Optional<Void> result = Trees.traverse(root1, new TreeVisitor<Void, SimpleTree<String>>() {
+        final Optional<Void> result = Trees.traverse(root1, new TreeVisitor<Void, LabeledTree<String>>() {
             @Override
             public Optional<Void> getResult() {
                 final Optional<Void> result = TreeVisitor.super.getResult();
@@ -196,19 +196,19 @@ public class TreesTest {
             }
 
             @Override
-            public VisitorResult firstVisit(List<SimpleTree<String>> path) {
-                assertEquals(VisitorResult.Continue, TreeVisitor.super.firstVisit(path));
+            public TraversalAction firstVisit(List<LabeledTree<String>> path) {
+                assertEquals(TraversalAction.CONTINUE, TreeVisitor.super.firstVisit(path));
                 actualCallOrder.add("first");
                 preOrderCollect.add(TreeVisitor.getCurrentNode(path));
-                return VisitorResult.Continue;
+                return TraversalAction.CONTINUE;
             }
 
             @Override
-            public VisitorResult lastVisit(List<SimpleTree<String>> path) {
-                assertEquals(VisitorResult.Continue, TreeVisitor.super.lastVisit(path));
+            public TraversalAction lastVisit(List<LabeledTree<String>> path) {
+                assertEquals(TraversalAction.CONTINUE, TreeVisitor.super.lastVisit(path));
                 actualCallOrder.add("last");
                 postOrderCollect.add(TreeVisitor.getCurrentNode(path));
-                return VisitorResult.Continue;
+                return TraversalAction.CONTINUE;
             }
         });
 
@@ -219,25 +219,25 @@ public class TreesTest {
 
         assertThrows(
                 RuntimeException.class,
-                () -> Trees.traverse(root1, new TreeVisitor<Void, SimpleTree<?>>() {
+                () -> Trees.traverse(root1, new TreeVisitor<Void, LabeledTree<?>>() {
                     @Override
-                    public VisitorResult firstVisit(List<SimpleTree<?>> path) {
+                    public TraversalAction firstVisit(List<LabeledTree<?>> path) {
                         throw new RuntimeException();
                     }
                 }));
 
         assertThrows(
                 RuntimeException.class,
-                () -> Trees.traverse(root1, new TreeVisitor<Void, SimpleTree<?>>() {
+                () -> Trees.traverse(root1, new TreeVisitor<Void, LabeledTree<?>>() {
                     @Override
-                    public VisitorResult lastVisit(List<SimpleTree<?>> path) {
+                    public TraversalAction lastVisit(List<LabeledTree<?>> path) {
                         throw new RuntimeException();
                     }
                 }));
 
         assertThrows(
                 RuntimeException.class,
-                () -> Trees.traverse(root1, new TreeVisitor<Void, SimpleTree<?>>() {
+                () -> Trees.traverse(root1, new TreeVisitor<Void, LabeledTree<?>>() {
                     @Override
                     public Optional<Void> getResult() {
                         throw new RuntimeException();
@@ -246,25 +246,25 @@ public class TreesTest {
 
         assertThrows(
                 RuntimeException.class,
-                () -> Trees.traverse(root1, new TreeVisitor<Void, SimpleTree<?>>() {
+                () -> Trees.traverse(root1, new TreeVisitor<Void, LabeledTree<?>>() {
                     @Override
                     public void reset() {
                         throw new RuntimeException();
                     }
                 }));
 
-        assertFalse(Trees.traverse(root1, new TreeVisitor<Void, SimpleTree<?>>() {
+        assertFalse(Trees.traverse(root1, new TreeVisitor<Void, LabeledTree<?>>() {
                     @Override
-                    public VisitorResult firstVisit(List<SimpleTree<?>> path) {
-                        return VisitorResult.Fail;
+                    public TraversalAction firstVisit(List<LabeledTree<?>> path) {
+                        return TraversalAction.FAIL;
                     }
                 })
                 .isPresent());
 
-        assertFalse(Trees.traverse(root1, new TreeVisitor<Void, SimpleTree<?>>() {
+        assertFalse(Trees.traverse(root1, new TreeVisitor<Void, LabeledTree<?>>() {
                     @Override
-                    public VisitorResult lastVisit(List<SimpleTree<?>> path) {
-                        return VisitorResult.Fail;
+                    public TraversalAction lastVisit(List<LabeledTree<?>> path) {
+                        return TraversalAction.FAIL;
                     }
                 })
                 .isPresent());
@@ -280,14 +280,14 @@ public class TreesTest {
         expectedCallOrder.add("last");
         expectedCallOrder.add("result");
 
-        final ArrayList<SimpleTree<String>> preOrderCollect = new ArrayList<>();
-        final ArrayList<SimpleTree<String>> postOrderCollect = new ArrayList<>();
-        final ArrayList<SimpleTree<String>> innerCollect = new ArrayList<>();
+        final ArrayList<LabeledTree<String>> preOrderCollect = new ArrayList<>();
+        final ArrayList<LabeledTree<String>> postOrderCollect = new ArrayList<>();
+        final ArrayList<LabeledTree<String>> innerCollect = new ArrayList<>();
 
-        final Optional<Void> result = Trees.traverse(root1, new DfsVisitor<Void, SimpleTree<String>>() {
+        final Optional<Void> result = Trees.traverse(root1, new InOrderTreeVisitor<Void, LabeledTree<String>>() {
             @Override
             public Optional<Void> getResult() {
-                final Optional<Void> result = DfsVisitor.super.getResult();
+                final Optional<Void> result = InOrderTreeVisitor.super.getResult();
                 assertTrue(result.isEmpty());
                 actualCallOrder.add("result");
                 return result;
@@ -295,32 +295,32 @@ public class TreesTest {
 
             @Override
             public void reset() {
-                DfsVisitor.super.reset();
+                InOrderTreeVisitor.super.reset();
                 actualCallOrder.add("reset");
             }
 
             @Override
-            public VisitorResult firstVisit(List<SimpleTree<String>> path) {
-                assertEquals(VisitorResult.Continue, DfsVisitor.super.firstVisit(path));
+            public TraversalAction firstVisit(List<LabeledTree<String>> path) {
+                assertEquals(TraversalAction.CONTINUE, InOrderTreeVisitor.super.firstVisit(path));
                 actualCallOrder.add("first");
                 preOrderCollect.add(TreeVisitor.getCurrentNode(path));
-                return VisitorResult.Continue;
+                return TraversalAction.CONTINUE;
             }
 
             @Override
-            public VisitorResult visit(List<SimpleTree<String>> path) {
-                assertEquals(VisitorResult.Continue, DfsVisitor.super.visit(path));
+            public TraversalAction visit(List<LabeledTree<String>> path) {
+                assertEquals(TraversalAction.CONTINUE, InOrderTreeVisitor.super.visit(path));
                 actualCallOrder.add("visit");
                 innerCollect.add(TreeVisitor.getCurrentNode(path));
-                return VisitorResult.Continue;
+                return TraversalAction.CONTINUE;
             }
 
             @Override
-            public VisitorResult lastVisit(List<SimpleTree<String>> path) {
-                assertEquals(VisitorResult.Continue, DfsVisitor.super.lastVisit(path));
+            public TraversalAction lastVisit(List<LabeledTree<String>> path) {
+                assertEquals(TraversalAction.CONTINUE, InOrderTreeVisitor.super.lastVisit(path));
                 actualCallOrder.add("last");
                 postOrderCollect.add(TreeVisitor.getCurrentNode(path));
-                return VisitorResult.Continue;
+                return TraversalAction.CONTINUE;
             }
         });
 
@@ -331,34 +331,34 @@ public class TreesTest {
 
         assertThrows(
                 RuntimeException.class,
-                () -> Trees.traverse(root1, new DfsVisitor<Void, SimpleTree<?>>() {
+                () -> Trees.traverse(root1, new InOrderTreeVisitor<Void, LabeledTree<?>>() {
                     @Override
-                    public VisitorResult firstVisit(List<SimpleTree<?>> path) {
+                    public TraversalAction firstVisit(List<LabeledTree<?>> path) {
                         throw new RuntimeException();
                     }
                 }));
 
         assertThrows(
                 RuntimeException.class,
-                () -> Trees.traverse(root1, new DfsVisitor<Void, SimpleTree<?>>() {
+                () -> Trees.traverse(root1, new InOrderTreeVisitor<Void, LabeledTree<?>>() {
                     @Override
-                    public VisitorResult visit(List<SimpleTree<?>> path) {
+                    public TraversalAction visit(List<LabeledTree<?>> path) {
                         throw new RuntimeException();
                     }
                 }));
 
         assertThrows(
                 RuntimeException.class,
-                () -> Trees.traverse(root1, new DfsVisitor<Void, SimpleTree<?>>() {
+                () -> Trees.traverse(root1, new InOrderTreeVisitor<Void, LabeledTree<?>>() {
                     @Override
-                    public VisitorResult lastVisit(List<SimpleTree<?>> path) {
+                    public TraversalAction lastVisit(List<LabeledTree<?>> path) {
                         throw new RuntimeException();
                     }
                 }));
 
         assertThrows(
                 RuntimeException.class,
-                () -> Trees.traverse(root1, new DfsVisitor<Void, SimpleTree<?>>() {
+                () -> Trees.traverse(root1, new InOrderTreeVisitor<Void, LabeledTree<?>>() {
                     @Override
                     public Optional<Void> getResult() {
                         throw new RuntimeException();
@@ -367,33 +367,33 @@ public class TreesTest {
 
         assertThrows(
                 RuntimeException.class,
-                () -> Trees.traverse(root1, new DfsVisitor<Void, SimpleTree<?>>() {
+                () -> Trees.traverse(root1, new InOrderTreeVisitor<Void, LabeledTree<?>>() {
                     @Override
                     public void reset() {
                         throw new RuntimeException();
                     }
                 }));
 
-        assertFalse(Trees.traverse(root1, new DfsVisitor<Void, SimpleTree<?>>() {
+        assertFalse(Trees.traverse(root1, new InOrderTreeVisitor<Void, LabeledTree<?>>() {
                     @Override
-                    public VisitorResult firstVisit(List<SimpleTree<?>> path) {
-                        return VisitorResult.Fail;
+                    public TraversalAction firstVisit(List<LabeledTree<?>> path) {
+                        return TraversalAction.FAIL;
                     }
                 })
                 .isPresent());
 
-        assertFalse(Trees.traverse(root1, new DfsVisitor<Void, SimpleTree<?>>() {
+        assertFalse(Trees.traverse(root1, new InOrderTreeVisitor<Void, LabeledTree<?>>() {
                     @Override
-                    public VisitorResult visit(List<SimpleTree<?>> path) {
-                        return VisitorResult.Fail;
+                    public TraversalAction visit(List<LabeledTree<?>> path) {
+                        return TraversalAction.FAIL;
                     }
                 })
                 .isPresent());
 
-        assertFalse(Trees.traverse(root1, new DfsVisitor<Void, SimpleTree<?>>() {
+        assertFalse(Trees.traverse(root1, new InOrderTreeVisitor<Void, LabeledTree<?>>() {
                     @Override
-                    public VisitorResult lastVisit(List<SimpleTree<?>> path) {
-                        return VisitorResult.Fail;
+                    public TraversalAction lastVisit(List<LabeledTree<?>> path) {
+                        return TraversalAction.FAIL;
                     }
                 })
                 .isPresent());

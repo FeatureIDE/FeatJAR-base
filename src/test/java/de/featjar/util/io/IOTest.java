@@ -29,7 +29,7 @@ import de.featjar.util.data.Problem;
 import de.featjar.util.data.Result;
 import de.featjar.util.io.format.Format;
 import de.featjar.util.io.format.FormatSupplier;
-import de.featjar.util.tree.structure.SimpleTree;
+import de.featjar.util.tree.structure.LabeledTree;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -76,7 +76,7 @@ public class IOTest {
         }
     }
 
-    static class IntegerTreeFormat implements Format<SimpleTree<Integer>> {
+    static class IntegerTreeFormat implements Format<LabeledTree<Integer>> {
         @Override
         public String getFileExtension() {
             return "dat";
@@ -98,18 +98,18 @@ public class IOTest {
         }
 
         @Override
-        public Format<SimpleTree<Integer>> getInstance() {
+        public Format<LabeledTree<Integer>> getInstance() {
             return new IntegerTreeFormat();
         }
 
         @Override
-        public Result<SimpleTree<Integer>> parse(InputMapper inputMapper) {
+        public Result<LabeledTree<Integer>> parse(InputMapper inputMapper) {
             List<Problem> problems = new ArrayList<>();
             List<String> lines = inputMapper.get().readLines();
             if (lines.isEmpty()) return Result.empty();
-            SimpleTree<Integer> integerTree = new SimpleTree<>(Integer.valueOf(lines.remove(0)));
+            LabeledTree<Integer> integerTree = new LabeledTree<>(Integer.valueOf(lines.remove(0)));
             for (String line : lines) {
-                Result<SimpleTree<Integer>> result = inputMapper.withMainPath(
+                Result<LabeledTree<Integer>> result = inputMapper.withMainPath(
                         IOObject.getPathWithExtension(line, getFileExtension()),
                         () -> getInstance().parse(inputMapper));
                 if (result.isPresent()) integerTree.addChild(result.get());
@@ -119,12 +119,12 @@ public class IOTest {
         }
 
         @Override
-        public String serialize(SimpleTree<Integer> object) {
-            return object.getData().toString();
+        public String serialize(LabeledTree<Integer> object) {
+            return object.getLabel().toString();
         }
 
         @Override
-        public void write(SimpleTree<Integer> object, OutputMapper outputMapper) throws IOException {
+        public void write(LabeledTree<Integer> object, OutputMapper outputMapper) throws IOException {
             outputMapper
                     .get()
                     .writeText(serialize(object) + "\n"
@@ -132,7 +132,7 @@ public class IOTest {
                                     .map(Object::hashCode)
                                     .map(Objects::toString)
                                     .collect(Collectors.joining("\n")));
-            for (SimpleTree<Integer> child : object.getChildren()) {
+            for (LabeledTree<Integer> child : object.getChildren()) {
                 outputMapper.withMainPath(
                         IOObject.getPathWithExtension(String.valueOf(child.hashCode()), getFileExtension()),
                         () -> getInstance().write(child, outputMapper));
@@ -219,26 +219,26 @@ public class IOTest {
 
     public void testIntegerTree(Path testPath) throws IOException {
         try {
-            SimpleTree<Integer> integerTree = new SimpleTree<>(1);
-            integerTree.addChild(new SimpleTree<>(2));
-            SimpleTree<Integer> child = new SimpleTree<>(3);
+            LabeledTree<Integer> integerTree = new LabeledTree<>(1);
+            integerTree.addChild(new LabeledTree<>(2));
+            LabeledTree<Integer> child = new LabeledTree<>(3);
             integerTree.addChild(child);
-            child.addChild(new SimpleTree<>(4));
+            child.addChild(new LabeledTree<>(4));
             assertDoesNotThrow(() -> IO.save(integerTree, testPath, new IntegerTreeFormat()));
 
-            Result<SimpleTree<Integer>> result = IO.load(testPath, new IntegerTreeFormat());
+            Result<LabeledTree<Integer>> result = IO.load(testPath, new IntegerTreeFormat());
             assertTrue(result.isPresent());
-            assertEquals(1, result.get().getData());
+            assertEquals(1, result.get().getLabel());
             assertEquals(0, result.get().getChildren().size());
             assertEquals(2, result.getProblems().size());
             result = IO.load(testPath, new IntegerTreeFormat(), IOMapper.Options.INPUT_FILE_HIERARCHY);
             assertTrue(result.isPresent());
-            assertEquals(1, result.get().getData());
+            assertEquals(1, result.get().getLabel());
             assertEquals(2, result.get().getChildren().size());
-            assertEquals(2, result.get().getFirstChild().get().getData());
-            assertEquals(3, result.get().getLastChild().get().getData());
+            assertEquals(2, result.get().getFirstChild().get().getLabel());
+            assertEquals(3, result.get().getLastChild().get().getLabel());
             assertEquals(
-                    4, result.get().getLastChild().get().getFirstChild().get().getData());
+                    4, result.get().getLastChild().get().getFirstChild().get().getLabel());
 
             Map<Path, String> stringMap = IO.printHierarchy(result.get(), new IntegerTreeFormat());
             assertTrue(stringMap.get(Paths.get("__main__")).startsWith("1"));
