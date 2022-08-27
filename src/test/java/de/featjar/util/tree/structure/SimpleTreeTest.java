@@ -64,7 +64,7 @@ public class SimpleTreeTest {
 
     @Test
     public void createTreeWithoutData() {
-        final String treeToString = "SimpleTree [null]";
+        final String treeToString = "LabeledTree[null]";
 
         final LabeledTree<String> newRoot = new LabeledTree<>();
         assertNull(newRoot.getLabel());
@@ -77,7 +77,7 @@ public class SimpleTreeTest {
     @Test
     public void createTreeWithData() {
         final String newData = "NewRoot";
-        final String treeToString = "SimpleTree [" + newData + "]";
+        final String treeToString = "LabeledTree[" + newData + "]";
 
         final LabeledTree<String> newRoot = new LabeledTree<>(newData);
         assertEquals(newData, newRoot.getLabel());
@@ -90,7 +90,7 @@ public class SimpleTreeTest {
     @Test
     public void setData() {
         final String exampleData = "Example";
-        final String treeToString = "SimpleTree [" + exampleData + "]";
+        final String treeToString = "LabeledTree[" + exampleData + "]";
 
         final LabeledTree<String> newRoot = new LabeledTree<>();
         newRoot.setLabel(exampleData);
@@ -101,7 +101,7 @@ public class SimpleTreeTest {
     @Test
     public void replaceData() {
         final String exampleData = "Example";
-        final String treeToString = "SimpleTree [" + exampleData + "]";
+        final String treeToString = "LabeledTree[" + exampleData + "]";
 
         root.setLabel(exampleData);
         assertEquals(exampleData, root.getLabel());
