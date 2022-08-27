@@ -22,7 +22,6 @@ package de.featjar.util.tree;
 
 import de.featjar.util.tree.structure.Traversable;
 import de.featjar.util.tree.visitor.InOrderTreeVisitor;
-import de.featjar.util.tree.visitor.TreePrinter;
 import de.featjar.util.tree.visitor.TreeVisitor;
 import de.featjar.util.tree.visitor.TreeVisitor.TraversalAction;
 import java.util.ArrayDeque;
@@ -35,12 +34,11 @@ import java.util.List;
 import java.util.Optional;
 import java.util.Spliterator;
 import java.util.function.Consumer;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
 /**
- * Convenience methods for manipulating and traversing trees.
+ * Traverses and manipulates trees.
  *
  * @author Sebastian Krieter
  */
@@ -64,7 +62,7 @@ public final class Trees {
     public static <R, T extends Traversable<?>> Optional<R> traverse(T node, InOrderTreeVisitor<R, T> visitor) {
         visitor.reset();
         try {
-            dfsComplete(node, visitor);
+            depthFirstSearch(node, visitor);
             return visitor.getResult();
         } catch (final VisitorFailException e) {
             return Optional.empty();
@@ -84,90 +82,188 @@ public final class Trees {
     public static <R, T extends Traversable<?>> Optional<R> traverse(T node, TreeVisitor<R, T> visitor) {
         visitor.reset();
         try {
-            dfsPrePost(node, visitor);
+            depthFirstSearch(node, visitor);
             return visitor.getResult();
         } catch (final VisitorFailException e) {
             return Optional.empty();
         }
     }
 
-    public static <T extends Traversable<?>> String print(T node) {
-        return traverse(node, new TreePrinter()).orElse("");
-    }
-
-    public static <T extends Traversable<T>> List<T> getPreOrderList(T node) {
-        return preOrderStream(node).collect(Collectors.toList());
-    }
-
-    public static <T extends Traversable<T>> List<T> getPostOrderList(T node) {
-        return postOrderStream(node).collect(Collectors.toList());
-    }
-
-    public static <T extends Traversable<T>> List<T> getLevelOrderList(T node) {
-        return levelOrderStream(node).collect(Collectors.toList());
-    }
-
-    public static <T extends Traversable<T>> Stream<T> parallelStream(T node) {
-        return StreamSupport.stream(new ParallelSpliterator<>(node), true);
-    }
-
-    public static <T extends X, X extends Traversable<X>> Stream<X> preOrderStream(T node) {
+    /**
+     * Creates a preorder stream of the descendents of a tree.
+     * Is more efficient than {@link #traverse(Traversable, TreeVisitor)}, but lacks support for {@link TraversalAction}.
+     *
+     * @param node the starting node of the tree
+     * @return the stream
+     * @param <T> type of tree
+     */
+    public static <T extends Traversable<T>> Stream<T> preOrderStream(T node) {
         return StreamSupport.stream(new PreOrderSpliterator<>(node), false);
     }
 
+    /**
+     * Creates a postorder stream of the descendents of a tree.
+     * Is more efficient than {@link #traverse(Traversable, TreeVisitor)}, but lacks support for {@link TraversalAction}.
+     *
+     * @param node the starting node of the tree
+     * @return the stream
+     * @param <T> type of tree
+     */
     public static <T extends Traversable<T>> Stream<T> postOrderStream(T node) {
         return StreamSupport.stream(new PostOrderSpliterator<>(node), false);
     }
 
-    public static <T extends X, X extends Traversable<X>> Stream<X> levelOrderStream(T node) {
+    /**
+     * Creates a level-order stream of the descendents of a tree.
+     *
+     * @param node the starting node of the tree
+     * @return the stream
+     * @param <T> type of tree
+     */
+    public static <T extends Traversable<T>> Stream<T> levelOrderStream(T node) {
         return StreamSupport.stream(new LevelOrderSpliterator<>(node), false);
     }
 
-    private static class ParallelSpliterator<T extends Traversable<T>> implements Spliterator<T> {
+    /**
+     * Creates a parallel stream of the descendents of a tree.
+     * Does not make any guarantees regarding the order of the descendents.
+     *
+     * @param node the starting node of the tree
+     * @return the stream
+     * @param <T> type of tree
+     */
+    public static <T extends Traversable<T>> Stream<T> parallelStream(T node) {
+        return StreamSupport.stream(new ParallelSpliterator<>(node), true);
+    }
 
-        final LinkedList<T> stack = new LinkedList<>();
+    /**
+     * Tests whether two nodes (and their children) are equal.
+     *
+     * @param node1 the first node
+     * @param node2 the second node
+     * @return whether the first node is deeply equal to the second node
+     * @param <T> type of tree
+     */
+    public static <T extends Traversable<T>> boolean equals(T node1, T node2) {
+        if (node1 == node2) {
+            return true;
+        }
+        if ((node1 == null) || (node2 == null)) {
+            return false;
+        }
+        final LinkedList<T> stack1 = new LinkedList<>();
+        final LinkedList<T> stack2 = new LinkedList<>();
+        stack1.push(node1);
+        stack2.push(node2);
+        while (!stack1.isEmpty()) {
+            final T currentNode1 = stack1.pop();
+            final T currentNode2 = stack2.pop();
 
-        public ParallelSpliterator(T node) {
-            if (node != null) {
-                stack.push(node);
+            if (currentNode1 != currentNode2) {
+                if ((currentNode1 == null) || (currentNode2 == null)) {
+                    return false;
+                } else {
+                    if (!currentNode1.equalsNode(currentNode2)) {
+                        return false;
+                    }
+                    stack1.addAll(0, currentNode1.getChildren());
+                    stack2.addAll(0, currentNode2.getChildren());
+                }
             }
         }
+        return true;
+    }
 
-        @Override
-        public int characteristics() {
-            return Spliterator.ORDERED | Spliterator.IMMUTABLE;
+    /**
+     * Clones a node (and its children).
+     *
+     * @param root the node
+     * @return a deep clone of the node
+     * @param <T> type of tree
+     */
+    @SuppressWarnings("unchecked")
+    public static <T extends Traversable<T>> T clone(T root) {
+        if (root == null) {
+            return null;
         }
 
-        @Override
-        public long estimateSize() {
-            return Long.MAX_VALUE;
-        }
+        final ArrayList<T> path = new ArrayList<>();
+        final LinkedList<StackEntry<T>> stack = new LinkedList<>();
+        stack.push(new StackEntry<>(root));
 
-        @Override
-        public boolean tryAdvance(Consumer<? super T> consumer) {
-            if (stack.isEmpty()) {
-                return false;
+        while (!stack.isEmpty()) {
+            final StackEntry<T> entry = stack.peek();
+            final T node = entry.node;
+            if (entry.remainingChildren == null) {
+                path.add((T) node.cloneNode());
+                entry.remainingChildren = new LinkedList<>(node.getChildren());
+            }
+            if (!entry.remainingChildren.isEmpty()) {
+                stack.push(new StackEntry<>(entry.remainingChildren.remove(0)));
             } else {
-                final T node = stack.pop();
-                consumer.accept(node);
-                stack.addAll(0, node.getChildren());
-                return true;
+                final int childrenCount = node.getChildren().size();
+                if (childrenCount > 0) {
+                    final List<T> subList = path.subList(path.size() - childrenCount, path.size());
+                    path.get(path.size() - (childrenCount + 1)).setChildren(subList);
+                    subList.clear();
+                }
+                stack.pop();
             }
         }
+        return path.get(0);
+    }
 
-        @Override
-        public Spliterator<T> trySplit() {
-            if (!stack.isEmpty()) {
-                return new ParallelSpliterator<>(stack.pop());
+    /**
+     * Sorts a node (and its children).
+     *
+     * @param root the node
+     * @param <T> type of tree
+     */
+    public static <T extends Traversable<T>> void sort(T root) {
+        sort(root, Comparator.comparing(T::toString));
+    }
+
+    /**
+     * Sorts a node (and its children).
+     *
+     * @param root the node
+     * @param comparator comparator used for sorting
+     * @param <T> type of tree
+     */
+    public static <T extends Traversable<T>> void sort(T root, Comparator<T> comparator) {
+        final LinkedList<StackEntry<T>> stack = new LinkedList<>();
+        stack.push(new StackEntry<>(root));
+
+        while (!stack.isEmpty()) {
+            final StackEntry<T> entry = stack.peek();
+            final T node = entry.node;
+            if (entry.remainingChildren == null) {
+                entry.remainingChildren = new LinkedList<>(node.getChildren());
+            }
+            if (!entry.remainingChildren.isEmpty()) {
+                stack.push(new StackEntry<>(entry.remainingChildren.remove(0)));
             } else {
-                return null;
+                final ArrayList<T> children = new ArrayList<>(node.getChildren());
+                children.sort(comparator);
+                node.setChildren(children);
+                stack.pop();
             }
         }
     }
 
-    private static class PreOrderSpliterator<T extends X, X extends Traversable<X>> implements Spliterator<X> {
+    private static class StackEntry<T> {
+        private final T node;
+        private List<T> remainingChildren;
 
-        final LinkedList<X> stack = new LinkedList<>();
+        public StackEntry(T node) {
+            this.node = node;
+        }
+    }
+
+    private static class PreOrderSpliterator<T extends Traversable<T>> implements Spliterator<T> {
+
+
+        final LinkedList<T> stack = new LinkedList<>();
 
         public PreOrderSpliterator(T node) {
             if (node != null) {
@@ -186,11 +282,11 @@ public final class Trees {
         }
 
         @Override
-        public boolean tryAdvance(Consumer<? super X> consumer) {
+        public boolean tryAdvance(Consumer<? super T> consumer) {
             if (stack.isEmpty()) {
                 return false;
             } else {
-                final X node = stack.removeFirst();
+                final T node = stack.removeFirst();
                 consumer.accept(node);
                 stack.addAll(0, node.getChildren());
                 return true;
@@ -198,17 +294,8 @@ public final class Trees {
         }
 
         @Override
-        public Spliterator<X> trySplit() {
+        public Spliterator<T> trySplit() {
             return null;
-        }
-    }
-
-    private static class StackEntry<T> {
-        private final T node;
-        private List<T> remainingChildren;
-
-        public StackEntry(T node) {
-            this.node = node;
         }
     }
 
@@ -258,9 +345,9 @@ public final class Trees {
         }
     }
 
-    private static class LevelOrderSpliterator<T extends X, X extends Traversable<X>> implements Spliterator<X> {
+    private static class LevelOrderSpliterator<T extends Traversable<T>> implements Spliterator<T> {
 
-        final LinkedList<X> queue = new LinkedList<>();
+        final LinkedList<T> queue = new LinkedList<>();
 
         public LevelOrderSpliterator(T node) {
             if (node != null) {
@@ -279,11 +366,11 @@ public final class Trees {
         }
 
         @Override
-        public boolean tryAdvance(Consumer<? super X> consumer) {
+        public boolean tryAdvance(Consumer<? super T> consumer) {
             if (queue.isEmpty()) {
                 return false;
             } else {
-                final X node = queue.removeFirst();
+                final T node = queue.removeFirst();
                 consumer.accept(node);
                 queue.addAll(node.getChildren());
                 return true;
@@ -291,19 +378,61 @@ public final class Trees {
         }
 
         @Override
-        public Spliterator<X> trySplit() {
+        public Spliterator<T> trySplit() {
             return null;
         }
     }
 
+    private static class ParallelSpliterator<T extends Traversable<T>> implements Spliterator<T> {
+
+        final LinkedList<T> stack = new LinkedList<>();
+
+        public ParallelSpliterator(T node) {
+            if (node != null) {
+                stack.push(node);
+            }
+        }
+
+        @Override
+        public int characteristics() {
+            return Spliterator.ORDERED | Spliterator.IMMUTABLE;
+        }
+
+        @Override
+        public long estimateSize() {
+            return Long.MAX_VALUE;
+        }
+
+        @Override
+        public boolean tryAdvance(Consumer<? super T> consumer) {
+            if (stack.isEmpty()) {
+                return false;
+            } else {
+                final T node = stack.pop();
+                consumer.accept(node);
+                stack.addAll(0, node.getChildren());
+                return true;
+            }
+        }
+
+        @Override
+        public Spliterator<T> trySplit() {
+            if (!stack.isEmpty()) {
+                return new ParallelSpliterator<>(stack.pop());
+            } else {
+                return null;
+            }
+        }
+    }
+
     @SuppressWarnings("unchecked")
-    private static <X extends Traversable<?>, T extends X> void dfsComplete(T node, InOrderTreeVisitor<?, X> visitor)
+    private static <T extends Traversable<?>> void depthFirstSearch(T node, InOrderTreeVisitor<?, T> visitor)
             throws VisitorFailException {
         if (node == null) {
             return;
         }
         final ArrayList<T> path = new ArrayList<>();
-        final List<X> unmodifiablePath = Collections.unmodifiableList(path);
+        final List<T> unmodifiablePath = Collections.unmodifiableList(path);
 
         final ArrayDeque<StackEntry<T>> stack = new ArrayDeque<>();
         stack.addLast(new StackEntry<>(node));
@@ -367,7 +496,7 @@ public final class Trees {
     }
 
     @SuppressWarnings("unchecked")
-    public static <T extends Traversable<?>> void dfsPrePost(T node, TreeVisitor<?, T> visitor) throws VisitorFailException {
+    private static <T extends Traversable<?>> void depthFirstSearch(T node, TreeVisitor<?, T> visitor) throws VisitorFailException {
         if (node != null) {
             final ArrayList<T> path = new ArrayList<>();
             final List<T> unmodifiablePath = Collections.unmodifiableList(path);
@@ -410,93 +539,6 @@ public final class Trees {
                     stack.removeLast();
                     path.remove(path.size() - 1);
                 }
-            }
-        }
-    }
-
-    public static <T extends Traversable<T>> boolean equals(T node1, T node2) {
-        if (node1 == node2) {
-            return true;
-        }
-        if ((node1 == null) || (node2 == null)) {
-            return false;
-        }
-        final LinkedList<T> stack1 = new LinkedList<>();
-        final LinkedList<T> stack2 = new LinkedList<>();
-        stack1.push(node1);
-        stack2.push(node2);
-        while (!stack1.isEmpty()) {
-            final T currentNode1 = stack1.pop();
-            final T currentNode2 = stack2.pop();
-
-            if (currentNode1 != currentNode2) {
-                if ((currentNode1 == null) || (currentNode2 == null)) {
-                    return false;
-                } else {
-                    if (!currentNode1.equalsNode(currentNode2)) {
-                        return false;
-                    }
-                    stack1.addAll(0, currentNode1.getChildren());
-                    stack2.addAll(0, currentNode2.getChildren());
-                }
-            }
-        }
-        return true;
-    }
-
-    @SuppressWarnings("unchecked")
-    public static <T extends Traversable<T>> T clone(T root) {
-        if (root == null) {
-            return null;
-        }
-
-        final ArrayList<T> path = new ArrayList<>();
-        final LinkedList<StackEntry<T>> stack = new LinkedList<>();
-        stack.push(new StackEntry<>(root));
-
-        while (!stack.isEmpty()) {
-            final StackEntry<T> entry = stack.peek();
-            final T node = entry.node;
-            if (entry.remainingChildren == null) {
-                path.add((T) node.cloneNode());
-                entry.remainingChildren = new LinkedList<>(node.getChildren());
-            }
-            if (!entry.remainingChildren.isEmpty()) {
-                stack.push(new StackEntry<>(entry.remainingChildren.remove(0)));
-            } else {
-                final int childrenCount = node.getChildren().size();
-                if (childrenCount > 0) {
-                    final List<T> subList = path.subList(path.size() - childrenCount, path.size());
-                    path.get(path.size() - (childrenCount + 1)).setChildren(subList);
-                    subList.clear();
-                }
-                stack.pop();
-            }
-        }
-        return path.get(0);
-    }
-
-    public static <X extends T, T extends Traversable<T>> void sortTree(X root) {
-        sortTree(root, Comparator.comparing(T::toString));
-    }
-
-    public static <X extends T, T extends Traversable<T>> void sortTree(X root, Comparator<T> comparator) {
-        final LinkedList<StackEntry<T>> stack = new LinkedList<>();
-        stack.push(new StackEntry<>(root));
-
-        while (!stack.isEmpty()) {
-            final StackEntry<T> entry = stack.peek();
-            final T node = entry.node;
-            if (entry.remainingChildren == null) {
-                entry.remainingChildren = new LinkedList<>(node.getChildren());
-            }
-            if (!entry.remainingChildren.isEmpty()) {
-                stack.push(new StackEntry<>(entry.remainingChildren.remove(0)));
-            } else {
-                final ArrayList<T> children = new ArrayList<>(node.getChildren());
-                children.sort(comparator);
-                node.setChildren(children);
-                stack.pop();
             }
         }
     }

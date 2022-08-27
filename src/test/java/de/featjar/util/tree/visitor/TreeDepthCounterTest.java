@@ -56,26 +56,27 @@ public class TreeDepthCounterTest {
         b1.setChildren(Arrays.asList(b1a, b1b, b1c));
         b3.setChildren(Arrays.asList(b3a, b3b));
         c1.setChildren(Arrays.asList(c1a, c1b, c1c, c1d));
-        Trees.traverse(root1, new InOrderTreeVisitor<Void, LabeledTree<String>>() {
+        root1.traverse(new InOrderTreeVisitor<Void, LabeledTree<String>>() {
 
             @Override
             public TraversalAction firstVisit(List<LabeledTree<String>> path) {
-                //System.out.println(TreeVisitor.getCurrentNode(path));
+                //System.out.println(getCurrentNode(path));
                 return TraversalAction.CONTINUE;
             }
 
             @Override
             public TraversalAction visit(List<LabeledTree<String>> path) {
-                System.out.println(TreeVisitor.getCurrentNode(path));
+                System.out.println(getCurrentNode(path));
                 return TraversalAction.CONTINUE;
             }
 
             @Override
             public TraversalAction lastVisit(List<LabeledTree<String>> path) {
-                //System.out.println(TreeVisitor.getCurrentNode(path));
+                //System.out.println(getCurrentNode(path));
                 return TraversalAction.CONTINUE;
             }
         });
-    }
 
+        System.out.println(root1.preOrderStream().count());
+    }
 }

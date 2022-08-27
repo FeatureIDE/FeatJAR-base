@@ -27,32 +27,41 @@ import java.util.Optional;
 
 /**
  * Visits each node of a tree in a depth-first search.
- * The actual traversal algorithm is implemented in {@link Trees#dfsPrePost(Traversable, TreeVisitor)}.
+ * The actual traversal algorithm is {@link Trees#traverse(Traversable, TreeVisitor)}.
  *
  * @param <R> type of result
  * @param <T> type of tree
  * @author Sebastian Krieter
  */
 public interface TreeVisitor<R, T extends Traversable<?>> {
-
+    /**
+     * All possible actions a traversal can take after visiting a tree node.
+     */
     enum TraversalAction {
+        /**
+         * Continue normally.
+         * That is, traverse all children of the visited node.
+         */
         CONTINUE,
+        /**
+         * Skip all children of the visited node.
+         */
         SKIP_CHILDREN,
+        /**
+         * Skip all nodes left to be visited.
+         * That is, stop the traversal, but still return a result, if already determined.
+         */
         SKIP_ALL,
+        /**
+         * Signal that the traversal has failed.
+         * That is, stop the traversal and do not return a result.
+         */
         FAIL
     }
 
-    static <T> T getCurrentNode(List<T> path) {
-        return path.get(path.size() - 1);
-    }
-
-    static <T> T getParentNode(List<T> path) {
-        return (path.size() > 1) ? path.get(path.size() - 2) : null;
-    }
-
     /**
-     * Called when a node is visited the first time.
-     * Override this to implement a preorder traversal.
+     * Visit a node for the first time.
+     * Override this to implement preorder traversal.
      *
      * @param path the path to the visited node
      * @return the action the traversal algorithm must take next
@@ -62,8 +71,8 @@ public interface TreeVisitor<R, T extends Traversable<?>> {
     }
 
     /**
-     * Called when a node is visited the last time.
-     * Override this to implement a postorder traversal.
+     * Visit a node for the last time.
+     * Override this to implement postorder traversal.
      *
      * @param path the path to the visited node
      * @return the action the traversal algorithm must take next
@@ -72,9 +81,34 @@ public interface TreeVisitor<R, T extends Traversable<?>> {
         return TraversalAction.CONTINUE;
     }
 
+    /**
+     * Resets any internal state of this tree visitor.
+     * Should be overridden to allow for reusing this tree visitor instance.
+     */
     default void reset() {}
 
+    /**
+     * {@return} the result of the traversal, if any
+     */
     default Optional<R> getResult() {
         return Optional.empty();
+    }
+
+    /**
+     * {@return the currently visited node}
+     *
+     * @param path the current traversal path, guaranteed to contain at least one node
+     */
+    default T getCurrentNode(List<T> path) {
+        return path.get(path.size() - 1);
+    }
+
+    /**
+     * {@return the parent of the currently visited node}
+     *
+     * @param path the current traversal path, guaranteed to contain at least one node
+     */
+    default Optional<T> getParentNode(List<T> path) {
+        return (path.size() > 1) ? Optional.of(path.get(path.size() - 2)) : Optional.empty();
     }
 }

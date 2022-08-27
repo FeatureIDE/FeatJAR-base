@@ -25,8 +25,8 @@ import java.util.List;
 
 /**
  * A leaf node of a tree.
- * A leaf does not have any children. Nonetheless, it captures a children type,
- * such that it can be added as a child to a non-leaf node.
+ * A leaf does not have any children.
+ * Nonetheless, it captures a children type, such that it can be added as a child to a non-leaf node.
  *
  * @param <T> type of children, the implementing type must be castable to T
  * @author Sebastian Krieter

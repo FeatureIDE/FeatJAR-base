@@ -26,13 +26,42 @@ import java.util.Optional;
 import java.util.function.Function;
 import java.util.function.Predicate;
 
+/**
+ * Prints a tree as a string.
+ * Useful for debugging.
+ * Implemented as a preorder traversal.
+ *
+ * @author Sebastian Krieter
+ */
 public class TreePrinter implements TreeVisitor<String, Traversable<?>> {
-
+    private final StringBuilder treeStringBuilder = new StringBuilder();
     private String indentation = "  ";
-
-    private StringBuilder treeStringBuilder = new StringBuilder();
     private Predicate<Traversable<?>> filter = null;
     private Function<Traversable<?>, String> toStringFunction = Object::toString;
+
+    public String getIndentation() {
+        return indentation;
+    }
+
+    public Predicate<Traversable<?>> getFilter() {
+        return filter;
+    }
+
+    public Function<Traversable<?>, String> getToStringFunction() {
+        return toStringFunction;
+    }
+
+    public void setIndentation(String indentation) {
+        this.indentation = indentation;
+    }
+
+    public void setFilter(Predicate<Traversable<?>> filter) {
+        this.filter = filter;
+    }
+
+    public void setToStringFunction(Function<Traversable<?>, String> toStringFunction) {
+        this.toStringFunction = toStringFunction;
+    }
 
     @Override
     public void reset() {
@@ -44,22 +73,12 @@ public class TreePrinter implements TreeVisitor<String, Traversable<?>> {
         return Optional.of(treeStringBuilder.toString());
     }
 
-    public String getIndentation() {
-        return indentation;
-    }
-
-    public void setIndentation(String indentation) {
-        this.indentation = indentation;
-    }
-
     @Override
     public TraversalAction firstVisit(List<Traversable<?>> path) {
-        final Traversable<?> currentNode = TreeVisitor.getCurrentNode(path);
+        final Traversable<?> currentNode = getCurrentNode(path);
         if ((filter == null) || filter.test(currentNode)) {
             try {
-                for (int i = 1; i < path.size(); i++) {
-                    treeStringBuilder.append(indentation);
-                }
+                treeStringBuilder.append(String.valueOf(indentation).repeat(Math.max(0, path.size() - 1)));
                 treeStringBuilder.append(toStringFunction.apply(currentNode));
                 treeStringBuilder.append('\n');
             } catch (final Exception e) {
@@ -67,13 +86,5 @@ public class TreePrinter implements TreeVisitor<String, Traversable<?>> {
             }
         }
         return TraversalAction.CONTINUE;
-    }
-
-    public void setFilter(Predicate<Traversable<?>> filter) {
-        this.filter = filter;
-    }
-
-    public void setToStringFunction(Function<Traversable<?>, String> toStringFunction) {
-        this.toStringFunction = toStringFunction;
     }
 }

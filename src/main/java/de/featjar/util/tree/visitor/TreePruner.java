@@ -24,6 +24,12 @@ import de.featjar.util.tree.structure.Traversable;
 import java.util.Collections;
 import java.util.List;
 
+/**
+ * Prunes a tree to a given maximum depth.
+ * That is, children below this depth will be removed from the tree.
+ *
+ * @author Sebastian Krieter
+ */
 public class TreePruner implements TreeVisitor<Void, Traversable<?>> {
 
     private int depthLimit = Integer.MAX_VALUE;
@@ -40,7 +46,7 @@ public class TreePruner implements TreeVisitor<Void, Traversable<?>> {
     public TraversalAction firstVisit(List<Traversable<?>> path) {
         try {
             if (path.size() > depthLimit) {
-                final Traversable<?> node = TreeVisitor.getCurrentNode(path);
+                final Traversable<?> node = getCurrentNode(path);
                 node.setChildren(Collections.emptyList());
                 return TraversalAction.SKIP_CHILDREN;
             }

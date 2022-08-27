@@ -129,19 +129,18 @@ public class TreesTest {
 
     @Test
     public void preOrderList() {
-        assertEquals(preOrderList, Trees.getPreOrderList(root1));
-        assertEquals(Collections.emptyList(), Trees.getPreOrderList(null));
+        assertEquals(preOrderList, root1.getDescendantsAsPreOrder());
     }
 
     @Test
     public void preOrderStream() {
-        assertEquals(preOrderList, Trees.preOrderStream(root1).collect(Collectors.toList()));
+        assertEquals(preOrderList, root1.preOrderStream().collect(Collectors.toList()));
         assertEquals(Collections.emptyList(), Trees.preOrderStream(null).collect(Collectors.toList()));
     }
 
     @Test
     public void postOrderStream() {
-        assertEquals(postOrderList, Trees.postOrderStream(root1).collect(Collectors.toList()));
+        assertEquals(postOrderList, root1.postOrderStream().collect(Collectors.toList()));
         assertEquals(Collections.emptyList(), Trees.postOrderStream(null).collect(Collectors.toList()));
     }
 
@@ -199,7 +198,7 @@ public class TreesTest {
             public TraversalAction firstVisit(List<LabeledTree<String>> path) {
                 assertEquals(TraversalAction.CONTINUE, TreeVisitor.super.firstVisit(path));
                 actualCallOrder.add("first");
-                preOrderCollect.add(TreeVisitor.getCurrentNode(path));
+                preOrderCollect.add(getCurrentNode(path));
                 return TraversalAction.CONTINUE;
             }
 
@@ -207,7 +206,7 @@ public class TreesTest {
             public TraversalAction lastVisit(List<LabeledTree<String>> path) {
                 assertEquals(TraversalAction.CONTINUE, TreeVisitor.super.lastVisit(path));
                 actualCallOrder.add("last");
-                postOrderCollect.add(TreeVisitor.getCurrentNode(path));
+                postOrderCollect.add(getCurrentNode(path));
                 return TraversalAction.CONTINUE;
             }
         });
@@ -303,7 +302,7 @@ public class TreesTest {
             public TraversalAction firstVisit(List<LabeledTree<String>> path) {
                 assertEquals(TraversalAction.CONTINUE, InOrderTreeVisitor.super.firstVisit(path));
                 actualCallOrder.add("first");
-                preOrderCollect.add(TreeVisitor.getCurrentNode(path));
+                preOrderCollect.add(getCurrentNode(path));
                 return TraversalAction.CONTINUE;
             }
 
@@ -311,7 +310,7 @@ public class TreesTest {
             public TraversalAction visit(List<LabeledTree<String>> path) {
                 assertEquals(TraversalAction.CONTINUE, InOrderTreeVisitor.super.visit(path));
                 actualCallOrder.add("visit");
-                innerCollect.add(TreeVisitor.getCurrentNode(path));
+                innerCollect.add(getCurrentNode(path));
                 return TraversalAction.CONTINUE;
             }
 
@@ -319,7 +318,7 @@ public class TreesTest {
             public TraversalAction lastVisit(List<LabeledTree<String>> path) {
                 assertEquals(TraversalAction.CONTINUE, InOrderTreeVisitor.super.lastVisit(path));
                 actualCallOrder.add("last");
-                postOrderCollect.add(TreeVisitor.getCurrentNode(path));
+                postOrderCollect.add(getCurrentNode(path));
                 return TraversalAction.CONTINUE;
             }
         });

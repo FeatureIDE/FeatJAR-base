@@ -109,9 +109,9 @@ public abstract class Tree<T extends Traversable<T>> implements Traversable<T> {
 
     /**
      * Removes a child.
-     * If the given node is not a child, throws a {@link NoSuchElementException}.
      *
      * @param child the child to be removed
+     * @throws NoSuchElementException if the given old node is not a child
      */
     public void removeChild(T child) {
         if (!children.remove(child)) {
@@ -121,10 +121,10 @@ public abstract class Tree<T extends Traversable<T>> implements Traversable<T> {
 
     /**
      * Removes the child at a given position.
-     * If the given node is not a child, throws an {@link IndexOutOfBoundsException}.
      *
      * @param index the position to be removed
      * @return the removed child
+     * @throws IndexOutOfBoundsException if the given index is out of bounds
      */
     public T removeChild(int index) {
         return children.remove(index);
@@ -132,10 +132,10 @@ public abstract class Tree<T extends Traversable<T>> implements Traversable<T> {
 
     /**
      * Replaces a child with a new child.
-     * If the given old node is not a child, throws a {@link NoSuchElementException}.
 
      * @param oldChild the old child
      * @param newChild the new child
+     * @throws NoSuchElementException if the given old node is not a child
      */
     public void replaceChild(T oldChild, T newChild) {
         final int index = children.indexOf(oldChild);

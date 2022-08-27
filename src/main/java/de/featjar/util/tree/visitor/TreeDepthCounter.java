@@ -25,20 +25,21 @@ import java.util.List;
 import java.util.Optional;
 
 /**
- * Visitor that computes the maximum depth of a tree.
+ * Counts the maximum depth of a tree.
+ * Can be passed a class up to which should be counted (e.g., to exclude details in a tree).
  *
  * @author Sebastian Krieter
- *
  */
 public class TreeDepthCounter implements TreeVisitor<Integer, Traversable<?>> {
-
-    private Class<? extends Traversable<?>> terminalNode = null;
-
+    private Class<? extends Traversable<?>> terminalClass = null;
     private int maxDepth = 0;
 
-    @Override
-    public void reset() {
-        maxDepth = 0;
+    public Class<? extends Traversable<?>> getTerminalClass() {
+        return terminalClass;
+    }
+
+    public void setTerminalClass(Class<? extends Traversable<?>> terminalClass) {
+        this.terminalClass = terminalClass;
     }
 
     @Override
@@ -47,8 +48,8 @@ public class TreeDepthCounter implements TreeVisitor<Integer, Traversable<?>> {
         if (maxDepth < depth) {
             maxDepth = depth;
         }
-        final Traversable<?> node = TreeVisitor.getCurrentNode(path);
-        if ((terminalNode != null) && terminalNode.isInstance(node)) {
+        final Traversable<?> node = getCurrentNode(path);
+        if ((terminalClass != null) && terminalClass.isInstance(node)) {
             return TraversalAction.SKIP_CHILDREN;
         } else {
             return TraversalAction.CONTINUE;
@@ -56,15 +57,12 @@ public class TreeDepthCounter implements TreeVisitor<Integer, Traversable<?>> {
     }
 
     @Override
+    public void reset() {
+        maxDepth = 0;
+    }
+
+    @Override
     public Optional<Integer> getResult() {
         return Optional.of(maxDepth);
-    }
-
-    public Class<? extends Traversable<?>> getTerminalNode() {
-        return terminalNode;
-    }
-
-    public void setTerminalNode(Class<? extends Traversable<?>> terminalNode) {
-        this.terminalNode = terminalNode;
     }
 }

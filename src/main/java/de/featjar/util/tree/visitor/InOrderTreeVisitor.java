@@ -25,14 +25,22 @@ import de.featjar.util.tree.structure.Traversable;
 import java.util.List;
 
 /**
- * Interface for a visitor used in the traversal of a tree.
+ * Visits each node of a tree in a depth-first search.
+ * Compared with {@link TreeVisitor}, also allows for inorder traversal.
+ * The actual traversal algorithm is {@link Trees#traverse(Traversable, InOrderTreeVisitor)}.
  *
- * @see Trees
- *
+ * @param <R> type of result
+ * @param <T> type of tree
  * @author Sebastian Krieter
  */
 public interface InOrderTreeVisitor<R, T extends Traversable<?>> extends TreeVisitor<R, T> {
-
+    /**
+     * Visit a node in between the visits of its children.
+     * Override this to implement inorder traversal.
+     *
+     * @param path the path to the visited node
+     * @return the action the traversal algorithm must take next
+     */
     default TraversalAction visit(List<T> path) {
         return TraversalAction.CONTINUE;
     }

@@ -21,21 +21,25 @@
 package de.featjar.util.tree.structure;
 
 import de.featjar.util.tree.Trees;
+import de.featjar.util.tree.visitor.InOrderTreeVisitor;
+import de.featjar.util.tree.visitor.TreePrinter;
+import de.featjar.util.tree.visitor.TreeVisitor;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Objects;
-import java.util.Optional;
+import java.util.*;
 import java.util.function.Function;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 /**
  * An object that can be traversed, presumably a node in a tree.
- * Nodes are defined recursively. For an example usage, see {@link LabeledTree}.
+ * Nodes are defined recursively.
+ * For an example usage, see {@link LabeledTree}.
  *
  * @param <T> type of children, the implementing type must be castable to T
  * @author Sebastian Krieter
  * @author Elias Kuiter
  */
+@SuppressWarnings("unchecked")
 public interface Traversable<T extends Traversable<T>> {
     /**
      * {@return the children of this node}
@@ -153,7 +157,6 @@ public interface Traversable<T extends Traversable<T>> {
      *
      * @return a deep clone of this node
      */
-    @SuppressWarnings("unchecked")
     default T cloneTree() {
         return Trees.clone((T) this);
     }
@@ -174,8 +177,112 @@ public interface Traversable<T extends Traversable<T>> {
      * @param other the other node
      * @return whether this node is deeply equal to the other node
      */
-    @SuppressWarnings("unchecked")
     default boolean equalsTree(T other) {
         return Trees.equals((T) this, other);
+    }
+
+    /**
+     * Traverses the tree using depth-first search, allowing for pre-, in-, and postorder traversal.
+     * Only accepts tree visitors that operate on T.
+     * For more general visitors, use {@link Trees#traverse(Traversable, InOrderTreeVisitor)} instead.
+     *
+     * @param treeVisitor the tree visitor
+     * @return the optional result from the visitor
+     * @param <R> type of result
+     */
+    default <R> Optional<R> traverse(InOrderTreeVisitor<R, T> treeVisitor) {
+        return Trees.traverse((T) this, treeVisitor);
+    }
+
+    /**
+     * Traverses the tree using depth-first search, allowing for pre- and postorder traversal.
+     * Only accepts tree visitors that operate on T.
+     * For more general visitors, use {@link Trees#traverse(Traversable, TreeVisitor)} instead.
+     *
+     * @param treeVisitor the tree visitor
+     * @return the optional result from the visitor
+     * @param <R> type of result
+     */
+    default <R> Optional<R> traverse(TreeVisitor<R, T> treeVisitor) {
+        return Trees.traverse((T) this, treeVisitor);
+    }
+
+    /**
+     * {@return the tree printed as a string}
+     */
+    default String print() {
+        return Trees.traverse(this, new TreePrinter()).orElse("");
+    }
+
+    /**
+     * {@return a parallel stream of the descendants of this node}
+     */
+    default Stream<? extends T> parallelStream() {
+        return Trees.parallelStream((T) this);
+    }
+
+    /**
+     * {@return a preorder stream of the descendants of this node}
+     */
+    default Stream<? extends T> preOrderStream() {
+        return Trees.preOrderStream((T) this);
+    }
+
+    /**
+     * {@return a postorder stream of the descendants of this node}
+     */
+    default Stream<? extends T> postOrderStream() {
+        return Trees.postOrderStream((T) this);
+    }
+
+    /**
+     * {@return a lever-order stream of the descendants of this node}
+     */
+    default Stream<? extends T> levelOrderStream() {
+        return Trees.levelOrderStream((T) this);
+    }
+
+    /**
+     * {@return the descendants of this node}
+     */
+    default Set<? extends T> getDescendants() {
+        return parallelStream().collect(Collectors.toSet());
+    }
+
+    /**
+     * {@return a preorder list of the descendants of this node}
+     */
+    default List<? extends T> getDescendantsAsPreOrder() {
+        return preOrderStream().collect(Collectors.toList());
+    }
+
+    /**
+     * {@return a postorder list of the descendants of this node}
+     */
+    default List<? extends T> getDescendantsAsPostOrder() {
+        return postOrderStream().collect(Collectors.toList());
+    }
+
+    /**
+     * {@return a level-order list of the descendants of this node}
+     */
+    default List<? extends T> getDescendantsAsLevelOrder() {
+        return levelOrderStream().collect(Collectors.toList());
+    }
+
+    /**
+     * Sorts this node (and its children).
+     */
+    default void sort() {
+        Trees.sort((T) this);
+    }
+
+    /**
+     * Sorts this node (and its children).
+     *
+     * @param comparator comparator used for sorting
+     */
+    default void sort(Comparator<T> comparator) {
+        Trees.sort((T) this, comparator);
     }
 }
