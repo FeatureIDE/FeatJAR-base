@@ -21,10 +21,23 @@
 package de.featjar.util.logging;
 
 /**
- * Prepends a log message with other information.
+ * Formats a log message.
+ *
+ * @author Sebastian Krieter
+ * @author Elias Kuiter
  */
-@FunctionalInterface
 public interface Formatter {
+    /**
+     * {@return a prefix to a log message}
+     */
+    default String getPrefix() {
+        return "";
+    }
 
-    void format(StringBuilder message);
+    /**
+     * {@return a suffix to a log message}
+     */
+    default String getSuffix() {
+        return "";
+    }
 }

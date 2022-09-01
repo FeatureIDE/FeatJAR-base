@@ -20,26 +20,35 @@
  */
 package de.featjar.util.logging;
 
-import java.sql.Timestamp;
-import java.text.SimpleDateFormat;
+import java.time.Instant;
+import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
+import java.time.format.FormatStyle;
+import java.util.Locale;
 
 /**
- * Prepends log output with time stamps.
+ * Prepends a log message with a time stamp.
  *
  * @author Sebastian Krieter
+ * @author Elias Kuiter
  */
 public class TimeStampFormatter implements Formatter {
+    private DateTimeFormatter formatter =
+            DateTimeFormatter
+                    .ofLocalizedDateTime(FormatStyle.SHORT)
+                    .withLocale(Locale.UK)
+                    .withZone(ZoneId.systemDefault());
 
-    private static final String DATE_FORMAT_STRING = "MM/dd/yyyy-HH:mm:ss";
-    private static final SimpleDateFormat DATE_FORMAT = new SimpleDateFormat(DATE_FORMAT_STRING);
+    public DateTimeFormatter getFormatter() {
+        return formatter;
+    }
 
-    public static final String getCurrentTime() {
-        return DATE_FORMAT.format(new Timestamp(System.currentTimeMillis()));
+    public void setFormatter(DateTimeFormatter formatter) {
+        this.formatter = formatter;
     }
 
     @Override
-    public void format(StringBuilder message) {
-        message.append(getCurrentTime());
-        message.append(' ');
+    public String getPrefix() {
+        return formatter.format(Instant.now()) + " ";
     }
 }

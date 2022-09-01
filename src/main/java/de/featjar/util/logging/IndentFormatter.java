@@ -20,42 +20,45 @@
  */
 package de.featjar.util.logging;
 
+import java.util.Objects;
+
 /**
- * Prepends log output with an appropriate number of tab symbols.
+ * Prepends a log message with an appropriate indent.
+ *
+ * @author Sebastian Krieter
+ * @author Elias Kuiter
  */
-public class TabFormatter implements Formatter {
+public class IndentFormatter implements Formatter {
+    private int level = 0;
+    private String symbol = "\t";
 
-    private int tabLevel = 0;
-    private String tabSymbol = "\t";
-
-    public void incTabLevel() {
-        tabLevel++;
+    public void addIndent() {
+        level++;
     }
 
-    public void decTabLevel() {
-        tabLevel--;
+    public void removeIndent() {
+        if (level > 0)
+            level--;
     }
 
-    public int getTabLevel() {
-        return tabLevel;
+    public int getLevel() {
+        return level;
     }
 
-    public void setTabLevel(int tabLevel) {
-        this.tabLevel = tabLevel;
+    public void setLevel(int level) {
+        this.level = Math.max(level, 0);
     }
 
-    public String getTabSymbol() {
-        return tabSymbol;
+    public String getSymbol() {
+        return symbol;
     }
 
-    public void setTabSymbol(String tabSymbol) {
-        this.tabSymbol = tabSymbol;
+    public void setSymbol(String symbol) {
+        this.symbol = Objects.requireNonNull(symbol);
     }
 
     @Override
-    public void format(StringBuilder message) {
-        for (int i = 0; i < tabLevel; i++) {
-            message.append(tabSymbol);
-        }
+    public String getPrefix() {
+        return String.valueOf(symbol).repeat(Math.max(0, level));
     }
 }

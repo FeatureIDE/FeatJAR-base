@@ -84,21 +84,25 @@ public class CLI {
         String[] verbosities = new String[] {"none", "error", "info", "debug", "progress"};
         if (!Arrays.asList(verbosities).contains(verbosity))
             throw new IllegalArgumentException("invalid verbosity " + verbosity);
-        if (verbosity.equals("none")) {
-            Logger.setErrLog();
-        } else {
-            Logger.setErrLog(Logger.LogType.ERROR);
-        }
-        if (verbosity.equals("progress")) {
-            Logger.setOutLog(Logger.LogType.INFO, Logger.LogType.DEBUG, Logger.LogType.PROGRESS);
-        } else if (verbosity.equals("debug")) {
-            Logger.setOutLog(Logger.LogType.INFO, Logger.LogType.DEBUG);
-        } else if (verbosity.equals("info")) {
-            Logger.setOutLog(Logger.LogType.INFO);
-        } else if (verbosity.equals("error")) {
-            Logger.setOutLog();
-        }
-        Logger.install();
+        Logger.install(cfg -> {
+            if (!verbosity.equals("none")) {
+                cfg.logToSystemErr(Logger.MessageType.ERROR);
+            }
+            switch (verbosity) {
+                case "progress":
+                    cfg.logToSystemOut(Logger.MessageType.INFO, Logger.MessageType.DEBUG, Logger.MessageType.PROGRESS);
+                    break;
+                case "debug":
+                    cfg.logToSystemOut(Logger.MessageType.INFO, Logger.MessageType.DEBUG);
+                    break;
+                case "info":
+                    cfg.logToSystemOut(Logger.MessageType.INFO);
+                    break;
+                case "error":
+                    cfg.logToSystemOut();
+                    break;
+            }
+        });
     }
 
     private static void printError(String errorMessage) {

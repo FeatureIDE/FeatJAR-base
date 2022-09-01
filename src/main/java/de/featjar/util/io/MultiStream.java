@@ -22,61 +22,53 @@ package de.featjar.util.io;
 
 import java.io.IOException;
 import java.io.OutputStream;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
+import java.util.*;
 
 public class MultiStream extends OutputStream {
 
-    private final List<OutputStream> streamList = new ArrayList<>();
+    protected final Set<OutputStream> streams = new HashSet<>();
 
-    public MultiStream(OutputStream... streamList) {
-        super();
-        this.streamList.addAll(Arrays.asList(streamList));
+    public MultiStream(OutputStream... streams) {
+        this(Set.of(streams));
     }
 
-    public MultiStream(List<OutputStream> streamList) {
-        super();
-        this.streamList.addAll(new ArrayList<>(streamList));
+    public MultiStream(Set<OutputStream> streams) {
+        this.streams.addAll(streams);
+    }
+
+    public void addStream(OutputStream stream) {
+        streams.add(stream);
+    }
+
+    public void clearStreams() {
+        streams.clear();
     }
 
     @Override
     public void flush() throws IOException {
-        for (final OutputStream outputStream : streamList) {
-            try {
-                outputStream.flush();
-            } catch (final IOException e) {
-            }
+        for (final OutputStream outputStream : streams) {
+            outputStream.flush();
         }
     }
 
     @Override
     public void write(byte[] buf, int off, int len) throws IOException {
-        for (final OutputStream outputStream : streamList) {
-            try {
-                outputStream.write(buf, off, len);
-            } catch (final IOException e) {
-            }
+        for (final OutputStream outputStream : streams) {
+            outputStream.write(buf, off, len);
         }
     }
 
     @Override
     public void write(int b) throws IOException {
-        for (final OutputStream outputStream : streamList) {
-            try {
-                outputStream.write(b);
-            } catch (final IOException e) {
-            }
+        for (final OutputStream outputStream : streams) {
+            outputStream.write(b);
         }
     }
 
     @Override
     public void write(byte[] b) throws IOException {
-        for (final OutputStream outputStream : streamList) {
-            try {
-                outputStream.write(b);
-            } catch (final IOException e) {
-            }
+        for (final OutputStream outputStream : streams) {
+            outputStream.write(b);
         }
     }
 }

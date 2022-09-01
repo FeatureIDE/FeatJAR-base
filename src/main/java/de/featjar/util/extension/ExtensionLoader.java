@@ -167,7 +167,6 @@ public class ExtensionLoader {
         final String pathSeparatorProperty = System.getProperty("path.separator");
         for (final String element : classPathProperty.split(pathSeparatorProperty)) {
             final Path path = Paths.get(element);
-            Logger.logDebug(path);
             try {
                 if (Files.isRegularFile(path)) {
                     try (ZipFile zf = new ZipFile(path.toFile())) {

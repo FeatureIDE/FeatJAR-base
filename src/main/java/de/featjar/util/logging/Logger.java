@@ -26,135 +26,114 @@ import de.featjar.util.io.MultiStream;
 import de.featjar.util.job.Monitor;
 import de.featjar.util.job.MonitorUpdateFunction;
 import de.featjar.util.job.UpdateThread;
+
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.OutputStream;
 import java.io.PrintStream;
 import java.nio.file.Path;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.LinkedHashSet;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Objects;
-import java.util.Optional;
+import java.util.*;
+import java.util.function.Consumer;
+import java.util.stream.Collectors;
 
 /**
- * Extends the standard output with time codes, indentation, and log file
- * writing.
+ * Logs messages to standard output and files.
+ * Formats log messages with {@link Formatter formatters}.
  *
  * @author Sebastian Krieter
+ * @author Elias Kuiter
  */
 public final class Logger {
-
-    public enum LogType {
+    /**
+     * Types of log messages.
+     */
+    public enum MessageType {
+        /**
+         * Error message.
+         * Typically used to log exceptions and warnings.
+         */
         ERROR,
+        /**
+         * Info message.
+         * Typically used to log high-level information.
+         */
         INFO,
+        /**
+         * Debug message.
+         * Typically used to log low-level information.
+         */
         DEBUG,
+        /**
+         * Progress message.
+         * Typically used to signal progress in long-running jobs.
+         */
         PROGRESS
     }
 
-    private static class Log {
-        private final HashSet<LogType> enabledLogTypes = new HashSet<>();
-        private final String path;
-        private final PrintStream out;
+    public static class LoggerConfiguration {
+        private final HashMap<MessageType, de.featjar.util.io.PrintStream> logStreams = new HashMap<>();
+        private final LinkedList<Formatter> formatters = new LinkedList<>();
 
-        public Log(String path, PrintStream out, LogType... logTypes) {
-            this.path = path;
-            this.out = out;
-            for (final LogType logType : logTypes) {
-                enabledLogTypes.add(logType);
-            }
+        {
+            Arrays.asList(MessageType.values()).forEach(messageType ->
+                    logStreams.put(messageType, new de.featjar.util.io.PrintStream(new MultiStream())));
         }
 
-        @Override
-        public int hashCode() {
-            return Objects.hash(path);
+        public synchronized void logToStream(PrintStream stream, MessageType... messageTypes) {
+            Arrays.asList(messageTypes)
+                    .forEach(messageType -> ((MultiStream) logStreams.get(messageType).getOutputStream())
+                            .addStream(stream));
         }
 
-        @Override
-        public boolean equals(Object obj) {
-            return (this == obj) || ((obj instanceof Log) && Objects.equals(path, ((Log) obj).path));
-        }
-    }
-
-    private static final PrintStream orgOut = System.out;
-    private static final PrintStream orgErr = System.err;
-
-    private static boolean installed = false;
-
-    private static final LinkedHashSet<Log> logs = new LinkedHashSet<>();
-    private static final LinkedList<Formatter> formatters = new LinkedList<>();
-
-    public static synchronized boolean addFileLog(Path path, LogType... logTypes) {
-        if (!installed) {
-            path = path.toAbsolutePath().normalize();
+        public synchronized void logToFile(Path path, MessageType... messageTypes) {
             try {
-                final PrintStream stream = new PrintStream(new FileOutputStream(path.toFile()));
-                return logs.add(new Log(path.toString(), stream, logTypes));
-            } catch (final FileNotFoundException e) {
-                e.printStackTrace();
+                logToStream(new PrintStream(new FileOutputStream(path.toAbsolutePath().normalize().toFile())), messageTypes);
+            } catch (FileNotFoundException e) {
+                throw new RuntimeException(e);
             }
         }
-        return false;
-    }
 
-    public static synchronized boolean setOutLog(LogType... logTypes) {
-        if (!installed) {
-            return logs.add(new Log(CLI.SYSTEM_OUTPUT, System.out, logTypes));
+        public synchronized void logToSystemOut(MessageType... messageTypes) {
+            logToStream(System.out, messageTypes);
         }
-        return false;
-    }
 
-    public static synchronized boolean setErrLog(LogType... logTypes) {
-        if (!installed) {
-            return logs.add(new Log(CLI.SYSTEM_ERROR, System.err, logTypes));
+        public synchronized void logToSystemErr(MessageType... messageTypes) {
+            logToStream(System.err, messageTypes);
         }
-        return false;
-    }
 
-    public static synchronized void addFormatter(Formatter formatter) {
-        formatters.add(formatter);
-    }
-
-    public static synchronized void removeFormatter(Formatter formatter) {
-        formatters.remove(formatter);
-    }
-
-    public static synchronized void install() {
-        if (!installed) {
-            final List<OutputStream> outStreamList = new ArrayList<>();
-            final List<OutputStream> errStreamList = new ArrayList<>();
-            for (final Log log : logs) {
-                outStreamList.add(log.out);
-                if (log.enabledLogTypes.contains(LogType.ERROR)) {
-                    errStreamList.add(log.out);
-                }
-            }
-
-            System.setOut(new PrintStream(new MultiStream(outStreamList)));
-            System.setErr(new PrintStream(new MultiStream(errStreamList)));
-
-            installed = true;
+        public synchronized void addFormatter(Formatter formatter) {
+            formatters.add(formatter);
         }
+    }
+
+    private static final PrintStream originalSystemOut = System.out;
+    private static final PrintStream originalSystemErr = System.err;
+    private static LoggerConfiguration loggerConfiguration;
+
+
+    public static synchronized void install(Consumer<LoggerConfiguration> loggerConfigurationConsumer) {
+        if (loggerConfiguration != null) {
+            throw new IllegalStateException("logger already initialized");
+        }
+        loggerConfiguration = new LoggerConfiguration();
+        loggerConfigurationConsumer.accept(loggerConfiguration);
+        System.setOut(loggerConfiguration.logStreams.get(MessageType.INFO));
+        System.setErr(loggerConfiguration.logStreams.get(MessageType.ERROR));
     }
 
     public static synchronized void uninstall() {
-        if (installed) {
-            System.setOut(orgOut);
-            System.setErr(orgErr);
-            installed = false;
-        }
-    }
-
-    public static UpdateThread startMonitorLogger(Monitor monitor) {
-        final UpdateThread updateThread = new UpdateThread(new MonitorUpdateFunction(monitor));
-        updateThread.start();
-        return updateThread;
+        if (loggerConfiguration == null)
+            throw new IllegalStateException("logger not yet initialized");
+        loggerConfiguration = null;
+        System.setOut(originalSystemOut);
+        System.setErr(originalSystemErr);
     }
 
     public static void logProblems(List<Problem> problems) {
-        problems.stream().map(Problem::getException).flatMap(Optional::stream).forEach(Logger::logError);
+        problems.stream()
+                .map(Problem::getException)
+                .flatMap(Optional::stream)
+                .forEach(Logger::logError);
     }
 
     public static void logError(Throwable error) {
@@ -162,66 +141,51 @@ public final class Logger {
     }
 
     public static void logError(String message) {
-        println(message, LogType.ERROR);
+        println(message, MessageType.ERROR);
     }
 
     public static void logInfo(Object messageObject) {
-        println(String.valueOf(messageObject), LogType.INFO);
+        println(String.valueOf(messageObject), MessageType.INFO);
     }
 
     public static void logInfo(String message) {
-        println(message, LogType.INFO);
+        println(message, MessageType.INFO);
     }
 
     public static void logDebug(Object messageObject) {
-        println(String.valueOf(messageObject), LogType.DEBUG);
+        println(String.valueOf(messageObject), MessageType.DEBUG);
     }
 
     public static void logDebug(String message) {
-        println(message, LogType.DEBUG);
+        println(message, MessageType.DEBUG);
     }
 
     public static void logProgress(String message) {
-        println(message, LogType.PROGRESS);
+        println(message, MessageType.PROGRESS);
     }
 
-    public static void log(String message, LogType logType) {
-        println(message, logType);
+    public static void log(String message, MessageType messageType) {
+        println(message, messageType);
     }
 
-    private static synchronized void println(String message, LogType logType) {
+    private static synchronized void println(String message, MessageType messageType) {
         final String formattedMessage = formatMessage(message);
-        if (installed) {
-            for (final Log log : logs) {
-                if (log.enabledLogTypes.contains(logType)) {
-                    log.out.println(formattedMessage);
-                }
-            }
+        if (loggerConfiguration != null) {
+            loggerConfiguration.logStreams.get(messageType).println(formattedMessage);
         } else {
-            switch (logType) {
-                case ERROR:
-                    System.err.println(formattedMessage);
-                    break;
-                case DEBUG:
-                    break;
-                case INFO:
-                case PROGRESS:
-                default:
-                    System.out.println(formattedMessage);
-                    break;
+            if (messageType == MessageType.ERROR) {
+                System.err.println(formattedMessage);
+            } else {
+                System.out.println(formattedMessage);
             }
         }
     }
 
     private static synchronized void println(Throwable error) {
         final String formattedMessage = formatMessage(error.getMessage());
-        if (installed) {
-            for (final Log log : logs) {
-                if (log.enabledLogTypes.contains(LogType.ERROR)) {
-                    log.out.println(formattedMessage);
-                    error.printStackTrace(log.out);
-                }
-            }
+        if (loggerConfiguration != null) {
+            loggerConfiguration.logStreams.get(MessageType.ERROR).println(formattedMessage);
+            error.printStackTrace(loggerConfiguration.logStreams.get(MessageType.ERROR));
         } else {
             System.err.println(formattedMessage);
             error.printStackTrace(System.err);
@@ -229,15 +193,24 @@ public final class Logger {
     }
 
     private static String formatMessage(String message) {
-        if (formatters.isEmpty()) {
+        if (loggerConfiguration == null || loggerConfiguration.formatters.isEmpty()) {
             return message;
         } else {
             final StringBuilder sb = new StringBuilder();
-            for (final Formatter formatter : formatters) {
-                formatter.format(sb);
+            for (final Formatter formatter : loggerConfiguration.formatters) {
+                sb.append(formatter.getPrefix());
             }
             sb.append(message);
+            for (final Formatter formatter : loggerConfiguration.formatters) {
+                sb.append(formatter.getSuffix());
+            }
             return sb.toString();
         }
+    }
+
+    public static UpdateThread startMonitorLogger(Monitor monitor) {
+        final UpdateThread updateThread = new UpdateThread(new MonitorUpdateFunction(monitor));
+        updateThread.start();
+        return updateThread;
     }
 }
