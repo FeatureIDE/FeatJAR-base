@@ -3,7 +3,10 @@ package de.featjar.util.logging;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mockito.MockedStatic;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.*;
+import org.mockito.junit.MockitoJUnitRunner;
+import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.time.Clock;
 import java.time.Instant;
@@ -14,35 +17,26 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
 class TimeStampFormatterTest {
-    private MockedStatic<Clock> clockMock;
+    TimeStampFormatter timeStampFormatter;
 
-    @SuppressWarnings("ResultOfMethodCallIgnored")
     @BeforeEach
     public void setup() {
-        Clock spyClock = spy(Clock.class);
-        clockMock = mockStatic(Clock.class);
-        clockMock.when(Clock::systemUTC).thenReturn(spyClock);
-        when(spyClock.instant()).thenReturn(Instant.ofEpochSecond(1659344400));
-    }
-
-    @AfterEach
-    public void destroy() {
-        clockMock.close();
+        timeStampFormatter = Mockito.spy(TimeStampFormatter.class);
+        doReturn(Instant.ofEpochSecond(1659344400)).when(timeStampFormatter).getInstant();
     }
 
     @Test
     void mockInstant() {
-        assertEquals("2022-08-01T09:00:00Z", Instant.now().toString());
+        assertEquals("2022-08-01T09:00:00Z", timeStampFormatter.getInstant().toString());
     }
 
     @Test
     void getDefaultPrefix() {
-        assertEquals("01/08/2022, 11:00 ", new TimeStampFormatter().getPrefix());
+        assertEquals("01/08/2022, 11:00 ", timeStampFormatter.getPrefix());
     }
 
     @Test
     void getCustomPrefix() {
-        TimeStampFormatter timeStampFormatter = new TimeStampFormatter();
         timeStampFormatter.setFormatter(DateTimeFormatter
                 .ofPattern("yyyy/MM/dd-HH:mm:ss")
                 .withZone(ZoneId.systemDefault()));

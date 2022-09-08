@@ -20,7 +20,6 @@
  */
 package de.featjar.util.logging;
 
-import de.featjar.util.cli.CLI;
 import de.featjar.util.data.Problem;
 import de.featjar.util.io.MultiStream;
 import de.featjar.util.job.Monitor;
@@ -29,12 +28,10 @@ import de.featjar.util.job.UpdateThread;
 
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
-import java.io.OutputStream;
 import java.io.PrintStream;
 import java.nio.file.Path;
 import java.util.*;
 import java.util.function.Consumer;
-import java.util.stream.Collectors;
 
 /**
  * Logs messages to standard output and files.
@@ -70,6 +67,9 @@ public final class Logger {
         PROGRESS
     }
 
+    /**
+     * Configures the global logger.
+     */
     public static class LoggerConfiguration {
         private final HashMap<MessageType, de.featjar.util.io.PrintStream> logStreams = new HashMap<>();
         private final LinkedList<Formatter> formatters = new LinkedList<>();
@@ -79,12 +79,24 @@ public final class Logger {
                     logStreams.put(messageType, new de.featjar.util.io.PrintStream(new MultiStream())));
         }
 
+        /**
+         * Configures a stream to be a logging target.
+         *
+         * @param stream the stearm
+         * @param messageTypes the logged message types
+         */
         public synchronized void logToStream(PrintStream stream, MessageType... messageTypes) {
             Arrays.asList(messageTypes)
                     .forEach(messageType -> ((MultiStream) logStreams.get(messageType).getOutputStream())
                             .addStream(stream));
         }
 
+        /**
+         * Configures a file to be a logging target.
+         *
+         * @param path the path to the file
+         * @param messageTypes the logged message types
+         */
         public synchronized void logToFile(Path path, MessageType... messageTypes) {
             try {
                 logToStream(new PrintStream(new FileOutputStream(path.toAbsolutePath().normalize().toFile())), messageTypes);
@@ -93,14 +105,29 @@ public final class Logger {
             }
         }
 
+        /**
+         * Configures the standard output stream to be a logging target.
+         *
+         * @param messageTypes the logged message types
+         */
         public synchronized void logToSystemOut(MessageType... messageTypes) {
             logToStream(System.out, messageTypes);
         }
 
+        /**
+         * Configures the standard error stream to be a logging target.
+         *
+         * @param messageTypes the logged message types
+         */
         public synchronized void logToSystemErr(MessageType... messageTypes) {
             logToStream(System.err, messageTypes);
         }
 
+        /**
+         * Configures a formatter for all logging targets.
+         *
+         * @param formatter the formatter
+         */
         public synchronized void addFormatter(Formatter formatter) {
             formatters.add(formatter);
         }
@@ -110,7 +137,14 @@ public final class Logger {
     private static final PrintStream originalSystemErr = System.err;
     private static LoggerConfiguration loggerConfiguration;
 
-
+    /**
+     * Installs the global logger.
+     * Overrides the standard output/error streams.
+     * That is, calls to {@link System#out} are equivalent to calling {@link #logInfo(String)}.
+     * Analogously, calls to {@link System#err} are equivalent to calling {@link #logError(String)}.
+     *
+     * @param loggerConfigurationConsumer a callback for configuring the logger
+     */
     public static synchronized void install(Consumer<LoggerConfiguration> loggerConfigurationConsumer) {
         if (loggerConfiguration != null) {
             throw new IllegalStateException("logger already initialized");
@@ -121,6 +155,10 @@ public final class Logger {
         System.setErr(loggerConfiguration.logStreams.get(MessageType.ERROR));
     }
 
+    /**
+     * Uninstalls the global logger.
+     * Resets the standard output/error streams.
+     */
     public static synchronized void uninstall() {
         if (loggerConfiguration == null)
             throw new IllegalStateException("logger not yet initialized");
@@ -129,6 +167,11 @@ public final class Logger {
         System.setErr(originalSystemErr);
     }
 
+    /**
+     * Logs a list of problems as errors.
+     *
+     * @param problems the problems
+     */
     public static void logProblems(List<Problem> problems) {
         problems.stream()
                 .map(Problem::getException)
@@ -136,34 +179,84 @@ public final class Logger {
                 .forEach(Logger::logError);
     }
 
+    /**
+     * Logs an error message.
+     *
+     * @param error the error object
+     */
     public static void logError(Throwable error) {
         println(error);
     }
 
+    /**
+     * Logs an error message.
+     *
+     * @param message the error message
+     */
     public static void logError(String message) {
         println(message, MessageType.ERROR);
     }
 
+    /**
+     * Logs an info message.
+     *
+     * @param messageObject the message object
+     */
     public static void logInfo(Object messageObject) {
         println(String.valueOf(messageObject), MessageType.INFO);
     }
 
+    /**
+     * Logs an info message.
+     *
+     * @param message the message
+     */
     public static void logInfo(String message) {
         println(message, MessageType.INFO);
     }
 
+    /**
+     * Logs a debug message.
+     *
+     * @param messageObject the message object
+     */
     public static void logDebug(Object messageObject) {
         println(String.valueOf(messageObject), MessageType.DEBUG);
     }
 
+    /**
+     * Logs a debug message.
+     *
+     * @param message the message
+     */
     public static void logDebug(String message) {
         println(message, MessageType.DEBUG);
     }
 
+    /**
+     * Logs a progress message.
+     *
+     * @param messageObject the message object
+     */
+    public static void logProgress(Object messageObject) {
+        println(String.valueOf(messageObject), MessageType.DEBUG);
+    }
+
+    /**
+     * Logs a progress message.
+     *
+     * @param message the message
+     */
     public static void logProgress(String message) {
         println(message, MessageType.PROGRESS);
     }
 
+    /**
+     * Logs a message.
+     *
+     * @param message the message
+     * @param messageType the message type
+     */
     public static void log(String message, MessageType messageType) {
         println(message, messageType);
     }
@@ -208,7 +301,8 @@ public final class Logger {
         }
     }
 
-    public static UpdateThread startMonitorLogger(Monitor monitor) {
+    @Deprecated
+    private static UpdateThread startMonitorLogger(Monitor monitor) {
         final UpdateThread updateThread = new UpdateThread(new MonitorUpdateFunction(monitor));
         updateThread.start();
         return updateThread;
