@@ -23,11 +23,12 @@ package de.featjar.util.data;
 import java.util.Objects;
 
 /**
- * A tuple consisting of any two elements.
+ * A pair of two elements.
+ * The first element is also known as the pair's key.
+ * The second element is also known as the pair's value.
  *
- * @param <A> class of first element
- * @param <B> class of second element
- *
+ * @param <A> the type of the first element
+ * @param <B> the type of the second element
  * @author Sebastian Krieter
  */
 public class Pair<A, B> {
@@ -35,15 +36,27 @@ public class Pair<A, B> {
     private final A key;
     private final B value;
 
+    /**
+     * Creates a pair of two elements.
+     *
+     * @param key the first element
+     * @param value the second element
+     */
     public Pair(A key, B value) {
         this.key = key;
         this.value = value;
     }
 
+    /**
+     * {@return this pair's first element (or key)}
+     */
     public A getKey() {
         return key;
     }
 
+    /**
+     * {@return this pair's second element (or value)}
+     */
     public B getValue() {
         return value;
     }
@@ -67,6 +80,6 @@ public class Pair<A, B> {
 
     @Override
     public String toString() {
-        return "Pair [" + key + " -> " + value + "]";
+        return "Pair[" + key + " -> " + value + "]";
     }
 }

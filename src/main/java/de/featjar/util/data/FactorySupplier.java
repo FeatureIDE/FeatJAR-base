@@ -24,25 +24,28 @@ import de.featjar.util.io.format.Format;
 import java.nio.file.Path;
 
 /**
- * Provides a factory for a given format and file path.
+ * Creates a factory for a given file format and path.
  *
  * @author Sebastian Krieter
  */
 @FunctionalInterface
 public interface FactorySupplier<T> {
 
+    /**
+     * {@return a constant factory supplier that always returns a given factory}
+     *
+     * @param factory the factory
+     * @param <T> the type of the created instance
+     */
     static <T> FactorySupplier<T> of(Factory<T> factory) {
         return (path, format) -> Result.of(factory);
     }
 
     /**
-     * Returns the factory that fits the given parameter.
+     * {@return a factory that fits the given file format and path, if any}
      *
      * @param path   the file path
      * @param format the file format
-     *
-     * @return A {@link Factory factory} that uses the given extension. Result may
-     *         be empty if there is no suitable factory.
      */
     Result<Factory<T>> getFactory(Path path, Format<T> format);
 }

@@ -35,7 +35,7 @@ import java.util.stream.Collectors;
  *
  * @author Sebastian Krieter
  */
-public class FormatManager<T> extends ExtensionPoint<Format<T>> implements FormatSupplier<T> {
+public abstract class Formats<T> extends ExtensionPoint<Format<T>> implements FormatSupplier<T> {
 
     public Result<Format<T>> getFormatById(String id) {
         return getExtension(id);

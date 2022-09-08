@@ -18,20 +18,27 @@
  *
  * See <https://github.com/FeatureIDE/FeatJAR-util> for further information.
  */
-package de.featjar.util.data;
+package de.featjar.util.cli;
 
 import de.featjar.util.extension.ExtensionPoint;
 
 /**
- * Manages additional formats for a certain object.
+ * Manages all CLI functions.
  *
  * @author Sebastian Krieter
  */
-public abstract class FactoryManager<T> extends ExtensionPoint<Factory<T>> implements FactorySupplier<T> {
+public class CLIFunctions extends ExtensionPoint<CLIFunction> {
 
-    public Result<Factory<T>> getFactoryById(String id) {
-        return getExtension(id);
+    private static final CLIFunctions INSTANCE = new CLIFunctions();
+
+    public static CLIFunctions getInstance() {
+        return INSTANCE;
     }
 
-    public abstract Result<? extends Factory<T>> getFactory(T object);
+    private CLIFunctions() {}
+
+    @Override
+    public ExtensionPoint<CLIFunction> getExtensionPointInstance() {
+        return INSTANCE;
+    }
 }

@@ -27,11 +27,18 @@ import de.featjar.util.extension.ExtensionPoint;
  *
  * @author Elias Kuiter
  */
-public class BinaryManager extends ExtensionPoint<Binary> {
+public class Binaries extends ExtensionPoint<Binary> {
 
-    private static final BinaryManager instance = new BinaryManager();
+    private static final Binaries INSTANCE = new Binaries();
 
-    public static BinaryManager getInstance() {
-        return instance;
+    public static Binaries getInstance() {
+        return INSTANCE;
+    }
+
+    private Binaries() {}
+
+    @Override
+    public ExtensionPoint<Binary> getExtensionPointInstance() {
+        return INSTANCE;
     }
 }

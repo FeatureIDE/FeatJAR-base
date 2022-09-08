@@ -28,19 +28,18 @@ import java.util.Objects;
 import java.util.concurrent.CopyOnWriteArrayList;
 
 /**
- * An extension point defines an interface that can be implemented by an
- * {@link Extension}. Subclasses must define a method "public static T
- * getInstance()" if extensions are to be loaded at runtime by the
- * {@link ExtensionLoader}.
+ * An extension point installs {@link Extension extensions} of the same type.
+ * Implementations must be singletons for the installation in {@link Extensions} to work correctly.
+ * As a naming convention, an extension named "Thing" belongs to an extension point named "Things".
  *
+ * @param <T> the type of the loaded extensions
  * @author Sebastian Krieter
  */
 public abstract class ExtensionPoint<T extends Extension> {
-
+    /**
+     * Thrown when a requested extension cannot be found.
+     */
     public static class NoSuchExtensionException extends Exception {
-
-        private static final long serialVersionUID = -8143277745205866068L;
-
         public NoSuchExtensionException(String message) {
             super(message);
         }
@@ -50,10 +49,18 @@ public abstract class ExtensionPoint<T extends Extension> {
     private final List<T> extensions = new CopyOnWriteArrayList<>();
 
     /**
-     * Registers a new extension in this extension point.
+     * {@return a singleton instance of this extension point}
      */
-    public synchronized boolean addExtension(T extension) {
-        if ((extension != null) && !indexMap.containsKey(extension.getIdentifier()) && extension.initialize()) {
+    public abstract ExtensionPoint<T> getExtensionPointInstance();
+
+    /**
+     * Installs a new extension at this extension point.
+     *
+     * @param extension the extension
+     * @return whether this extension is new and was installed correctly
+     */
+    public synchronized boolean installExtension(T extension) {
+        if ((extension != null) && !indexMap.containsKey(extension.getIdentifier()) && extension.install()) {
             indexMap.put(extension.getIdentifier(), extensions.size());
             extensions.add(extension);
             return true;
@@ -62,14 +69,40 @@ public abstract class ExtensionPoint<T extends Extension> {
     }
 
     /**
-     * Returns all registered extensions for this extension point.
+     * Uninstalls an extension installed at this extension point.
+     *
+     * @param extension the extension
+     * @return whether this extension was installed before
+     */
+    public synchronized boolean uninstallExtension(T extension) {
+        if ((extension != null) && indexMap.containsKey(extension.getIdentifier())) {
+            indexMap.remove(extension.getIdentifier());
+            extensions.remove(extension);
+            extension.uninstall();
+            return true;
+        }
+        return false;
+    }
+
+    /**
+     * Uninstalls all extensions installed at this extension point.
+     */
+    public synchronized void uninstallExtensions() {
+        extensions.forEach(this::uninstallExtension);
+    }
+
+    /**
+     * {@return all extensions installed at this extension point}
+     * The list is in the same order as the extensions were installed with {@link #installExtension(Extension)}.
      */
     public synchronized List<T> getExtensions() {
         return Collections.unmodifiableList(extensions);
     }
 
     /**
-     * Returns extension with a given identifier, if any was registered.
+     * {@return the installed extension with a given identifier, if any}
+     *
+     * @param identifier the identifier
      */
     public Result<T> getExtension(String identifier) {
         Objects.requireNonNull(identifier, "identifier must not be null!");

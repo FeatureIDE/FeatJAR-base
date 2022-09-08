@@ -21,29 +21,31 @@
 package de.featjar.util.extension;
 
 /**
- * An extension implements the functionality defined by an
- * {@link ExtensionPoint}. It contains a unique ID and a method for
- * initialization.
+ * An extension implements some functionality that can be loaded by an {@link ExtensionPoint}.
  *
  * @author Sebastian Krieter
  */
 public interface Extension {
 
     /**
-     * Returns the unique identifier for this extension.
+     * {@return a unique identifier for this extension}
      */
     default String getIdentifier() {
         return getClass().getCanonicalName();
     }
 
     /**
-     * Is called when the extension is loaded for the first time by an
-     * {@link ExtensionPoint}.
+     * Initializes this extension, called by {@link ExtensionPoint}.
      *
-     * @return {@code true} if the initialization was successful, {@code false}
-     *         otherwise.
+     * @return whether the initialization was successful
      */
-    default boolean initialize() {
+    default boolean install() {
         return true;
+    }
+
+    /**
+     * Deinitializes this extension, called by {@link Extensions}.
+     */
+    default void uninstall() {
     }
 }

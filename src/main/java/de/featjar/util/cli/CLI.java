@@ -21,7 +21,7 @@
 package de.featjar.util.cli;
 
 import de.featjar.util.data.Result;
-import de.featjar.util.extension.ExtensionLoader;
+import de.featjar.util.extension.Extensions;
 import de.featjar.util.io.IO;
 import de.featjar.util.io.IOObject;
 import de.featjar.util.io.format.Format;
@@ -61,14 +61,14 @@ public class CLI {
     private static final Pattern SYSTEM_INPUT_PATTERN = Pattern.compile("system:in\\.(.+)");
 
     public static void main(String[] args) {
-        ExtensionLoader.load();
+        Extensions.install();
         if (args.length == 0) {
             printError("No function specified. Please specify a function as the first argument.");
             return;
         }
         final String functionName = args[0];
 
-        CLIFunctionManager.getInstance().getExtensions().stream()
+        CLIFunctions.getInstance().getExtensions().stream()
                 .filter(e -> Objects.equals(functionName, e.getName()))
                 .findFirst()
                 .ifPresentOrElse(
@@ -122,7 +122,7 @@ public class CLI {
     private static void printHelp(PrintStream printStream) {
         printStream.println("The following functions are available:");
         for (final CLIFunction availableFunction :
-                CLIFunctionManager.getInstance().getExtensions()) {
+                CLIFunctions.getInstance().getExtensions()) {
             printStream.printf("\t%-20s %s\n", availableFunction.getName(), availableFunction.getDescription());
         }
     }

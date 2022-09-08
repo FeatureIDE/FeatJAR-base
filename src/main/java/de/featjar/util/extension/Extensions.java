@@ -27,12 +27,9 @@ import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.ArrayList;
-import java.util.Enumeration;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
+import java.util.*;
 import java.util.Map.Entry;
+import java.util.stream.Stream;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 import javax.xml.parsers.DocumentBuilder;
@@ -43,65 +40,74 @@ import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
 /**
- * Initializes, loads und unloads extensions.
+ * Searches, registers, and unregisters extensions on the classpath.
  *
  * @author Sebastian Krieter
  */
-public class ExtensionLoader {
+public class Extensions {
     /**
-     * Maps identifiers of extension points to identifiers of loaded extensions.
+     * Maps identifiers of extension points to identifiers of registered extensions.
      */
     private static HashMap<String, List<String>> extensionMap;
+    private static Set<ExtensionPoint<?>> extensionPoints;
 
     /**
-     * Unloads all currently loaded extensions.
+     * Registers all extensions that can be found in the class path.
+     * To this end, filters all files on the class path for extension definition files, and loads each of them.
      */
-    public static synchronized void unload() {
+    @SuppressWarnings({"unchecked", "rawtypes"})
+    public static synchronized void install() {
         if (extensionMap != null) {
-            extensionMap.clear();
-            extensionMap = null;
+            throw new IllegalStateException("extensions already registered");
         }
-    }
-
-    /**
-     * Loads all extensions that can be found in the class path. Requires
-     * getInstance to be declared on the used extension points.
-     */
-    @SuppressWarnings({"rawtypes", "unchecked"})
-    public static synchronized void load() {
-        if (extensionMap == null) {
-            extensionMap = new HashMap<>();
-            getResources().stream() //
-                    .filter(ExtensionLoader::filterByFileName) //
-                    .peek(Logger::logDebug)
-                    .forEach(ExtensionLoader::load);
-            final ClassLoader systemClassLoader = ClassLoader.getSystemClassLoader();
-            for (final Entry<String, List<String>> entry : extensionMap.entrySet()) {
-                final String extensionPointId = entry.getKey();
-                try {
-                    final Class<?> extensionPointClass = systemClassLoader.loadClass(extensionPointId);
-                    final Method instanceMethod = extensionPointClass.getDeclaredMethod("getInstance");
-                    final ExtensionPoint ep = (ExtensionPoint) instanceMethod.invoke(null);
-                    for (final String extensionId : entry.getValue()) {
-                        try {
-                            final Class<?> extensionClass = systemClassLoader.loadClass(extensionId);
-                            Logger.logDebug(extensionClass.toString());
-                            ep.addExtension(
-                                    (Extension) extensionClass.getConstructor().newInstance());
-                        } catch (final Exception e) {
-                            Logger.logError(e);
-                        }
+        extensionMap = new HashMap<>();
+        extensionPoints = new HashSet<>();
+        getResources().stream() //
+                .filter(Extensions::filterByFileName) //
+                .peek(Logger::logDebug)
+                .forEach(Extensions::loadExtensionDefinitionFile);
+        final ClassLoader systemClassLoader = ClassLoader.getSystemClassLoader();
+        for (final Entry<String, List<String>> entry : extensionMap.entrySet()) {
+            final String extensionPointId = entry.getKey();
+            try {
+                final Class<ExtensionPoint<?>> extensionPointClass = (Class<ExtensionPoint<?>>) systemClassLoader.loadClass(extensionPointId);
+                final Method instanceMethod = extensionPointClass.getDeclaredMethod("getExtensionPointInstance");
+                final ExtensionPoint ep = (ExtensionPoint) instanceMethod.invoke(null);
+                extensionPoints.add(ep);
+                for (final String extensionId : entry.getValue()) {
+                    try {
+                        final Class<Extension> extensionClass = (Class<Extension>) systemClassLoader.loadClass(extensionId);
+                        Logger.logDebug(extensionClass.toString());
+                        Extension extension = extensionClass.getConstructor().newInstance();
+                        ep.installExtension(extension);
+                    } catch (final Exception e) {
+                        Logger.logError(e);
                     }
-                } catch (final Exception e) {
-                    Logger.logError(e);
                 }
+            } catch (final Exception e) {
+                Logger.logError(e);
             }
         }
     }
 
     /**
-     * Determines whether the file with the given names is an extension definition
-     * file.
+     * Unregisters all currently registered extensions.
+     */
+    public static synchronized void uninstall() {
+        if (extensionMap == null) {
+            throw new IllegalStateException("extensions not yet registered");
+        }
+        extensionPoints.forEach(ExtensionPoint::uninstallExtensions);
+        extensionMap.clear();
+        extensionPoints.clear();
+        extensionMap = null;
+        extensionPoints = null;
+    }
+
+    /**
+     * {@return whether the file with the given name is an extension definition file}
+     *
+     * @param pathName the file name
      */
     private static boolean filterByFileName(String pathName) {
         try {
@@ -116,9 +122,11 @@ public class ExtensionLoader {
     }
 
     /**
-     * Loads all extensions from a given extension definition file.
+     * Registers all extensions from a given extension definition file.
+     *
+     * @param file the extension definition file
      */
-    private static void load(String file) {
+    private static void loadExtensionDefinitionFile(String file) {
         try {
             final Enumeration<URL> systemResources =
                     ClassLoader.getSystemClassLoader().getResources(file);
@@ -159,9 +167,9 @@ public class ExtensionLoader {
     }
 
     /**
-     * Returns all names of files in the class path.
+     * {@return all names of files on the classpath}
      */
-    private static List<String> getResources() {
+    private static Set<String> getResources() {
         final HashSet<String> resources = new HashSet<>();
         final String classPathProperty = System.getProperty("java.class.path", ".");
         final String pathSeparatorProperty = System.getProperty("path.separator");
@@ -173,12 +181,14 @@ public class ExtensionLoader {
                         zf.stream().map(ZipEntry::getName).forEach(resources::add);
                     }
                 } else if (Files.isDirectory(path)) {
-                    Files.walk(path).map(path::relativize).map(Path::toString).forEach(resources::add);
+                    try (Stream<Path> pathStream = Files.walk(path)) {
+                        pathStream.map(path::relativize).map(Path::toString).forEach(resources::add);
+                    }
                 }
             } catch (final IOException e) {
                 Logger.logError(e);
             }
         }
-        return new ArrayList<>(resources);
+        return resources;
     }
 }

@@ -28,13 +28,14 @@ import java.util.Objects;
 import java.util.Set;
 
 /**
- * Key-Value map for storing arbitrary data.
+ * A key-value map for storing arbitrary data.
  *
  * @author Sebastian Krieter
  */
+@Deprecated
 public class KeyValueMap {
 
-    private Map<Identifier<?>, Object> elements = new HashMap<>();
+    private final Map<Identifier<?>, Object> elements = new HashMap<>();
 
     public KeyValueMap() {}
 
