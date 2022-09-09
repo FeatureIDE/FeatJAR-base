@@ -18,16 +18,27 @@
  *
  * See <https://github.com/FeatureIDE/FeatJAR-util> for further information.
  */
-package de.featjar.util.job;
+package de.featjar.util.task;
+
+import de.featjar.util.data.Result;
+
+import java.util.function.Function;
 
 /**
- * Interface for methods that take a long time to finish.<br>
- * Can be executed with the {@link Executor}.
+ * A task that potentially takes a long time to finish and may fail to return a result.
+ * Can be executed with the {@link Executor} and monitored with a {@link Monitor}.
+ * Calling {@link #apply(Monitor)} directly is discouraged, use the {@link Executor} instead.
  *
+ * @param <T> the supplied object's type
  * @author Sebastian Krieter
  */
 @FunctionalInterface
-public interface MonitorableFunction<T, R> {
-
-    R execute(T input, InternalMonitor monitor) throws Exception;
+public interface MonitorableSupplier<T> extends Function<Monitor, Result<T>> {
+    /**
+     * Executes this task.
+     *
+     * @param monitor the monitor
+     * @return the supplied object, if any
+     */
+    Result<T> apply(Monitor monitor);
 }

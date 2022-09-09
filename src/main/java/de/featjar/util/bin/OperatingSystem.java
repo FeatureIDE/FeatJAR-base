@@ -20,7 +20,7 @@
  */
 package de.featjar.util.bin;
 
-public final class OperatingSystem {
+public class OperatingSystem {
 
     public static final boolean IS_WINDOWS;
     public static final boolean IS_MAC;

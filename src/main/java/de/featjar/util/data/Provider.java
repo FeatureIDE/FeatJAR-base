@@ -23,15 +23,15 @@ package de.featjar.util.data;
 import de.featjar.util.io.IO;
 import de.featjar.util.io.format.Format;
 import de.featjar.util.io.format.FormatSupplier;
-import de.featjar.util.job.Executor;
-import de.featjar.util.job.InternalMonitor;
-import de.featjar.util.job.MonitorableFunction;
+import de.featjar.util.task.Executor;
+import de.featjar.util.task.Monitor;
+import de.featjar.util.task.MonitorableFunction;
 import java.nio.file.Path;
 import java.util.function.BiFunction;
 
 /**
  * A function that derives objects from feature models and formulas, taking into
- * account a {@link Cache} and {@link InternalMonitor}. When the given
+ * account a {@link Cache} and {@link Monitor}. When the given
  * {@link Cache} already holds the requested object, returns the cached object
  * instead.
  *
@@ -39,7 +39,7 @@ import java.util.function.BiFunction;
  *
  * @author Sebastian Krieter
  */
-public interface Provider<T> extends BiFunction<Cache, InternalMonitor, Result<T>> {
+public interface Provider<T> extends BiFunction<Cache, Monitor, Result<T>> {
 
     Object defaultParameters = new Object();
 
@@ -54,13 +54,13 @@ public interface Provider<T> extends BiFunction<Cache, InternalMonitor, Result<T
     }
 
     static <T, R> Result<R> convert(
-            Cache cache, Identifier<T> identifier, MonitorableFunction<T, R> function, InternalMonitor monitor) {
-        return cache.get(identifier).flatMap(o -> Executor.run(function, o, monitor));
+            Cache cache, Identifier<T> identifier, MonitorableFunction<T, R> function, Monitor monitor) {
+        return cache.get(identifier).flatMap(o -> Executor.apply(function, o, monitor));
     }
 
     static <T, R> Result<R> convert(
-            Cache cache, Provider<T> provider, MonitorableFunction<T, R> function, InternalMonitor monitor) {
-        return cache.get(provider).flatMap(o -> Executor.run(function, o, monitor));
+            Cache cache, Provider<T> provider, MonitorableFunction<T, R> function, Monitor monitor) {
+        return cache.get(provider).flatMap(o -> Executor.apply(function, o, monitor));
     }
 
     static <R> Result<R> load(Path path, FormatSupplier<R> formatSupplier, FactorySupplier<R> factorySupplier) {

@@ -18,30 +18,31 @@
  *
  * See <https://github.com/FeatureIDE/FeatJAR-util> for further information.
  */
-package de.featjar.util.job;
+package de.featjar.util.task;
+
+import de.featjar.util.logging.Logger;
+
+import java.util.function.Supplier;
 
 /**
- * Control object for {@link MonitorableSupplier} and
- * {@link MonitorableFunction}. Can be used to cancel a function's execution and
- * to get the progress of the given function.
+ * Thread to run an arbitrary function at a regular time interval.
  *
  * @author Sebastian Krieter
  */
-public interface Monitor {
+public class ProgressLogger implements Supplier<Boolean> {
+    protected final Monitor monitor;
 
-    int getTotalWork();
+    public ProgressLogger(Monitor monitor) {
+        this.monitor = monitor;
+    }
 
-    int getRemainingWork();
-
-    int getWorkDone();
-
-    double getRelativeWorkDone();
-
-    String getTaskName();
-
-    void cancel();
-
-    boolean isCanceled();
-
-    boolean isDone();
+    @Override
+    public Boolean get() {
+        if (monitor.isCanceled() || monitor.isDone()) {
+            return false;
+        } else {
+            Logger.logProgress(((Math.floor(monitor.getProgress() * 1000)) / 10.0) + "%");
+            return true;
+        }
+    }
 }

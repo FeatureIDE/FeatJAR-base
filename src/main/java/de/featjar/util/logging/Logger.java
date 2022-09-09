@@ -22,9 +22,9 @@ package de.featjar.util.logging;
 
 import de.featjar.util.data.Problem;
 import de.featjar.util.io.MultiStream;
-import de.featjar.util.job.Monitor;
-import de.featjar.util.job.MonitorUpdateFunction;
-import de.featjar.util.job.UpdateThread;
+import de.featjar.util.task.Monitor;
+import de.featjar.util.task.ProgressLogger;
+import de.featjar.util.task.IntervalThread;
 
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
@@ -40,7 +40,7 @@ import java.util.function.Consumer;
  * @author Sebastian Krieter
  * @author Elias Kuiter
  */
-public final class Logger {
+public class Logger {
     /**
      * Types of log messages.
      */
@@ -133,6 +133,11 @@ public final class Logger {
         }
     }
 
+    /**
+     * Manipulates a logger configuration.
+     */
+    public interface LoggerConfigurator extends Consumer<LoggerConfiguration> {}
+
     private static final PrintStream originalSystemOut = System.out;
     private static final PrintStream originalSystemErr = System.err;
     private static LoggerConfiguration loggerConfiguration;
@@ -143,14 +148,14 @@ public final class Logger {
      * That is, calls to {@link System#out} are equivalent to calling {@link #logInfo(String)}.
      * Analogously, calls to {@link System#err} are equivalent to calling {@link #logError(String)}.
      *
-     * @param loggerConfigurationConsumer a callback for configuring the logger
+     * @param loggerConfigurator a logger configurator
      */
-    public static synchronized void install(Consumer<LoggerConfiguration> loggerConfigurationConsumer) {
+    public static synchronized void install(LoggerConfigurator loggerConfigurator) {
         if (loggerConfiguration != null) {
             throw new IllegalStateException("logger already initialized");
         }
         loggerConfiguration = new LoggerConfiguration();
-        loggerConfigurationConsumer.accept(loggerConfiguration);
+        loggerConfigurator.accept(loggerConfiguration);
         System.setOut(loggerConfiguration.logStreams.get(MessageType.INFO));
         System.setErr(loggerConfiguration.logStreams.get(MessageType.ERROR));
     }
@@ -160,8 +165,9 @@ public final class Logger {
      * Resets the standard output/error streams.
      */
     public static synchronized void uninstall() {
-        if (loggerConfiguration == null)
+        if (loggerConfiguration == null) {
             throw new IllegalStateException("logger not yet initialized");
+        }
         loggerConfiguration = null;
         System.setOut(originalSystemOut);
         System.setErr(originalSystemErr);
@@ -301,10 +307,16 @@ public final class Logger {
         }
     }
 
-    @Deprecated
-    private static UpdateThread startMonitorLogger(Monitor monitor) {
-        final UpdateThread updateThread = new UpdateThread(new MonitorUpdateFunction(monitor));
-        updateThread.start();
-        return updateThread;
+    /**
+     * Starts a thread that regularly logs the progress of a monitor.
+     *
+     * @param monitor the monitor
+     * @param interval the interval
+     * @return the interval thread
+     */
+    public static IntervalThread startProgressLogger(Monitor monitor, long interval) {
+        final IntervalThread intervalThread = new IntervalThread(new ProgressLogger(monitor), interval);
+        intervalThread.start();
+        return intervalThread;
     }
 }

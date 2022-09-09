@@ -42,7 +42,7 @@ import java.util.stream.StreamSupport;
  *
  * @author Sebastian Krieter
  */
-public final class Trees {
+public class Trees {
 
     /**
      * Thrown when a visitor requests the {@link TreeVisitor.TraversalAction#FAIL} action.

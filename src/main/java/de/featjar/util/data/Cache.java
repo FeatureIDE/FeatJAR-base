@@ -20,8 +20,8 @@
  */
 package de.featjar.util.data;
 
-import de.featjar.util.job.InternalMonitor;
-import de.featjar.util.job.NullMonitor;
+import de.featjar.util.task.Monitor;
+import de.featjar.util.task.CancelableMonitor;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
@@ -69,8 +69,8 @@ public class Cache {
      * @return a {@link Result} with a suitable element.
      */
     @SuppressWarnings("unchecked")
-    public <T> Result<T> get(Provider<T> provider, InternalMonitor monitor) {
-        monitor = monitor != null ? monitor : new NullMonitor();
+    public <T> Result<T> get(Provider<T> provider, Monitor monitor) {
+        monitor = monitor != null ? monitor : new CancelableMonitor();
         try {
             if (provider.storeInCache()) {
                 final Map<Object, Object> cachedElements = getCachedElement(provider.getIdentifier());
@@ -91,7 +91,7 @@ public class Cache {
                 return computeElement(provider, monitor);
             }
         } finally {
-            monitor.done();
+            monitor.setDone();
         }
     }
 
@@ -99,8 +99,8 @@ public class Cache {
         return set(provider, null);
     }
 
-    public <T> Result<T> set(Provider<T> provider, InternalMonitor monitor) {
-        monitor = monitor != null ? monitor : new NullMonitor();
+    public <T> Result<T> set(Provider<T> provider, Monitor monitor) {
+        monitor = monitor != null ? monitor : new CancelableMonitor();
         try {
             final Map<Object, Object> cachedElements = getCachedElement(provider.getIdentifier());
             synchronized (cachedElements) {
@@ -114,7 +114,7 @@ public class Cache {
                 }
             }
         } finally {
-            monitor.done();
+            monitor.setDone();
         }
     }
 
@@ -134,9 +134,9 @@ public class Cache {
         reset(provider, null);
     }
 
-    public <T> void reset(Provider<T> provider, InternalMonitor monitor) {
+    public <T> void reset(Provider<T> provider, Monitor monitor) {
         Map<Object, Object> cachedElement;
-        monitor = monitor != null ? monitor : new NullMonitor();
+        monitor = monitor != null ? monitor : new CancelableMonitor();
         try {
             synchronized (map) {
                 map.clear();
@@ -150,7 +150,7 @@ public class Cache {
                 }
             }
         } finally {
-            monitor.done();
+            monitor.setDone();
         }
     }
 
@@ -175,7 +175,7 @@ public class Cache {
         }
     }
 
-    private <T> Result<T> computeElement(Provider<T> provider, InternalMonitor monitor) {
+    private <T> Result<T> computeElement(Provider<T> provider, Monitor monitor) {
         try {
             return provider.apply(this, monitor);
         } catch (final Exception e) {

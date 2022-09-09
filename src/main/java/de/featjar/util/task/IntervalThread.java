@@ -18,34 +18,38 @@
  *
  * See <https://github.com/FeatureIDE/FeatJAR-util> for further information.
  */
-package de.featjar.util.job;
+package de.featjar.util.task;
 
-import de.featjar.util.logging.Logger;
+import java.util.function.Supplier;
 
 /**
- * Thread to run an arbitrary function at a regular time interval.
+ * Thread that runs a function at a regular time interval given in milliseconds.
+ * The thread stops automatically when the monitored task is done.
+ * The thread can also be stopped manually by calling {@link #interrupt()}, which will call the function one last time.
  *
  * @author Sebastian Krieter
+ * @author Elias Kuiter
  */
-public final class MonitorUpdateFunction implements UpdateFunction {
+public class IntervalThread extends Thread {
+    protected final Supplier<Boolean> function;
 
-    private final Monitor monitor;
+    protected final long interval;
 
-    public MonitorUpdateFunction(Monitor monitor) {
-        this.monitor = monitor;
+    public IntervalThread(Supplier<Boolean> function, long interval) {
+        super();
+        this.function = function;
+        this.interval = interval;
     }
 
+    @SuppressWarnings("BusyWait")
     @Override
-    public boolean update() {
-        if (monitor.isCanceled() || monitor.isDone()) {
-            return false;
-        } else {
-            Logger.logProgress(((Math.floor(monitor.getRelativeWorkDone() * 1000)) / 10.0) + "%");
-            return true;
+    public void run() {
+        try {
+            while (function.get()) {
+                Thread.sleep(interval);
+            }
+        } catch (final InterruptedException ignored) {
         }
-    }
-
-    public Monitor getMonitor() {
-        return monitor;
+        function.get();
     }
 }
