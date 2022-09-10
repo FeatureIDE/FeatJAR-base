@@ -23,28 +23,45 @@ package de.featjar.util.io.format;
 import de.featjar.util.data.Problem;
 
 /**
- * Stores a problem during parsing with a line number where it occurred.
+ * A problem that occurs while parsing an {@link de.featjar.util.io.Input}.
+ * Stores a line number where the problem occurred.
  *
  * @author Sebastian Krieter
  */
 public class ParseProblem extends Problem {
+    // todo: store file, too (for UVL)
+    protected final int lineNumber;
 
-    protected final int line;
-
-    public ParseProblem(Exception exception, int line) {
-        this(exception.getMessage(), line, Severity.ERROR, exception);
+    /**
+     * Create a new parse problem.
+     *
+     * @param exception the exception
+     * @param lineNumber the line number
+     */
+    public ParseProblem(Exception exception, int lineNumber) {
+        this(exception.getMessage(), lineNumber, Severity.ERROR, exception);
     }
 
-    public ParseProblem(String message, int line, Severity severity) {
-        this(message, line, severity, null);
+    /**
+     * Create a new parse problem.
+     *
+     * @param message the message
+     * @param lineNumber the line number
+     * @param severity the severity
+     */
+    public ParseProblem(String message, int lineNumber, Severity severity) {
+        this(message, lineNumber, severity, null);
     }
 
-    protected ParseProblem(String message, int line, Severity severity, Exception exception) {
+    protected ParseProblem(String message, int lineNumber, Severity severity, Exception exception) {
         super(message, severity, exception);
-        this.line = line;
+        this.lineNumber = lineNumber;
     }
 
-    public int getLine() {
-        return line;
+    /**
+     * {@return the line where the problem occurred}
+     */
+    public int getLineNumber() {
+        return lineNumber;
     }
 }

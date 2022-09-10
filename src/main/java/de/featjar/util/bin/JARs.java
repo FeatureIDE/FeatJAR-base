@@ -26,7 +26,7 @@ import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
 
-public class JAR {
+public class JARs {
     public static void extractResource(String resourceName, Path outputPath) throws IOException {
         URL url = ClassLoader.getSystemClassLoader().getResource(resourceName);
         if (url == null) throw new IOException("no resource found at " + resourceName);

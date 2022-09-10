@@ -21,6 +21,8 @@
 package de.featjar.util.io.xml;
 
 import java.util.ArrayDeque;
+import java.util.Objects;
+
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.xml.sax.Attributes;
@@ -29,14 +31,12 @@ import org.xml.sax.SAXException;
 import org.xml.sax.helpers.DefaultHandler;
 
 /**
- * This is an extension of a default xml reader, which saves the line numbers
- * via user data.
+ * Saves line numbers in an XML document.
  *
  * @author Jens Meinicke
  * @author Sebastian Krieter
  */
 public class PositionalXMLHandler extends DefaultHandler {
-
     public static final String LINE_NUMBER_KEY_NAME = "lineNumber";
 
     private final ArrayDeque<Element> elementStack = new ArrayDeque<>();
@@ -57,8 +57,7 @@ public class PositionalXMLHandler extends DefaultHandler {
     }
 
     @Override
-    public void startElement(final String uri, final String localName, final String qName, final Attributes attributes)
-            throws SAXException {
+    public void startElement(final String uri, final String localName, final String qName, final Attributes attributes) {
         addTextIfNeeded();
         final Element el = doc.createElement(qName);
         for (int i = 0; i < attributes.getLength(); i++) {
@@ -80,13 +79,13 @@ public class PositionalXMLHandler extends DefaultHandler {
     }
 
     @Override
-    public void characters(final char ch[], final int start, final int length) throws SAXException {
+    public void characters(final char[] ch, final int start, final int length) {
         textBuffer.append(ch, start, length);
     }
 
     private void addTextIfNeeded() {
         if (textBuffer.length() > 0) {
-            elementStack.peek().appendChild(doc.createTextNode(textBuffer.toString()));
+            Objects.requireNonNull(elementStack.peek()).appendChild(doc.createTextNode(textBuffer.toString()));
             textBuffer.delete(0, textBuffer.length());
         }
     }

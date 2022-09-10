@@ -26,8 +26,7 @@ import java.util.function.Function;
 
 /**
  * A task that potentially takes a long time to finish and may fail to return a result.
- * Can be executed with the {@link Executor} and monitored with a {@link Monitor}.
- * Calling {@link #execute(Monitor)} directly is discouraged, use the {@link Executor} instead.
+ * Can be monitored with a {@link Monitor}.
  *
  * @param <T> the supplied object's type
  * @author Sebastian Krieter

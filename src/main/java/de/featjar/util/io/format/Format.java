@@ -27,132 +27,99 @@ import de.featjar.util.io.InputMapper;
 import de.featjar.util.io.Output;
 import de.featjar.util.io.OutputMapper;
 import java.io.IOException;
+import java.util.Optional;
 import java.util.function.Supplier;
 
 /**
- * Interface for reading and writing data from and to arbitrary objects.
+ * Parses and serializes objects.
+ * For parsing, one or multiple {@link de.featjar.util.io.Input inputs} are read from an {@link InputMapper}.
+ * For serializing, one or multiple {@link Output outputs} are written to an {@link OutputMapper} or a {@link String}.
  *
- * @param <T> type of read/written data
+ * @param <T> the type of the read/written object
  * @author Sebastian Krieter
  * @author Elias Kuiter
  */
 public interface Format<T> extends Extension {
 
     /**
-     * Parses the contents of the given source and stores all information into a new
-     * object of type T.
+     * Parses the content of an {@link InputMapper} into a new object.
      *
-     * @param inputMapper the source mapper that provides the source content.
-     * @return A {@link Result} containing the parsed object or a list of problems
-     *         that occurred during the parsing process.
-     *
-     * @see #parse(InputMapper, Supplier)
-     * @see #supportsParse()
+     * @param inputMapper the input mapper
+     * @return the parsed result
      */
     default Result<T> parse(InputMapper inputMapper) {
         throw new UnsupportedOperationException();
     }
 
     /**
-     * Parses the contents of the given source and stores all information into a new
-     * object of type T that is provided by the given supplier.
+     * Parses the content of an {@link InputMapper} into a supplied object.
      *
-     * @param inputMapper the source mapper that provides the source content.
-     * @param supplier    the supplier for returned object.
-     * @return A {@link Result} containing the parsed object or a list of problems
-     *         that occurred during the parsing process.
-     *
-     * @see #supportsParse()
+     * @param inputMapper the input mapper
+     * @param supplier    the supplier
+     * @return the parsed result
      */
     default Result<T> parse(InputMapper inputMapper, Supplier<T> supplier) {
         return parse(inputMapper);
     }
 
     /**
-     * Writes the information of an object to a string. Which information is
-     * considered is specified by the implementing class.
+     * {@return the given object serialized into a string}
      *
-     * @param object the object to get the information from.
-     * @return A string representing the object in this format.
-     *
-     * @see #supportsSerialize()
+     * @param object the object
      */
     default String serialize(T object) {
         throw new UnsupportedOperationException();
     }
 
     /**
-     * Writes the information of an object directly to the {@link Output} object.
+     * Writes the given object to an {@link OutputMapper}.
      *
-     * @param object       the object to get the information from.
-     * @param outputMapper the source mapper to write to.
+     * @param object the object
+     * @param outputMapper  the output mapper
      */
     default void write(T object, OutputMapper outputMapper) throws IOException {
-        outputMapper.get().writeText(serialize(object));
+        outputMapper.get().write(serialize(object));
     }
 
     /**
-     * Returns the file extension for this format. (Without a leading ".")
-     *
-     * @return A string representing this format's file extension.
+     * {@return the file extension for this format, if any}
+     * Omits a leading ".".
      */
-    String getFileExtension();
+    Optional<String> getFileExtension();
 
     /**
-     * Returns a meaningful name for this format. This is intended for user
-     * interfaces (e.g., in dialogs).
-     *
-     * @return A string representing this format's name.
+     * {@return a meaningful name for this format}
      */
     String getName();
 
     /**
-     * Returns an instance of this format. Clients should always call this method
-     * before calling any of {@link #parse(InputMapper)},
-     * {@link #parse(InputMapper, Supplier)}, {@link #serialize(Object)}, or
-     * {@link #write(Object, OutputMapper)} and call these methods the returned
-     * value to avoid any unintended concurrent access.<br>
-     * <br>
-     * <b>Example</b> <code>
-     * Format&lt;?&gt; format = getFormat();
-     * format.getInstance().write(new Object())</code> Implementing classes may
-     * return {@code this}, if {@code read} and {@code write} are implemented in a
-     * static fashion (i.e., do not use any non-static fields).
-     *
-     * @return An instance of this format.
-     */
+     * {@return an instance of this format}
+     * Call this method before {@link #parse(InputMapper)}, {@link #parse(InputMapper, Supplier)},
+     * {@link #serialize(Object)}, or {@link #write(Object, OutputMapper)} to avoid unintended concurrent access.
+     * Implementing classes may return {@code this} if {@link #parse(InputMapper)} and
+     * {@link #serialize(Object)} are implemented without state (i.e., non-static fields).*/
     default Format<T> getInstance() {
         return this;
     }
 
     /**
-     * Returns whether this format supports the {@link #parse(InputMapper)}
-     * operation.
-     *
-     * @return {@code true} if {@code read} is allowed by this format, {@code false}
-     *         otherwise.
+     * {@return whether this format supports {@link #serialize(Object)}}
      */
     default boolean supportsParse() {
         return false;
     }
 
     /**
-     * Returns whether this format supports the {@link #serialize(Object)}
-     * operation.
-     *
-     * @return {@code true} if {@code write} is allowed by this format,
-     *         {@code false} otherwise.
+     * {@return whether this format supports {@link #write(Object, OutputMapper)}}}
      */
     default boolean supportsSerialize() {
         return false;
     }
 
     /**
-     * Returns whether this format supports the parsing of the given content.
+     * {@return whether this format supports parsing input with the given input header}
      *
-     * @param inputHeader The beginning of the content to be parsed.
-     * @return {@code true} if the content should be parsable by this format,
-     *         {@code false} otherwise.
+     * @param inputHeader the input header
      */
     default boolean supportsContent(InputHeader inputHeader) {
         return supportsParse();

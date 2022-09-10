@@ -21,50 +21,74 @@
 package de.featjar.util.io;
 
 import java.nio.charset.Charset;
+import java.util.Optional;
+import java.util.function.Supplier;
 import java.util.stream.Stream;
 
 /**
- * Input file header to determine whether a format can parse a particular
- * content.
+ * Input file header to determine whether a {@link de.featjar.util.io.format.Format} can parse a particular content.
  *
  * @author Sebastian Krieter
  */
-public class InputHeader {
+public class InputHeader implements Supplier<String> {
 
     /**
-     * Maximum number of bytes in the header.
+     * Maximum number of bytes read from the input (1 MiB).
      */
-    public static final int MAX_HEADER_SIZE = 0x00100000; // 1 MiB
+    public static final int MAX_HEADER_SIZE = 0x00100000;
 
-    private final byte[] header;
+    private final byte[] bytes;
 
     private final Charset charset;
 
     private final String fileExtension;
 
-    public InputHeader(String fileExtension, byte[] header, Charset charset) {
+    /**
+     * Creates an input header.
+     *
+     * @param fileExtension the file extension
+     * @param bytes the header bytes
+     * @param charset the charset
+     */
+    public InputHeader(String fileExtension, byte[] bytes, Charset charset) {
         this.fileExtension = fileExtension;
-        this.header = header;
+        this.bytes = bytes;
         this.charset = charset;
     }
 
+    /**
+     * {@return this input header's charset}
+     */
     public Charset getCharset() {
         return charset;
     }
 
-    public String getFileExtension() {
-        return fileExtension;
+    /**
+     * {@return this input header's file extension, if any}
+     */
+    public Optional<String> getFileExtension() {
+        return Optional.ofNullable(fileExtension);
     }
 
+    /**
+     * {@return this input header's bytes}
+     */
     public byte[] getBytes() {
-        return header;
+        return bytes;
     }
 
-    public String getText() {
-        return new String(header, charset);
+    /**
+     * {@return this input header's string}
+     */
+    @Override
+    public String get() {
+        return new String(bytes, charset);
     }
 
+    /**
+     * {@return this input header's lines}
+     */
     public Stream<String> getLines() {
-        return getText().lines();
+        return get().lines();
     }
 }

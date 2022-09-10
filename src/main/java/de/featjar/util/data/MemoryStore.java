@@ -3,6 +3,9 @@ package de.featjar.util.data;
 import java.util.HashMap;
 import java.util.Map;
 
+/**
+ * todo
+ */
 public class MemoryStore implements Store {
     private final Map<Computation<?, ?>, Result<?>> computationResultCache = new HashMap<>();
 

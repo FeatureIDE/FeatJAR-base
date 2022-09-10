@@ -25,46 +25,58 @@ import de.featjar.util.extension.ExtensionPoint;
 import de.featjar.util.io.IOObject;
 import de.featjar.util.io.InputHeader;
 import java.nio.file.Path;
-import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
 /**
- * Manages additional formats for a certain object.
+ * Manages formats.
+ * Should be extended to manage formats for a specific kind of object.
  *
+ * @param <T> the type of the read/written object
  * @author Sebastian Krieter
+ * @author Elias Kuiter
  */
 public abstract class Formats<T> extends ExtensionPoint<Format<T>> implements FormatSupplier<T> {
-
-    public Result<Format<T>> getFormatById(String id) {
-        return getExtension(id);
+    /**
+     * {@return the format known by the given identifier}
+     *
+     * @param identifier the identifier
+     */
+    public Result<Format<T>> getFormatByIdentifier(String identifier) {
+        return getExtension(identifier);
     }
 
-    public List<Format<T>> getFormatListForExtension(Path path) {
-        if (path == null) {
-            return Collections.emptyList();
-        }
-        return getFormatList(IOObject.getFileExtension(path));
+    /**
+     * {@return all formats that support a given file extension}
+     *
+     * @param fileExtension the file extension
+     */
+    public List<Format<T>> getFormatList(final String fileExtension) {
+        return getExtensions().stream()
+                .filter(Format::supportsParse)
+                .filter(format -> Objects.equals(fileExtension, format.getFileExtension().orElse(null)))
+                .collect(Collectors.toList());
+    }
+
+    /**
+     * {@return all formats that support a given file path}
+     *
+     * @param path the path
+     */
+    public List<Format<T>> getFormatList(Path path) {
+        return getFormatList(IOObject.getFileExtension(path).orElse(null));
     }
 
     @Override
     public Result<Format<T>> getFormat(InputHeader inputHeader) {
-        final List<Format<T>> extensions = getExtensions();
-        return extensions.stream()
+        return getExtensions().stream()
                 .filter(format -> Objects.equals(inputHeader.getFileExtension(), format.getFileExtension()))
                 .filter(format -> format.supportsContent(inputHeader))
                 .findFirst()
                 .map(Result::of)
                 .orElseGet(() ->
                         Result.empty(new NoSuchExtensionException("No suitable format found for file extension \"."
-                                + inputHeader.getFileExtension() + "\". Possible Formats: " + getExtensions())));
-    }
-
-    private List<Format<T>> getFormatList(final String fileExtension) {
-        return getExtensions().stream()
-                .filter(Format::supportsParse)
-                .filter(format -> fileExtension.equals(format.getFileExtension()))
-                .collect(Collectors.toList());
+                                + inputHeader.getFileExtension() + "\". Possible formats: " + getExtensions())));
     }
 }

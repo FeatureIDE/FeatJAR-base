@@ -26,6 +26,12 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.nio.charset.StandardCharsets;
 
+/**
+ * Helpers for parsing and writing an object from and into a binary file.
+ *
+ * @param <T> the type of the written object
+ * @author Sebastian Krieter
+ */
 public abstract class BinaryFormat<T> implements Format<T> {
 
     protected void writeBytes(OutputStream out, byte[] bytes) throws IOException {

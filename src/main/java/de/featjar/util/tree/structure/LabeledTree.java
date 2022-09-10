@@ -26,7 +26,7 @@ import java.util.Objects;
  * A tree of nodes labeled with some data.
  * Can be used, for example, to represent a tree of integers or strings.
  *
- * @param <T> type of label
+ * @param <T> the type of label
  * @author Sebastian Krieter
  */
 public class LabeledTree<T> extends Tree<LabeledTree<T>> {

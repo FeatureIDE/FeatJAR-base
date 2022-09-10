@@ -28,7 +28,6 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import de.featjar.util.data.Problem;
 import de.featjar.util.data.Result;
 import de.featjar.util.io.format.Format;
-import de.featjar.util.io.format.FormatSupplier;
 import de.featjar.util.tree.structure.LabeledTree;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -67,7 +66,7 @@ public class IOTest {
 
         @Override
         public Result<Integer> parse(InputMapper inputMapper) {
-            return inputMapper.get().readText().map(Integer::valueOf);
+            return inputMapper.get().read().map(Integer::valueOf);
         }
 
         @Override
@@ -127,7 +126,7 @@ public class IOTest {
         public void write(LabeledTree<Integer> object, OutputMapper outputMapper) throws IOException {
             outputMapper
                     .get()
-                    .writeText(serialize(object) + "\n"
+                    .write(serialize(object) + "\n"
                             + object.getChildren().stream()
                                     .map(Object::hashCode)
                                     .map(Objects::toString)

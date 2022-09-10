@@ -35,6 +35,13 @@ import java.util.jar.Manifest;
 import java.util.stream.Collectors;
 import java.util.zip.ZipOutputStream;
 
+/**
+ * Maps paths to outputs.
+ * Can represent a single output (e.g., one physical file) or a file hierarchy
+ * (e.g., physical files referring to each other).
+ *
+ * @author Elias Kuiter
+ */
 public abstract class OutputMapper extends IOMapper<Output> {
     protected OutputMapper(Path mainPath) {
         super(mainPath);
@@ -46,11 +53,20 @@ public abstract class OutputMapper extends IOMapper<Output> {
 
     protected abstract Output createOutput(Path path) throws IOException;
 
+    /**
+     * Maps virtual paths to stream outputs.
+     */
     public static class Stream extends OutputMapper {
         protected Stream(Map<Path, Output> ioMap, Path mainPath) {
             super(ioMap, mainPath);
         }
 
+        /**
+         * Creates a stream output mapper for a single stream.
+         *
+         * @param outputStream the output stream
+         * @param charset the charset
+         */
         public Stream(OutputStream outputStream, Charset charset) {
             super(Map.of(DEFAULT_MAIN_PATH, new Output.Stream(outputStream, charset)), DEFAULT_MAIN_PATH);
         }
@@ -61,10 +77,21 @@ public abstract class OutputMapper extends IOMapper<Output> {
         }
     }
 
+    /**
+     * Maps physical paths to physical outputs.
+     */
     public static class File extends OutputMapper {
         protected final Path rootPath;
         protected final Charset charset;
 
+        /**
+         * Creates a file output mapper for a collection of files.
+         *
+         * @param paths the list of file paths
+         * @param rootPath the root path
+         * @param mainPath the main path
+         * @param charset the charset
+         */
         public File(List<Path> paths, Path rootPath, Path mainPath, Charset charset) throws IOException {
             super(relativizeRootPath(rootPath, mainPath));
             checkParameters(paths, rootPath, mainPath);
@@ -75,6 +102,12 @@ public abstract class OutputMapper extends IOMapper<Output> {
             this.charset = charset;
         }
 
+        /**
+         * Creates a file output mapper for a single file.
+         *
+         * @param mainPath the main path
+         * @param charset the charset
+         */
         public File(Path mainPath, Charset charset) throws IOException {
             this(List.of(mainPath), mainPath.getParent(), mainPath, charset);
         }
@@ -85,9 +118,17 @@ public abstract class OutputMapper extends IOMapper<Output> {
         }
     }
 
+    /**
+     * Maps virtual paths to string outputs.
+     */
     public static class String extends OutputMapper {
         protected final Charset charset;
 
+        /**
+         * Creates a file output mapper for a collection of strings.
+         *
+         * @param charset the charset
+         */
         public String(Charset charset) {
             super(Map.of(DEFAULT_MAIN_PATH, new Output.String(charset)), DEFAULT_MAIN_PATH);
             this.charset = charset;
@@ -98,6 +139,9 @@ public abstract class OutputMapper extends IOMapper<Output> {
             return new Output.String(charset);
         }
 
+        /**
+         * {@return the collection of strings}
+         */
         public Map<Path, java.lang.String> getOutputStrings() {
             return ioMap.entrySet().stream().collect(Collectors.toMap(Map.Entry::getKey, e -> e.getValue()
                     .getOutputStream()
@@ -105,10 +149,20 @@ public abstract class OutputMapper extends IOMapper<Output> {
         }
     }
 
+    /**
+     * Maps virtual paths to a ZIP file output.
+     */
     public static class ZIPFile extends OutputMapper {
         protected final ZipOutputStream zipOutputStream;
         protected final Charset charset;
 
+        /**
+         * Creates a ZIP file output mapper.
+         *
+         * @param zipPath the ZIP file path
+         * @param mainPath the main path
+         * @param charset the charset
+         */
         public ZIPFile(Path zipPath, Path mainPath, Charset charset) throws IOException {
             super(mainPath);
             this.zipOutputStream = new ZipOutputStream(new FileOutputStream(zipPath.toString()));
@@ -128,15 +182,25 @@ public abstract class OutputMapper extends IOMapper<Output> {
         }
     }
 
+    /**
+     * Maps virtual paths to a JAR file output.
+     */
     public static class JARFile extends OutputMapper {
         protected final JarOutputStream jarOutputStream;
         protected final Charset charset;
 
-        public JARFile(Path zipPath, Path mainPath, Charset charset) throws IOException {
+        /**
+         * Creates a JAR file output mapper.
+         *
+         * @param jarPath the JAR file path
+         * @param mainPath the main path
+         * @param charset the charset
+         */
+        public JARFile(Path jarPath, Path mainPath, Charset charset) throws IOException {
             super(mainPath);
             Manifest manifest = new Manifest();
             manifest.getMainAttributes().put(Attributes.Name.MANIFEST_VERSION, "1.0");
-            this.jarOutputStream = new JarOutputStream(new FileOutputStream(zipPath.toString()), manifest);
+            this.jarOutputStream = new JarOutputStream(new FileOutputStream(jarPath.toString()), manifest);
             this.charset = charset;
             ioMap.put(mainPath, new Output.JAREntry(mainPath, jarOutputStream, charset));
         }
@@ -153,6 +217,14 @@ public abstract class OutputMapper extends IOMapper<Output> {
         }
     }
 
+    /**
+     * {@return a file output mapper that optionaly writes to a ZIP or JAR file}
+     *
+     * @param mainPath the main path
+     * @param charset the charset
+     * @param options the {@link IOMapper} options
+     * @throws IOException if an I/O exception occurs
+     */
     public static OutputMapper of(Path mainPath, Charset charset, Options... options) throws IOException {
         return Arrays.asList(options).contains(Options.OUTPUT_FILE_JAR)
                 ? new JARFile(IOObject.getPathWithExtension(mainPath, "jar"), mainPath.getFileName(), charset)
@@ -161,13 +233,25 @@ public abstract class OutputMapper extends IOMapper<Output> {
                         : new OutputMapper.File(mainPath, charset);
     }
 
+    /**
+     * A runnable that may throw an {@link IOException}.
+     */
     @FunctionalInterface
     public interface IORunnable {
         void run() throws IOException;
     }
 
-    public void withMainPath(Path newMainPath, IORunnable ioRunnable) throws IOException { // todo: handle relative
-        // paths / subdirs?
+    /**
+     * Temporarily shifts the focus of this output mapper to another main path to execute some function.
+     * Useful to parse a {@link de.featjar.util.io.format.Format} recursively.
+     *
+     * @param newMainPath the new main path
+     * @param ioRunnable the runnable
+     * @throws IOException if an I/O exception occurs
+     */
+    @SuppressWarnings("resource")
+    public void withMainPath(Path newMainPath, IORunnable ioRunnable) throws IOException {
+        // todo: handle relative paths / subdirs?
         create(newMainPath);
         Path oldMainPath = mainPath;
         mainPath = newMainPath;
@@ -178,6 +262,12 @@ public abstract class OutputMapper extends IOMapper<Output> {
         }
     }
 
+    /**
+     * {@return a new output at a given path}
+     *
+     * @param path the path
+     * @throws IOException if an I/O exception occurs
+     */
     public Output create(Path path) throws IOException {
         Optional<Output> outputOptional = super.get(path);
         if (outputOptional.isPresent()) return outputOptional.get();

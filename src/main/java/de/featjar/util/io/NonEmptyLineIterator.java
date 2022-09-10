@@ -25,7 +25,7 @@ import java.io.IOException;
 import java.util.function.Supplier;
 
 /**
- * Reads a source line by line, skipping empty lines.
+ * Reads a source file line-by-line, skipping empty lines.
  *
  * @author Sebastian Krieter
  */

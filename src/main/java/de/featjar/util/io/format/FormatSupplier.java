@@ -24,24 +24,26 @@ import de.featjar.util.data.Result;
 import de.featjar.util.io.InputHeader;
 
 /**
- * Provides a format for a given file content and file path.
+ * Decides on a format for a given file content and file path.
  *
  * @author Sebastian Krieter
  */
 @FunctionalInterface
 public interface FormatSupplier<T> {
-
+    /**
+     * {@return a Constant format}
+     *
+     * @param format the format
+     * @param <T> the type of the parsed object
+     */
     static <T> FormatSupplier<T> of(Format<T> format) {
         return inputHeader -> Result.of(format);
     }
 
     /**
-     * Returns the format that fits the given parameter.
+     * {@return a format fitting the given input header}
      *
-     * @param inputHeader the beginning of the file's content
-     *
-     * @return A {@link Format format} that uses the file extension of the given
-     *         path. Result may be if there is no suitable format.
+     * @param inputHeader the input header
      */
     Result<Format<T>> getFormat(InputHeader inputHeader);
 }

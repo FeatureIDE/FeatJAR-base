@@ -21,39 +21,34 @@
 package de.featjar.util.io;
 
 import java.io.IOException;
-import java.nio.charset.Charset;
-import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.Optional;
 
 /**
- * Input or output (e.g., physical file, string, or stream) mapped by a
- * {@link IOMapper}.
+ * Input or output mapped by a {@link IOMapper}.
+ * This could be a physical file, string, or stream.
  *
+ * @author Sebastian Krieter
  * @author Elias Kuiter
  */
 public interface IOObject extends AutoCloseable {
-    java.lang.String EMPTY_FILE_EXTENSION = "";
-    Charset DEFAULT_CHARSET = StandardCharsets.UTF_8;
-
     @Override
     void close() throws IOException;
 
     /**
-     * Retrieves the file name of a {@link Path} without its extension.
+     * {@return a path's file name without its extension}
      *
-     * @param path the given path
-     * @return the file name
+     * @param path the path
      */
     static String getFileNameWithoutExtension(Path path) {
         return getFileNameWithoutExtension(path.getFileName().toString());
     }
 
     /**
-     * Retrieves the file name of a {@link Path} without its extension.
+     * {@return a full file name's file name without its extension}
      *
-     * @param fileName the file name with a (possible) extension
-     * @return the file name
+     * @param fileName the file name
      */
     static String getFileNameWithoutExtension(String fileName) {
         final int extensionIndex = fileName.lastIndexOf('.');
@@ -61,50 +56,58 @@ public interface IOObject extends AutoCloseable {
     }
 
     /**
-     * Retrieves the file extension of a {@link Path}.<br>
-     * <b>Note:</b> A dot at the first position of the file name is ignored. E.g.,
-     * ".file" has no extension, but ".file.txt" would return "txt".
+     * {@return a path's file extension, if any}
+     * A dot at the first position of the file name is ignored.
+     * E.g., ".file" has no extension, but ".file.txt" would return "txt".
      *
-     * @param path the given path
-     * @return the file extension
-     *
-     * @see #getFileExtension(String)
+     * @param path the path
      */
-    static String getFileExtension(Path path) {
-        if (path == null) {
-            return EMPTY_FILE_EXTENSION;
-        }
-        return getFileExtension(path.getFileName().toString());
+    static Optional<String> getFileExtension(Path path) {
+        return Optional.ofNullable(path).flatMap(_path -> getFileExtension(_path.getFileName().toString()));
     }
 
     /**
-     * Retrieves the file extension from a file name.<br>
-     * <b>Note:</b> A dot at the first position of the file name is ignored. E.g.,
-     * ".file" has no extension, but ".file.txt" would return "txt".
+     * {@return a full file name's file extension, if any}
+     * A dot at the first position of the file name is ignored.
+     * E.g., ".file" has no extension, but ".file.txt" would return "txt".
      *
-     * @param fileName the given file name
-     * @return the file extension
-     *
-     * @see #getFileExtension(Path)
+     * @param fileName the file name
      */
-    static String getFileExtension(String fileName) {
-        if (fileName == null) {
-            return EMPTY_FILE_EXTENSION;
-        }
+    static Optional<String> getFileExtension(String fileName) {
+        if (fileName == null)
+            return Optional.empty();
         final int extensionIndex = fileName.lastIndexOf('.');
-        return (extensionIndex > 0) ? fileName.substring(extensionIndex + 1) : "";
+        return Optional.ofNullable(extensionIndex > 0 ? fileName.substring(extensionIndex + 1) : null);
     }
 
+    /**
+     * {@return a file name with a replaced file extension}
+     *
+     * @param fileName the file name
+     * @param fileExtension the new file extension
+     */
     static String getFileNameWithExtension(String fileName, String fileExtension) {
-        if (fileExtension == null || fileExtension.equals(EMPTY_FILE_EXTENSION))
+        if (fileExtension == null)
             return IOObject.getFileNameWithoutExtension(fileName);
         return String.format("%s.%s", IOObject.getFileNameWithoutExtension(fileName), fileExtension);
     }
 
+    /**
+     * {@return a path with a replaced file extension}
+     *
+     * @param path the path
+     * @param fileExtension the new file extension
+     */
     static Path getPathWithExtension(Path path, String fileExtension) {
         return path.resolveSibling(getFileNameWithExtension(path.getFileName().toString(), fileExtension));
     }
 
+    /**
+     * {@return a path with a replaced file extension}
+     *
+     * @param fileName the file name
+     * @param fileExtension the new file extension
+     */
     static Path getPathWithExtension(String fileName, String fileExtension) {
         return Paths.get(getFileNameWithExtension(fileName, fileExtension));
     }

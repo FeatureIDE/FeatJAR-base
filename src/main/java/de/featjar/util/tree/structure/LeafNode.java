@@ -28,7 +28,7 @@ import java.util.List;
  * A leaf does not have any children.
  * Nonetheless, it captures a children type, such that it can be added as a child to a non-leaf node.
  *
- * @param <T> type of children, the implementing type must be castable to T
+ * @param <T> the type of children, the implementing type must be castable to T
  * @author Sebastian Krieter
  */
 public abstract class LeafNode<T extends Traversable<T>> implements Traversable<T> {

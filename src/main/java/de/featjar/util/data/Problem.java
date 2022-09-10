@@ -34,10 +34,6 @@ public class Problem {
      */
     public enum Severity {
         /**
-         * A problem that does not affect the processing of an object, but should be reported to the user.
-         */
-        INFO,
-        /**
          * A warning, which does not prevent processing of an object.
          */
         WARNING,

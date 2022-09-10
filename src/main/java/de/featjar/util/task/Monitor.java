@@ -24,7 +24,6 @@ import java.util.Optional;
 
 /**
  * Monitors the execution of a long-running task.
- * When executed by the {@link Executor}, a task is a {@link MonitorableFunction} or a {@link MonitorableSupplier}.
  * A monitor can be used to cancel a task's execution and get information on its progress.
  *
  * @author Sebastian Krieter
@@ -153,7 +152,7 @@ public interface Monitor {
 
     /**
      * Signals that the execution of the monitored task is done.
-     * Always called by the {@link Executor}, but can already be called before by the task.
+     * Always called by {@link MonitorableFunction#apply(Object, Monitor)}, but can already be called before by the task.
      */
     void setDone();
 

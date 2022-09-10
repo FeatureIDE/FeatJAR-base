@@ -35,7 +35,7 @@ import java.util.function.Function;
  * Primary implementation of {@link Traversable} that uses {@link ArrayList} to store children.
  * The terms "tree" and "node" are interchangeable.
  *
- * @param <T> type of children, the implementing type must be castable to T
+ * @param <T> the type of children, the implementing type must be castable to T
  * @author Sebastian Krieter
  * @author Elias Kuiter
  */

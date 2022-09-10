@@ -23,7 +23,6 @@ package de.featjar.util.cli;
 import de.featjar.util.data.Result;
 import de.featjar.util.extension.Extensions;
 import de.featjar.util.io.IO;
-import de.featjar.util.io.IOObject;
 import de.featjar.util.io.format.Format;
 import de.featjar.util.io.format.FormatSupplier;
 import de.featjar.util.log.Logger;
@@ -55,7 +54,7 @@ import java.util.stream.Collectors;
  */
 public class CLI {
     public static final String DEFAULT_VERBOSITY = "info";
-    public static final String SYSTEM_INPUT = "system:in.xml";
+    public static final String SYSTEM_INPUT = "system:in.xml"; //todo
     public static final String SYSTEM_OUTPUT = "system:out";
     public static final String SYSTEM_ERROR = "system:err";
     private static final Pattern SYSTEM_INPUT_PATTERN = Pattern.compile("system:in\\.(.+)");
@@ -135,7 +134,7 @@ public class CLI {
         }
     }
 
-    public static <T> T runInThread(Callable<T> method, long timeout) {
+    public static <T> Optional<T> runInThread(Callable<T> method, long timeout) {
         final ExecutorService executor = Executors.newSingleThreadExecutor();
         final Future<T> future = executor.submit(method);
         try {
@@ -159,7 +158,7 @@ public class CLI {
         Matcher matcher = SYSTEM_INPUT_PATTERN.matcher(pathOrStdin);
         if (matcher.matches()) {
             Path path = Paths.get("stdin." + matcher.group(1));
-            String content = new BufferedReader(new InputStreamReader(System.in, IOObject.DEFAULT_CHARSET))
+            String content = new BufferedReader(new InputStreamReader(System.in, IO.DEFAULT_CHARSET))
                     .lines()
                     .collect(Collectors.joining("\n"));
             return IO.load(content, path, formatSupplier);

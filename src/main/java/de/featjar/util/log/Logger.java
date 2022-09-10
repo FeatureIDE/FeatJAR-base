@@ -71,6 +71,7 @@ public class Logger {
      * Configures the global logger.
      */
     public static class Configuration {
+        //todo: consider using an OutputMapper instead?
         private final HashMap<MessageType, de.featjar.util.io.PrintStream> logStreams = new HashMap<>();
         private final LinkedList<Formatter> formatters = new LinkedList<>();
 

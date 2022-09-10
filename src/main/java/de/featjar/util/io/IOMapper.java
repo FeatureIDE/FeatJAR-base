@@ -21,6 +21,7 @@
 package de.featjar.util.io;
 
 import java.io.IOException;
+import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -35,31 +36,32 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 /**
- * Maps paths (e.g., on the physical file system) to inputs or outputs (e.g.,
- * physical files) to represent hierarchies of data (e.g., a fragmented feature
- * model). Has at least one main {@link IOObject}. Formats can freely decide
- * whether to process any other IO objects. Can represent the physical or a
- * virtual file system.
+ * Maps paths to inputs or outputs to represent hierarchies of data.
+ * For example, maps physical file system paths to physical files, but can also represent a virtual file system.
+ * Has at least one main {@link IOObject}.
+ * Formats can freely decide whether to process any other IO objects.
  *
- * @param <T>
+ * @param <T> the type of mapped object
  * @author Elias Kuiter
  */
 public abstract class IOMapper<T extends IOObject> implements AutoCloseable, Supplier<T> {
+    /**
+     * Options for an {@link IOMapper}.
+     */
     public enum Options {
         /**
-         * Whether to map not only the given main file, but also all other files
-         * residing in the same directory. Only supported for parsing {@link Input.File}
-         * objects.
+         * Whether to map not only the given main file, but also all other files residing in the same directory.
+         * Only supported for parsing {@link Input.File} objects.
          */
         INPUT_FILE_HIERARCHY,
         /**
          * Whether to create a single ZIP archive instead of (several) physical files.
-         * Only supported for writing with OutputMapper.of.
+         * Only supported for writing with {@link OutputMapper#of(Path, Charset, Options...)}.
          */
         OUTPUT_FILE_ZIP,
         /**
          * Whether to create a single JAR archive instead of (several) physical files.
-         * Only supported for writing with OutputMapper.of.
+         * Only supported for writing with {@link OutputMapper#of(Path, Charset, Options...)}.
          */
         OUTPUT_FILE_JAR
     }
@@ -105,15 +107,28 @@ public abstract class IOMapper<T extends IOObject> implements AutoCloseable, Sup
         }
     }
 
+    /**
+     * {@return this mapper's main IO object}
+     */
     @Override
     public T get() {
         return ioMap.get(mainPath);
     }
 
+    /**
+     * {@return this mapper's IO object at the given absolute path, if any}
+     *
+     * @param path the path
+     */
     public Optional<T> get(Path path) {
         return Optional.ofNullable(ioMap.get(path));
     }
 
+    /**
+     * {@return this mapper's absolute path for the given IO object, if any}
+     *
+     * @param ioObject the IO object
+     */
     public Optional<Path> getPath(T ioObject) {
         return ioMap.entrySet().stream()
                 .filter(e -> Objects.equals(e.getValue(), ioObject))
@@ -121,10 +136,21 @@ public abstract class IOMapper<T extends IOObject> implements AutoCloseable, Sup
                 .map(Map.Entry::getKey);
     }
 
+    /**
+     * {@return the absolute path for a sibling of a given IO object, if any}
+     *
+     * @param sibling the IO object
+     * @param path the relative path of the sibling
+     */
     public Optional<Path> resolve(T sibling, Path path) {
         return getPath(sibling).map(_path -> _path.resolveSibling(path));
     }
 
+    /**
+     * {@return the absolute path for a sibling of the main IO object, if any}
+     *
+     * @param path the relative path of the sibling
+     */
     public Optional<Path> resolve(Path path) {
         return resolve(get(), path);
     }

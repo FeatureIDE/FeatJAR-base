@@ -31,6 +31,13 @@ import java.util.List;
 import java.util.Map;
 import java.util.function.Supplier;
 
+/**
+ * Maps paths to inputs.
+ * Can represent a single input (e.g., one physical file) or a file hierarchy
+ * (e.g., physical files referring to each other).
+ *
+ * @author Elias Kuiter
+ */
 public abstract class InputMapper extends IOMapper<Input> {
     protected InputMapper(Path mainPath) {
         super(mainPath);
@@ -40,7 +47,19 @@ public abstract class InputMapper extends IOMapper<Input> {
         super(ioMap, mainPath);
     }
 
+    /**
+     * Maps virtual paths to stream inputs.
+     */
     public static class Stream extends InputMapper {
+        /**
+         * Creates a stream input mapper for a collection of streams.
+         *
+         * @param pathInputStreamMap the map of paths to inputs
+         * @param rootPath the root path
+         * @param mainPath the main path
+         * @param charset the charset
+         * @param fileExtension the file extension
+         */
         public Stream(
                 Map<Path, InputStream> pathInputStreamMap,
                 Path rootPath,
@@ -56,12 +75,30 @@ public abstract class InputMapper extends IOMapper<Input> {
             }
         }
 
+        /**
+         * Creates a stream input mapper for a single stream.
+         *
+         * @param inputStream the input stream
+         * @param charset the charset
+         * @param fileExtension the file extension
+         */
         public Stream(InputStream inputStream, Charset charset, java.lang.String fileExtension) {
             this(Map.of(DEFAULT_MAIN_PATH, inputStream), null, DEFAULT_MAIN_PATH, charset, fileExtension);
         }
     }
 
+    /**
+     * Maps physical paths to physical file inputs.
+     */
     public static class File extends InputMapper {
+        /**
+         * Creates a file input mapper for a collection of files.
+         *
+         * @param paths the list of file paths
+         * @param rootPath the root path
+         * @param mainPath the main path
+         * @param charset the charset
+         */
         public File(List<Path> paths, Path rootPath, Path mainPath, Charset charset) throws IOException {
             super(relativizeRootPath(rootPath, mainPath));
             checkParameters(paths, rootPath, mainPath);
@@ -70,6 +107,13 @@ public abstract class InputMapper extends IOMapper<Input> {
             }
         }
 
+        /**
+         * Creates a file input mapper for a single file or file hierarchy.
+         *
+         * @param mainPath the main path
+         * @param charset the charset
+         * @param options the {@link IOMapper} options
+         */
         public File(Path mainPath, Charset charset, Options... options) throws IOException {
             this(
                     Arrays.asList(options).contains(Options.INPUT_FILE_HIERARCHY)
@@ -81,7 +125,19 @@ public abstract class InputMapper extends IOMapper<Input> {
         }
     }
 
+    /**
+     * Maps virtual paths to string inputs.
+     */
     public static class String extends InputMapper {
+        /**
+         * Creates a string input mapper for a collection of strings.
+         *
+         * @param pathStringMap the map of paths to inputs
+         * @param rootPath the root path
+         * @param mainPath the main path
+         * @param charset the charset
+         * @param fileExtension the file extension
+         */
         public String(
                 Map<Path, java.lang.String> pathStringMap,
                 Path rootPath,
@@ -97,13 +153,29 @@ public abstract class InputMapper extends IOMapper<Input> {
             }
         }
 
-        public String(java.lang.String text, Charset charset, java.lang.String fileExtension) {
-            this(Map.of(DEFAULT_MAIN_PATH, text), null, DEFAULT_MAIN_PATH, charset, fileExtension);
+        /**
+         * Creates a string input mapper for a single string.
+         *
+         * @param string the string
+         * @param charset the charset
+         * @param fileExtension the file extension
+         */
+        public String(java.lang.String string, Charset charset, java.lang.String fileExtension) {
+            this(Map.of(DEFAULT_MAIN_PATH, string), null, DEFAULT_MAIN_PATH, charset, fileExtension);
         }
     }
 
-    public <T> Result<T> withMainPath(Path newMainPath, Supplier<Result<T>> supplier) { // todo: handle relative paths /
-        // subdirs?
+    /**
+     * Temporarily shifts the focus of this input mapper to another main path to execute some function.
+     * Useful to parse a {@link de.featjar.util.io.format.Format} recursively.
+     *
+     * @param newMainPath the new main path
+     * @param supplier the supplier
+     * @return the result of the supplier
+     * @param <T> the type of the supplier's result
+     */
+    public <T> Result<T> withMainPath(Path newMainPath, Supplier<Result<T>> supplier) {
+        // todo: handle relative paths / subdirs?
         if (ioMap.get(newMainPath) == null)
             return Result.empty(new Problem("could not find main path " + mainPath, Problem.Severity.WARNING));
         Path oldMainPath = mainPath;

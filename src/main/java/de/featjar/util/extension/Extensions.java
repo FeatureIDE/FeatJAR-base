@@ -43,6 +43,7 @@ import org.w3c.dom.NodeList;
  * Searches, registers, and unregisters extensions on the classpath.
  *
  * @author Sebastian Krieter
+ * @author Elias Kuiter
  */
 public class Extensions {
     /**

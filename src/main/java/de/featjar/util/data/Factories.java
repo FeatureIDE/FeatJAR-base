@@ -30,8 +30,8 @@ import de.featjar.util.extension.ExtensionPoint;
 public abstract class Factories<T> extends ExtensionPoint<Factory<T>> implements FactorySupplier<T> {
 
     @Deprecated
-    public Result<Factory<T>> getFactoryById(String id) {
-        return getExtension(id);
+    public Result<Factory<T>> getFactoryByIdentifier(String identifier) {
+        return getExtension(identifier);
     }
 
     @Deprecated

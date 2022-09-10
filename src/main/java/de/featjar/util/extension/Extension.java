@@ -24,6 +24,7 @@ package de.featjar.util.extension;
  * An extension implements some functionality that can be loaded by an {@link ExtensionPoint}.
  *
  * @author Sebastian Krieter
+ * @author Elias Kuiter
  */
 public interface Extension {
 

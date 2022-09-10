@@ -41,7 +41,7 @@ public abstract class Binary implements Extension {
 
     public abstract Set<String> getResourceNames();
 
-    public Path getPath() {
+    public Optional<Path> getPath() {
         return null;
     }
 
@@ -51,7 +51,7 @@ public abstract class Binary implements Extension {
             try {
                 Path outputPath = BINARY_DIRECTORY.resolve(resourceName);
                 if (Files.notExists(outputPath)) {
-                    JAR.extractResource("bin/" + resourceName, outputPath);
+                    JARs.extractResource("bin/" + resourceName, outputPath);
                     outputPath.toFile().setExecutable(true);
                 }
             } catch (IOException e) {

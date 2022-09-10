@@ -38,7 +38,7 @@ import java.util.Optional;
  * @author Elias Kuiter
  */
 @FunctionalInterface
-public interface Computation<T, R> extends MonitorableFunction<T, R> {
+public interface Computation<T, R> extends MonitorableFunction<T, R> { // todo extend extension?
 
     /**
      * {@return a unique identifier for this computation}
@@ -50,6 +50,7 @@ public interface Computation<T, R> extends MonitorableFunction<T, R> {
     /**
      * {@return the parameters of this computation}
      * Should represent all parameters that are not in scope of the associated {@link Store} to allow later lookup.
+     * Returns {@code null} if there are no such parameters.
      */
     default Object getParameters() {
         return null;

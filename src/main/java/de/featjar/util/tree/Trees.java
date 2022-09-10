@@ -56,8 +56,8 @@ public class Trees {
      * @param node the starting node of the tree
      * @param visitor the visitor
      * @return the optional result from the visitor
-     * @param <R> type of result
-     * @param <T> type of tree
+     * @param <R> the type of result
+     * @param <T> the type of tree
      */
     public static <R, T extends Traversable<?>> Optional<R> traverse(T node, InOrderTreeVisitor<R, T> visitor) {
         visitor.reset();
@@ -76,8 +76,8 @@ public class Trees {
      * @param node the starting node of the tree
      * @param visitor the visitor
      * @return the optional result from the visitor
-     * @param <R> type of result
-     * @param <T> type of tree
+     * @param <R> the type of result
+     * @param <T> the type of tree
      */
     public static <R, T extends Traversable<?>> Optional<R> traverse(T node, TreeVisitor<R, T> visitor) {
         visitor.reset();
@@ -95,7 +95,7 @@ public class Trees {
      *
      * @param node the starting node of the tree
      * @return the stream
-     * @param <T> type of tree
+     * @param <T> the type of tree
      */
     public static <T extends Traversable<T>> Stream<T> preOrderStream(T node) {
         return StreamSupport.stream(new PreOrderSpliterator<>(node), false);
@@ -107,7 +107,7 @@ public class Trees {
      *
      * @param node the starting node of the tree
      * @return the stream
-     * @param <T> type of tree
+     * @param <T> the type of tree
      */
     public static <T extends Traversable<T>> Stream<T> postOrderStream(T node) {
         return StreamSupport.stream(new PostOrderSpliterator<>(node), false);
@@ -118,7 +118,7 @@ public class Trees {
      *
      * @param node the starting node of the tree
      * @return the stream
-     * @param <T> type of tree
+     * @param <T> the type of tree
      */
     public static <T extends Traversable<T>> Stream<T> levelOrderStream(T node) {
         return StreamSupport.stream(new LevelOrderSpliterator<>(node), false);
@@ -130,7 +130,7 @@ public class Trees {
      *
      * @param node the starting node of the tree
      * @return the stream
-     * @param <T> type of tree
+     * @param <T> the type of tree
      */
     public static <T extends Traversable<T>> Stream<T> parallelStream(T node) {
         return StreamSupport.stream(new ParallelSpliterator<>(node), true);
@@ -142,7 +142,7 @@ public class Trees {
      * @param node1 the first node
      * @param node2 the second node
      * @return whether the first node is deeply equal to the second node
-     * @param <T> type of tree
+     * @param <T> the type of tree
      */
     public static <T extends Traversable<T>> boolean equals(T node1, T node2) {
         if (node1 == node2) {
@@ -179,7 +179,7 @@ public class Trees {
      *
      * @param root the node
      * @return a deep clone of the node
-     * @param <T> type of tree
+     * @param <T> the type of tree
      */
     @SuppressWarnings("unchecked")
     public static <T extends Traversable<T>> T clone(T root) {
@@ -217,7 +217,7 @@ public class Trees {
      * Sorts a node (and its children).
      *
      * @param root the node
-     * @param <T> type of tree
+     * @param <T> the type of tree
      */
     public static <T extends Traversable<T>> void sort(T root) {
         sort(root, Comparator.comparing(T::toString));
@@ -228,7 +228,7 @@ public class Trees {
      *
      * @param root the node
      * @param comparator comparator used for sorting
-     * @param <T> type of tree
+     * @param <T> the type of tree
      */
     public static <T extends Traversable<T>> void sort(T root, Comparator<T> comparator) {
         final LinkedList<StackEntry<T>> stack = new LinkedList<>();

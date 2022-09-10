@@ -53,9 +53,9 @@ import org.w3c.dom.NodeList;
 import org.xml.sax.InputSource;
 
 /**
- * Implements common behaviours for parsing and writing XML files.
+ * Helpers for parsing and writing an object from and into an XML file.
  *
- * @param <T> type of read/written data
+ * @param <T> the type of read/written data
  * @author Sebastian Krieter
  * @author Elias Kuiter
  */
@@ -72,22 +72,15 @@ public abstract class XMLFormat<T> implements Format<T> {
     protected abstract Pattern getInputHeaderPattern();
 
     @Override
-    public String getFileExtension() {
-        return "xml";
+    public Optional<String> getFileExtension() {
+        return Optional.of("xml");
     }
 
     @Override
     public boolean supportsContent(InputHeader inputHeader) {
-        return supportsParse()
-                && getInputHeaderPattern().matcher(inputHeader.getText()).find();
+        return supportsParse() && getInputHeaderPattern().matcher(inputHeader.get()).find();
     }
 
-    /**
-     * Returns a list of elements within the given node list.
-     *
-     * @param nodeList the node list.
-     * @return The child nodes from type Element of the given NodeList.
-     */
     protected List<Element> getElements(NodeList nodeList) {
         final ArrayList<Element> elements = new ArrayList<>(nodeList.getLength());
         for (int temp = 0; temp < nodeList.getLength(); temp++) {

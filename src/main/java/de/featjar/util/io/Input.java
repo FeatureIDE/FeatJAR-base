@@ -39,8 +39,8 @@ import java.util.Objects;
 import java.util.stream.Collectors;
 
 /**
- * Input for a {@link Format}, which can be read from. Can be a physical file,
- * string, or arbitrary input stream.
+ * Readable input source of a {@link Format}.
+ * Can be a physical file, string, or arbitrary input stream.
  *
  * @author Sebastian Krieter
  * @author Elias Kuiter
@@ -53,35 +53,71 @@ public abstract class Input implements IOObject {
     protected Input(InputStream inputStream, Charset charset, java.lang.String fileExtension) {
         Objects.requireNonNull(inputStream);
         Objects.requireNonNull(charset);
-        Objects.requireNonNull(fileExtension);
         this.inputStream = new BufferedInputStream(inputStream);
         this.charset = charset;
         this.fileExtension = fileExtension;
     }
 
+    /**
+     * A stream input.
+     */
     public static class Stream extends Input {
+        /**
+         * Creates a stream input.
+         *
+         * @param inputStream the input stream
+         * @param charset the charset
+         * @param fileExtension the file extension
+         */
         public Stream(InputStream inputStream, Charset charset, java.lang.String fileExtension) {
             super(inputStream, charset, fileExtension);
         }
     }
 
+    /**
+     * A physical file input.
+     */
     public static class File extends Input {
+        /**
+         * Creates a physical file input.
+         *
+         * @param path the path
+         * @param charset the charset
+         * @throws IOException if an I/O error occurs
+         */
         public File(Path path, Charset charset) throws IOException {
-            super(Files.newInputStream(path, StandardOpenOption.READ), charset, IOObject.getFileExtension(path));
+            super(Files.newInputStream(path, StandardOpenOption.READ), charset,
+                    IOObject.getFileExtension(path).orElse(null));
         }
     }
 
+    /**
+     * A string input.
+     */
     public static class String extends Input {
-        public String(java.lang.String text, Charset charset, java.lang.String fileExtension) {
-            super(new ByteArrayInputStream(text.getBytes(charset)), charset, fileExtension);
+        /**
+         * Creates a string input.
+         *
+         * @param string the string
+         * @param charset the charset
+         * @param fileExtension the file extension
+         */
+        public String(java.lang.String string, Charset charset, java.lang.String fileExtension) {
+            super(new ByteArrayInputStream(string.getBytes(charset)), charset, fileExtension);
         }
     }
 
+    /**
+     * {@return this input's charset}
+     */
     public Charset getCharset() {
         return charset;
     }
 
-    public Result<java.lang.String> readText() {
+    /**
+     * {@return the full string read from this input, if any}
+     */
+    public Result<java.lang.String> read() {
         try {
             return Result.of(new java.lang.String(inputStream.readAllBytes(), charset));
         } catch (final IOException e) {
@@ -90,26 +126,44 @@ public abstract class Input implements IOObject {
         }
     }
 
+    /**
+     * {@return a reader for this input}
+     */
     public BufferedReader getReader() {
         return new BufferedReader(new InputStreamReader(inputStream, charset));
     }
 
+    /**
+     * {@return a stream of all lines read from this input}
+     */
     public java.util.stream.Stream<java.lang.String> getLineStream() {
         return getReader().lines();
     }
 
+    /**
+     * {@return an iterator of lines read from this input, skipping empty lines}
+     */
     public NonEmptyLineIterator getNonEmptyLineIterator() {
         return new NonEmptyLineIterator(getReader());
     }
 
+    /**
+     * {@return a list of all lines read from this input}
+     */
     public List<java.lang.String> readLines() {
         return getLineStream().collect(Collectors.toList());
     }
 
+    /**
+     * {@return this input's stream}
+     */
     public InputStream getInputStream() {
         return inputStream;
     }
 
+    /**
+     * {@return this input's header, if any}
+     */
     public Result<InputHeader> getInputHeader() {
         final byte[] bytes = new byte[InputHeader.MAX_HEADER_SIZE];
         try {

@@ -35,7 +35,7 @@ import java.util.stream.Stream;
  * Nodes are defined recursively.
  * For an example usage, see {@link LabeledTree}.
  *
- * @param <T> type of children, the implementing type must be castable to T
+ * @param <T> the type of children, the implementing type must be castable to T
  * @author Sebastian Krieter
  * @author Elias Kuiter
  */
@@ -188,7 +188,7 @@ public interface Traversable<T extends Traversable<T>> {
      *
      * @param treeVisitor the tree visitor
      * @return the optional result from the visitor
-     * @param <R> type of result
+     * @param <R> the type of result
      */
     default <R> Optional<R> traverse(InOrderTreeVisitor<R, T> treeVisitor) {
         return Trees.traverse((T) this, treeVisitor);
@@ -201,7 +201,7 @@ public interface Traversable<T extends Traversable<T>> {
      *
      * @param treeVisitor the tree visitor
      * @return the optional result from the visitor
-     * @param <R> type of result
+     * @param <R> the type of result
      */
     default <R> Optional<R> traverse(TreeVisitor<R, T> treeVisitor) {
         return Trees.traverse((T) this, treeVisitor);

@@ -25,29 +25,35 @@ import de.featjar.util.io.InputMapper;
 import de.featjar.util.io.OutputMapper;
 import de.featjar.util.io.format.Format;
 import de.featjar.util.log.Logger;
-import java.io.IOException;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
-import java.io.OutputStream;
+
+import java.io.*;
+import java.util.Optional;
 
 /**
- * Reads / Writes a list of configuration.
+ * Parses and writes serializable objects.
  *
+ * @param <T> the type of the object
  * @author Sebastian Krieter
  */
-public class SerializableObjectFormat<T> implements Format<T> {
-
-    public static final String ID = SerializableObjectFormat.class.getCanonicalName();
+public class SerializableObjectFormat<T extends Serializable> implements Format<T> {
+    @Override
+    public String getName() {
+        return "Serializable Object";
+    }
 
     @Override
-    public void write(T object, OutputMapper outputMapper) throws IOException {
-        final OutputStream outputStream = outputMapper.get().getOutputStream();
-        try (ObjectOutputStream oos = new ObjectOutputStream(outputStream)) {
-            oos.writeObject(object);
-            oos.flush();
-        } catch (final Exception e) {
-            Logger.logError(e);
-        }
+    public Optional<String> getFileExtension() {
+        return Optional.empty();
+    }
+
+    @Override
+    public boolean supportsParse() {
+        return true;
+    }
+
+    @Override
+    public boolean supportsSerialize() {
+        return true;
     }
 
     @Override
@@ -63,32 +69,13 @@ public class SerializableObjectFormat<T> implements Format<T> {
     }
 
     @Override
-    public String getFileExtension() {
-        return "serialized";
-    }
-
-    @Override
-    public SerializableObjectFormat<T> getInstance() {
-        return this;
-    }
-
-    @Override
-    public String getIdentifier() {
-        return ID;
-    }
-
-    @Override
-    public boolean supportsSerialize() {
-        return true;
-    }
-
-    @Override
-    public boolean supportsParse() {
-        return true;
-    }
-
-    @Override
-    public String getName() {
-        return "SerializableObjectFormat";
+    public void write(T object, OutputMapper outputMapper) throws IOException {
+        final OutputStream outputStream = outputMapper.get().getOutputStream();
+        try (ObjectOutputStream oos = new ObjectOutputStream(outputStream)) {
+            oos.writeObject(object);
+            oos.flush();
+        } catch (final Exception e) {
+            Logger.logError(e);
+        }
     }
 }

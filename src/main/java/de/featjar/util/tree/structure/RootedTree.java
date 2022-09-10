@@ -28,7 +28,7 @@ import java.util.Optional;
  * Use this only if nodes need to know about their parents.
  * If possible, use {@link Tree} instead, which allows reusing subtrees.
  *
- * @param <T> type of children, the implementing type must be castable to T
+ * @param <T> the type of children, the implementing type must be castable to T
  * @author Elias Kuiter
  */
 public abstract class RootedTree<T extends RootedTree<T>> extends Tree<T> {
