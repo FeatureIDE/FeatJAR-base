@@ -18,7 +18,7 @@
  *
  * See <https://github.com/FeatureIDE/FeatJAR-util> for further information.
  */
-package de.featjar.util.logging;
+package de.featjar.util.log;
 
 import de.featjar.util.data.Problem;
 import de.featjar.util.io.MultiStream;
@@ -70,7 +70,7 @@ public class Logger {
     /**
      * Configures the global logger.
      */
-    public static class LoggerConfiguration {
+    public static class Configuration {
         private final HashMap<MessageType, de.featjar.util.io.PrintStream> logStreams = new HashMap<>();
         private final LinkedList<Formatter> formatters = new LinkedList<>();
 
@@ -134,13 +134,13 @@ public class Logger {
     }
 
     /**
-     * Manipulates a logger configuration.
+     * Manipulates a configuration.
      */
-    public interface LoggerConfigurator extends Consumer<LoggerConfiguration> {}
+    public interface Configurator extends Consumer<Configuration> {}
 
     private static final PrintStream originalSystemOut = System.out;
     private static final PrintStream originalSystemErr = System.err;
-    private static LoggerConfiguration loggerConfiguration;
+    private static Configuration configuration;
 
     /**
      * Installs the global logger.
@@ -148,16 +148,16 @@ public class Logger {
      * That is, calls to {@link System#out} are equivalent to calling {@link #logInfo(String)}.
      * Analogously, calls to {@link System#err} are equivalent to calling {@link #logError(String)}.
      *
-     * @param loggerConfigurator a logger configurator
+     * @param configurator a configurator
      */
-    public static synchronized void install(LoggerConfigurator loggerConfigurator) {
-        if (loggerConfiguration != null) {
+    public static synchronized void install(Configurator configurator) {
+        if (configuration != null) {
             throw new IllegalStateException("logger already initialized");
         }
-        loggerConfiguration = new LoggerConfiguration();
-        loggerConfigurator.accept(loggerConfiguration);
-        System.setOut(loggerConfiguration.logStreams.get(MessageType.INFO));
-        System.setErr(loggerConfiguration.logStreams.get(MessageType.ERROR));
+        configuration = new Configuration();
+        configurator.accept(configuration);
+        System.setOut(configuration.logStreams.get(MessageType.INFO));
+        System.setErr(configuration.logStreams.get(MessageType.ERROR));
     }
 
     /**
@@ -165,10 +165,10 @@ public class Logger {
      * Resets the standard output/error streams.
      */
     public static synchronized void uninstall() {
-        if (loggerConfiguration == null) {
+        if (configuration == null) {
             throw new IllegalStateException("logger not yet initialized");
         }
-        loggerConfiguration = null;
+        configuration = null;
         System.setOut(originalSystemOut);
         System.setErr(originalSystemErr);
     }
@@ -269,8 +269,8 @@ public class Logger {
 
     private static synchronized void println(String message, MessageType messageType) {
         final String formattedMessage = formatMessage(message);
-        if (loggerConfiguration != null) {
-            loggerConfiguration.logStreams.get(messageType).println(formattedMessage);
+        if (configuration != null) {
+            configuration.logStreams.get(messageType).println(formattedMessage);
         } else {
             if (messageType == MessageType.ERROR) {
                 System.err.println(formattedMessage);
@@ -282,9 +282,9 @@ public class Logger {
 
     private static synchronized void println(Throwable error) {
         final String formattedMessage = formatMessage(error.getMessage());
-        if (loggerConfiguration != null) {
-            loggerConfiguration.logStreams.get(MessageType.ERROR).println(formattedMessage);
-            error.printStackTrace(loggerConfiguration.logStreams.get(MessageType.ERROR));
+        if (configuration != null) {
+            configuration.logStreams.get(MessageType.ERROR).println(formattedMessage);
+            error.printStackTrace(configuration.logStreams.get(MessageType.ERROR));
         } else {
             System.err.println(formattedMessage);
             error.printStackTrace(System.err);
@@ -292,15 +292,15 @@ public class Logger {
     }
 
     private static String formatMessage(String message) {
-        if (loggerConfiguration == null || loggerConfiguration.formatters.isEmpty()) {
+        if (configuration == null || configuration.formatters.isEmpty()) {
             return message;
         } else {
             final StringBuilder sb = new StringBuilder();
-            for (final Formatter formatter : loggerConfiguration.formatters) {
+            for (final Formatter formatter : configuration.formatters) {
                 sb.append(formatter.getPrefix());
             }
             sb.append(message);
-            for (final Formatter formatter : loggerConfiguration.formatters) {
+            for (final Formatter formatter : configuration.formatters) {
                 sb.append(formatter.getSuffix());
             }
             return sb.toString();

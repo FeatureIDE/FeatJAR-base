@@ -22,7 +22,7 @@ package de.featjar.util.io;
 
 import de.featjar.util.data.Result;
 import de.featjar.util.io.format.Format;
-import de.featjar.util.logging.Logger;
+import de.featjar.util.log.Logger;
 import java.io.BufferedInputStream;
 import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;

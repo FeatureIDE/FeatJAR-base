@@ -1,4 +1,4 @@
-package de.featjar.util.logging;
+package de.featjar.util.log;
 
 import org.junit.jupiter.api.Test;
 

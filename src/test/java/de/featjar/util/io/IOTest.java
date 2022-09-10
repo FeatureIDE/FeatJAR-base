@@ -186,7 +186,7 @@ public class IOTest {
             assertEquals(42, result.get());
 
             assertDoesNotThrow(() -> IO.save(42, testPath, new IntegerFormat()));
-            result = IO.load(testPath, FormatSupplier.of(new IntegerFormat()));
+            result = IO.load(testPath, new IntegerFormat());
             assertTrue(result.isPresent());
 
             result = IO.load(testPath, new IntegerFormat());

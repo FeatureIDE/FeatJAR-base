@@ -18,30 +18,47 @@
  *
  * See <https://github.com/FeatureIDE/FeatJAR-util> for further information.
  */
-package de.featjar.util.data;
+package de.featjar.util.log;
 
-import de.featjar.util.logging.Logger;
-import java.util.Map;
-import java.util.function.BiFunction;
+import java.util.Objects;
 
 /**
- * Abstract operation to modify elements from a {@link Cache}.
+ * Prepends a log message with an appropriate indent.
  *
  * @author Sebastian Krieter
+ * @author Elias Kuiter
  */
-public abstract class Operation {
+public class IndentFormatter implements Formatter {
+    private int level = 0;
+    private String symbol = "\t";
 
-    protected abstract Map<Identifier<?>, BiFunction<?, ?, ?>> getImplementations();
+    public void addIndent() {
+        level++;
+    }
 
-    @SuppressWarnings("unchecked")
-    public final <T> T apply(Identifier<T> identifier, Object parameters, Object element) {
-        try {
-            final BiFunction<T, Object, T> op4Rep =
-                    (BiFunction<T, Object, T>) getImplementations().get(identifier);
-            return (op4Rep != null) ? op4Rep.apply((T) element, parameters) : null;
-        } catch (final ClassCastException e) {
-            Logger.logError(e);
-            return null;
-        }
+    public void removeIndent() {
+        if (level > 0)
+            level--;
+    }
+
+    public int getLevel() {
+        return level;
+    }
+
+    public void setLevel(int level) {
+        this.level = Math.max(level, 0);
+    }
+
+    public String getSymbol() {
+        return symbol;
+    }
+
+    public void setSymbol(String symbol) {
+        this.symbol = Objects.requireNonNull(symbol);
+    }
+
+    @Override
+    public String getPrefix() {
+        return String.valueOf(symbol).repeat(Math.max(0, level));
     }
 }

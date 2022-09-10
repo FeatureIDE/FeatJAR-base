@@ -24,7 +24,7 @@ import de.featjar.util.data.Result;
 import de.featjar.util.io.InputMapper;
 import de.featjar.util.io.OutputMapper;
 import de.featjar.util.io.format.Format;
-import de.featjar.util.logging.Logger;
+import de.featjar.util.log.Logger;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;

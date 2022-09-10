@@ -18,26 +18,41 @@
  *
  * See <https://github.com/FeatureIDE/FeatJAR-util> for further information.
  */
-package de.featjar.util.logging;
+package de.featjar.util.log;
+
+import java.time.Instant;
+import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
+import java.time.format.FormatStyle;
+import java.util.Locale;
 
 /**
- * Formats a log message.
+ * Prepends a log message with a time stamp.
  *
  * @author Sebastian Krieter
  * @author Elias Kuiter
  */
-public interface Formatter {
-    /**
-     * {@return a prefix to a log message}
-     */
-    default String getPrefix() {
-        return "";
+public class TimeStampFormatter implements Formatter {
+    private DateTimeFormatter formatter =
+            DateTimeFormatter
+                    .ofLocalizedDateTime(FormatStyle.SHORT)
+                    .withLocale(Locale.UK)
+                    .withZone(ZoneId.systemDefault());
+
+    public DateTimeFormatter getFormatter() {
+        return formatter;
     }
 
-    /**
-     * {@return a suffix to a log message}
-     */
-    default String getSuffix() {
-        return "";
+    public void setFormatter(DateTimeFormatter formatter) {
+        this.formatter = formatter;
+    }
+
+    @Override
+    public String getPrefix() {
+        return formatter.format(getInstant()) + " ";
+    }
+
+    Instant getInstant() {
+        return Instant.now();
     }
 }

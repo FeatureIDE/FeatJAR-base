@@ -27,18 +27,45 @@ import java.util.function.Function;
 /**
  * A task that potentially takes a long time to finish and may fail to return a result.
  * Can be executed with the {@link Executor} and monitored with a {@link Monitor}.
- * Calling {@link #apply(Monitor)} directly is discouraged, use the {@link Executor} instead.
+ * Calling {@link #execute(Monitor)} directly is discouraged, use the {@link Executor} instead.
  *
  * @param <T> the supplied object's type
  * @author Sebastian Krieter
+ * @author Elias Kuiter
  */
 @FunctionalInterface
 public interface MonitorableSupplier<T> extends Function<Monitor, Result<T>> {
     /**
-     * Executes this task.
+     * {@return the result of this monitorable supplier}
+     * Performs no sanity checks, call {@link #apply(Monitor)}} instead.
      *
      * @param monitor the monitor
-     * @return the supplied object, if any
      */
-    Result<T> apply(Monitor monitor);
+    Result<T> execute(Monitor monitor);
+
+    /**
+     * {@return the result of this monitorable supplier}
+     * Performs sanity checks.
+     *
+     * @param monitor the monitor
+     */
+    @Override
+    default Result<T> apply(Monitor monitor) {
+        monitor = monitor != null ? monitor : new ProgressMonitor();
+        try {
+            return execute(monitor);
+        } catch (final Exception e) {
+            return Result.empty(e);
+        } finally {
+            monitor.setDone();
+        }
+    }
+
+    /**
+     * {@return the result of this monitorable supplier}
+     * Performs sanity checks.
+     */
+    default Result<T> apply() {
+        return apply(null);
+    }
 }

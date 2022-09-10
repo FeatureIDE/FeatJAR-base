@@ -20,7 +20,7 @@
  */
 package de.featjar.util.io.csv;
 
-import de.featjar.util.logging.Logger;
+import de.featjar.util.log.Logger;
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.nio.charset.StandardCharsets;

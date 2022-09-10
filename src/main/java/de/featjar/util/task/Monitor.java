@@ -160,6 +160,15 @@ public interface Monitor {
     /**
      * Creates a new child monitor to be used for monitoring a subordinate task.
      *
+     * @return the child monitor
+     */
+    default Monitor createChildMonitor() {
+        return createChildMonitor(1);
+    }
+
+    /**
+     * Creates a new child monitor to be used for monitoring a subordinate task.
+     *
      * @param stepsInParent the number of steps the child monitor should occupy in the parent monitor
      * @return the child monitor
      */

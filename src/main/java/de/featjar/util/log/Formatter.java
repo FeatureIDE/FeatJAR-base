@@ -18,19 +18,26 @@
  *
  * See <https://github.com/FeatureIDE/FeatJAR-util> for further information.
  */
-package de.featjar.util.data;
+package de.featjar.util.log;
 
 /**
- * Serves as a unique identifier for a provided object ({@link Provider}) in a
- * {@link Cache}. Is only used for its unique reference, therefore has no
- * attributes.
+ * Formats a log message.
  *
- * @param <T> the type of the provided object
+ * @author Sebastian Krieter
+ * @author Elias Kuiter
  */
-public class Identifier<T> {
+public interface Formatter {
+    /**
+     * {@return a prefix to a log message}
+     */
+    default String getPrefix() {
+        return "";
+    }
 
-    @Override
-    public String toString() {
-        return "Identifier [" + System.identityHashCode(this) + "]";
+    /**
+     * {@return a suffix to a log message}
+     */
+    default String getSuffix() {
+        return "";
     }
 }

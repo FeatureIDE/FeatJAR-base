@@ -26,21 +26,62 @@ import java.util.function.BiFunction;
 
 /**
  * A task that potentially takes a long time to finish and may fail to return a result.
- * Can be executed with the {@link Executor} and monitored with a {@link Monitor}.
- * Calling {@link #apply(T, Monitor)} directly is discouraged, use the {@link Executor} instead.
+ * Can be monitored with a {@link Monitor}.
  *
  * @param <T> the input object's type
  * @param <R> the supplied object's type
  * @author Sebastian Krieter
+ * @author Elias Kuiter
  */
 @FunctionalInterface
 public interface MonitorableFunction<T, R> extends BiFunction<T, Monitor, Result<R>> {
     /**
-     * Executes this task.
+     * {@return the result of this monitorable function applied to an input}
+     * Performs no sanity checks, call {@link #apply(Object, Monitor)} instead.
      *
      * @param input the input to the function
      * @param monitor the monitor
-     * @return the supplied object, if any
      */
-    Result<R> apply(T input, Monitor monitor);
+    Result<R> execute(T input, Monitor monitor);
+
+    /**
+     * {@return the result of this monitorable function applied to an input}
+     * Performs sanity checks.
+     *
+     * @param input the input to the function
+     * @param monitor the monitor
+     */
+    @Override
+    default Result<R> apply(T input, Monitor monitor) {
+        monitor = monitor != null ? monitor : new ProgressMonitor();
+        try {
+            return execute(input, monitor);
+        } catch (final Exception e) {
+            return Result.empty(e);
+        } finally {
+            monitor.setDone();
+        }
+    }
+
+    /**
+     * {@return the result of this monitorable function applied to an input}
+     * Performs sanity checks.
+     */
+    default Result<R> apply(T input) {
+        return apply(input , null);
+    }
+
+    /**
+     * {@return a composition of this monitorable function with another monitorable function}
+     * If this monitorable function fails, the entire monitorable function fails.
+     *
+     * @param monitorableFunction the monitorable function
+     * @param <S> the type of the returned monitorable function's result
+     */
+    default <S> MonitorableFunction<T, Result<S>> andThen(MonitorableFunction<R, S> monitorableFunction) {
+        // todo: either create child monitor on parent monitor or implement compose with ... variadic number of monitorable functions
+        return (t, monitor) ->
+                this.apply(t, monitor.createChildMonitor())
+                .map(r -> monitorableFunction.apply(r, monitor));
+    }
 }

@@ -20,7 +20,7 @@
  */
 package de.featjar.util.extension;
 
-import de.featjar.util.logging.Logger;
+import de.featjar.util.log.Logger;
 import java.io.IOException;
 import java.lang.reflect.Method;
 import java.net.URL;

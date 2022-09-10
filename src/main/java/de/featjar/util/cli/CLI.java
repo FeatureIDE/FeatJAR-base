@@ -26,7 +26,7 @@ import de.featjar.util.io.IO;
 import de.featjar.util.io.IOObject;
 import de.featjar.util.io.format.Format;
 import de.featjar.util.io.format.FormatSupplier;
-import de.featjar.util.logging.Logger;
+import de.featjar.util.log.Logger;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;

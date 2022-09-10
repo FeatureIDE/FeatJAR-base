@@ -20,7 +20,7 @@
  */
 package de.featjar.util.task;
 
-import de.featjar.util.logging.Logger;
+import de.featjar.util.log.Logger;
 
 import java.util.function.Supplier;
 
