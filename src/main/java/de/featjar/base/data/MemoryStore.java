@@ -10,7 +10,7 @@ public class MemoryStore implements Store {
     private final Map<Computation<?, ?>, Result<?>> computationResultCache = new HashMap<>();
 
     @Override
-    public <R> boolean has(Computation<?, R> computation) { // todo: return false for lambdas
+    public <R> boolean has(Computation<?, R> computation) { // todo: return false for lambdas, hash according to class+parameters
         return computationResultCache.containsKey(computation);
     }
 

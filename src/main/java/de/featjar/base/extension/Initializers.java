@@ -5,14 +5,14 @@ package de.featjar.base.extension;
  *
  * @author Elias Kuiter
  */
-public class Installers extends ExtensionPoint<Extension> {
-    private static final Installers INSTANCE = new Installers();
+public class Initializers extends ExtensionPoint<Extension> {
+    private static final Initializers INSTANCE = new Initializers();
 
-    public static Installers getInstance() {
+    public static Initializers getInstance() {
         return INSTANCE;
     }
 
-    private Installers() {}
+    private Initializers() {}
 
     @Override
     public ExtensionPoint<Extension> getInstanceAsExtensionPoint() {

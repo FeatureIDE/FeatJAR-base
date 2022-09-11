@@ -20,6 +20,7 @@
  */
 package de.featjar.base.data;
 
+import de.featjar.base.extension.Extension;
 import de.featjar.base.task.Monitor;
 import de.featjar.base.task.MonitorableFunction;
 
@@ -33,19 +34,12 @@ import java.util.Optional;
  * and {@link #getParameters()}.
  *
  * @param <T> the type of the input
- * @param <R> the type of the computation result
+ * @param <U> the type of the computation result
  * @author Sebastian Krieter
  * @author Elias Kuiter
  */
 @FunctionalInterface
-public interface Computation<T, R> extends MonitorableFunction<T, R> { // todo extend extension?
-
-    /**
-     * {@return a unique identifier for this computation}
-     */
-    default String getIdentifier() {
-        return getClass().getCanonicalName();
-    }
+public interface Computation<T, U> extends MonitorableFunction<T, U>, Extension {
 
     /**
      * {@return the parameters of this computation}
@@ -59,17 +53,17 @@ public interface Computation<T, R> extends MonitorableFunction<T, R> { // todo e
     /**
      * {@return the preferred computation for the input of this computation}
      * Can be used to specify the recommended input for this computation.
-     * @param <U> the type of the input of the preferred input computation
+     * @param <S> the type of the input of the preferred input computation
      */
-    default <U> Optional<Computation<U, T>> getPreferredInputComputation() {
+    default <S> Optional<Computation<S, T>> getPreferredInputComputation() {
         return Optional.empty();
     }
 
-    default Result<R> apply(T input, Monitor monitor, Store store) {
+    default Result<U> apply(T input, Monitor monitor, Store store) {
         if (store.has(this))
             return store.get(this);
         else {
-            Result<R> output = this.apply(input, monitor);
+            Result<U> output = this.apply(input, monitor);
             store.put(this, output);
             return output;
         }
@@ -82,11 +76,11 @@ public interface Computation<T, R> extends MonitorableFunction<T, R> { // todo e
      * @param computation the computation
      * @param <S> the type of the returned computation's result
      */
-    default <S> Computation<T, Result<S>> andThen(Computation<R, S> computation, Store store) {
+    default <V> Computation<T, Result<V>> andThen(Computation<U, V> computation, Store store) {
         // todo: either create child monitor on parent monitor or implement compose with ... variadic number of monitorable functions
         return (t, monitor) ->
                 this.apply(t, monitor.createChildMonitor(), store)
-                        .map(r -> computation.apply(r, monitor, store));
+                        .map(u -> computation.apply(u, monitor, store));
     }
 
 //    /**

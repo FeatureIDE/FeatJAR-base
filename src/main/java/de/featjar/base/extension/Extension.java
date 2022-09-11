@@ -26,7 +26,7 @@ package de.featjar.base.extension;
  * @author Sebastian Krieter
  * @author Elias Kuiter
  */
-public interface Extension { // todo: T extends ExtensionPoint ?
+public interface Extension {
 
     /**
      * {@return a unique identifier for this extension}
