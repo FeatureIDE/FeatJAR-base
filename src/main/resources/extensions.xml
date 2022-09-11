@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
 <extensions>
-    <point id="de.featjar.util.extension.Installers">
-        <extension id="de.featjar.util.log.Log" />
+    <point id="de.featjar.base.extension.Installers">
+        <extension id="de.featjar.base.log.Log" />
     </point>
 </extensions>

@@ -1,4 +1,4 @@
-# FeatJAR-util
+# FeatJAR-base
 
 This repository contains common utilities and data structures shared by several FeatJAR modules.
 
