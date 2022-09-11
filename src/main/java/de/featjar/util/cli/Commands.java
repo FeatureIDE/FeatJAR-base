@@ -23,22 +23,22 @@ package de.featjar.util.cli;
 import de.featjar.util.extension.ExtensionPoint;
 
 /**
- * Manages all CLI functions.
+ * Extension point for registering commands.
  *
  * @author Sebastian Krieter
  */
-public class CLIFunctions extends ExtensionPoint<CLIFunction> {
+public class Commands extends ExtensionPoint<Command> {
 
-    private static final CLIFunctions INSTANCE = new CLIFunctions();
+    private static final Commands INSTANCE = new Commands();
 
-    public static CLIFunctions getInstance() {
+    public static Commands getInstance() {
         return INSTANCE;
     }
 
-    private CLIFunctions() {}
+    private Commands() {}
 
     @Override
-    public ExtensionPoint<CLIFunction> getExtensionPointInstance() {
+    public ExtensionPoint<Command> getInstanceAsExtensionPoint() {
         return INSTANCE;
     }
 }

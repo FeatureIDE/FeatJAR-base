@@ -29,7 +29,7 @@ import java.util.concurrent.CopyOnWriteArrayList;
 
 /**
  * An extension point installs {@link Extension extensions} of the same type.
- * Implementations must be singletons for their installation in {@link Extensions#install()} to work correctly.
+ * Implementations must be singletons for their installation in {@link ExtensionManager} to work correctly.
  * As a naming convention, an extension named "Thing" belongs to an extension point named "Things".
  *
  * @param <T> the type of the loaded extensions
@@ -52,7 +52,7 @@ public abstract class ExtensionPoint<T extends Extension> {
     /**
      * {@return a singleton instance of this extension point}
      */
-    public abstract ExtensionPoint<T> getExtensionPointInstance();
+    public abstract ExtensionPoint<T> getInstanceAsExtensionPoint();
 
     /**
      * Installs a new extension at this extension point.

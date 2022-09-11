@@ -26,7 +26,7 @@ package de.featjar.util.extension;
  * @author Sebastian Krieter
  * @author Elias Kuiter
  */
-public interface Extension {
+public interface Extension { // todo: T extends ExtensionPoint ?
 
     /**
      * {@return a unique identifier for this extension}
@@ -45,7 +45,7 @@ public interface Extension {
     }
 
     /**
-     * Deinitializes this extension, called by {@link Extensions}.
+     * Deinitializes this extension, called by {@link ExtensionManager}.
      */
     default void uninstall() {
     }

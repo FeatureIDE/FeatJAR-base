@@ -26,7 +26,7 @@ import java.util.List;
 import java.util.ListIterator;
 
 /**
- * Interface for an algorithm to run via a {@link CLIFunction}.
+ * Interface for an algorithm to run via a {@link Command}.
  *
  * @author Sebastian Krieter
  */

@@ -21,6 +21,7 @@
 package de.featjar.util.log;
 
 import de.featjar.util.data.Problem;
+import de.featjar.util.extension.Extension;
 import de.featjar.util.io.MultiStream;
 import de.featjar.util.task.Monitor;
 import de.featjar.util.task.ProgressLogger;
@@ -31,7 +32,6 @@ import java.io.FileOutputStream;
 import java.io.PrintStream;
 import java.nio.file.Path;
 import java.util.*;
-import java.util.function.Consumer;
 
 /**
  * Logs messages to standard output and files.
@@ -40,11 +40,11 @@ import java.util.function.Consumer;
  * @author Sebastian Krieter
  * @author Elias Kuiter
  */
-public class Logger {
+public class Log implements Extension {
     /**
-     * Types of log messages.
+     * Verbosity of the log.
      */
-    public enum MessageType {
+    public enum Verbosity {
         /**
          * Error message.
          * Typically used to log exceptions and warnings.
@@ -68,108 +68,130 @@ public class Logger {
     }
 
     /**
-     * Configures the global logger.
+     * Configures a log.
      */
     public static class Configuration {
         //todo: consider using an OutputMapper instead?
-        private final HashMap<MessageType, de.featjar.util.io.PrintStream> logStreams = new HashMap<>();
-        private final LinkedList<Formatter> formatters = new LinkedList<>();
+        protected final HashMap<Verbosity, de.featjar.util.io.PrintStream> logStreams = new HashMap<>();
+        protected final LinkedList<Formatter> formatters = new LinkedList<>();
 
         {
-            Arrays.asList(MessageType.values()).forEach(messageType ->
-                    logStreams.put(messageType, new de.featjar.util.io.PrintStream(new MultiStream())));
+            Arrays.asList(Verbosity.values()).forEach(verbosity ->
+                    logStreams.put(verbosity, new de.featjar.util.io.PrintStream(new MultiStream())));
         }
 
         /**
          * Configures a stream to be a logging target.
          *
          * @param stream the stearm
-         * @param messageTypes the logged message types
+         * @param verbosities the logged verbosities
+         * @return this configuration
          */
-        public synchronized void logToStream(PrintStream stream, MessageType... messageTypes) {
-            Arrays.asList(messageTypes)
-                    .forEach(messageType -> ((MultiStream) logStreams.get(messageType).getOutputStream())
+        public synchronized Configuration logToStream(PrintStream stream, Verbosity... verbosities) {
+            Arrays.asList(verbosities)
+                    .forEach(verbosity -> ((MultiStream) logStreams.get(verbosity).getOutputStream())
                             .addStream(stream));
+            return this;
         }
 
         /**
          * Configures a file to be a logging target.
          *
          * @param path the path to the file
-         * @param messageTypes the logged message types
+         * @param verbosities the logged verbosities
+         * @return this configuration
          */
-        public synchronized void logToFile(Path path, MessageType... messageTypes) {
+        public synchronized Configuration logToFile(Path path, Verbosity... verbosities) {
             try {
-                logToStream(new PrintStream(new FileOutputStream(path.toAbsolutePath().normalize().toFile())), messageTypes);
+                logToStream(new PrintStream(new FileOutputStream(path.toAbsolutePath().normalize().toFile())), verbosities);
             } catch (FileNotFoundException e) {
                 throw new RuntimeException(e);
             }
+            return this;
         }
 
         /**
          * Configures the standard output stream to be a logging target.
          *
-         * @param messageTypes the logged message types
+         * @param verbosities the logged verbosities
+         * @return this configuration
          */
-        public synchronized void logToSystemOut(MessageType... messageTypes) {
-            logToStream(System.out, messageTypes);
+        public synchronized Configuration logToSystemOut(Verbosity... verbosities) {
+            logToStream(System.out, verbosities);
+            return this;
         }
 
         /**
          * Configures the standard error stream to be a logging target.
          *
-         * @param messageTypes the logged message types
+         * @param verbosities the logged verbosities
+         * @return this configuration
          */
-        public synchronized void logToSystemErr(MessageType... messageTypes) {
-            logToStream(System.err, messageTypes);
+        public synchronized Configuration logToSystemErr(Verbosity... verbosities) {
+            logToStream(System.err, verbosities);
+            return this;
         }
 
         /**
          * Configures a formatter for all logging targets.
          *
          * @param formatter the formatter
+         * @return this configuration
          */
-        public synchronized void addFormatter(Formatter formatter) {
+        public synchronized Configuration addFormatter(Formatter formatter) {
             formatters.add(formatter);
+            return this;
         }
     }
 
+    private static final Log INSTANCE = new Log();
+    protected final PrintStream originalSystemOut = System.out;
+    protected final PrintStream originalSystemErr = System.err;
+    protected Configuration configuration = new Configuration();
+
+    protected Log() {
+    }
+
     /**
-     * Manipulates a configuration.
+     * {@return the global log}
      */
-    public interface Configurator extends Consumer<Configuration> {}
-
-    private static final PrintStream originalSystemOut = System.out;
-    private static final PrintStream originalSystemErr = System.err;
-    private static Configuration configuration;
+    public static Log getInstance() {
+        return INSTANCE;
+    }
 
     /**
-     * Installs the global logger.
+     * {@return this log's configuration}
+     */
+    public Configuration getConfiguration() {
+        return configuration;
+    }
+
+    /**
+     * Sets this log's configuration.
+     */
+    public void setConfiguration(Configuration configuration) {
+        this.configuration = configuration;
+    }
+
+    /**
+     * Installs this log.
      * Overrides the standard output/error streams.
-     * That is, calls to {@link System#out} are equivalent to calling {@link #logInfo(String)}.
-     * Analogously, calls to {@link System#err} are equivalent to calling {@link #logError(String)}.
-     *
-     * @param configurator a configurator
+     * That is, calls to {@link System#out} are equivalent to calling {@link #info(String)}.
+     * Analogously, calls to {@link System#err} are equivalent to calling {@link #error(String)}.
      */
-    public static synchronized void install(Configurator configurator) {
-        if (configuration != null) {
-            throw new IllegalStateException("logger already initialized");
-        }
-        configuration = new Configuration();
-        configurator.accept(configuration);
-        System.setOut(configuration.logStreams.get(MessageType.INFO));
-        System.setErr(configuration.logStreams.get(MessageType.ERROR));
+    @Override
+    public boolean install() {
+        System.setOut(configuration.logStreams.get(Verbosity.INFO));
+        System.setErr(configuration.logStreams.get(Verbosity.ERROR));
+        return true;
     }
 
     /**
-     * Uninstalls the global logger.
+     * Uninstalls this log.
      * Resets the standard output/error streams.
      */
-    public static synchronized void uninstall() {
-        if (configuration == null) {
-            throw new IllegalStateException("logger not yet initialized");
-        }
-        configuration = null;
+    @Override
+    public void uninstall() {
         System.setOut(originalSystemOut);
         System.setErr(originalSystemErr);
     }
@@ -179,11 +201,11 @@ public class Logger {
      *
      * @param problems the problems
      */
-    public static void logProblems(List<Problem> problems) {
+    public void problems(List<Problem> problems) {
         problems.stream()
                 .map(Problem::getException)
                 .flatMap(Optional::stream)
-                .forEach(Logger::logError);
+                .forEach(this::error);
     }
 
     /**
@@ -191,7 +213,7 @@ public class Logger {
      *
      * @param error the error object
      */
-    public static void logError(Throwable error) {
+    public void error(Throwable error) {
         println(error);
     }
 
@@ -200,8 +222,8 @@ public class Logger {
      *
      * @param message the error message
      */
-    public static void logError(String message) {
-        println(message, MessageType.ERROR);
+    public void error(String message) {
+        println(message, Verbosity.ERROR);
     }
 
     /**
@@ -209,8 +231,8 @@ public class Logger {
      *
      * @param messageObject the message object
      */
-    public static void logInfo(Object messageObject) {
-        println(String.valueOf(messageObject), MessageType.INFO);
+    public void info(Object messageObject) {
+        println(String.valueOf(messageObject), Verbosity.INFO);
     }
 
     /**
@@ -218,8 +240,8 @@ public class Logger {
      *
      * @param message the message
      */
-    public static void logInfo(String message) {
-        println(message, MessageType.INFO);
+    public void info(String message) {
+        println(message, Verbosity.INFO);
     }
 
     /**
@@ -227,8 +249,8 @@ public class Logger {
      *
      * @param messageObject the message object
      */
-    public static void logDebug(Object messageObject) {
-        println(String.valueOf(messageObject), MessageType.DEBUG);
+    public void debug(Object messageObject) {
+        println(String.valueOf(messageObject), Verbosity.DEBUG);
     }
 
     /**
@@ -236,8 +258,8 @@ public class Logger {
      *
      * @param message the message
      */
-    public static void logDebug(String message) {
-        println(message, MessageType.DEBUG);
+    public void debug(String message) {
+        println(message, Verbosity.DEBUG);
     }
 
     /**
@@ -245,8 +267,8 @@ public class Logger {
      *
      * @param messageObject the message object
      */
-    public static void logProgress(Object messageObject) {
-        println(String.valueOf(messageObject), MessageType.DEBUG);
+    public void progress(Object messageObject) {
+        println(String.valueOf(messageObject), Verbosity.DEBUG);
     }
 
     /**
@@ -254,26 +276,26 @@ public class Logger {
      *
      * @param message the message
      */
-    public static void logProgress(String message) {
-        println(message, MessageType.PROGRESS);
+    public void progress(String message) {
+        println(message, Verbosity.PROGRESS);
     }
 
     /**
      * Logs a message.
      *
      * @param message the message
-     * @param messageType the message type
+     * @param verbosity the verbosities
      */
-    public static void log(String message, MessageType messageType) {
-        println(message, messageType);
+    public void log(String message, Verbosity verbosity) {
+        println(message, verbosity);
     }
 
-    private static synchronized void println(String message, MessageType messageType) {
+    protected void println(String message, Verbosity verbosity) {
         final String formattedMessage = formatMessage(message);
         if (configuration != null) {
-            configuration.logStreams.get(messageType).println(formattedMessage);
+            configuration.logStreams.get(verbosity).println(formattedMessage);
         } else {
-            if (messageType == MessageType.ERROR) {
+            if (verbosity == Verbosity.ERROR) {
                 System.err.println(formattedMessage);
             } else {
                 System.out.println(formattedMessage);
@@ -281,18 +303,18 @@ public class Logger {
         }
     }
 
-    private static synchronized void println(Throwable error) {
+    protected void println(Throwable error) {
         final String formattedMessage = formatMessage(error.getMessage());
         if (configuration != null) {
-            configuration.logStreams.get(MessageType.ERROR).println(formattedMessage);
-            error.printStackTrace(configuration.logStreams.get(MessageType.ERROR));
+            configuration.logStreams.get(Verbosity.ERROR).println(formattedMessage);
+            error.printStackTrace(configuration.logStreams.get(Verbosity.ERROR));
         } else {
             System.err.println(formattedMessage);
             error.printStackTrace(System.err);
         }
     }
 
-    private static String formatMessage(String message) {
+    protected String formatMessage(String message) {
         if (configuration == null || configuration.formatters.isEmpty()) {
             return message;
         } else {
@@ -315,7 +337,7 @@ public class Logger {
      * @param interval the interval
      * @return the interval thread
      */
-    public static IntervalThread startProgressLogger(Monitor monitor, long interval) {
+    public IntervalThread startProgressLogger(Monitor monitor, long interval) {
         final IntervalThread intervalThread = new IntervalThread(new ProgressLogger(monitor), interval);
         intervalThread.start();
         return intervalThread;

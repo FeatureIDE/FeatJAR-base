@@ -20,6 +20,7 @@
  */
 package de.featjar.util.io.xml;
 
+import de.featjar.util.Feat;
 import de.featjar.util.data.Problem;
 import de.featjar.util.data.Result;
 import de.featjar.util.io.InputHeader;
@@ -27,7 +28,7 @@ import de.featjar.util.io.InputMapper;
 import de.featjar.util.io.format.Format;
 import de.featjar.util.io.format.ParseException;
 import de.featjar.util.io.format.ParseProblem;
-import de.featjar.util.log.Logger;
+import de.featjar.util.log.Log;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.StringReader;
@@ -171,7 +172,7 @@ public abstract class XMLFormat<T> implements Format<T> {
         try {
             db = dbf.newDocumentBuilder();
         } catch (final ParserConfigurationException pce) {
-            Logger.logError(pce);
+            Feat.log().error(pce);
             return "";
         }
         final Document doc = db.newDocument();
@@ -187,7 +188,7 @@ public abstract class XMLFormat<T> implements Format<T> {
             transformer.transform(new DOMSource(doc), streamResult);
             return prettyPrint(streamResult.getWriter().toString());
         } catch (final IOException | TransformerException e) {
-            Logger.logError(e);
+            Feat.log().error(e);
             return null; // todo: how to handle serialization errors?
         }
     }
@@ -222,7 +223,7 @@ public abstract class XMLFormat<T> implements Format<T> {
                 }
             }
         } catch (final IOException e) {
-            Logger.logError(e);
+            Feat.log().error(e);
         }
         return result.toString();
     }

@@ -35,18 +35,16 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
+import java.util.*;
 import java.util.stream.Collectors;
 import org.junit.jupiter.api.Test;
 
+@SuppressWarnings("OptionalGetWithoutIsPresent")
 public class IOTest {
     static class IntegerFormat implements Format<Integer> {
         @Override
-        public String getFileExtension() {
-            return "int";
+        public Optional<String> getFileExtension() {
+            return Optional.of("int");
         }
 
         @Override
@@ -77,8 +75,8 @@ public class IOTest {
 
     static class IntegerTreeFormat implements Format<LabeledTree<Integer>> {
         @Override
-        public String getFileExtension() {
-            return "dat";
+        public Optional<String> getFileExtension() {
+            return Optional.of("dat");
         }
 
         @Override
@@ -109,7 +107,7 @@ public class IOTest {
             LabeledTree<Integer> integerTree = new LabeledTree<>(Integer.valueOf(lines.remove(0)));
             for (String line : lines) {
                 Result<LabeledTree<Integer>> result = inputMapper.withMainPath(
-                        IOObject.getPathWithExtension(line, getFileExtension()),
+                        IOObject.getPathWithExtension(line, getFileExtension().orElse(null)),
                         () -> getInstance().parse(inputMapper));
                 if (result.isPresent()) integerTree.addChild(result.get());
                 else problems.add(new Problem("could not parse subtree", Problem.Severity.WARNING));
@@ -133,7 +131,7 @@ public class IOTest {
                                     .collect(Collectors.joining("\n")));
             for (LabeledTree<Integer> child : object.getChildren()) {
                 outputMapper.withMainPath(
-                        IOObject.getPathWithExtension(String.valueOf(child.hashCode()), getFileExtension()),
+                        IOObject.getPathWithExtension(String.valueOf(child.hashCode()), getFileExtension().orElse(null)),
                         () -> getInstance().write(child, outputMapper));
             }
         }
@@ -141,8 +139,8 @@ public class IOTest {
 
     static class NestedFormat implements Format<List<Integer>> {
         @Override
-        public String getFileExtension() {
-            return "dat";
+        public Optional<String> getFileExtension() {
+            return Optional.of("dat");
         }
 
         @Override
@@ -168,7 +166,7 @@ public class IOTest {
                                 .getPath(outputMapper.get())
                                 .get()
                                 .resolveSibling(IOObject.getPathWithExtension(
-                                                String.valueOf(object.remove(0)), getFileExtension())
+                                                String.valueOf(object.remove(0)), getFileExtension().orElse(null))
                                         .resolve("index")),
                         () -> getInstance().write(object, outputMapper));
             }
@@ -216,6 +214,7 @@ public class IOTest {
         Files.delete(Paths.get("temp"));
     }
 
+    @SuppressWarnings("resource")
     public void testIntegerTree(Path testPath) throws IOException {
         try {
             LabeledTree<Integer> integerTree = new LabeledTree<>(1);

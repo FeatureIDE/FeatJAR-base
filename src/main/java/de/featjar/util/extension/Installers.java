@@ -15,7 +15,7 @@ public class Installers extends ExtensionPoint<Extension> {
     private Installers() {}
 
     @Override
-    public ExtensionPoint<Extension> getExtensionPointInstance() {
+    public ExtensionPoint<Extension> getInstanceAsExtensionPoint() {
         return INSTANCE;
     }
 }

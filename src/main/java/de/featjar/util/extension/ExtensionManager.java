@@ -20,7 +20,8 @@
  */
 package de.featjar.util.extension;
 
-import de.featjar.util.log.Logger;
+import de.featjar.util.Feat;
+import de.featjar.util.log.Log;
 import java.io.IOException;
 import java.lang.reflect.Method;
 import java.net.URL;
@@ -40,69 +41,75 @@ import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
 /**
- * Searches, registers, and unregisters extensions on the classpath.
+ * Searches, installs, and uninstalls extensions on the classpath.
  *
  * @author Sebastian Krieter
  * @author Elias Kuiter
  */
-public class Extensions {
-    /**
-     * Maps identifiers of extension points to identifiers of registered extensions.
-     */
-    private static HashMap<String, List<String>> extensionMap;
-    private static Set<ExtensionPoint<?>> extensionPoints;
+public class ExtensionManager implements AutoCloseable {
+    private static ExtensionManager instance;
 
     /**
-     * Registers all extensions that can be found in the class path.
+     * {@return the current extension manager, initializing it if needed}
+     */
+    public static ExtensionManager getInstance() {
+        return instance == null ? new ExtensionManager() : instance;
+    }
+
+    /**
+     * Removes the current extension manager.
+     * The next call to {@link #getInstance()} will create a new extension manager.
+     */
+    public static void resetInstance() {
+        instance = null;
+    }
+
+    private final HashMap<String, List<String>> extensionMap;
+    private final Set<ExtensionPoint<?>> extensionPoints;
+
+    /**
+     * Installs all extensions that can be found in the class path.
      * To this end, filters all files on the class path for extension definition files, and loads each of them.
      */
     @SuppressWarnings({"unchecked", "rawtypes"})
-    public static synchronized void install() {
-        if (extensionMap != null) {
-            throw new IllegalStateException("extensions already registered");
-        }
+    protected ExtensionManager() {
         extensionMap = new HashMap<>();
         extensionPoints = new HashSet<>();
         getResources().stream() //
-                .filter(Extensions::filterByFileName) //
-                .peek(Logger::logDebug)
-                .forEach(Extensions::loadExtensionDefinitionFile);
+                .filter(ExtensionManager::filterByFileName) //
+                .peek(message -> Feat.log().debug(message))
+                .forEach(this::loadExtensionDefinitionFile);
         final ClassLoader systemClassLoader = ClassLoader.getSystemClassLoader();
         for (final Entry<String, List<String>> entry : extensionMap.entrySet()) {
             final String extensionPointId = entry.getKey();
             try {
                 final Class<ExtensionPoint<?>> extensionPointClass = (Class<ExtensionPoint<?>>) systemClassLoader.loadClass(extensionPointId);
-                final Method instanceMethod = extensionPointClass.getDeclaredMethod("getExtensionPointInstance");
+                final Method instanceMethod = extensionPointClass.getDeclaredMethod("getInstanceAsExtensionPoint");
                 final ExtensionPoint ep = (ExtensionPoint) instanceMethod.invoke(null);
                 extensionPoints.add(ep);
                 for (final String extensionId : entry.getValue()) {
                     try {
                         final Class<Extension> extensionClass = (Class<Extension>) systemClassLoader.loadClass(extensionId);
-                        Logger.logDebug(extensionClass.toString());
+                        Feat.log().debug(extensionClass.toString());
                         Extension extension = extensionClass.getConstructor().newInstance();
                         ep.installExtension(extension);
                     } catch (final Exception e) {
-                        Logger.logError(e);
+                        Feat.log().error(e);
                     }
                 }
             } catch (final Exception e) {
-                Logger.logError(e);
+                Feat.log().error(e);
             }
         }
     }
 
     /**
-     * Unregisters all currently registered extensions.
+     * Uninstalls all currently installed extensions.
      */
-    public static synchronized void uninstall() {
-        if (extensionMap == null) {
-            throw new IllegalStateException("extensions not yet registered");
-        }
+    @Override
+    public void close() {
         extensionPoints.forEach(ExtensionPoint::uninstallExtensions);
-        extensionMap.clear();
-        extensionPoints.clear();
-        extensionMap = null;
-        extensionPoints = null;
+        resetInstance();
     }
 
     /**
@@ -117,17 +124,17 @@ public class Extensions {
             }
             return false;
         } catch (final Exception e) {
-            Logger.logError(e);
+            Feat.log().error(e);
             return false;
         }
     }
 
     /**
-     * Registers all extensions from a given extension definition file.
+     * Installs all extensions from a given extension definition file.
      *
      * @param file the extension definition file
      */
-    private static void loadExtensionDefinitionFile(String file) {
+    private void loadExtensionDefinitionFile(String file) {
         try {
             final Enumeration<URL> systemResources =
                     ClassLoader.getSystemClassLoader().getResources(file);
@@ -159,11 +166,11 @@ public class Extensions {
                         }
                     }
                 } catch (final Exception e) {
-                    Logger.logError(e);
+                    Feat.log().error(e);
                 }
             }
         } catch (final Exception e) {
-            Logger.logError(e);
+            Feat.log().error(e);
         }
     }
 
@@ -187,7 +194,7 @@ public class Extensions {
                     }
                 }
             } catch (final IOException e) {
-                Logger.logError(e);
+                Feat.log().error(e);
             }
         }
         return resources;

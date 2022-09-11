@@ -25,6 +25,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.Optional;
 import java.util.Set;
 
 /**
@@ -42,7 +43,7 @@ public abstract class Binary implements Extension {
     public abstract Set<String> getResourceNames();
 
     public Optional<Path> getPath() {
-        return null;
+        return Optional.empty();
     }
 
     public void extractResources() {

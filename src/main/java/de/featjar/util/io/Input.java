@@ -20,9 +20,10 @@
  */
 package de.featjar.util.io;
 
+import de.featjar.util.Feat;
 import de.featjar.util.data.Result;
 import de.featjar.util.io.format.Format;
-import de.featjar.util.log.Logger;
+import de.featjar.util.log.Log;
 import java.io.BufferedInputStream;
 import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
@@ -121,7 +122,7 @@ public abstract class Input implements IOObject {
         try {
             return Result.of(new java.lang.String(inputStream.readAllBytes(), charset));
         } catch (final IOException e) {
-            Logger.logError(e);
+            Feat.log().error(e);
             return Result.empty(e);
         }
     }

@@ -21,12 +21,10 @@
 package de.featjar.util.bin;
 
 public class OperatingSystem {
-
     public static final boolean IS_WINDOWS;
     public static final boolean IS_MAC;
     public static final boolean IS_UNIX;
     public static final String HOME_DIRECTORY;
-
     static {
         final String osName = System.getProperty("os.name").toLowerCase();
         IS_WINDOWS = osName.matches(".*(win).*");

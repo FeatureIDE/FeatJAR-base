@@ -20,9 +20,10 @@
  */
 package de.featjar.util.io.csv;
 
+import de.featjar.util.Feat;
 import de.featjar.util.io.IO;
 import de.featjar.util.io.Output;
-import de.featjar.util.log.Logger;
+import de.featjar.util.log.Log;
 
 import java.io.IOException;
 import java.math.BigDecimal;
@@ -306,7 +307,7 @@ public class CSVFile {
                 }
                 values.clear();
             } catch (final IOException e) {
-                Logger.logError(e);
+                Feat.log().error(e);
             }
         }
         return this;

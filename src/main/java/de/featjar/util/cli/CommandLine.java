@@ -20,22 +20,23 @@
  */
 package de.featjar.util.cli;
 
+import de.featjar.util.Feat;
+import de.featjar.util.FeatJAR;
 import de.featjar.util.data.Result;
-import de.featjar.util.extension.Extensions;
 import de.featjar.util.io.IO;
 import de.featjar.util.io.format.Format;
 import de.featjar.util.io.format.FormatSupplier;
-import de.featjar.util.log.Logger;
+import de.featjar.util.log.Log;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.io.PrintStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.Iterator;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
@@ -43,87 +44,78 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
+import java.util.function.Consumer;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 /**
- * Command line interface for several functions of FeatureIDE.
+ * Runs commands.
  *
  * @author Sebastian Krieter
+ * @author Elias Kuiter
  */
-public class CLI {
-    public static final String DEFAULT_VERBOSITY = "info";
+public class CommandLine {
+    public static final String DEFAULT_MAXIMUM_VERBOSITY = "info";
     public static final String SYSTEM_INPUT = "system:in.xml"; //todo
     public static final String SYSTEM_OUTPUT = "system:out";
     public static final String SYSTEM_ERROR = "system:err";
     private static final Pattern SYSTEM_INPUT_PATTERN = Pattern.compile("system:in\\.(.+)");
 
-    public static void main(String[] args) {
-        Extensions.install();
+    public static void run(String[] args) {
         if (args.length == 0) {
-            printError("No function specified. Please specify a function as the first argument.");
+            System.err.println("No command given. Please pass a command as the first argument.");
+            printUsage();
             return;
         }
-        final String functionName = args[0];
-
-        CLIFunctions.getInstance().getExtensions().stream()
-                .filter(e -> Objects.equals(functionName, e.getName()))
+        final String commandName = args[0];
+        Commands.getInstance().getExtensions().stream()
+                .filter(e -> Objects.equals(commandName, e.getName()))
                 .findFirst()
                 .ifPresentOrElse(
-                        function -> {
-                            runFunction(args, function);
-                        },
+                        command -> runCommand(command, args),
                         () -> {
-                            printError("The function " + functionName + " could not be found.");
+                            System.err.println("The command " + commandName + " could not be found.");
+                            printUsage();
                         });
     }
 
-    public static void installLogger(String verbosity) {
+    private static void printUsage() {
+        System.out.println("The following commands are available:");
+        for (final Command command : Commands.getInstance().getExtensions()) {
+            System.out.printf("\t%-20s %s\n", command.getName(), command.getDescription());
+        }
+    }
+
+    private static void runCommand(Command command, String[] args) {
+        try {
+            command.run(Arrays.asList(args).subList(1, args.length));
+        } catch (final IllegalArgumentException e) {
+            System.err.println(e.getMessage());
+            System.err.println(command.getUsage());
+        }
+    }
+
+    public static Consumer<FeatJAR.Configuration> configureVerbosity(String verbosity) {
         String[] verbosities = new String[] {"none", "error", "info", "debug", "progress"};
         if (!Arrays.asList(verbosities).contains(verbosity))
             throw new IllegalArgumentException("invalid verbosity " + verbosity);
-        Logger.install(cfg -> {
+        return cfg -> {
             if (!verbosity.equals("none")) {
-                cfg.logToSystemErr(Logger.MessageType.ERROR);
+                cfg.log.logToSystemErr(Log.Verbosity.ERROR);
             }
             switch (verbosity) {
-                case "progress":
-                    cfg.logToSystemOut(Logger.MessageType.INFO, Logger.MessageType.DEBUG, Logger.MessageType.PROGRESS);
+                case "info":
+                    cfg.log.logToSystemOut(Log.Verbosity.INFO);
                     break;
                 case "debug":
-                    cfg.logToSystemOut(Logger.MessageType.INFO, Logger.MessageType.DEBUG);
+                    cfg.log.logToSystemOut(Log.Verbosity.INFO, Log.Verbosity.DEBUG);
                     break;
-                case "info":
-                    cfg.logToSystemOut(Logger.MessageType.INFO);
-                    break;
-                case "error":
-                    cfg.logToSystemOut();
+                case "progress":
+                    cfg.log.logToSystemOut(Log.Verbosity.INFO, Log.Verbosity.DEBUG, Log.Verbosity.PROGRESS);
                     break;
             }
-        });
-    }
-
-    private static void printError(String errorMessage) {
-        System.err.println(errorMessage);
-        printHelp(System.err);
-    }
-
-    private static void runFunction(String[] args, CLIFunction function) {
-        try {
-            function.run(Arrays.asList(args).subList(1, args.length));
-        } catch (final IllegalArgumentException e) {
-            System.err.println(e.getMessage());
-            System.err.println(function.getHelp());
-        }
-    }
-
-    private static void printHelp(PrintStream printStream) {
-        printStream.println("The following functions are available:");
-        for (final CLIFunction availableFunction :
-                CLIFunctions.getInstance().getExtensions()) {
-            printStream.printf("\t%-20s %s\n", availableFunction.getName(), availableFunction.getDescription());
-        }
+        };
     }
 
     public static String getArgValue(final Iterator<String> iterator, final String arg) {
@@ -138,7 +130,7 @@ public class CLI {
         final ExecutorService executor = Executors.newSingleThreadExecutor();
         final Future<T> future = executor.submit(method);
         try {
-            return timeout == 0 ? future.get() : future.get(timeout, TimeUnit.MILLISECONDS);
+            return Optional.of(timeout == 0 ? future.get() : future.get(timeout, TimeUnit.MILLISECONDS));
         } catch (final TimeoutException e) {
             System.exit(0);
         } catch (ExecutionException | InterruptedException e) {
@@ -147,7 +139,7 @@ public class CLI {
         } finally {
             executor.shutdownNow();
         }
-        return null;
+        return Optional.empty();
     }
 
     public static boolean isValidInput(String pathOrStdin) {
@@ -175,7 +167,7 @@ public class CLI {
                 IO.save(object, Paths.get(pathOrStdout), format);
             }
         } catch (final IOException e) {
-            Logger.logError(e);
+            Feat.log().error(e);
         }
     }
 }

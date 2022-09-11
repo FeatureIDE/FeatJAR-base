@@ -22,25 +22,40 @@ package de.featjar.util.cli;
 
 import de.featjar.util.extension.Extension;
 import java.util.List;
+import java.util.Optional;
 
 /**
- * A function of FeatureIDE that can be accessed via the {@link CLI}.
+ * A command run within a {@link CommandLine}.
  *
  * @author Sebastian Krieter
+ * @author Elias Kuiter
  */
-public interface CLIFunction extends Extension {
-
+public interface Command extends Extension {
+    /**
+     * {@return this command's name}
+     */
     default String getName() {
         return getIdentifier();
     }
 
+    /**
+     * {@return this command's description}
+     */
+    default Optional<String> getDescription() {
+        return Optional.empty();
+    }
+
+    /**
+     * {@return this command's usage}
+     */
+    default Optional<String> getUsage() {
+        return Optional.empty();
+    }
+
+    /**
+     * Runs this command.
+     *
+     * @param args the arguments
+     */
     void run(List<String> args);
-
-    default String getDescription() {
-        return "";
-    }
-
-    default String getHelp() {
-        return "No help is available for this command.";
-    }
 }

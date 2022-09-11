@@ -38,7 +38,7 @@ public class Binaries extends ExtensionPoint<Binary> {
     private Binaries() {}
 
     @Override
-    public ExtensionPoint<Binary> getExtensionPointInstance() {
+    public ExtensionPoint<Binary> getInstanceAsExtensionPoint() {
         return INSTANCE;
     }
 }
