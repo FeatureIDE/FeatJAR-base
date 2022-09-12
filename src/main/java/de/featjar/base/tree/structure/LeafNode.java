@@ -20,6 +20,7 @@
  */
 package de.featjar.base.tree.structure;
 
+import javax.naming.OperationNotSupportedException;
 import java.util.Collections;
 import java.util.List;
 
@@ -42,10 +43,13 @@ public abstract class LeafNode<T extends Traversable<T>> implements Traversable<
     }
 
     /**
-     * Does nothing.
+     * Throws an {@link UnsupportedOperationException}.
      *
      * @param children ignored
+     * @throws UnsupportedOperationException when called
      */
     @Override
-    public void setChildren(List<? extends T> children) {}
+    public void setChildren(List<? extends T> children) {
+        throw new UnsupportedOperationException();
+    }
 }

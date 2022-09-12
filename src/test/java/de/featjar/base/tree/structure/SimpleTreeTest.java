@@ -188,22 +188,22 @@ public class SimpleTreeTest {
 
     @Test
     public void replaceChildrenInEmptyTree() {
-        final List<?> children = emptyRoot.children;
+        final List<?> children = emptyRoot.getChildren();
 
         emptyRoot.replaceChildren(oldChild -> new LabeledTree<>());
 
-        assertTrue(children == emptyRoot.children);
+        assertTrue(children == emptyRoot.getChildren());
         assertTrue(emptyRoot.getChildren().isEmpty());
     }
 
     @Test
     public void replaceAllChildrenWithNull() {
-        final List<?> children = root.children;
+        final List<?> children = root.getChildren();
         final Iterator<?> failFastIterator = root.getChildren().iterator();
 
         root.replaceChildren(oldChild -> null);
 
-        assertTrue(children == root.children);
+        assertTrue(children == root.getChildren());
         assertDoesNotThrow(() -> {
             failFastIterator.next();
         });
@@ -217,12 +217,12 @@ public class SimpleTreeTest {
 
     @Test
     public void replaceAllChildrenWithThemselves() {
-        final List<?> children = root.children;
+        final List<?> children = root.getChildren();
         final Iterator<?> failFastIterator = root.getChildren().iterator();
 
         root.replaceChildren(oldChild -> oldChild);
 
-        assertTrue(children == root.children);
+        assertTrue(children == root.getChildren());
         assertDoesNotThrow(() -> {
             failFastIterator.next();
         });
@@ -270,22 +270,22 @@ public class SimpleTreeTest {
 
     @Test
     public void replaceChildrenInEmptyTreeWithList() {
-        final List<?> children = emptyRoot.children;
+        final List<?> children = emptyRoot.getChildren();
 
         emptyRoot.flatReplaceChildren(oldChild -> Arrays.asList(new LabeledTree<>()));
 
-        assertTrue(children == emptyRoot.children);
+        assertTrue(children == emptyRoot.getChildren());
         assertTrue(emptyRoot.getChildren().isEmpty());
     }
 
     @Test
     public void replaceAllChildrenWithNullList() {
-        final List<?> children = root.children;
+        final List<?> children = root.getChildren();
         final Iterator<?> failFastIterator = root.getChildren().iterator();
 
         root.flatReplaceChildren(oldChild -> null);
 
-        assertTrue(children == root.children);
+        assertTrue(children == root.getChildren());
         assertDoesNotThrow(() -> {
             failFastIterator.next();
         });
@@ -299,12 +299,12 @@ public class SimpleTreeTest {
 
     @Test
     public void replaceAllChildrenWithEmptyList() {
-        final List<?> children = root.children;
+        final List<?> children = root.getChildren();
         final Iterator<?> failFastIterator = root.getChildren().iterator();
 
         root.flatReplaceChildren(oldChild -> Collections.emptyList());
 
-        assertTrue(children == root.children);
+        assertTrue(children == root.getChildren());
         assertThrows(ConcurrentModificationException.class, () -> {
             failFastIterator.next();
         });

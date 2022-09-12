@@ -20,6 +20,8 @@
  */
 package de.featjar.base.tree.structure;
 
+import de.featjar.base.data.Pair;
+import de.featjar.base.data.Range;
 import de.featjar.base.tree.Trees;
 import de.featjar.base.tree.visitor.InOrderTreeVisitor;
 import de.featjar.base.tree.visitor.TreePrinter;
@@ -65,6 +67,13 @@ public interface Traversable<T extends Traversable<T>> {
      */
     default int getChildrenCount() {
         return getChildren().size();
+    }
+
+    /**
+     * {@return a range that specifies the minimum and maximum number of this node's children}
+     */
+    default Range getChildrenCountRange() {
+        return Range.open();
     }
 
     /**

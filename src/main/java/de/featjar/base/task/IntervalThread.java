@@ -36,7 +36,6 @@ public class IntervalThread extends Thread {
     protected final long interval;
 
     public IntervalThread(Supplier<Boolean> function, long interval) {
-        super();
         this.function = function;
         this.interval = interval;
     }

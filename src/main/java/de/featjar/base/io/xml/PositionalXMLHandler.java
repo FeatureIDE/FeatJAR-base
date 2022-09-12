@@ -46,7 +46,6 @@ public class PositionalXMLHandler extends DefaultHandler {
     private Locator locator;
 
     public PositionalXMLHandler(Document doc) {
-        super();
         this.doc = doc;
     }
 

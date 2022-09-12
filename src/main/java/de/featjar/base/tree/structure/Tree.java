@@ -20,6 +20,7 @@
  */
 package de.featjar.base.tree.structure;
 
+import de.featjar.base.data.Range;
 import de.featjar.base.data.Result;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -43,7 +44,7 @@ public abstract class Tree<T extends Traversable<T>> implements Traversable<T> {
     /**
      * The children of this node.
      */
-    protected final List<T> children = new ArrayList<>();
+    private final List<T> children = new ArrayList<>();
 
     /**
      * {@inheritDoc}
@@ -54,6 +55,16 @@ public abstract class Tree<T extends Traversable<T>> implements Traversable<T> {
         return Collections.unmodifiableList(children);
     }
 
+    protected void assertChildrenCountInRange(int newChildrenCount, Range range) {
+        if (range.test(newChildrenCount))
+            throw new IllegalArgumentException(
+                    String.format("attempted to set %d children, but expected one in %s", newChildrenCount, range));
+    }
+
+    protected void assertChildrenCountInRange(int newChildrenCount) {
+        assertChildrenCountInRange(newChildrenCount, getChildrenCountRange());
+    }
+
     /**
      * {@inheritDoc}
      * The given list is copied.
@@ -61,6 +72,7 @@ public abstract class Tree<T extends Traversable<T>> implements Traversable<T> {
     @Override
     public void setChildren(List<? extends T> children) {
         Objects.requireNonNull(children);
+        assertChildrenCountInRange(children.size());
         this.children.clear();
         this.children.addAll(children);
     }
@@ -91,6 +103,7 @@ public abstract class Tree<T extends Traversable<T>> implements Traversable<T> {
      * @param newChild the new child
      */
     public void addChild(int index, T newChild) {
+        assertChildrenCountInRange(children.size() + 1);
         if (index > getChildrenCount()) {
             children.add(newChild);
         } else {
@@ -104,6 +117,7 @@ public abstract class Tree<T extends Traversable<T>> implements Traversable<T> {
      * @param newChild the new child
      */
     public void addChild(T newChild) {
+        assertChildrenCountInRange(children.size() + 1);
         children.add(newChild);
     }
 
@@ -114,6 +128,7 @@ public abstract class Tree<T extends Traversable<T>> implements Traversable<T> {
      * @throws NoSuchElementException if the given old node is not a child
      */
     public void removeChild(T child) {
+        assertChildrenCountInRange(children.size() - 1);
         if (!children.remove(child)) {
             throw new NoSuchElementException();
         }
@@ -127,6 +142,7 @@ public abstract class Tree<T extends Traversable<T>> implements Traversable<T> {
      * @throws IndexOutOfBoundsException if the given index is out of bounds
      */
     public T removeChild(int index) {
+        assertChildrenCountInRange(children.size() - 1);
         return children.remove(index);
     }
 

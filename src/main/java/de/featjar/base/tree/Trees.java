@@ -163,7 +163,8 @@ public class Trees {
                 if ((currentNode1 == null) || (currentNode2 == null)) {
                     return false;
                 } else {
-                    if (!currentNode1.equalsNode(currentNode2)) {
+                    if (currentNode1.getChildrenCount() != currentNode2.getChildrenCount() ||
+                            !currentNode1.equalsNode(currentNode2)) {
                         return false;
                     }
                     stack1.addAll(0, currentNode1.getChildren());
