@@ -33,7 +33,7 @@ import java.util.Optional;
  * @param <T> the type of tree
  * @author Sebastian Krieter
  */
-public interface TreeVisitor<R, T extends Traversable<?>> {
+public interface TreeVisitor<R, T extends Traversable<?>> { // todo: switch R and T (first input, then output)
     /**
      * All possible actions a traversal can take after visiting a tree node.
      */
