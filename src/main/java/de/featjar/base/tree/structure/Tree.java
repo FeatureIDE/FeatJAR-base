@@ -29,6 +29,7 @@ import java.util.ListIterator;
 import java.util.NoSuchElementException;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.function.BiFunction;
 import java.util.function.Function;
 
 /**
@@ -147,12 +148,30 @@ public abstract class Tree<T extends Traversable<T>> implements Traversable<T> {
     }
 
     /**
+     * {@inheritDoc}
+     * Uses a {@link ListIterator} to avoid creation of a new list.
+     */
+    @Override
+    public void replaceChildren(BiFunction<Integer, T, ? extends T> mapper) {
+        Objects.requireNonNull(mapper);
+        for (ListIterator<T> it = children.listIterator(); it.hasNext(); ) {
+            final int idx = it.nextIndex();
+            final T child = it.next();
+            final T replacement = mapper.apply(idx, child);
+            if (replacement != null && replacement != child) {
+                it.set(replacement);
+            }
+        }
+    }
+
+    /**
      * Replaces a child with a new child.
 
      * @param oldChild the old child
      * @param newChild the new child
      * @throws NoSuchElementException if the given old node is not a child
      */
+    @Override
     public void replaceChild(T oldChild, T newChild) {
         final int index = children.indexOf(oldChild);
         if (index == -1)
@@ -161,19 +180,17 @@ public abstract class Tree<T extends Traversable<T>> implements Traversable<T> {
     }
 
     /**
-     * {@inheritDoc}
-     * Uses a {@link ListIterator} to avoid creation of a new list.
+     * Replaces a child at an index with a new child.
+     * Does nothing if the index is out of bounds.
+     *
+     * @param idx the index
+     * @param newChild the new child
      */
     @Override
-    public void replaceChildren(Function<T, ? extends T> mapper) {
-        Objects.requireNonNull(mapper);
-        for (ListIterator<T> it = children.listIterator(); it.hasNext(); ) {
-            final T child = it.next();
-            final T replacement = mapper.apply(child);
-            if (replacement != null && replacement != child) {
-                it.set(replacement);
-            }
-        }
+    public void replaceChild(int idx, T newChild) {
+        if (idx < 0 || idx > getChildrenCount())
+            throw new NoSuchElementException();
+        children.set(idx, newChild);
     }
 
     /**

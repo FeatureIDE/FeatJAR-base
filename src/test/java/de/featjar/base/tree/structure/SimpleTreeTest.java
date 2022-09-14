@@ -34,6 +34,8 @@ import java.util.Collections;
 import java.util.ConcurrentModificationException;
 import java.util.Iterator;
 import java.util.List;
+import java.util.function.Function;
+
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -329,15 +331,5 @@ public class SimpleTreeTest {
         assertEquals(childF, iterator.next());
         assertEquals(childD, iterator.next());
         assertFalse(iterator.hasNext());
-    }
-
-    @Test
-    public void replaceChildrenUsingAnIllegalReplacer() {
-        assertThrows(NullPointerException.class, () -> {
-            root.replaceChildren(null);
-        });
-        assertThrows(NullPointerException.class, () -> {
-            root.flatReplaceChildren(null);
-        });
     }
 }

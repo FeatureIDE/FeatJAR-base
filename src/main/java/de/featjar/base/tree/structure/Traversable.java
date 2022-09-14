@@ -28,6 +28,7 @@ import de.featjar.base.tree.visitor.TreePrinter;
 import de.featjar.base.tree.visitor.TreeVisitor;
 
 import java.util.*;
+import java.util.function.BiFunction;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -101,16 +102,17 @@ public interface Traversable<T extends Traversable<T>> {
      * If the {@code mapper} returns null or the old child, the respective child is kept unchanged.
      * If no child is changed, the list of children is kept unchanged.
      *
-     * @param mapper maps an old child onto a new child
+     * @param mapper maps an old child with its index onto a new child
      */
-    default void replaceChildren(Function<T, ? extends T> mapper) {
+    default void replaceChildren(BiFunction<Integer, T, ? extends T> mapper) {
         Objects.requireNonNull(mapper);
         final List<? extends T> oldChildren = getChildren();
         if (!oldChildren.isEmpty()) {
             final List<T> newChildren = new ArrayList<>(oldChildren.size());
             boolean modified = false;
-            for (final T child : oldChildren) {
-                final T replacement = mapper.apply(child);
+            for (int i = 0; i < oldChildren.size(); i++) {
+                T child = oldChildren.get(i);
+                final T replacement = mapper.apply(i, child);
                 if (replacement != null && replacement != child) {
                     newChildren.add(replacement);
                     modified = true;
@@ -125,20 +127,54 @@ public interface Traversable<T extends Traversable<T>> {
     }
 
     /**
+     * Replaces each child of this node with a new child.
+     * If the {@code mapper} returns null or the old child, the respective child is kept unchanged.
+     * If no child is changed, the list of children is kept unchanged.
+     *
+     * @param mapper maps an old child onto a new child
+     */
+    default void replaceChildren(Function<T, ? extends T> mapper) {
+        replaceChildren((index, child) -> mapper.apply(child));
+    }
+
+    /**
+     * Replaces a child with a new child.
+     * Does nothing if the old child was not found.
+     *
+     * @param oldChild the old child
+     * @param newChild the new child
+     */
+    default void replaceChild(T oldChild, T newChild) {
+        replaceChildren(child -> child == oldChild ? newChild : null);
+    }
+
+    /**
+     * Replaces a child at an index with a new child.
+     * Does nothing if the index is out of bounds.
+     *
+     * @param idx the index
+     * @param newChild the new child
+     */
+    default void replaceChild(int idx, T newChild) {
+        replaceChildren((index, child) -> index == idx ? newChild : null);
+    }
+
+    /**
      * Replaces each child of this node with a list of new children.
      * If the {@code mapper} returns null, the respective child is kept unchanged.
      * If no child is changed, the list of children is kept unchanged.
      *
-     * @param mapper maps an old child onto a list of new children
+     * @param mapper maps an old child with its index onto a list of new children
      */
-    default void flatReplaceChildren(Function<T, List<? extends T>> mapper) {
+    default void flatReplaceChildren(BiFunction<Integer, T, List<? extends T>> mapper) {
         Objects.requireNonNull(mapper);
         final List<? extends T> oldChildren = getChildren();
         if (!oldChildren.isEmpty()) {
             final ArrayList<T> newChildren = new ArrayList<>(oldChildren.size());
             boolean modified = false;
-            for (final T child : oldChildren) {
-                final List<? extends T> replacement = mapper.apply(child);
+            for (int i = 0; i < oldChildren.size(); i++) {
+                T child = oldChildren.get(i);
+                final List<? extends T> replacement = mapper.apply(i, child);
                 if (replacement != null) {
                     newChildren.addAll(replacement);
                     modified = true;
@@ -150,6 +186,17 @@ public interface Traversable<T extends Traversable<T>> {
                 setChildren(newChildren);
             }
         }
+    }
+
+    /**
+     * Replaces each child of this node with a new child.
+     * If the {@code mapper} returns null or the old child, the respective child is kept unchanged.
+     * If no child is changed, the list of children is kept unchanged.
+     *
+     * @param mapper maps an old child onto a new child
+     */
+    default void flatReplaceChildren(Function<T, List<? extends T>> mapper) {
+        flatReplaceChildren((index, child) -> mapper.apply(child));
     }
 
     /**
