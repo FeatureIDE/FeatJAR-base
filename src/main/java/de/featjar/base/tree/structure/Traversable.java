@@ -20,7 +20,6 @@
  */
 package de.featjar.base.tree.structure;
 
-import de.featjar.base.data.Pair;
 import de.featjar.base.data.Range;
 import de.featjar.base.tree.Trees;
 import de.featjar.base.tree.visitor.InOrderTreeVisitor;
@@ -37,6 +36,8 @@ import java.util.stream.Stream;
  * An object that can be traversed, presumably a node in a tree.
  * Nodes are defined recursively.
  * For an example usage, see {@link LabeledTree}.
+ * It is not supported to store children of a type different from the implementing type.
+ * For this use case, consider a multi-level tree, where a {@link LeafNode} references another {@link Traversable}.
  *
  * @param <T> the type of children, the implementing type must be castable to T
  * @author Sebastian Krieter
@@ -205,7 +206,7 @@ public interface Traversable<T extends Traversable<T>> {
      *
      * @return a shallow clone of this node
      */
-    Traversable<T> cloneNode();
+    Traversable<T> cloneNode(); // todo: can this be changed to T?
 
     /**
      * Clones this node (and its children).
