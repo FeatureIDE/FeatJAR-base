@@ -260,7 +260,7 @@ public interface Traversable<T extends Traversable<T>> {
      * @return the optional result from the visitor
      * @param <R> the type of result
      */
-    default <R> Optional<R> traverse(TreeVisitor<R, T> treeVisitor) {
+    default <R> Optional<R> traverse(TreeVisitor<T, R> treeVisitor) {
         return Trees.traverse((T) this, treeVisitor);
     }
 

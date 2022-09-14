@@ -33,7 +33,7 @@ import java.util.function.Predicate;
  *
  * @author Sebastian Krieter
  */
-public class TreePrinter implements TreeVisitor<String, Traversable<?>> {
+public class TreePrinter implements TreeVisitor<Traversable<?>, String> {
     private final StringBuilder treeStringBuilder = new StringBuilder();
     private String indentation = "  ";
     private Predicate<Traversable<?>> filter = null;

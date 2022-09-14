@@ -30,7 +30,7 @@ import java.util.Optional;
  *
  * @author Sebastian Krieter
  */
-public class TreeDepthCounter implements TreeVisitor<Integer, Traversable<?>> {
+public class TreeDepthCounter implements TreeVisitor<Traversable<?>, Integer> {
     private Class<? extends Traversable<?>> terminalClass = null;
     private int maxDepth = 0;
 

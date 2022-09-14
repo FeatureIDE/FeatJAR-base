@@ -29,11 +29,11 @@ import java.util.Optional;
  * Visits each node of a tree in a depth-first search.
  * The actual traversal algorithm is {@link Trees#traverse(Traversable, TreeVisitor)}.
  *
- * @param <R> the type of result
+ * @param <U> the type of result
  * @param <T> the type of tree
  * @author Sebastian Krieter
  */
-public interface TreeVisitor<R, T extends Traversable<?>> { // todo: switch R and T (first input, then output)
+public interface TreeVisitor<T extends Traversable<?>, U> {
     /**
      * All possible actions a traversal can take after visiting a tree node.
      */
@@ -90,7 +90,7 @@ public interface TreeVisitor<R, T extends Traversable<?>> { // todo: switch R an
     /**
      * {@return} the result of the traversal, if any
      */
-    default Optional<R> getResult() {
+    default Optional<U> getResult() {
         return Optional.empty();
     }
 

@@ -30,7 +30,7 @@ import java.util.List;
  *
  * @author Sebastian Krieter
  */
-public class TreePruner implements TreeVisitor<Void, Traversable<?>> {
+public class TreePruner implements TreeVisitor<Traversable<?>, Void> {
 
     private int depthLimit = Integer.MAX_VALUE;
 

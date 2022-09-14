@@ -33,7 +33,7 @@ import java.util.List;
  * @param <T> the type of tree
  * @author Sebastian Krieter
  */
-public interface InOrderTreeVisitor<R, T extends Traversable<?>> extends TreeVisitor<R, T> {
+public interface InOrderTreeVisitor<R, T extends Traversable<?>> extends TreeVisitor<T, R> {
     /**
      * Visit a node in between the visits of its children.
      * Override this to implement inorder traversal.
