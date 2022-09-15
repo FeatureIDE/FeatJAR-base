@@ -59,7 +59,7 @@ public class Trees {
      * @param <R> the type of result
      * @param <T> the type of tree
      */
-    public static <R, T extends Traversable<?>> Optional<R> traverse(T node, InOrderTreeVisitor<R, T> visitor) {
+    public static <R, T extends Traversable<?>> Optional<R> traverse(T node, InOrderTreeVisitor<T, R> visitor) {
         visitor.reset();
         try {
             depthFirstSearch(node, visitor);
@@ -427,7 +427,7 @@ public class Trees {
     }
 
     @SuppressWarnings("unchecked")
-    private static <T extends Traversable<?>> void depthFirstSearch(T node, InOrderTreeVisitor<?, T> visitor)
+    private static <T extends Traversable<?>> void depthFirstSearch(T node, InOrderTreeVisitor<T, ?> visitor)
             throws VisitorFailException {
         if (node == null) {
             return;

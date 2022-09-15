@@ -23,7 +23,7 @@ package de.featjar.base.data;
 import java.util.*;
 
 /**
- * Maps a collection of at most n objects onto the range of natural numbers [1..n].
+ * Maps a collection of at most n objects to the range of natural numbers [1..n].
  * Typically maps n objects one-to-one onto the range [1..n], but can contain definition gaps if needed.
  *
  * @author Sebastian Krieter
@@ -33,16 +33,24 @@ public class RangeMap<T> {
     protected final ArrayList<T> indexToObject = new ArrayList<>();
     protected final LinkedHashMap<T, Integer> objectToIndex = new LinkedHashMap<>();
 
-    protected RangeMap(RangeMap<T> map1, RangeMap<T> map2) {
+    /**
+     * Creates an empty range map.
+     */
+    public RangeMap() {
+        clear();
+    }
+
+    /**
+     * Merges two range maps into this range map.
+     * Joins on common objects and does not necessarily preserve indices.
+     * If one map is empty, creates a clone of the other.
+     */
+    public RangeMap(RangeMap<T> map1, RangeMap<T> map2) {
         SortedSet<T> objects = new TreeSet<>(map1.getObjects());
         objects.addAll(map2.getObjects());
         clear();
         indexToObject.addAll(objects);
         updateObjectToIndex();
-    }
-
-    protected RangeMap() {
-        clear();
     }
 
     /**

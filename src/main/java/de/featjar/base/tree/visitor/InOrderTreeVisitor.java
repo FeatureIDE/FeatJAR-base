@@ -29,11 +29,11 @@ import java.util.List;
  * Compared with {@link TreeVisitor}, also allows for inorder traversal.
  * The actual traversal algorithm is {@link Trees#traverse(Traversable, InOrderTreeVisitor)}.
  *
- * @param <R> the type of result
  * @param <T> the type of tree
+ * @param <U> the type of result
  * @author Sebastian Krieter
  */
-public interface InOrderTreeVisitor<R, T extends Traversable<?>> extends TreeVisitor<T, R> {
+public interface InOrderTreeVisitor<T extends Traversable<?>, U> extends TreeVisitor<T, U> {
     /**
      * Visit a node in between the visits of its children.
      * Override this to implement inorder traversal.

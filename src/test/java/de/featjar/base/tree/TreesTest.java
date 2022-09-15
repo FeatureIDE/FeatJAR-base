@@ -283,7 +283,7 @@ public class TreesTest {
         final ArrayList<LabeledTree<String>> postOrderCollect = new ArrayList<>();
         final ArrayList<LabeledTree<String>> innerCollect = new ArrayList<>();
 
-        final Optional<Void> result = Trees.traverse(root1, new InOrderTreeVisitor<Void, LabeledTree<String>>() {
+        final Optional<Void> result = Trees.traverse(root1, new InOrderTreeVisitor<LabeledTree<String>, Void>() {
             @Override
             public Optional<Void> getResult() {
                 final Optional<Void> result = InOrderTreeVisitor.super.getResult();
@@ -330,7 +330,7 @@ public class TreesTest {
 
         assertThrows(
                 RuntimeException.class,
-                () -> Trees.traverse(root1, new InOrderTreeVisitor<Void, LabeledTree<?>>() {
+                () -> Trees.traverse(root1, new InOrderTreeVisitor<LabeledTree<?>, Void>() {
                     @Override
                     public TraversalAction firstVisit(List<LabeledTree<?>> path) {
                         throw new RuntimeException();
@@ -339,7 +339,7 @@ public class TreesTest {
 
         assertThrows(
                 RuntimeException.class,
-                () -> Trees.traverse(root1, new InOrderTreeVisitor<Void, LabeledTree<?>>() {
+                () -> Trees.traverse(root1, new InOrderTreeVisitor<LabeledTree<?>, Void>() {
                     @Override
                     public TraversalAction visit(List<LabeledTree<?>> path) {
                         throw new RuntimeException();
@@ -348,7 +348,7 @@ public class TreesTest {
 
         assertThrows(
                 RuntimeException.class,
-                () -> Trees.traverse(root1, new InOrderTreeVisitor<Void, LabeledTree<?>>() {
+                () -> Trees.traverse(root1, new InOrderTreeVisitor<LabeledTree<?>, Void>() {
                     @Override
                     public TraversalAction lastVisit(List<LabeledTree<?>> path) {
                         throw new RuntimeException();
@@ -357,7 +357,7 @@ public class TreesTest {
 
         assertThrows(
                 RuntimeException.class,
-                () -> Trees.traverse(root1, new InOrderTreeVisitor<Void, LabeledTree<?>>() {
+                () -> Trees.traverse(root1, new InOrderTreeVisitor<LabeledTree<?>, Void>() {
                     @Override
                     public Optional<Void> getResult() {
                         throw new RuntimeException();
@@ -366,14 +366,14 @@ public class TreesTest {
 
         assertThrows(
                 RuntimeException.class,
-                () -> Trees.traverse(root1, new InOrderTreeVisitor<Void, LabeledTree<?>>() {
+                () -> Trees.traverse(root1, new InOrderTreeVisitor<LabeledTree<?>, Void>() {
                     @Override
                     public void reset() {
                         throw new RuntimeException();
                     }
                 }));
 
-        assertFalse(Trees.traverse(root1, new InOrderTreeVisitor<Void, LabeledTree<?>>() {
+        assertFalse(Trees.traverse(root1, new InOrderTreeVisitor<LabeledTree<?>, Void>() {
                     @Override
                     public TraversalAction firstVisit(List<LabeledTree<?>> path) {
                         return TraversalAction.FAIL;
@@ -381,7 +381,7 @@ public class TreesTest {
                 })
                 .isPresent());
 
-        assertFalse(Trees.traverse(root1, new InOrderTreeVisitor<Void, LabeledTree<?>>() {
+        assertFalse(Trees.traverse(root1, new InOrderTreeVisitor<LabeledTree<?>, Void>() {
                     @Override
                     public TraversalAction visit(List<LabeledTree<?>> path) {
                         return TraversalAction.FAIL;
@@ -389,7 +389,7 @@ public class TreesTest {
                 })
                 .isPresent());
 
-        assertFalse(Trees.traverse(root1, new InOrderTreeVisitor<Void, LabeledTree<?>>() {
+        assertFalse(Trees.traverse(root1, new InOrderTreeVisitor<LabeledTree<?>, Void>() {
                     @Override
                     public TraversalAction lastVisit(List<LabeledTree<?>> path) {
                         return TraversalAction.FAIL;
