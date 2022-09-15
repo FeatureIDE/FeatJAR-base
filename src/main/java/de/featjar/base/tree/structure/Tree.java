@@ -66,6 +66,16 @@ public abstract class Tree<T extends Traversable<T>> implements Traversable<T> {
         assertChildrenCountInRange(newChildrenCount, getChildrenCountRange());
     }
 
+    protected void assertChildrenValidator(List<? extends T> children) {
+        if (!children.stream().allMatch(getChildrenValidator()))
+            throw new IllegalArgumentException("not all children passed validation");
+    }
+
+    protected void assertChildrenValidator(T child) {
+        if (!getChildrenValidator().test(child))
+            throw new IllegalArgumentException("child did not pass validation");
+    }
+
     /**
      * {@inheritDoc}
      * The given list is copied.
@@ -74,6 +84,7 @@ public abstract class Tree<T extends Traversable<T>> implements Traversable<T> {
     public void setChildren(List<? extends T> children) {
         Objects.requireNonNull(children);
         assertChildrenCountInRange(children.size());
+        assertChildrenValidator(children);
         this.children.clear();
         this.children.addAll(children);
     }
@@ -105,6 +116,7 @@ public abstract class Tree<T extends Traversable<T>> implements Traversable<T> {
      */
     public void addChild(int index, T newChild) {
         assertChildrenCountInRange(children.size() + 1);
+        assertChildrenValidator(newChild);
         if (index > getChildrenCount()) {
             children.add(newChild);
         } else {
@@ -119,6 +131,7 @@ public abstract class Tree<T extends Traversable<T>> implements Traversable<T> {
      */
     public void addChild(T newChild) {
         assertChildrenCountInRange(children.size() + 1);
+        assertChildrenValidator(newChild);
         children.add(newChild);
     }
 
@@ -159,6 +172,7 @@ public abstract class Tree<T extends Traversable<T>> implements Traversable<T> {
             final T child = it.next();
             final T replacement = mapper.apply(idx, child);
             if (replacement != null && replacement != child) {
+                assertChildrenValidator(replacement);
                 it.set(replacement);
             }
         }
@@ -176,6 +190,7 @@ public abstract class Tree<T extends Traversable<T>> implements Traversable<T> {
         final int index = children.indexOf(oldChild);
         if (index == -1)
             throw new NoSuchElementException();
+        assertChildrenValidator(newChild);
         children.set(index, newChild);
     }
 
@@ -190,6 +205,7 @@ public abstract class Tree<T extends Traversable<T>> implements Traversable<T> {
     public void replaceChild(int idx, T newChild) {
         if (idx < 0 || idx > getChildrenCount())
             throw new NoSuchElementException();
+        assertChildrenValidator(newChild);
         children.set(idx, newChild);
     }
 

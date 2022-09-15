@@ -29,6 +29,7 @@ import de.featjar.base.tree.visitor.TreeVisitor;
 import java.util.*;
 import java.util.function.BiFunction;
 import java.util.function.Function;
+import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -76,6 +77,13 @@ public interface Traversable<T extends Traversable<T>> {
      */
     default Range getChildrenCountRange() {
         return Range.open();
+    }
+
+    /**
+     * {@return a function that validates this node's children}
+     */
+    default Predicate<T> getChildrenValidator() {
+        return t -> true;
     }
 
     /**

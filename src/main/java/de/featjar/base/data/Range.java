@@ -10,8 +10,8 @@ import java.util.function.Function;
  * @author Elias Kuiter
  */
 public class Range implements Function<Integer, Boolean> {
-    Integer lowerBound;
-    Integer upperBound;
+    protected Integer lowerBound;
+    protected Integer upperBound;
 
     protected Range(Integer lowerBound, Integer upperBound) {
         if ((lowerBound != null && lowerBound < 0) ||
