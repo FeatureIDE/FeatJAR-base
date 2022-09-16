@@ -52,4 +52,24 @@ public abstract class LeafNode<T extends Traversable<T>> implements Traversable<
     public void setChildren(List<? extends T> children) {
         throw new UnsupportedOperationException();
     }
+
+    /**
+     * {@return a deep clone of this node}
+     */
+    @SuppressWarnings("MethodDoesntCallSuperMethod")
+    @Override
+    public Object clone() {
+        return cloneTree();
+    }
+
+    /**
+     * {@return whether this node is equal to another}
+     *
+     * @param other the other node
+     */
+    @SuppressWarnings("unchecked")
+    @Override
+    public boolean equals(Object other) {
+        return getClass() == other.getClass() && equalsTree((T) other);
+    }
 }

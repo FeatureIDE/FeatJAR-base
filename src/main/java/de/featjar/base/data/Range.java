@@ -2,6 +2,7 @@ package de.featjar.base.data;
 
 import java.util.Optional;
 import java.util.function.Function;
+import java.util.stream.IntStream;
 
 /**
  * A range of integers limited by a lower and upper bound.
@@ -77,6 +78,15 @@ public class Range implements Function<Integer, Boolean> {
 
     public boolean test(int integer) {
         return testLowerBound(integer) && testUpperBound(integer);
+    }
+
+    /**
+     * {@return a finite integer stream for this range}
+     */
+    public Optional<IntStream> stream() {
+        return lowerBound != null && upperBound != null
+                ? Optional.of(IntStream.rangeClosed(lowerBound, upperBound))
+                : Optional.empty();
     }
 
     @Override

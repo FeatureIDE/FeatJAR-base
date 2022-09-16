@@ -20,6 +20,7 @@
  */
 package de.featjar.base.data;
 
+import java.util.Map;
 import java.util.Objects;
 
 /**
@@ -48,6 +49,17 @@ public class Pair<A, B> {
     }
 
     /**
+     * {@return a pair of a map entry}
+     *
+     * @param entry the map entry
+     * @param <A> the key type
+     * @param <B> the value type
+     */
+    public static <A, B> Pair<A, B> of(Map.Entry<A, B> entry) {
+        return new Pair<>(entry.getKey(), entry.getValue());
+    }
+
+    /**
      * {@return this pair's first element (or key)}
      */
     public A getKey() {
@@ -59,6 +71,13 @@ public class Pair<A, B> {
      */
     public B getValue() {
         return value;
+    }
+
+    /**
+     * {@return a copy of this pair with flipped key and value}
+     */
+    public Pair<B, A> flip() {
+        return new Pair<>(getValue(), getKey());
     }
 
     @Override

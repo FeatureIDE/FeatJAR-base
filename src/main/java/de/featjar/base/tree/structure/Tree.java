@@ -57,7 +57,7 @@ public abstract class Tree<T extends Traversable<T>> implements Traversable<T> {
     }
 
     protected void assertChildrenCountInRange(int newChildrenCount, Range range) {
-        if (range.test(newChildrenCount))
+        if (!range.test(newChildrenCount))
             throw new IllegalArgumentException(
                     String.format("attempted to set %d children, but expected one in %s", newChildrenCount, range));
     }
@@ -68,7 +68,8 @@ public abstract class Tree<T extends Traversable<T>> implements Traversable<T> {
 
     protected void assertChildrenValidator(List<? extends T> children) {
         if (!children.stream().allMatch(getChildrenValidator()))
-            throw new IllegalArgumentException("not all children passed validation");
+            throw new IllegalArgumentException(String.format("child %s is invalid",
+                    children.stream().filter(c -> !getChildrenValidator().test(c)).findFirst().get()));
     }
 
     protected void assertChildrenValidator(T child) {

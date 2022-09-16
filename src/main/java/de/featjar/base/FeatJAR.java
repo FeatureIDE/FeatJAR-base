@@ -3,6 +3,7 @@ package de.featjar.base;
 import de.featjar.base.cli.CommandLine;
 import de.featjar.base.extension.ExtensionManager;
 import de.featjar.base.io.IO;
+import de.featjar.base.io.IOMapper;
 import de.featjar.base.log.Log;
 
 import java.util.function.Consumer;

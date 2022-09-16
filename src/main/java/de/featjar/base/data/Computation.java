@@ -74,7 +74,7 @@ public interface Computation<T, U> extends MonitorableFunction<T, U>, Extension 
      * If this computation fails, the entire computation fails.
      *
      * @param computation the computation
-     * @param <S> the type of the returned computation's result
+     * @param <V> the type of the returned computation's result
      */
     default <V> Computation<T, Result<V>> andThen(Computation<U, V> computation, Store store) {
         // todo: either create child monitor on parent monitor or implement compose with ... variadic number of monitorable functions

@@ -21,10 +21,11 @@
 package de.featjar.base.data;
 
 import java.util.*;
+import java.util.stream.Stream;
 
 /**
- * Maps a collection of at most n objects to the range of natural numbers [1..n].
- * Typically maps n objects one-to-one onto the range [1..n], but can contain definition gaps if needed.
+ * Maps a collection of at most n objects to the range of natural numbers [1, n].
+ * Typically maps n objects one-to-one onto the range [1, n], but can contain definition gaps if needed.
  *
  * @author Sebastian Krieter
  * @author Elias Kuiter
@@ -41,9 +42,32 @@ public class RangeMap<T> {
     }
 
     /**
+     * Creates a range map for [1, n] from a collection with n elements.
+     *
+     * @param collection the collection
+     */
+    public RangeMap(Collection<T> collection) {
+        clear();
+        indexToObject.addAll(collection);
+        updateObjectToIndex();
+    }
+
+    /**
+     * Copies a range map.
+     *
+     * @param map the map
+     */
+    public RangeMap(RangeMap<T> map) {
+        this(map.getObjects());
+    }
+
+    /**
      * Merges two range maps into this range map.
      * Joins on common objects and does not necessarily preserve indices.
      * If one map is empty, creates a clone of the other.
+     *
+     * @param map1 the first map
+     * @param map2 the second map
      */
     public RangeMap(RangeMap<T> map1, RangeMap<T> map2) {
         SortedSet<T> objects = new TreeSet<>(map1.getObjects());
@@ -160,6 +184,15 @@ public class RangeMap<T> {
     }
 
     /**
+     * Maps the next free index to an object.
+     *
+     * @param object the object
+     */
+    public void add(T object) {
+        add(-1, object);
+    }
+
+    /**
      * Removes an object mapped by this range map.
      *
      * @param object the object
@@ -227,6 +260,15 @@ public class RangeMap<T> {
         return indexToObject.subList(
                 getMinimumIndex(),
                 getMaximumIndex() + 1);
+    }
+
+    /**
+     * {@return all objects mapped by this range map}
+     */
+    public Stream<Pair<Integer, T>> stream() {
+        return objectToIndex.entrySet().stream()
+                .map(Pair::of)
+                .map(Pair::flip);
     }
 
     /**
@@ -301,5 +343,11 @@ public class RangeMap<T> {
             sb.append('\n');
         }
         return sb.toString();
+    }
+
+    @SuppressWarnings("MethodDoesntCallSuperMethod")
+    @Override
+    public RangeMap<T> clone() {
+        return new RangeMap<>(this);
     }
 }
