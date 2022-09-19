@@ -74,6 +74,8 @@ public interface Traversable<T extends Traversable<T>> {
 
     /**
      * {@return a range that specifies the minimum and maximum number of this node's children}
+     * The range is guaranteed to be respected for all mutating operations based on {@link #setChildren(List)}.
+     * To guarantee that the range is respected at all times, call {@link #setChildren(List)} in the constructor.
      */
     default Range getChildrenCountRange() {
         return Range.open();
