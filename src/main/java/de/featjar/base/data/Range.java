@@ -1,5 +1,6 @@
 package de.featjar.base.data;
 
+import java.util.Objects;
 import java.util.Optional;
 import java.util.function.Function;
 import java.util.stream.IntStream;
@@ -48,6 +49,10 @@ public class Range implements Function<Integer, Boolean> {
         return Optional.ofNullable(lowerBound);
     }
 
+    public boolean isLowerBoundOpen() {
+        return lowerBound == null;
+    }
+
     public void setLowerBound(Integer lowerBound) {
         this.lowerBound = lowerBound;
     }
@@ -56,8 +61,16 @@ public class Range implements Function<Integer, Boolean> {
         return Optional.ofNullable(upperBound);
     }
 
+    public boolean isUpperBoundOpen() {
+        return upperBound == null;
+    }
+
     public void setUpperBound(Integer upperBound) {
         this.upperBound = upperBound;
+    }
+
+    public boolean isOpen() {
+        return isLowerBoundOpen() && isUpperBoundOpen();
     }
 
     public Optional<Integer> getSmallerBound() {
@@ -97,5 +110,18 @@ public class Range implements Function<Integer, Boolean> {
     @Override
     public String toString() {
         return String.format("Range[%d, %d]", lowerBound, upperBound);
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        Range range = (Range) o;
+        return Objects.equals(lowerBound, range.lowerBound) && Objects.equals(upperBound, range.upperBound);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(lowerBound, upperBound);
     }
 }
