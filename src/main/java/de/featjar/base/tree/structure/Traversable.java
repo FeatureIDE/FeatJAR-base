@@ -216,7 +216,7 @@ public interface Traversable<T extends Traversable<T>> {
      *
      * @return a shallow clone of this node
      */
-    Traversable<T> cloneNode(); // todo: can this be changed to T?
+    Traversable<T> cloneNode();
 
     /**
      * Clones this node (and its children).
