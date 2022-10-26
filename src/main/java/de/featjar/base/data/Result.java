@@ -107,6 +107,15 @@ public class Result<T> {
     }
 
     /**
+     * {@return an empty result of another type}
+     *
+     * @param <T> the type of the result's object
+     */
+    public static <T, U> Result<T> empty(Result<U> other) {
+        return new Result<>(null, other.problems);
+    }
+
+    /**
      * {@return an empty result}
      *
      * @param <T> the type of the result's object

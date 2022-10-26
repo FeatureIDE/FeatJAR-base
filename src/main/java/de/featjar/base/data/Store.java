@@ -20,45 +20,65 @@
  */
 package de.featjar.base.data;
 
-import de.featjar.base.task.Monitor;
 import de.featjar.base.task.MonitorableSupplier;
 
-import java.util.Arrays;
+import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * Stores computation results.
- * A store is usually scoped to the object whose computation results it stores (e.g., a formula or feature model).
  *
  * @author Sebastian Krieter
  * @author Elias Kuiter
  */
-public interface Store {
-    default <R> boolean has(Computation<?, R> computation) {
-        return false;
-    } // should always return false for lambda instantiations
+public class Store {
+    private static final Store INSTANCE = new Store();
 
-    default <R> Result<R> get(Computation<?, R> computation) {
-        return Result.empty();
+    protected Store() {
     }
 
-    default <R> void put(Computation<?, R> computation, Result<R> result) {} // should do nothing for lambda instantiations
-
-    @SuppressWarnings({"unchecked", "rawtypes"})
-    default MonitorableSupplier<Object> compute(Computation... computations) {
-        return monitor -> Result.ofOptional(Arrays.stream(computations).reduce((c1, c2) -> c1.andThen(c2, this)))
-                .flatMap(computation -> computation.apply(null, monitor, this));
+    /**
+     * {@return the global store}
+     */
+    public static Store getInstance() {
+        return INSTANCE; // todo: for simplicity, this is a singleton for now
     }
 
-    class Seed<T> implements Computation<Void, T> {
-        T t;
+    protected final Map<Computation<?>, FutureResult<?>> computationMap = new ConcurrentHashMap<>(); // assume that Computation<T> is mapped to FutureResult<T> (same T)
 
-        public Seed(T t) {
-            this.t = t;
-        }
+    public <T> FutureResult<T> compute(Computation<T> computation) {
+        if (has(computation))
+            return get(computation).get();
+        FutureResult<T> futureResult = computation.compute();
+        put(computation, futureResult);
+        return futureResult;
+    }
 
-        @Override
-        public Result<T> execute(Void input, Monitor monitor) {
-            return Result.of(t);
-        }
+    public <T> boolean has(Computation<T> computation) {
+        return computationMap.containsKey(computation);
+    }
+
+    public <T> Result<FutureResult<T>> get(Computation<T> computation) {
+        if (!has(computation))
+            return Result.empty();
+        return Result.of((FutureResult<T>) computationMap.get(computation));
+    }
+
+    public <T> boolean put(Computation<T> computation, FutureResult<T> futureResult) {
+        if (has(computation)) // once set, immutable
+            return false;
+        computationMap.put(computation, futureResult);
+        return true;
+    }
+
+    public <T> boolean remove(Computation<T> computation) {
+        if (!has(computation))
+            return false;
+        computationMap.remove(computation);
+        return true;
+    }
+
+    public void clear() {
+        computationMap.clear();
     }
 }

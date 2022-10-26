@@ -1,9 +1,9 @@
 package de.featjar.base;
 
 import de.featjar.base.cli.CommandLine;
+import de.featjar.base.data.Store;
 import de.featjar.base.extension.ExtensionManager;
 import de.featjar.base.io.IO;
-import de.featjar.base.io.IOMapper;
 import de.featjar.base.log.Log;
 
 import java.util.function.Consumer;
@@ -159,6 +159,18 @@ public class FeatJAR extends IO implements AutoCloseable {
         return Log.getInstance();
     }
 
+    /**
+     * {@return the current store}
+     */
+    public static Store store() {
+        return Store.getInstance();
+    }
+
+    /**
+     * Main entry point of FeatJAR.
+
+     * @param args command-line arguments
+     */
     public static void main(String[] args) {
         FeatJAR.install();
         CommandLine.run(args);
