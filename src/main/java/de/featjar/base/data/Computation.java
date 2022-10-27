@@ -30,6 +30,8 @@ import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Objects;
+import java.util.concurrent.CompletableFuture;
 import java.util.function.Function;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
@@ -49,6 +51,8 @@ public interface Computation<T> extends Supplier<FutureResult<T>>, Extension { /
     // whether an input is a Computation<T> or just a T depends on subjective judgment (e.g., twisesample(formula, t) -> formula is a computation, t is usually just a given integer)
 
     FutureResult<T> compute(); // always computes - only call directly if caching is undesired
+
+    // todo: hashcode depends on all inputs. default hashcode implementation?
 
     @Override
     default FutureResult<T> get() { // only computes if not cached yet
@@ -71,6 +75,30 @@ public interface Computation<T> extends Supplier<FutureResult<T>>, Extension { /
         return of(object, new CancelableMonitor()); // todo NullMonitor
     }
 
+    static Computation<Void> empty() {
+        return () -> FutureResult.empty(new CancelableMonitor());
+    }
+
+    static Computation<List<?>> allOf(Computation<?>... computations) {
+        return new Computation<>() {
+            //todo hashcode?
+            @Override
+            public FutureResult<List<?>> compute() {
+                List<FutureResult<?>> futureResults =
+                        Arrays.stream(computations).map(Computation::compute).collect(Collectors.toList());
+                return FutureResult.wrap(FutureResult.allOf(futureResults.toArray(CompletableFuture[]::new)))
+                        .thenComputeResult((unused, monitor) -> {
+                            List<?> x = futureResults.stream()
+                                    .map(FutureResult::get)
+                                    .map(Result::get)
+                                    .collect(Collectors.toList());
+                            return x.stream().noneMatch(Objects::isNull) ? Result.of(x) : Result.empty();
+                        });
+
+            }
+        };
+    }
+
     default <U> Computation<U> then(Function<Computation<T>, Computation<U>> computationFunction) {
         return computationFunction.apply(this);
     }
@@ -88,6 +116,16 @@ public interface Computation<T> extends Supplier<FutureResult<T>>, Extension { /
         } catch (NoSuchMethodException | InvocationTargetException | InstantiationException | IllegalAccessException e) {
             throw new RuntimeException(e);
         }
+    }
+
+    default <U> Computation<U> map(Function<T, U> computationFunction) {
+        return new Computation<U>() {
+            // todo: what is the hash code? probably Computation.this + the identity of computationFunction??
+            @Override
+            public FutureResult<U> compute() {
+                return Computation.this.compute().thenCompute((t, monitor) -> computationFunction.apply(t));
+            }
+        };
     }
 
     //void serialize(); // use in equals + hashcode. requires that c1.serialize() == c2.serialize ==> same computation result. could abstract away complex identities to improve caching.

@@ -1,9 +1,11 @@
 package de.featjar.base.data;
 
+import de.featjar.base.task.CancelableMonitor;
 import de.featjar.base.task.Monitor;
 
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ForkJoinPool;
 import java.util.function.BiFunction;
 
 // ComputationFuture? // computable future?
@@ -22,6 +24,20 @@ public class FutureResult<T> extends CompletableFuture<Result<T>> {
 
     public static <T> FutureResult<T> of(T object, Monitor monitor) {
         return ofResult(Result.of(object), monitor);
+    }
+
+    public static FutureResult<Void> empty(Monitor monitor) {
+        return of(null, monitor);
+    }
+
+    public static <T> FutureResult<T> wrap(CompletableFuture<T> completableFuture) {
+        return empty(new CancelableMonitor()).thenComputeResult(((o, monitor1) -> {
+            try {
+                return Result.of(completableFuture.get());
+            } catch (InterruptedException | ExecutionException e) {
+                return Result.empty(e);
+            }
+        }));
     }
 
     public <U> FutureResult<U> thenCompute(BiFunction<T, Monitor, U> fn) {
@@ -82,4 +98,5 @@ public class FutureResult<T> extends CompletableFuture<Result<T>> {
 
     //monitor
     //result
+
 }
