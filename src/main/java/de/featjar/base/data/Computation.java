@@ -30,6 +30,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.function.Function;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
@@ -68,6 +69,10 @@ public interface Computation<T> extends Supplier<FutureResult<T>>, Extension { /
 
     static <T> Computation<T> of(T object) {
         return of(object, new CancelableMonitor()); // todo NullMonitor
+    }
+
+    default <U> Computation<U> then(Function<Computation<T>, Computation<U>> computationFunction) {
+        return computationFunction.apply(this);
     }
 
     default <U> Computation<U> then(Class<? extends Computation<U>> computationClass, Object... args) {
