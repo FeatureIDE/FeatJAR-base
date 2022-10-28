@@ -27,7 +27,7 @@ package de.featjar.base.data;
  */
 public interface Identifiable {
     /**
-     * {@return this identifiable's identifier
+     * {@return this identifiable's identifier}
      */
     Identifier getIdentifier();
 
