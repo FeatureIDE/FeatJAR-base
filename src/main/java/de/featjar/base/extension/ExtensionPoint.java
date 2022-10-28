@@ -52,7 +52,7 @@ public abstract class ExtensionPoint<T extends Extension> {
     /**
      * {@return a singleton instance of this extension point}
      */
-    public abstract ExtensionPoint<T> getInstanceAsExtensionPoint();
+    public abstract ExtensionPoint<T> getInstanceAsExtensionPoint(); // todo: this is useless, use static getInstance instead
 
     /**
      * Installs a new extension at this extension point.

@@ -149,7 +149,7 @@ public class Log implements Extension {
     protected final PrintStream originalSystemErr = System.err;
     protected Configuration configuration = new Configuration();
 
-    protected Log() {
+    public Log() { // todo: must be public, otherwise Extension cannot load this
     }
 
     /**
