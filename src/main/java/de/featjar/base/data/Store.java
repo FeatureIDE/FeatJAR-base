@@ -20,7 +20,9 @@
  */
 package de.featjar.base.data;
 
+import de.featjar.base.extension.Extension;
 import de.featjar.base.task.MonitorableSupplier;
+import jdk.jfr.StackTrace;
 
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
@@ -31,8 +33,33 @@ import java.util.concurrent.ConcurrentHashMap;
  * @author Sebastian Krieter
  * @author Elias Kuiter
  */
-public class Store {
+public class Store implements Extension { // todo: should be (un)installed like log
+    interface CachingPolicy {
+        boolean shouldCache(Computation<?> computation, StackTraceElement[] stackTrace);
+
+        CachingPolicy CACHE_ALL_COMPUTATIONS = (computation, stackTrace) -> true;
+        CachingPolicy CACHE_NO_COMPUTATIONS = (computation, stackTrace) -> false;
+
+        CachingPolicy CACHE_TOP_LEVEL_COMPUTATIONS = new CachingPolicy() {
+            private boolean isComputationComputeMethod(StackTraceElement stackTraceElement) {
+                try {
+                    return Computation.class.isAssignableFrom(Class.forName(stackTraceElement.getClassName())) &&
+                            stackTraceElement.getMethodName().equals("compute");
+                } catch (ClassNotFoundException e) {
+                    return false; // what if the class name is a lambda?
+                }
+            }
+
+            // check whether some call to Computation#compute is already on the stack (= this call is nested)
+            @Override
+            public boolean shouldCache(Computation<?> computation, StackTraceElement[] stackTrace) {
+                return Arrays.stream(stackTrace).noneMatch(this::isComputationComputeMethod);
+            }
+        };
+    }
+
     private static final Store INSTANCE = new Store();
+    protected CachingPolicy cachingPolicy; // todo: set/unset this
 
     protected Store() {
     }
@@ -50,7 +77,8 @@ public class Store {
         if (has(computation))
             return get(computation).get();
         FutureResult<T> futureResult = computation.compute();
-        put(computation, futureResult);
+        if (cachingPolicy.shouldCache(computation, Thread.currentThread().getStackTrace()))
+            put(computation, futureResult);
         return futureResult;
     }
 

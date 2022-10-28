@@ -32,6 +32,9 @@ public class FeatJAR extends IO implements AutoCloseable {
          * Configures the log.
          */
         public Log.Configuration log = new Log.Configuration();
+
+        // todo: store configuration
+        // default store CachingPolicy: cache unnested computation stages by inspecting the current stack trace
     }
 
     /**
@@ -58,6 +61,7 @@ public class FeatJAR extends IO implements AutoCloseable {
 
     protected FeatJAR(Configuration configuration) {
         log().setConfiguration(configuration.log);
+        store().clear();
         ExtensionManager.resetInstance();
         ExtensionManager.getInstance();
     }
@@ -77,9 +81,9 @@ public class FeatJAR extends IO implements AutoCloseable {
      * @param configurationConsumer the FeatJAR configuration consumer
      */
     public static void install(Consumer<Configuration> configurationConsumer) {
+        uninstall();
         Configuration configuration = new Configuration();
         configurationConsumer.accept(configuration);
-        resetInstance();
         getInstance(configuration);
     }
 

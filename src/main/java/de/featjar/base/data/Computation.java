@@ -50,6 +50,7 @@ public interface Computation<T> extends Supplier<FutureResult<T>>, Extension { /
     // a computation depends on other computations by adding them as attributes
     // whether an input is a Computation<T> or just a T depends on subjective judgment (e.g., twisesample(formula, t) -> formula is a computation, t is usually just a given integer)
 
+    // do not rename as reflection in Store depends on this
     FutureResult<T> compute(); // always computes - only call directly if caching is undesired
 
     // todo: hashcode depends on all inputs. default hashcode implementation?

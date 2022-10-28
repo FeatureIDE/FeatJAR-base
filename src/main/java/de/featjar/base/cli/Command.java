@@ -42,7 +42,7 @@ public interface Command extends Extension {
      * {@return this command's description}
      */
     default Optional<String> getDescription() {
-        return Optional.empty();
+        return Optional.empty(); // todo: optional or null?
     }
 
     /**
