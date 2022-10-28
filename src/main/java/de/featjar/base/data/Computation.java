@@ -75,8 +75,8 @@ public interface Computation<T> extends Supplier<FutureResult<T>>, Extension { /
         return of(object, new CancelableMonitor()); // todo NullMonitor
     }
 
-    static Computation<Void> empty() {
-        return () -> FutureResult.empty(new CancelableMonitor());
+    static <T> Computation<T> empty() {
+        return of(null, new CancelableMonitor()); // todo NullMonitor
     }
 
     static Computation<List<?>> allOf(Computation<?>... computations) {
@@ -87,7 +87,7 @@ public interface Computation<T> extends Supplier<FutureResult<T>>, Extension { /
                 List<FutureResult<?>> futureResults =
                         Arrays.stream(computations).map(Computation::compute).collect(Collectors.toList());
                 return FutureResult.wrap(FutureResult.allOf(futureResults.toArray(CompletableFuture[]::new)))
-                        .thenComputeResult((unused, monitor) -> {
+                        .thenComputeFromResult((unused, monitor) -> {
                             List<?> x = futureResults.stream()
                                     .map(FutureResult::get)
                                     .map(Result::get)
@@ -103,7 +103,7 @@ public interface Computation<T> extends Supplier<FutureResult<T>>, Extension { /
         return computationFunction.apply(this);
     }
 
-    default <U> Computation<U> then(Class<? extends Computation<U>> computationClass, Object... args) {
+    default <U> Computation<U> then(Class<? extends Computation<U>> computationClass, Object... args) { // todo: drop this because it is not type-safe?
         List<Object> arguments = new ArrayList<>();
         List<Class<?>> argumentClasses = new ArrayList<>();
         arguments.add(this);

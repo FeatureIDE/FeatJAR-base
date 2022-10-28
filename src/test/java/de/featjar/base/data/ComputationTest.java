@@ -4,6 +4,9 @@ import de.featjar.base.Feat;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
+import java.util.List;
+import java.util.concurrent.CompletableFuture;
+
 import static org.junit.jupiter.api.Assertions.*;
 
 
@@ -71,5 +74,43 @@ class ComputationTest {
         assertFalse(new IsParityComputation(computation, IsParityComputation.Parity.ODD).computeResult().get());
         assertTrue(computation.then(IsParityComputation.class, IsParityComputation.Parity.EVEN).computeResult().get());
         assertTrue(computation.then(c -> new IsParityComputation(c, IsParityComputation.Parity.EVEN)).computeResult().get());
+    }
+
+    @Test
+    void allOfSimple() {
+        List<?> r = Computation.allOf(Computation.of(1), Computation.of(2)).computeResult().get();
+        assertEquals(1, r.get(0));
+        assertEquals(2, r.get(1));
+    }
+
+    @Test
+    void allOfComplex() {
+        Computation<Integer> c1 = Computation.of(42);
+        Computation<Boolean> c2 = c1.then(IsEvenComputation.class);
+        List<?> r = Computation.allOf(c1, c2).computeResult().get();
+        assertEquals(42, r.get(0));
+        assertEquals(true, r.get(1));
+    }
+
+    @Test
+    void allOfSleep() {
+        Computation<Integer> c1 = new Computation<>() {
+            @Override
+            public FutureResult<Integer> compute() {
+                return FutureResult.wrap(CompletableFuture.supplyAsync(() -> {
+                    try {
+                        Thread.sleep(10);
+                    } catch (InterruptedException e) {
+                        throw new RuntimeException(e);
+                    }
+                    return 42;
+                }));
+            }
+        };
+        Computation<Boolean> c2 = c1.then(IsEvenComputation.class);
+        List<?> r = Computation.allOf(c1, c2).computeResult().get();
+        System.out.println(r);
+        assertEquals(42, r.get(0));
+        assertEquals(true, r.get(1));
     }
 }

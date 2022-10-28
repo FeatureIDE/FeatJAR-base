@@ -27,11 +27,11 @@ public class FutureResult<T> extends CompletableFuture<Result<T>> {
     }
 
     public static FutureResult<Void> empty(Monitor monitor) {
-        return of(null, monitor);
+        return of(null, monitor); // careful, is considered erroneous
     }
 
     public static <T> FutureResult<T> wrap(CompletableFuture<T> completableFuture) {
-        return empty(new CancelableMonitor()).thenComputeResult(((o, monitor1) -> {
+        return empty(new CancelableMonitor()).thenComputeFromResult(((o, monitor1) -> {
             try {
                 return Result.of(completableFuture.get());
             } catch (InterruptedException | ExecutionException e) {
