@@ -22,6 +22,8 @@ package de.featjar.base.extension;
 
 /**
  * An extension implements some functionality that can be loaded by an {@link ExtensionPoint}.
+ * Initialization is done by the {@link ExtensionManager} with a public no-arg constructor, which must be available.
+ * De-initialization is done with {@link #close()}.
  *
  * @author Sebastian Krieter
  * @author Elias Kuiter
@@ -36,17 +38,9 @@ public interface Extension {
     }
 
     /**
-     * Initializes this extension, called by {@link ExtensionPoint}.
-     *
-     * @return whether the initialization was successful
+     * De-initializes this extension, called by {@link ExtensionManager}.
+     * Similar to {@link AutoCloseable#close()}, but called explicitly instead of implicitly in a try...with block.
      */
-    default boolean install() {
-        return true;
-    }
-
-    /**
-     * Deinitializes this extension, called by {@link ExtensionManager}.
-     */
-    default void uninstall() {
+    default void close() {
     }
 }

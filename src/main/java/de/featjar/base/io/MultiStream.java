@@ -50,6 +50,10 @@ public class MultiStream extends OutputStream {
         streams.clear();
     }
 
+    public Set<OutputStream> getStreams() {
+        return streams;
+    }
+
     @Override
     public void flush() throws IOException {
         for (final OutputStream outputStream : streams) {

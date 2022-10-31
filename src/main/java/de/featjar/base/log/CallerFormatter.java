@@ -32,27 +32,17 @@ import java.util.Locale;
  * @author Sebastian Krieter
  * @author Elias Kuiter
  */
-public class TimeStampFormatter implements Formatter {
-    private DateTimeFormatter formatter =
-            DateTimeFormatter
-                    .ofLocalizedDateTime(FormatStyle.SHORT)
-                    .withLocale(Locale.UK)
-                    .withZone(ZoneId.systemDefault());
-
-    public DateTimeFormatter getFormatter() {
-        return formatter;
-    }
-
-    public void setFormatter(DateTimeFormatter formatter) {
-        this.formatter = formatter;
-    }
-
+public class CallerFormatter implements Formatter {
     @Override
     public String getPrefix() {
-        return "[" + formatter.format(getInstant()) + "]\t";
-    }
-
-    Instant getInstant() {
-        return Instant.now();
+        StackTraceElement[] stackTrace = Thread.currentThread().getStackTrace();
+        // start at 1 to skip the entry for "getStackTrace"
+        for (int i = 1; i < stackTrace.length; i++) {
+            StackTraceElement stackTraceElement = stackTrace[i];
+            if (stackTraceElement.getClassName().startsWith(getClass().getPackageName()))
+                continue;
+            return "[" + stackTraceElement + "]\t";
+        }
+        return "";
     }
 }

@@ -2,5 +2,7 @@
 <extensions>
     <point id="de.featjar.base.extension.Initializers">
         <extension id="de.featjar.base.log.Log" />
+        <extension id="de.featjar.base.data.Store" />
     </point>
+    <point id="de.featjar.base.cli.Commands" />
 </extensions>

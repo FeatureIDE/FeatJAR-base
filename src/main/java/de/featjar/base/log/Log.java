@@ -20,8 +20,9 @@
  */
 package de.featjar.base.log;
 
+import de.featjar.base.Feat;
 import de.featjar.base.data.Problem;
-import de.featjar.base.extension.Extension;
+import de.featjar.base.extension.Initializable;
 import de.featjar.base.io.MultiStream;
 import de.featjar.base.task.Monitor;
 import de.featjar.base.task.ProgressLogger;
@@ -40,7 +41,7 @@ import java.util.*;
  * @author Sebastian Krieter
  * @author Elias Kuiter
  */
-public class Log implements Extension {
+public class Log implements Initializable {
     /**
      * Verbosity of the log.
      */
@@ -87,7 +88,7 @@ public class Log implements Extension {
          * @param verbosities the logged verbosities
          * @return this configuration
          */
-        public synchronized Configuration logToStream(PrintStream stream, Verbosity... verbosities) {
+        public Configuration logToStream(PrintStream stream, Verbosity... verbosities) {
             Arrays.asList(verbosities)
                     .forEach(verbosity -> ((MultiStream) logStreams.get(verbosity).getOutputStream())
                             .addStream(stream));
@@ -101,7 +102,7 @@ public class Log implements Extension {
          * @param verbosities the logged verbosities
          * @return this configuration
          */
-        public synchronized Configuration logToFile(Path path, Verbosity... verbosities) {
+        public Configuration logToFile(Path path, Verbosity... verbosities) {
             try {
                 logToStream(new PrintStream(new FileOutputStream(path.toAbsolutePath().normalize().toFile())), verbosities);
             } catch (FileNotFoundException e) {
@@ -116,7 +117,7 @@ public class Log implements Extension {
          * @param verbosities the logged verbosities
          * @return this configuration
          */
-        public synchronized Configuration logToSystemOut(Verbosity... verbosities) {
+        public Configuration logToSystemOut(Verbosity... verbosities) {
             logToStream(System.out, verbosities);
             return this;
         }
@@ -127,7 +128,7 @@ public class Log implements Extension {
          * @param verbosities the logged verbosities
          * @return this configuration
          */
-        public synchronized Configuration logToSystemErr(Verbosity... verbosities) {
+        public Configuration logToSystemErr(Verbosity... verbosities) {
             logToStream(System.err, verbosities);
             return this;
         }
@@ -138,25 +139,54 @@ public class Log implements Extension {
          * @param formatter the formatter
          * @return this configuration
          */
-        public synchronized Configuration addFormatter(Formatter formatter) {
+        public Configuration addFormatter(Formatter formatter) {
             formatters.add(formatter);
+            return this;
+        }
+
+        public Configuration logAtMost(Verbosity verbosity) {
+            if (verbosity == null) {
+                return this;
+            }
+            logToSystemErr(Log.Verbosity.ERROR);
+            switch (verbosity) {
+                case INFO:
+                    logToSystemOut(Log.Verbosity.INFO);
+                    break;
+                case DEBUG:
+                    logToSystemOut(Log.Verbosity.INFO, Log.Verbosity.DEBUG);
+                    break;
+                case PROGRESS:
+                    logToSystemOut(Log.Verbosity.INFO, Log.Verbosity.DEBUG, Log.Verbosity.PROGRESS);
+                    break;
+            }
+            return this;
+        }
+
+        public Configuration logAtMost(String verbosityString) {
+            String[] verbosities = new String[] {"none", "error", "info", "debug", "progress"};
+            if (!Arrays.asList(verbosities).contains(verbosityString))
+                throw new IllegalArgumentException("invalid verbosity " + verbosityString);
+            logAtMost(verbosityString.equals("none") ? null : Verbosity.valueOf(verbosityString.toUpperCase()));
             return this;
         }
     }
 
-    private static final Log INSTANCE = new Log();
     protected final PrintStream originalSystemOut = System.out;
     protected final PrintStream originalSystemErr = System.err;
-    protected Configuration configuration = new Configuration();
-
-    public Log() { // todo: must be public, otherwise Extension cannot load this
-    }
+    protected static Configuration globalConfiguration = null;
+    protected final Configuration configuration;
 
     /**
-     * {@return the global log}
+     * Sets the configuration used for new logs.
      */
-    public static Log getInstance() {
-        return INSTANCE;
+    public static void setConfiguration(Configuration configuration) {
+        Feat.log().debug("setting new global log configuration");
+        Log.globalConfiguration = configuration;
+    }
+
+    public Log() {
+        this(globalConfiguration);
     }
 
     /**
@@ -167,33 +197,31 @@ public class Log implements Extension {
     }
 
     /**
-     * Sets this log's configuration.
-     */
-    public void setConfiguration(Configuration configuration) {
-        this.configuration = configuration;
-    }
-
-    /**
      * Installs this log.
      * Overrides the standard output/error streams.
      * That is, calls to {@link System#out} are equivalent to calling {@link #info(String)}.
      * Analogously, calls to {@link System#err} are equivalent to calling {@link #error(String)}.
      */
-    @Override
-    public boolean install() {
-        System.setOut(configuration.logStreams.get(Verbosity.INFO));
-        System.setErr(configuration.logStreams.get(Verbosity.ERROR));
-        return true;
+    public Log(Configuration configuration) {
+        this.configuration = configuration;
+        if (configuration != null) {
+            Feat.log().debug("initializing log");
+            System.setOut(configuration.logStreams.get(Verbosity.INFO));
+            System.setErr(configuration.logStreams.get(Verbosity.ERROR));
+        }
     }
 
     /**
-     * Uninstalls this log.
+     * De-initializes this log.
      * Resets the standard output/error streams.
      */
     @Override
-    public void uninstall() {
-        System.setOut(originalSystemOut);
-        System.setErr(originalSystemErr);
+    public void close() {
+        if (configuration != null) {
+            Feat.log().debug("de-initializing log");
+            System.setOut(originalSystemOut);
+            System.setErr(originalSystemErr);
+        }
     }
 
     /**
@@ -341,5 +369,22 @@ public class Log implements Extension {
         final IntervalThread intervalThread = new IntervalThread(new ProgressLogger(monitor), interval);
         intervalThread.start();
         return intervalThread;
+    }
+
+    /**
+     * Logs messages during (de-)initialization of FeatJAR, as there is no {@link Log} configured then.
+     */
+    public static class BootLog extends Log {
+        Formatter timeStampFormatter = new TimeStampFormatter();
+        Formatter callerFormatter = new CallerFormatter();
+
+        public BootLog() {
+            super(null);
+        }
+
+        @Override
+        protected String formatMessage(String message) {
+            return "[boot]\t" + timeStampFormatter.getPrefix() + callerFormatter.getPrefix() + message;
+        }
     }
 }

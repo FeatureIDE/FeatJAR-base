@@ -28,17 +28,5 @@ import de.featjar.base.extension.ExtensionPoint;
  * @author Sebastian Krieter
  */
 public class Commands extends ExtensionPoint<Command> {
-
-    private static final Commands INSTANCE = new Commands();
-
-    public static Commands getInstance() {
-        return INSTANCE;
-    }
-
-    private Commands() {}
-
-    @Override
-    public ExtensionPoint<Command> getInstanceAsExtensionPoint() {
-        return INSTANCE;
-    }
+    public Commands() {}
 }

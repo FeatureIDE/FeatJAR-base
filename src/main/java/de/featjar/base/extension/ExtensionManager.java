@@ -35,6 +35,8 @@ import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
+
+import de.featjar.base.data.Result;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
@@ -47,52 +49,35 @@ import org.w3c.dom.NodeList;
  * @author Elias Kuiter
  */
 public class ExtensionManager implements AutoCloseable {
-    private static ExtensionManager instance;
+    private final Map<String, List<String>> extensionMap = new HashMap<>();
+    private final Map<String, ExtensionPoint<?>> extensionPoints = new HashMap<>();
+    private final Map<String, Extension> extensions = new HashMap<>();
 
     /**
-     * {@return the current extension manager, initializing it if needed}
-     */
-    public static ExtensionManager getInstance() {
-        return instance == null ? new ExtensionManager() : instance;
-    }
-
-    /**
-     * Removes the current extension manager.
-     * The next call to {@link #getInstance()} will create a new extension manager.
-     */
-    public static void resetInstance() {
-        instance = null;
-    }
-
-    private final HashMap<String, List<String>> extensionMap;
-    private final Set<ExtensionPoint<?>> extensionPoints;
-
-    /**
-     * Installs all extensions that can be found in the class path.
+     * Installs all extensions and extension points that can be found in the class path.
      * To this end, filters all files on the class path for extension definition files, and loads each of them.
      */
     @SuppressWarnings({"unchecked", "rawtypes"})
-    protected ExtensionManager() {
-        extensionMap = new HashMap<>();
-        extensionPoints = new HashSet<>();
+    public ExtensionManager() {
+        Feat.log().debug("initializing extension manager");
         getResources().stream() //
-                .filter(ExtensionManager::filterByFileName) //
-                .peek(message -> Feat.log().debug(message))
+                .filter(ExtensionManager::filterByFileName)
                 .forEach(this::loadExtensionDefinitionFile);
         final ClassLoader systemClassLoader = ClassLoader.getSystemClassLoader();
         for (final Entry<String, List<String>> entry : extensionMap.entrySet()) {
             final String extensionPointId = entry.getKey();
             try {
                 final Class<ExtensionPoint<?>> extensionPointClass = (Class<ExtensionPoint<?>>) systemClassLoader.loadClass(extensionPointId);
-                final Method instanceMethod = extensionPointClass.getDeclaredMethod("getInstance"); // todo: document this requirement for extension points
-                final ExtensionPoint ep = (ExtensionPoint) instanceMethod.invoke(null);
-                extensionPoints.add(ep);
+                Feat.log().info("installing extension point " + extensionPointClass);
+                final ExtensionPoint ep = extensionPointClass.getConstructor().newInstance();
+                extensionPoints.put(ep.getIdentifier(), ep);
                 for (final String extensionId : entry.getValue()) {
                     try {
                         final Class<Extension> extensionClass = (Class<Extension>) systemClassLoader.loadClass(extensionId);
-                        Feat.log().debug(extensionClass.toString());
-                        Extension extension = extensionClass.getConstructor().newInstance(); // todo: document this requirement for extensions
-                        ep.installExtension(extension);
+                        Feat.log().info("installing extension " + extensionClass);
+                        Extension e = extensionClass.getConstructor().newInstance();
+                        ep.installExtension(e);
+                        extensions.put(e.getIdentifier(), e);
                     } catch (final Exception e) {
                         Feat.log().error(e);
                     }
@@ -104,12 +89,11 @@ public class ExtensionManager implements AutoCloseable {
     }
 
     /**
-     * Uninstalls all currently installed extensions.
+     * Uninstalls all currently installed extensions and extension points.
      */
     @Override
     public void close() {
-        extensionPoints.forEach(ExtensionPoint::uninstallExtensions);
-        resetInstance();
+        extensionPoints.values().forEach(ExtensionPoint::close);
     }
 
     /**
@@ -124,7 +108,7 @@ public class ExtensionManager implements AutoCloseable {
             }
             return false;
         } catch (final Exception e) {
-            Feat.log().error(e);
+            //Feat.log().error(e);
             return false;
         }
     }
@@ -135,6 +119,7 @@ public class ExtensionManager implements AutoCloseable {
      * @param file the extension definition file
      */
     private void loadExtensionDefinitionFile(String file) {
+        Feat.log().debug("loading extension definition file " + file);
         try {
             final Enumeration<URL> systemResources =
                     ClassLoader.getSystemClassLoader().getResources(file);
@@ -198,5 +183,57 @@ public class ExtensionManager implements AutoCloseable {
             }
         }
         return resources;
+    }
+
+    public Collection<ExtensionPoint<?>> getExtensionPoints() {
+        return extensionPoints.values();
+    }
+
+    public Collection<Extension> getExtensions() {
+        return extensions.values();
+    }
+
+    /**
+     * {@return the installed extension point with a given identifier, if any}
+     *
+     * @param identifier the identifier
+     */
+    public Result<ExtensionPoint<?>> getExtensionPoint(String identifier) {
+        Objects.requireNonNull(identifier, "identifier must not be null!");
+        final ExtensionPoint<?> extensionPoint = extensionPoints.get(identifier);
+        return extensionPoint != null
+                ? Result.of(extensionPoint)
+                : Result.empty();
+    }
+
+    /**
+     * {@return the installed extension point for a given class, if any}
+     *
+     * @param klass the class
+     */
+    public <T extends ExtensionPoint<?>> Result<T> getExtensionPoint(Class<T> klass) {
+        return (Result<T>) getExtensionPoint(klass.getCanonicalName());
+    }
+
+    /**
+     * {@return the installed extension point with a given identifier, if any}
+     *
+     * @param identifier the identifier
+     */
+    public Result<Extension> getExtension(String identifier) {
+        Objects.requireNonNull(identifier, "identifier must not be null!");
+        final Extension extension = extensions.get(identifier);
+        return extension != null
+                ? Result.of(extension)
+                : Result.empty();
+    }
+
+    /**
+     * {@return the installed extension point for a given class, if any}
+     *
+     * @param klass the class
+     */
+    public <T extends Extension> Result<T> getExtension(Class<T> klass) {
+        return (Result<T>) getExtension(klass.getCanonicalName());
     }
 }

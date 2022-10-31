@@ -20,10 +20,16 @@
  */
 package de.featjar.base.data;
 
-import de.featjar.base.extension.Extension;
-import de.featjar.base.task.MonitorableSupplier;
-import jdk.jfr.StackTrace;
+import de.featjar.base.Feat;
+import de.featjar.base.extension.Initializable;
+import de.featjar.base.io.MultiStream;
+import de.featjar.base.log.Formatter;
+import de.featjar.base.log.Log;
 
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.PrintStream;
+import java.nio.file.Path;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -33,8 +39,11 @@ import java.util.concurrent.ConcurrentHashMap;
  * @author Sebastian Krieter
  * @author Elias Kuiter
  */
-public class Store implements Extension { // todo: should be (un)installed like log
-    interface CachingPolicy {
+public class Store implements Initializable {
+    /**
+     * Specifies whether and which computation results a store should cache.
+     */
+    public interface CachingPolicy {
         boolean shouldCache(Computation<?> computation, StackTraceElement[] stackTrace);
 
         CachingPolicy CACHE_ALL_COMPUTATIONS = (computation, stackTrace) -> true;
@@ -58,17 +67,43 @@ public class Store implements Extension { // todo: should be (un)installed like 
         };
     }
 
-    private static final Store INSTANCE = new Store();
-    protected CachingPolicy cachingPolicy; // todo: set/unset this
+    /**
+     * Configures a store.
+     */
+    public static class Configuration {
+        protected CachingPolicy cachingPolicy = CachingPolicy.CACHE_NO_COMPUTATIONS;
 
-    protected Store() {
+        public Configuration setCachingPolicy(CachingPolicy cachingPolicy) {
+            this.cachingPolicy = cachingPolicy;
+            return this;
+        }
+    }
+
+    protected static Configuration globalConfiguration = null;
+    protected final Configuration configuration = globalConfiguration;
+
+    /**
+     * Sets the configuration used for new stores.
+     */
+    public static void setConfiguration(Configuration configuration) {
+        Feat.log().debug("setting new global store configuration");
+        Store.globalConfiguration = configuration;
+    }
+
+    public Store() {
+        Feat.log().debug("initializing store");
     }
 
     /**
-     * {@return the global store}
+     * {@return this store's configuration}
      */
-    public static Store getInstance() {
-        return INSTANCE; // todo: for simplicity, this is a singleton for now
+    public Configuration getConfiguration() {
+        return configuration;
+    }
+    @Override
+    public void close() {
+        Feat.log().debug("de-initializing store");
+        clear();
     }
 
     protected final Map<Computation<?>, FutureResult<?>> computationMap = new ConcurrentHashMap<>(); // assume that Computation<T> is mapped to FutureResult<T> (same T)
@@ -77,7 +112,7 @@ public class Store implements Extension { // todo: should be (un)installed like 
         if (has(computation))
             return get(computation).get();
         FutureResult<T> futureResult = computation.compute();
-        if (cachingPolicy.shouldCache(computation, Thread.currentThread().getStackTrace()))
+        if (configuration.cachingPolicy.shouldCache(computation, Thread.currentThread().getStackTrace()))
             put(computation, futureResult);
         return futureResult;
     }

@@ -5,8 +5,4 @@ package de.featjar.base;
  * This class is a shorthand for {@link FeatJAR}.
  */
 public class Feat extends FeatJAR {
-    @SuppressWarnings("ConstantConditions")
-    private Feat() {
-        super(null);
-    }
 }

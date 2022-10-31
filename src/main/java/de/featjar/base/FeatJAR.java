@@ -1,29 +1,34 @@
 package de.featjar.base;
 
 import de.featjar.base.cli.CommandLine;
+import de.featjar.base.data.Result;
 import de.featjar.base.data.Store;
+import de.featjar.base.extension.Extension;
 import de.featjar.base.extension.ExtensionManager;
+import de.featjar.base.extension.ExtensionPoint;
 import de.featjar.base.io.IO;
+import de.featjar.base.log.CallerFormatter;
 import de.featjar.base.log.Log;
+import de.featjar.base.log.TimeStampFormatter;
 
 import java.util.function.Consumer;
-import java.util.function.Supplier;
+import java.util.function.Function;
 
 /**
  * Configures, initializes, and runs FeatJAR.
- * To use FeatJAR extensions, call {@link #install()} before using any FeatJAR functions, typically at the
- * start of a program.
- * If desired, this initialization can be undone with {@link #uninstall()}.
- * If only a quick computation is needed, call {@link #run(Runnable)}.
- * For convenience, this class inherits all methods in {@link IO} and provides access to the {@link #log()}.
- * Only one FeatJAR instance can exist at a time due to potential global mutable state in extensions.
- * Thus, do not call {@link #install()} at the same time from different threads.
- * Also, do not nest {@link #install()} calls.
- * However, different FeatJAR instances can be re-initialized across time (e.g., to change the configuration).
+ * To use FeatJAR, create a {@link FeatJAR} object and use it.
+ * After usage, call {@link #close()} or use a try...with block.
+ * If only a quick computation is needed, call {@link #apply(Function)}.
+ * For convenience, this class inherits all methods in {@link IO} and provides
+ * access to the {@link #log()} and {@link #store()}.
+ * For simplicity, only one FeatJAR instance can exist at a time (although this limitation may be lifted in the future).
+ * Thus, do not create FeatJAR objects at the same time in different threads or in nested {@link #apply(Function)} calls.
+ * However, different FeatJAR instances can be created over time in the same thread (e.g., to change the configuration).
  *
  * @author Elias Kuiter
  */
 public class FeatJAR extends IO implements AutoCloseable {
+
     /**
      * Configures FeatJAR.
      */
@@ -31,152 +36,186 @@ public class FeatJAR extends IO implements AutoCloseable {
         /**
          * Configures the log.
          */
-        public Log.Configuration log = new Log.Configuration();
+        protected final Log.Configuration log = new Log.Configuration();
+        protected final Store.Configuration store = new Store.Configuration();
 
-        // todo: store configuration
-        // default store CachingPolicy: cache unnested computation stages by inspecting the current stack trace
+        public Configuration log(Consumer<Log.Configuration> configurationConsumer) {
+            configurationConsumer.accept(log);
+            return this;
+        }
+
+        public Configuration store(Consumer<Store.Configuration> configurationConsumer) {
+            configurationConsumer.accept(store);
+            return this;
+        }
+    }
+
+    private static FeatJAR instance;
+    protected final ExtensionManager extensionManager;
+    protected boolean initialized;
+
+    public static FeatJAR getInstance() {
+        return instance == null ? (instance = new FeatJAR()) : instance;
     }
 
     /**
-     * The current FeatJAR instance.
-     */
-    private static FeatJAR instance;
-
-    /**
-     * {@return the current FeatJAR instance, initializing it if needed}
+     * Installs FeatJAR, uninstalling it if necessary.
      *
      * @param configuration the FeatJAR configuration
      */
-    protected static FeatJAR getInstance(Configuration configuration) {
-        return instance == null ? new FeatJAR(configuration) : instance;
+    public FeatJAR(Configuration configuration) {
+        if (instance != null)
+            throw new RuntimeException("FeatJAR already initialized");
+        log().debug("initializing FeatJAR");
+        instance = this;
+        Log.setConfiguration(configuration.log);
+        Store.setConfiguration(configuration.store);
+        extensionManager = new ExtensionManager();
+        initialized = true;
     }
 
     /**
-     * Removes the current FeatJAR instance.
-     * The next call to {@link #getInstance(Configuration)} will create a new FeatJAR instance.
+     * Installs FeatJAR, uninstalling it if necessary.
+     * The log reports only error and info messages.
      */
-    protected static void resetInstance() {
-        instance = null;
-    }
-
-    protected FeatJAR(Configuration configuration) {
-        log().setConfiguration(configuration.log);
-        store().clear();
-        ExtensionManager.resetInstance();
-        ExtensionManager.getInstance();
+    public FeatJAR() {
+        this(new Configuration()
+                .log(cfg -> {
+                    cfg.logAtMost(Log.Verbosity.DEBUG); // todo: only INFO
+                    cfg.addFormatter(new TimeStampFormatter());
+                    cfg.addFormatter(new CallerFormatter());
+                })
+                .store(cfg -> cfg.setCachingPolicy(Store.CachingPolicy.CACHE_TOP_LEVEL_COMPUTATIONS)));
     }
 
     /**
-     * Uninstalls all extensions.
+     * De-initializes FeatJAR.
      */
     @Override
     public void close() {
-        ExtensionManager.getInstance().close();
-        resetInstance();
+        log().debug("de-initializing FeatJAR");
+        instance = null;
+        extensionManager.close();
+    }
+
+    public ExtensionManager getExtensionManager() {
+        return extensionManager;
+    }
+
+    public <T extends ExtensionPoint<?>> Result<T> getExtensionPoint(Class<T> klass) {
+        return extensionManager.getExtensionPoint(klass);
+    }
+
+    public <T extends Extension> Result<T> getExtension(Class<T> klass) {
+        return extensionManager.getExtension(klass);
     }
 
     /**
-     * Install a new FeatJAR instance.
+     * {@return the log}
+     */
+    public Log getLog() {
+        return initialized ? getExtension(Log.class).orElse(Log.BootLog::new) : new Log.BootLog();
+    }
+
+    /**
+     * {@return the store}
+     */
+    public Store getStore() {
+        return getExtension(Store.class).orElseThrow();
+    }
+
+    /**
+     * Runs some function in a temporary FeatJAR installation.
      *
-     * @param configurationConsumer the FeatJAR configuration consumer
+     * @param configuration the FeatJAR configuration
+     * @param fn            the function
      */
-    public static void install(Consumer<Configuration> configurationConsumer) {
-        uninstall();
-        Configuration configuration = new Configuration();
-        configurationConsumer.accept(configuration);
-        getInstance(configuration);
-    }
-
-    /**
-     * Install a new FeatJAR instance.
-     * The log reports only error and info messages.
-     */
-    public static void install() {
-        install(cfg ->
-                cfg.log.logToSystemErr(Log.Verbosity.ERROR)
-                        .logToSystemOut(Log.Verbosity.INFO));
-    }
-
-    /**
-     * Uninstalls the current FeatJAR instance.
-     */
-    public static void uninstall() {
-        if (instance != null) {
-            instance.close();
+    public static void run(Configuration configuration, Consumer<FeatJAR> fn) {
+        try (FeatJAR featJAR = new FeatJAR(configuration)) {
+            fn.accept(featJAR);
         }
     }
 
     /**
-     * Runs some function in a temporary FeatJAR instance.
+     * Runs some function in a temporary FeatJAR installation.
      *
-     * @param configurationConsumer the FeatJAR configuration consumer
-     * @param runnable the runnable
+     * @param fn the function
      */
-    public static void run(Consumer<Configuration> configurationConsumer, Runnable runnable) {
-        install(configurationConsumer);
-        runnable.run();
-        uninstall();
+    public static void run(Consumer<FeatJAR> fn) {
+        try (FeatJAR featJAR = new FeatJAR()) {
+            fn.accept(featJAR);
+        }
     }
 
     /**
-     * Runs some function in a temporary FeatJAR instance.
+     * Runs some function in a temporary FeatJAR installation.
      *
-     * @param runnable the runnable
-     */
-    public static void run(Runnable runnable) {
-        install();
-        runnable.run();
-        uninstall();
-    }
-
-    /**
-     * Runs some function in a temporary FeatJAR instance.
-     *
-     * @param configurationConsumer the FeatJAR configuration consumer
-     * @param supplier the supplier
+     * @param configuration the FeatJAR configuration
+     * @param fn            the function
      * @return the supplied object
      */
-    public static <T> T get(Consumer<Configuration> configurationConsumer, Supplier<T> supplier) {
-        install(configurationConsumer);
-        T t = supplier.get();
-        uninstall();
+    public static <T> T apply(Configuration configuration, Function<FeatJAR, T> fn) {
+        T t;
+        try (FeatJAR featJAR = new FeatJAR(configuration)) {
+            t = fn.apply(featJAR);
+        }
         return t;
     }
 
     /**
-     * Runs some function in a temporary FeatJAR instance.
+     * Runs some function in a temporary FeatJAR installation.
      *
-     * @param supplier the supplier
+     * @param fn the function
      * @return the supplied object
      */
-    public static <T> T get(Supplier<T> supplier) {
-        install();
-        T t = supplier.get();
-        uninstall();
+    public static <T> T apply(Function<FeatJAR, T> fn) {
+        T t;
+        try (FeatJAR featJAR = new FeatJAR()) {
+            t = fn.apply(featJAR);
+        }
         return t;
     }
 
+    public static <T extends ExtensionPoint<?>> T extensionPoint(Class<T> klass) {
+        if (instance == null)
+            throw new RuntimeException("FeatJAR not initialized yet");
+        Result<T> extensionPoint = instance.getExtensionPoint(klass);
+        if (extensionPoint.isEmpty())
+            throw new RuntimeException("extension point " + klass + " not currently installed in FeatJAR");
+        return extensionPoint.get();
+    }
+
+    public static <T extends Extension> T extension(Class<T> klass) {
+        if (instance == null)
+            throw new RuntimeException("FeatJAR not initialized yet");
+        Result<T> extension = instance.getExtension(klass);
+        if (extension.isEmpty())
+            throw new RuntimeException("extension " + klass + " not currently installed in FeatJAR");
+        return extension.get();
+    }
+
     /**
-     * {@return the current log}
+     * {@return the log}
      */
     public static Log log() {
-        return Log.getInstance();
+        return instance == null ? new Log.BootLog() : instance.getLog();
     }
 
     /**
-     * {@return the current store}
+     * {@return the store}
      */
     public static Store store() {
-        return Store.getInstance();
+        if (instance == null)
+            throw new RuntimeException("FeatJAR not initialized yet");
+        return instance.getStore();
     }
 
     /**
      * Main entry point of FeatJAR.
-
+     *
      * @param args command-line arguments
      */
     public static void main(String[] args) {
-        FeatJAR.install();
-        CommandLine.run(args);
+        FeatJAR.run(featJAR -> CommandLine.run(args));
     }
 }

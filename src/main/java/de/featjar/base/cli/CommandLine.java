@@ -26,17 +26,13 @@ import de.featjar.base.data.Result;
 import de.featjar.base.io.IO;
 import de.featjar.base.io.format.Format;
 import de.featjar.base.io.format.FormatSupplier;
-import de.featjar.base.log.Log;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.Arrays;
-import java.util.Iterator;
-import java.util.Objects;
-import java.util.Optional;
+import java.util.*;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
@@ -44,7 +40,6 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
-import java.util.function.Consumer;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -63,13 +58,14 @@ public class CommandLine {
     private static final Pattern SYSTEM_INPUT_PATTERN = Pattern.compile("system:in\\.(.+)");
 
     public static void run(String[] args) {
+        Feat.log().debug("running command-line interface");
         if (args.length == 0) {
             System.err.println("No command given. Please pass a command as the first argument.");
             printUsage();
             return;
         }
         final String commandName = args[0];
-        Commands.getInstance().getExtensions().stream()
+        FeatJAR.extensionPoint(Commands.class).getExtensions().stream()
                 .filter(e -> Objects.equals(commandName, e.getName()))
                 .findFirst()
                 .ifPresentOrElse(
@@ -81,9 +77,14 @@ public class CommandLine {
     }
 
     private static void printUsage() {
-        System.out.println("The following commands are available:");
-        for (final Command command : Commands.getInstance().getExtensions()) {
-            System.out.printf("\t%-20s %s\n", command.getName(), command.getDescription());
+        List<Command> commands = FeatJAR.extensionPoint(Commands.class).getExtensions();
+        if (commands.size() > 0) {
+            System.err.println("The following commands are available:");
+            for (final Command command : commands) {
+                System.err.printf("\t%-20s %s\n", command.getName(), command.getDescription());
+            }
+        } else {
+            System.err.println("No commands are available. You can register commands using FeatJAR's extension manager.");
         }
     }
 
@@ -94,28 +95,6 @@ public class CommandLine {
             System.err.println(e.getMessage());
             System.err.println(command.getUsage());
         }
-    }
-
-    public static Consumer<FeatJAR.Configuration> configureVerbosity(String verbosity) {
-        String[] verbosities = new String[] {"none", "error", "info", "debug", "progress"};
-        if (!Arrays.asList(verbosities).contains(verbosity))
-            throw new IllegalArgumentException("invalid verbosity " + verbosity);
-        return cfg -> {
-            if (!verbosity.equals("none")) {
-                cfg.log.logToSystemErr(Log.Verbosity.ERROR);
-            }
-            switch (verbosity) {
-                case "info":
-                    cfg.log.logToSystemOut(Log.Verbosity.INFO);
-                    break;
-                case "debug":
-                    cfg.log.logToSystemOut(Log.Verbosity.INFO, Log.Verbosity.DEBUG);
-                    break;
-                case "progress":
-                    cfg.log.logToSystemOut(Log.Verbosity.INFO, Log.Verbosity.DEBUG, Log.Verbosity.PROGRESS);
-                    break;
-            }
-        };
     }
 
     public static String getArgValue(final Iterator<String> iterator, final String arg) {

@@ -20,6 +20,7 @@
  */
 package de.featjar.base.extension;
 
+import de.featjar.base.Feat;
 import de.featjar.base.data.Result;
 import java.util.Collections;
 import java.util.HashMap;
@@ -29,8 +30,9 @@ import java.util.concurrent.CopyOnWriteArrayList;
 
 /**
  * An extension point installs {@link Extension extensions} of the same type.
- * Implementations must be singletons for their installation in {@link ExtensionManager} to work correctly.
  * As a naming convention, an extension named "Thing" belongs to an extension point named "Things".
+ * Initialization is done by the {@link ExtensionManager} with a public no-arg constructor, which must be available.
+ * De-initialization is done with {@link #close()}.
  *
  * @param <T> the type of the loaded extensions
  * @author Sebastian Krieter
@@ -50,9 +52,11 @@ public abstract class ExtensionPoint<T extends Extension> {
     private final List<T> extensions = new CopyOnWriteArrayList<>();
 
     /**
-     * {@return a singleton instance of this extension point}
+     * {@return a unique identifier for this extension point}
      */
-    public abstract ExtensionPoint<T> getInstanceAsExtensionPoint(); // todo: this is useless, use static getInstance instead
+    public String getIdentifier() {
+        return getClass().getCanonicalName();
+    }
 
     /**
      * Installs a new extension at this extension point.
@@ -61,7 +65,7 @@ public abstract class ExtensionPoint<T extends Extension> {
      * @return whether this extension is new and was installed correctly
      */
     public synchronized boolean installExtension(T extension) {
-        if ((extension != null) && !indexMap.containsKey(extension.getIdentifier()) && extension.install()) {
+        if ((extension != null) && !indexMap.containsKey(extension.getIdentifier())) {
             indexMap.put(extension.getIdentifier(), extensions.size());
             extensions.add(extension);
             return true;
@@ -76,10 +80,11 @@ public abstract class ExtensionPoint<T extends Extension> {
      * @return whether this extension was installed before
      */
     public synchronized boolean uninstallExtension(T extension) {
+        Feat.log().debug("uninstalling extension " + extension.getClass());
         if ((extension != null) && indexMap.containsKey(extension.getIdentifier())) {
             indexMap.remove(extension.getIdentifier());
             extensions.remove(extension);
-            extension.uninstall();
+            extension.close();
             return true;
         }
         return false;
@@ -90,6 +95,15 @@ public abstract class ExtensionPoint<T extends Extension> {
      */
     public synchronized void uninstallExtensions() {
         extensions.forEach(this::uninstallExtension);
+    }
+
+    /**
+     * De-initializes this extension point, called by {@link ExtensionManager}.
+     * Similar to {@link AutoCloseable#close()}, but called explicitly instead of implicitly in a try...with block.
+     */
+    public void close() {
+        Feat.log().debug("uninstalling extension point " + getClass());
+        uninstallExtensions();
     }
 
     /**
@@ -111,5 +125,14 @@ public abstract class ExtensionPoint<T extends Extension> {
         return index != null
                 ? Result.of(extensions.get(index))
                 : Result.empty(new NoSuchExtensionException("No extension found for identifier " + identifier));
+    }
+
+    /**
+     * {@return the installed extension point for a given class, if any}
+     *
+     * @param klass the class
+     */
+    public Result<T> getExtension(Class<? extends Extension> klass) {
+        return getExtension(klass.getCanonicalName());
     }
 }
