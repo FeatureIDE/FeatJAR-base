@@ -1,5 +1,6 @@
 package de.featjar.base;
 
+import de.featjar.base.bin.OperatingSystem;
 import de.featjar.base.cli.CommandLine;
 import de.featjar.base.data.Result;
 import de.featjar.base.data.Store;
@@ -13,6 +14,7 @@ import de.featjar.base.log.TimeStampFormatter;
 
 import java.util.function.Consumer;
 import java.util.function.Function;
+
 
 /**
  * Configures, initializes, and runs FeatJAR.
@@ -53,6 +55,15 @@ public class FeatJAR extends IO implements AutoCloseable {
     private static FeatJAR instance;
     protected final ExtensionManager extensionManager;
     protected boolean initialized;
+    public static final Log.Verbosity initialVerbosity =
+            Log.Verbosity.of(OperatingSystem.getEnvironmentVariable("FEATJAR_VERBOSITY").orElse("info"));
+    public static final Function<Log.Configuration, Log.Configuration> defaultLogConfiguration =
+            cfg -> cfg
+                    .logAtMost(initialVerbosity)
+                    .addFormatter(new TimeStampFormatter())
+                    .addFormatter(new CallerFormatter());
+    public static final Function<Store.Configuration, Store.Configuration> defaultStoreConfiguration =
+            cfg -> cfg.setCachingPolicy(Store.CachingPolicy.CACHE_TOP_LEVEL_COMPUTATIONS);
 
     public static FeatJAR getInstance() {
         return instance == null ? (instance = new FeatJAR()) : instance;
@@ -68,8 +79,8 @@ public class FeatJAR extends IO implements AutoCloseable {
             throw new RuntimeException("FeatJAR already initialized");
         log().debug("initializing FeatJAR");
         instance = this;
-        Log.setConfiguration(configuration.log);
-        Store.setConfiguration(configuration.store);
+        Log.setDefaultConfiguration(configuration.log);
+        Store.setDefaultConfiguration(configuration.store);
         extensionManager = new ExtensionManager();
         initialized = true;
     }
@@ -80,12 +91,8 @@ public class FeatJAR extends IO implements AutoCloseable {
      */
     public FeatJAR() {
         this(new Configuration()
-                .log(cfg -> {
-                    cfg.logAtMost(Log.Verbosity.DEBUG); // todo: only INFO
-                    cfg.addFormatter(new TimeStampFormatter());
-                    cfg.addFormatter(new CallerFormatter());
-                })
-                .store(cfg -> cfg.setCachingPolicy(Store.CachingPolicy.CACHE_TOP_LEVEL_COMPUTATIONS)));
+                .log(defaultLogConfiguration::apply)
+                .store(defaultStoreConfiguration::apply));
     }
 
     /**

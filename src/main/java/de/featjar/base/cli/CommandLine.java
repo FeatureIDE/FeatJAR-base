@@ -81,7 +81,7 @@ public class CommandLine {
         if (commands.size() > 0) {
             System.err.println("The following commands are available:");
             for (final Command command : commands) {
-                System.err.printf("\t%-20s %s\n", command.getName(), command.getDescription());
+                System.err.printf("\t%-20s %s\n", command.getName(), command.getDescription().orElse(""));
             }
         } else {
             System.err.println("No commands are available. You can register commands using FeatJAR's extension manager.");
@@ -93,7 +93,7 @@ public class CommandLine {
             command.run(Arrays.asList(args).subList(1, args.length));
         } catch (final IllegalArgumentException e) {
             System.err.println(e.getMessage());
-            System.err.println(command.getUsage());
+            System.err.println(command.getUsage().orElse(""));
         }
     }
 

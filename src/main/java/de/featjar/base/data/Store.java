@@ -22,14 +22,8 @@ package de.featjar.base.data;
 
 import de.featjar.base.Feat;
 import de.featjar.base.extension.Initializable;
-import de.featjar.base.io.MultiStream;
-import de.featjar.base.log.Formatter;
 import de.featjar.base.log.Log;
 
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
-import java.io.PrintStream;
-import java.nio.file.Path;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -79,19 +73,25 @@ public class Store implements Initializable {
         }
     }
 
-    protected static Configuration globalConfiguration = null;
-    protected final Configuration configuration = globalConfiguration;
+    protected static Configuration defaultConfiguration = null;
+    protected Configuration configuration = defaultConfiguration;
 
     /**
      * Sets the configuration used for new stores.
      */
-    public static void setConfiguration(Configuration configuration) {
-        Feat.log().debug("setting new global store configuration");
-        Store.globalConfiguration = configuration;
+    public static void setDefaultConfiguration(Configuration defaultConfiguration) {
+        Feat.log().debug("setting new default store configuration");
+        Store.defaultConfiguration = defaultConfiguration;
     }
 
     public Store() {
         Feat.log().debug("initializing store");
+    }
+
+    @Override
+    public void close() {
+        Feat.log().debug("de-initializing store");
+        clear();
     }
 
     /**
@@ -100,10 +100,13 @@ public class Store implements Initializable {
     public Configuration getConfiguration() {
         return configuration;
     }
-    @Override
-    public void close() {
-        Feat.log().debug("de-initializing store");
-        clear();
+
+    /**
+     * Sets this store's configuration.
+     */
+    public void setConfiguration(Configuration configuration) {
+        Feat.log().debug("setting new store configuration");
+        this.configuration = configuration;
     }
 
     protected final Map<Computation<?>, FutureResult<?>> computationMap = new ConcurrentHashMap<>(); // assume that Computation<T> is mapped to FutureResult<T> (same T)

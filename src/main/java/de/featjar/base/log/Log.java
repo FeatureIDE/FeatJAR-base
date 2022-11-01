@@ -21,6 +21,7 @@
 package de.featjar.base.log;
 
 import de.featjar.base.Feat;
+import de.featjar.base.FeatJAR;
 import de.featjar.base.data.Problem;
 import de.featjar.base.extension.Initializable;
 import de.featjar.base.io.MultiStream;
@@ -65,7 +66,14 @@ public class Log implements Initializable {
          * Progress message.
          * Typically used to signal progress in long-running jobs.
          */
-        PROGRESS
+        PROGRESS;
+
+        public static Verbosity of(String verbosityString) {
+            String[] verbosities = new String[]{"none", "error", "info", "debug", "progress"};
+            if (!Arrays.asList(verbosities).contains(verbosityString))
+                throw new IllegalArgumentException("invalid verbosity " + verbosityString);
+            return verbosityString.equals("none") ? null : Verbosity.valueOf(verbosityString.toUpperCase());
+        }
     }
 
     /**
@@ -77,14 +85,20 @@ public class Log implements Initializable {
         protected final LinkedList<Formatter> formatters = new LinkedList<>();
 
         {
+            resetLogStreams();
+        }
+
+        public Configuration resetLogStreams() {
+            logStreams.clear();
             Arrays.asList(Verbosity.values()).forEach(verbosity ->
                     logStreams.put(verbosity, new de.featjar.base.io.PrintStream(new MultiStream())));
+            return this;
         }
 
         /**
          * Configures a stream to be a logging target.
          *
-         * @param stream the stearm
+         * @param stream      the stream
          * @param verbosities the logged verbosities
          * @return this configuration
          */
@@ -98,7 +112,7 @@ public class Log implements Initializable {
         /**
          * Configures a file to be a logging target.
          *
-         * @param path the path to the file
+         * @param path        the path to the file
          * @param verbosities the logged verbosities
          * @return this configuration
          */
@@ -164,36 +178,26 @@ public class Log implements Initializable {
         }
 
         public Configuration logAtMost(String verbosityString) {
-            String[] verbosities = new String[] {"none", "error", "info", "debug", "progress"};
-            if (!Arrays.asList(verbosities).contains(verbosityString))
-                throw new IllegalArgumentException("invalid verbosity " + verbosityString);
-            logAtMost(verbosityString.equals("none") ? null : Verbosity.valueOf(verbosityString.toUpperCase()));
+            logAtMost(Verbosity.of(verbosityString));
             return this;
         }
     }
 
     protected final PrintStream originalSystemOut = System.out;
     protected final PrintStream originalSystemErr = System.err;
-    protected static Configuration globalConfiguration = null;
-    protected final Configuration configuration;
+    protected static Configuration defaultConfiguration = null;
+    protected Configuration configuration;
 
     /**
      * Sets the configuration used for new logs.
      */
-    public static void setConfiguration(Configuration configuration) {
-        Feat.log().debug("setting new global log configuration");
-        Log.globalConfiguration = configuration;
+    public static void setDefaultConfiguration(Configuration defaultConfiguration) {
+        Feat.log().debug("setting new default log configuration");
+        Log.defaultConfiguration = defaultConfiguration;
     }
 
     public Log() {
-        this(globalConfiguration);
-    }
-
-    /**
-     * {@return this log's configuration}
-     */
-    public Configuration getConfiguration() {
-        return configuration;
+        this(defaultConfiguration);
     }
 
     /**
@@ -204,11 +208,7 @@ public class Log implements Initializable {
      */
     public Log(Configuration configuration) {
         this.configuration = configuration;
-        if (configuration != null) {
-            Feat.log().debug("initializing log");
-            System.setOut(configuration.logStreams.get(Verbosity.INFO));
-            System.setErr(configuration.logStreams.get(Verbosity.ERROR));
-        }
+        redirectSystemStreams(configuration);
     }
 
     /**
@@ -222,6 +222,30 @@ public class Log implements Initializable {
             System.setOut(originalSystemOut);
             System.setErr(originalSystemErr);
         }
+    }
+
+    protected static void redirectSystemStreams(Configuration configuration) {
+        if (configuration != null) {
+            Feat.log().debug("initializing log");
+            System.setOut(configuration.logStreams.get(Verbosity.INFO));
+            System.setErr(configuration.logStreams.get(Verbosity.ERROR));
+        }
+    }
+
+    /**
+     * {@return this log's configuration}
+     */
+    public Configuration getConfiguration() {
+        return configuration;
+    }
+
+    /**
+     * Sets this log's configuration.
+     */
+    public void setConfiguration(Configuration configuration) {
+        Feat.log().debug("setting new log configuration");
+        this.configuration = configuration;
+        redirectSystemStreams(configuration);
     }
 
     /**
@@ -311,7 +335,7 @@ public class Log implements Initializable {
     /**
      * Logs a message.
      *
-     * @param message the message
+     * @param message   the message
      * @param verbosity the verbosities
      */
     public void log(String message, Verbosity verbosity) {
@@ -320,25 +344,29 @@ public class Log implements Initializable {
 
     protected void println(String message, Verbosity verbosity) {
         final String formattedMessage = formatMessage(message);
-        if (configuration != null) {
-            configuration.logStreams.get(verbosity).println(formattedMessage);
-        } else {
-            if (verbosity == Verbosity.ERROR) {
-                System.err.println(formattedMessage);
+        if (formattedMessage != null) {
+            if (configuration != null) {
+                configuration.logStreams.get(verbosity).println(formattedMessage);
             } else {
-                System.out.println(formattedMessage);
+                if (verbosity == Verbosity.ERROR) {
+                    System.err.println(formattedMessage);
+                } else {
+                    System.out.println(formattedMessage);
+                }
             }
         }
     }
 
     protected void println(Throwable error) {
         final String formattedMessage = formatMessage(error.getMessage());
-        if (configuration != null) {
-            configuration.logStreams.get(Verbosity.ERROR).println(formattedMessage);
-            error.printStackTrace(configuration.logStreams.get(Verbosity.ERROR));
-        } else {
-            System.err.println(formattedMessage);
-            error.printStackTrace(System.err);
+        if (formattedMessage != null) {
+            if (configuration != null) {
+                configuration.logStreams.get(Verbosity.ERROR).println(formattedMessage);
+                error.printStackTrace(configuration.logStreams.get(Verbosity.ERROR));
+            } else {
+                System.err.println(formattedMessage);
+                error.printStackTrace(System.err);
+            }
         }
     }
 
@@ -361,7 +389,7 @@ public class Log implements Initializable {
     /**
      * Starts a thread that regularly logs the progress of a monitor.
      *
-     * @param monitor the monitor
+     * @param monitor  the monitor
      * @param interval the interval
      * @return the interval thread
      */
@@ -384,7 +412,10 @@ public class Log implements Initializable {
 
         @Override
         protected String formatMessage(String message) {
-            return "[boot]\t" + timeStampFormatter.getPrefix() + callerFormatter.getPrefix() + message;
+            // todo: this is a little hacky, it would be better to use compareTo and introduce a real NONE verbosity to avoid null
+            return Objects.equals(FeatJAR.initialVerbosity, Verbosity.DEBUG) || Objects.equals(FeatJAR.initialVerbosity, Verbosity.PROGRESS)
+                    ? "[boot]\t" + timeStampFormatter.getPrefix() + callerFormatter.getPrefix() + message
+                    : null;
         }
     }
 }

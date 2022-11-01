@@ -20,6 +20,8 @@
  */
 package de.featjar.base.bin;
 
+import java.util.Optional;
+
 public class OperatingSystem {
     public static final boolean IS_WINDOWS;
     public static final boolean IS_MAC;
@@ -31,5 +33,9 @@ public class OperatingSystem {
         IS_MAC = osName.matches(".*(mac).*");
         IS_UNIX = osName.matches(".*(nix|nux|aix).*");
         HOME_DIRECTORY = System.getProperty("user.home");
+    }
+
+    public static Optional<String> getEnvironmentVariable(String environmentVariable) {
+        return Optional.ofNullable(System.getenv(environmentVariable));
     }
 }
