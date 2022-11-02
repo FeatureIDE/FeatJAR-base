@@ -3,7 +3,7 @@ package de.featjar.base;
 import de.featjar.base.bin.HostEnvironment;
 import de.featjar.base.cli.CommandLine;
 import de.featjar.base.data.Result;
-import de.featjar.base.data.Store;
+import de.featjar.base.data.Cache;
 import de.featjar.base.extension.Extension;
 import de.featjar.base.extension.ExtensionManager;
 import de.featjar.base.extension.ExtensionPoint;
@@ -22,8 +22,8 @@ import java.util.function.Function;
  * After usage, call {@link #close()} or use a try...with block.
  * If only a quick computation is needed, call {@link #run(Consumer)} or {@link #apply(Function)}.
  * For convenience, this class inherits all methods in {@link IO} and provides
- * access to the {@link Log} with {@link #log()} and {@link Store} with {@link #store()}.
- * Both  {@link #log()} and {@link #store()} return fallback instances when used outside a FeatJAR instantiation.
+ * access to the {@link Log} with {@link #log()} and {@link Cache} with {@link #cache()}.
+ * Both  {@link #log()} and {@link #cache()} return fallback instances when used outside a FeatJAR instantiation.
  * For simplicity, only one FeatJAR instance can exist at a time (although this limitation may be lifted in the future).
  * Thus, do not create FeatJAR objects at the same time in different threads.
  * Also, do not nest {@link #run(Consumer)} or {@link #apply(Function)} calls.
@@ -43,9 +43,9 @@ public class FeatJAR extends IO implements AutoCloseable {
         protected final Log.Configuration log = new Log.Configuration();
 
         /**
-         * This configuration's store sub-configuration.
+         * This configuration's cache sub-configuration.
          */
-        protected final Store.Configuration store = new Store.Configuration();
+        protected final Cache.Configuration cache = new Cache.Configuration();
 
         /**
          * Configures this configuration's log sub-configuration.
@@ -59,13 +59,13 @@ public class FeatJAR extends IO implements AutoCloseable {
         }
 
         /**
-         * Configures this configuration's store sub-configuration.
+         * Configures this configuration's cache sub-configuration.
          *
-         * @param configurationConsumer the store configuration consumer
+         * @param configurationConsumer the cache configuration consumer
          * @return this configuration
          */
-        public Configuration store(Consumer<Store.Configuration> configurationConsumer) {
-            configurationConsumer.accept(store);
+        public Configuration cache(Consumer<Cache.Configuration> configurationConsumer) {
+            configurationConsumer.accept(cache);
             return this;
         }
     }
@@ -103,11 +103,11 @@ public class FeatJAR extends IO implements AutoCloseable {
                     .addFormatter(new CallerFormatter());
 
     /**
-     * Configures the default store configuration, if not adjusted otherwise.
+     * Configures the default cache configuration, if not adjusted otherwise.
      */
-    public static final Function<Store.Configuration, Store.Configuration> defaultStoreConfiguration =
+    public static final Function<Cache.Configuration, Cache.Configuration> defaultCacheConfiguration =
             cfg -> cfg
-                    .setCachingPolicy(Store.CachingPolicy.CACHE_TOP_LEVEL);
+                    .setCachingPolicy(Cache.CachingPolicy.CACHE_TOP_LEVEL);
 
     /**
      * {@return the current FeatJAR instance}
@@ -127,7 +127,7 @@ public class FeatJAR extends IO implements AutoCloseable {
         log().debug("initializing FeatJAR");
         instance = this;
         Log.setDefaultConfiguration(configuration.log);
-        Store.setDefaultConfiguration(configuration.store);
+        Cache.setDefaultConfiguration(configuration.cache);
         extensionManager = new ExtensionManager();
         initialized = true;
     }
@@ -139,7 +139,7 @@ public class FeatJAR extends IO implements AutoCloseable {
     public FeatJAR() {
         this(new Configuration()
                 .log(defaultLogConfiguration::apply)
-                .store(defaultStoreConfiguration::apply));
+                .cache(defaultCacheConfiguration::apply));
     }
 
     /**
@@ -187,10 +187,10 @@ public class FeatJAR extends IO implements AutoCloseable {
     }
 
     /**
-     * {@return this FeatJAR instance's store, or a fallback store if uninitialized}
+     * {@return this FeatJAR instance's cache, or a fallback cache if uninitialized}
      */
-    public Store getStore() {
-        return initialized ? getExtension(Store.class).orElse(Store.Fallback::new) : new Store.Fallback();
+    public Cache getCache() {
+        return initialized ? getExtension(Cache.class).orElse(Cache.Fallback::new) : new Cache.Fallback();
     }
 
     /**
@@ -283,10 +283,10 @@ public class FeatJAR extends IO implements AutoCloseable {
     }
 
     /**
-     * {@return the current FeatJAR instance's store, or a fallback store if uninitialized}
+     * {@return the current FeatJAR instance's cache, or a fallback cache if uninitialized}
      */
-    public static Store store() {
-        return instance == null ? new Store.Fallback() : instance.getStore();
+    public static Cache cache() {
+        return instance == null ? new Cache.Fallback() : instance.getCache();
     }
 
     /**

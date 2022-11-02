@@ -1,9 +1,11 @@
 package de.featjar.base.extension;
 
+import de.featjar.base.data.Cache;
+
 /**
  * An extension that can be (de-)initialized.
  * Is used for setting up and tearing down global behaviors of FeatJAR,
- * such as {@link de.featjar.base.log.Log} and {@link de.featjar.base.data.Store}.
+ * such as {@link de.featjar.base.log.Log} and {@link Cache}.
  *
  * @author Elias Kuiter
  */

@@ -1,7 +1,6 @@
 package de.featjar.base.data;
 
 import de.featjar.base.Feat;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 import java.util.List;
@@ -16,24 +15,24 @@ class ComputationTest {
         {
             Computation<Integer> computation = Computation.of(42);
             assertEquals(42, computation.getResult().get());
-            assertFalse(Feat.store().has(computation));
+            assertFalse(Feat.cache().has(computation));
         }
-        assertTrue(Feat.store().computationMap.isEmpty());
+        assertTrue(Feat.cache().computationMap.isEmpty());
 
         Feat.run(fj -> {
             Computation<Integer> computation = Computation.of(42);
             assertEquals(42, computation.getResult().get());
-            assertTrue(Feat.store().has(computation));
-            assertFalse(Feat.store().computationMap.isEmpty());
+            assertTrue(Feat.cache().has(computation));
+            assertFalse(Feat.cache().computationMap.isEmpty());
         });
 
-        assertTrue(Feat.store().computationMap.isEmpty());
+        assertTrue(Feat.cache().computationMap.isEmpty());
         {
             Computation<Integer> computation = Computation.of(42);
             assertEquals(42, computation.getResult().get());
-            assertFalse(Feat.store().has(computation));
+            assertFalse(Feat.cache().has(computation));
         }
-        assertTrue(Feat.store().computationMap.isEmpty());
+        assertTrue(Feat.cache().computationMap.isEmpty());
     }
 
     static class IsEvenComputation implements Computation<Boolean> {

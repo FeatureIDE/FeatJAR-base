@@ -32,9 +32,9 @@ import java.util.concurrent.ConcurrentHashMap;
  * @author Sebastian Krieter
  * @author Elias Kuiter
  */
-public class Store implements Initializer {
+public class Cache implements Initializer {
     /**
-     * Specifies which computation results a store should cache.
+     * Specifies which computation results a cache should contain.
      */
     public interface CachingPolicy {
         /**
@@ -69,7 +69,7 @@ public class Store implements Initializer {
         };
 
         /**
-         * {@return whether the calling store should cache the given computation}
+         * {@return whether the calling cache should store the given computation}
          *
          * @param computation the computation
          * @param stackTrace the current stack trace
@@ -78,7 +78,7 @@ public class Store implements Initializer {
     }
 
     /**
-     * Configures a store.
+     * Configures a cache.
      */
     public static class Configuration {
         protected CachingPolicy cachingPolicy = CachingPolicy.CACHE_NONE;
@@ -96,12 +96,12 @@ public class Store implements Initializer {
     }
 
     /**
-     * The default configuration used for new stores.
+     * The default configuration used for new caches.
      */
     protected static Configuration defaultConfiguration = null;
 
     /**
-     * This store's configuration.
+     * This cache's configuration.
      */
     protected Configuration configuration;
 
@@ -112,56 +112,56 @@ public class Store implements Initializer {
     protected final Map<Computation<?>, FutureResult<?>> computationMap = new ConcurrentHashMap<>();
 
     /**
-     * Sets the default configuration used for new stores.
+     * Sets the default configuration used for new caches.
      *
      * @param defaultConfiguration the default configuration
      */
     public static void setDefaultConfiguration(Configuration defaultConfiguration) {
-        Feat.log().debug("setting new default store configuration");
-        Store.defaultConfiguration = defaultConfiguration;
+        Feat.log().debug("setting new default cache configuration");
+        Cache.defaultConfiguration = defaultConfiguration;
     }
 
     /**
-     * Creates a store based on the default configuration.
+     * Creates a cache based on the default configuration.
      */
-    public Store() {
+    public Cache() {
         this(defaultConfiguration);
     }
 
     /**
-     * Creates a store.
+     * Creates a cache.
      *
      * @param configuration the configuration
      */
-    public Store(Store.Configuration configuration) {
-        Feat.log().debug("initializing store");
+    public Cache(Cache.Configuration configuration) {
+        Feat.log().debug("initializing cache");
         this.configuration = configuration;
     }
 
     /**
      * {@inheritDoc}
-     * Clears this store.
+     * Clears this cache.
      */
     @Override
     public void close() {
-        Feat.log().debug("de-initializing store");
+        Feat.log().debug("de-initializing cache");
         clear();
     }
 
     /**
-     * {@return this store's configuration}
+     * {@return this cache's configuration}
      */
     public Configuration getConfiguration() {
         return configuration;
     }
 
     /**
-     * Sets this store's configuration.
+     * Sets this cache's configuration.
      *
      * @param configuration the configuration
      */
     public void setConfiguration(Configuration configuration) {
-        Feat.log().debug("setting new store configuration");
+        Feat.log().debug("setting new cache configuration");
         this.configuration = configuration;
     }
 
@@ -184,7 +184,7 @@ public class Store implements Initializer {
     }
 
     /**
-     * {@return whether the given computation has been cached in this store}
+     * {@return whether the given computation has been cached in this cache}
      *
      * @param computation the computation
      * @param <T> the type of the computation result
@@ -213,7 +213,7 @@ public class Store implements Initializer {
      * @param computation the computation
      * @param futureResult the future result
      * @param <T> the type of the computation result
-     * @return whether the operation affected this store
+     * @return whether the operation affected this cache
      */
     public <T> boolean put(Computation<T> computation, FutureResult<T> futureResult) {
         if (has(computation)) // once set, immutable
@@ -228,7 +228,7 @@ public class Store implements Initializer {
      *
      * @param computation the computation
      * @param <T> the type of the computation result
-     * @return whether the operation affected this store
+     * @return whether the operation affected this cache
      */
     public <T> boolean remove(Computation<T> computation) {
         if (!has(computation))
@@ -245,9 +245,9 @@ public class Store implements Initializer {
     }
 
     /**
-     * Stores nothing during (de-)initialization of FeatJAR, as there is no {@link Store} configured then.
+     * Caches nothing during (de-)initialization of FeatJAR, as there is no {@link Cache} configured then.
      */
-    public static class Fallback extends Store {
+    public static class Fallback extends Cache {
         public Fallback() {
             super(new Configuration());
         }

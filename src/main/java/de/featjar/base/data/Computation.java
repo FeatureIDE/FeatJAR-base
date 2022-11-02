@@ -42,7 +42,7 @@ import java.util.stream.Collectors;
  * A {@link Computation} does not contain the computation result itself, which is only computed on demand.
  * If computed with {@link #get()} or {@link #compute()}, the result is returned as an
  * asynchronous {@link FutureResult}, which can be shared, cached, and waited for.
- * When computed with {@link #get()}, results are possibly cached in a {@link Store}; {@link #compute()} does not cache.
+ * When computed with {@link #get()}, results are possibly cached in a {@link Cache}; {@link #compute()} does not cache.
  * Computation progress can optionally be reported with a {@link Monitor}.
  * Computations can depend on other computations by assigning them to fields and calling {@link #allOf(Computation[])}
  * or {@link FutureResult#thenCompute(BiFunction)} in {@link #compute()}.
@@ -56,28 +56,34 @@ import java.util.stream.Collectors;
  */
 public interface Computation<T> extends Supplier<FutureResult<T>>, Extension { // todo Validatable (validate against Feature Model)
     /**
-     * {@return the (newly computed) result of this computation}
+     * {@return the (newly computed) asynchronous result of this computation}
      * The result is returned asynchronously; that is, as a {@link FutureResult}.
      * Calling this function directly is discouraged, as the result is forced to be re-computed.
      * Usually, you should call {@link #get()} instea to leverage cached results.
-     * Do not rename this method, as the {@link de.featjar.base.data.Store.CachingPolicy} performs
+     * Do not rename this method, as the {@link Cache.CachingPolicy} performs
      * reflection that depends on its name to detect nested computations.
      */
     FutureResult<T> compute();
 
     /**
-     * {@return the (possibly cached) result of this computation}
-     * Behaves just like {@link #compute()}, but tries to hit the {@link Store} first.
+     * {@return the (possibly cached) asynchronous result of this computation}
+     * Behaves just like {@link #compute()}, but tries to hit the {@link Cache} first.
      */
     @Override
-    default FutureResult<T> get() { // only computes if not cached yet
-        return Feat.store().compute(this);
+    default FutureResult<T> get() {
+        return Feat.cache().compute(this);
     }
 
-    default Result<T> getResult() { // computes (considering the cache) and waits for result
+    /**
+     * {@return the (possibly cached) synchronous result of this computation}
+     * The result is returned synchronously; that is, as a {@link Result}.
+     * Like {@link #get()}, tries to hit the {@link Cache} before calling {@link #compute()}.
+     */
+    default Result<T> getResult() {
         return get().get();
     }
 
+    // todo: javadoc
     static <T> Computation<T> of(T object, Monitor monitor) { // todo: refactor all usages to of...then
         return () -> FutureResult.of(object, monitor);
     }
@@ -142,17 +148,11 @@ public interface Computation<T> extends Supplier<FutureResult<T>>, Extension { /
     // todo: hashcode depends on all inputs. is there a default hashcode implementation?
     //void serialize(); // use in equals + hashcode. requires that c1.serialize() == c2.serialize ==> same computation result. could abstract away complex identities to improve caching.
 
+    // todo: validate whether a computation is sensible. maybe by encoding valid computations in a feature model.
     //boolean validate();
 
-//    /**
-//     * {@return the parameters of this computation}
-//     * Should represent all parameters that are not in scope of the associated {@link Store} to allow later lookup.
-//     * Returns {@code null} if there are no such parameters.
-//     */
-//    default Object getParameters() {
-//        return null;
-//    }
-
+    // todo: besides using feature modeling to "magically" complete computations, it may be nice to denote THE canonical best input for a computation.
+    // maybe this can also be done with alternative constructors or something?
 //    /**
 //     * {@return the preferred computation for the input of this computation}
 //     * Can be used to specify the recommended input for this computation.
@@ -160,56 +160,5 @@ public interface Computation<T> extends Supplier<FutureResult<T>>, Extension { /
 //     */
 //    default <S> Optional<Computation<S, T>> getPreferredInputComputation() {
 //        return Optional.empty();
-//    }
-
-//    default Result<U> apply(T input, Monitor monitor, Store store) {
-//        if (store.has(this))
-//            return store.get(this);
-//        else {
-//            Result<U> output = this.apply(input, monitor);
-//            store.put(this, output);
-//            return output;
-//        }
-//    }
-
-//    /**
-//     * {@return a composition of this computation with another computation}
-//     * If this computation fails, the entire computation fails.
-//     *
-//     * @param computation the computation
-//     * @param <V> the type of the returned computation's result
-//     */
-//    default <V> Computation<T, Result<V>> andThen(Computation<U, V> computation, Store store) {
-//        // todo: either create child monitor on parent monitor or implement compose with ... variadic number of monitorable functions
-//        return (t, monitor) ->
-//                this.apply(t, monitor.createChildMonitor(), store)
-//                        .map(u -> computation.apply(u, monitor, store));
-//    }
-
-//    /**
-//     * {@return an empty computation}
-//     *
-//     * @param <T> the type of the returned computation's result
-//     */
-//    static <T> Computation<T> empty() {
-//        return (store, monitor) -> Result.empty();
-//    }
-//
-//    /**
-//     * {@return a constant computation}
-//     *
-//     * @param <T> the type of the returned computation's result
-//     */
-//    static <T> Computation<T> of(T t) {
-//        return (store, monitor) -> Result.of(t);
-//    }
-//
-//    /**
-//     * {@return a constant computation}
-//     *
-//     * @param <T> the type of the returned computation's result
-//     */
-//    static <T> Computation<T> of(Result<T> t) {
-//        return (store, monitor) -> t;
 //    }
 }
