@@ -32,37 +32,47 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.CompletableFuture;
+import java.util.function.BiFunction;
 import java.util.function.Function;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
 /**
- * Describes how to obtain a computation result for an object.
- * The computation can depend on other computations, whose results are provided by a {@link Store}.
- * Its progress can be reported with a {@link Monitor}.
- * A computation in a given {@link Store} is uniquely identified by {@link #getIdentifier()}.
+ * Describes a deterministic (potentially complex or long-running) computation.
+ * A {@link Computation} does not contain the computation result itself, which is only computed on demand.
+ * If computed with {@link #get()} or {@link #compute()}, the result is returned as an
+ * asynchronous {@link FutureResult}, which can be shared, cached, and waited for.
+ * When computed with {@link #get()}, results are possibly cached in a {@link Store}; {@link #compute()} does not cache.
+ * Computation progress can optionally be reported with a {@link Monitor}.
+ * Computations can depend on other computations by assigning them to fields and calling {@link #allOf(Computation[])}
+ * or {@link FutureResult#thenCompute(BiFunction)} in {@link #compute()}.
+ * To ensure the determinism required by caching, all parameters of a computation must be stored in fields.
+ * Whether a parameter of type T should be stored as T or Computation&lt;T&gt; depends on whether the parameter
+ * is expected to depend on other computation's results.
  *
  * @param <T> the type of the computation result
  * @author Sebastian Krieter
  * @author Elias Kuiter
  */
 public interface Computation<T> extends Supplier<FutureResult<T>>, Extension { // todo Validatable (validate against Feature Model)
-    // a computation depends on other computations by adding them as attributes
-    // whether an input is a Computation<T> or just a T depends on subjective judgment (e.g., twisesample(formula, t) -> formula is a computation, t is usually just a given integer)
+    /**
+     * {@return the (newly computed) result of this computation}
+     * The result is returned asynchronously; that is, as a {@link FutureResult}.
+     * Calling this function directly is discouraged, as the result is forced to be re-computed.
+     * Usually, you should call {@link #get()} instea to leverage cached results.
+     * Do not rename this method, as the {@link de.featjar.base.data.Store.CachingPolicy} performs
+     * reflection that depends on its name to detect nested computations.
+     */
+    FutureResult<T> compute();
 
-    // do not rename as reflection in Store depends on this
-    FutureResult<T> compute(); // always computes - only call directly if caching is undesired
-
-    // todo: hashcode depends on all inputs. default hashcode implementation?
-
+    /**
+     * {@return the (possibly cached) result of this computation}
+     * Behaves just like {@link #compute()}, but tries to hit the {@link Store} first.
+     */
     @Override
     default FutureResult<T> get() { // only computes if not cached yet
         return Feat.store().compute(this);
     }
-
-//    default Result<T> computeResult() { // computes (considering no cache) and waits for result
-//        return compute().get(); // todo who decides what is cached, what is not? use cflowbelow to en/disable cache for certain computations? for now, cache everything
-//    }
 
     default Result<T> getResult() { // computes (considering the cache) and waits for result
         return get().get();
@@ -124,11 +134,12 @@ public interface Computation<T> extends Supplier<FutureResult<T>>, Extension { /
             // todo: what is the hash code? probably Computation.this + the identity of computationFunction??
             @Override
             public FutureResult<U> compute() {
-                return Computation.this.compute().thenCompute((t, monitor) -> computationFunction.apply(t));
+                return Computation.this.get().thenCompute((t, monitor) -> computationFunction.apply(t));
             }
         };
     }
 
+    // todo: hashcode depends on all inputs. is there a default hashcode implementation?
     //void serialize(); // use in equals + hashcode. requires that c1.serialize() == c2.serialize ==> same computation result. could abstract away complex identities to improve caching.
 
     //boolean validate();

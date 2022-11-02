@@ -7,5 +7,5 @@ package de.featjar.base.extension;
  *
  * @author Elias Kuiter
  */
-public interface Initializable extends Extension {
+public interface Initializer extends Extension {
 }

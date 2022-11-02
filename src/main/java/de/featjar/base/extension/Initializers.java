@@ -5,6 +5,6 @@ package de.featjar.base.extension;
  *
  * @author Elias Kuiter
  */
-public class Initializers extends ExtensionPoint<Initializable> {
+public class Initializers extends ExtensionPoint<Initializer> {
     public Initializers() {}
 }

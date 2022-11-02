@@ -22,6 +22,7 @@ package de.featjar.base.extension;
 
 /**
  * An extension implements some functionality that can be loaded by an {@link ExtensionPoint}.
+ * Extensions can be registered in {@code resources/extensions.xml}.
  * Initialization is done by the {@link ExtensionManager} with a public no-arg constructor, which must be available.
  * De-initialization is done with {@link #close()}.
  *

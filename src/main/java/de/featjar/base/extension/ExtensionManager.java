@@ -23,7 +23,6 @@ package de.featjar.base.extension;
 import de.featjar.base.Feat;
 
 import java.io.IOException;
-import java.lang.reflect.Method;
 import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -43,7 +42,9 @@ import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
 /**
- * Searches, installs, and uninstalls extensions on the classpath.
+ * Searches, installs, and uninstalls extension points and extensions defined on the classpath.
+ * An {@link ExtensionPoint} or {@link Extension} can be defined on the classpath by
+ * registering it in {@code resources/extensions.xml}.
  *
  * @author Sebastian Krieter
  * @author Elias Kuiter
@@ -54,26 +55,28 @@ public class ExtensionManager implements AutoCloseable {
     private final Map<String, Extension> extensions = new HashMap<>();
 
     /**
-     * Installs all extensions and extension points that can be found in the class path.
-     * To this end, filters all files on the class path for extension definition files, and loads each of them.
+     * Installs all extensions and extension points that can be found on the classpath.
+     * To this end, filters all files on the classpath for extension definition files, and loads each of them.
      */
     @SuppressWarnings({"unchecked", "rawtypes"})
     public ExtensionManager() {
         Feat.log().debug("initializing extension manager");
-        getResources().stream() //
+        getResources().stream()
                 .filter(ExtensionManager::filterByFileName)
                 .forEach(this::loadExtensionDefinitionFile);
         final ClassLoader systemClassLoader = ClassLoader.getSystemClassLoader();
         for (final Entry<String, List<String>> entry : extensionMap.entrySet()) {
             final String extensionPointId = entry.getKey();
             try {
-                final Class<ExtensionPoint<?>> extensionPointClass = (Class<ExtensionPoint<?>>) systemClassLoader.loadClass(extensionPointId);
+                final Class<ExtensionPoint<?>> extensionPointClass =
+                        (Class<ExtensionPoint<?>>) systemClassLoader.loadClass(extensionPointId);
                 Feat.log().info("installing extension point " + extensionPointClass);
                 final ExtensionPoint ep = extensionPointClass.getConstructor().newInstance();
                 extensionPoints.put(ep.getIdentifier(), ep);
                 for (final String extensionId : entry.getValue()) {
                     try {
-                        final Class<Extension> extensionClass = (Class<Extension>) systemClassLoader.loadClass(extensionId);
+                        final Class<Extension> extensionClass =
+                                (Class<Extension>) systemClassLoader.loadClass(extensionId);
                         Feat.log().info("installing extension " + extensionClass);
                         Extension e = extensionClass.getConstructor().newInstance();
                         ep.installExtension(e);
@@ -108,7 +111,7 @@ public class ExtensionManager implements AutoCloseable {
             }
             return false;
         } catch (final Exception e) {
-            //Feat.log().error(e);
+            Feat.log().error(e);
             return false;
         }
     }
@@ -118,7 +121,7 @@ public class ExtensionManager implements AutoCloseable {
      *
      * @param file the extension definition file
      */
-    private void loadExtensionDefinitionFile(String file) {
+    protected void loadExtensionDefinitionFile(String file) {
         Feat.log().debug("loading extension definition file " + file);
         try {
             final Enumeration<URL> systemResources =
@@ -185,10 +188,16 @@ public class ExtensionManager implements AutoCloseable {
         return resources;
     }
 
+    /**
+     * {@return all installed extension points}
+     */
     public Collection<ExtensionPoint<?>> getExtensionPoints() {
         return extensionPoints.values();
     }
 
+    /**
+     * {@return all installed extensions}
+     */
     public Collection<Extension> getExtensions() {
         return extensions.values();
     }
@@ -211,6 +220,7 @@ public class ExtensionManager implements AutoCloseable {
      *
      * @param klass the class
      */
+    @SuppressWarnings("unchecked")
     public <T extends ExtensionPoint<?>> Result<T> getExtensionPoint(Class<T> klass) {
         return (Result<T>) getExtensionPoint(klass.getCanonicalName());
     }
@@ -233,6 +243,7 @@ public class ExtensionManager implements AutoCloseable {
      *
      * @param klass the class
      */
+    @SuppressWarnings("unchecked")
     public <T extends Extension> Result<T> getExtension(Class<T> klass) {
         return (Result<T>) getExtension(klass.getCanonicalName());
     }

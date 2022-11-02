@@ -23,7 +23,7 @@ package de.featjar.base.log;
 import de.featjar.base.Feat;
 import de.featjar.base.FeatJAR;
 import de.featjar.base.data.Problem;
-import de.featjar.base.extension.Initializable;
+import de.featjar.base.extension.Initializer;
 import de.featjar.base.io.MultiStream;
 import de.featjar.base.task.Monitor;
 import de.featjar.base.task.ProgressLogger;
@@ -42,7 +42,7 @@ import java.util.*;
  * @author Sebastian Krieter
  * @author Elias Kuiter
  */
-public class Log implements Initializable {
+public class Log implements Initializer {
     /**
      * Verbosity of the log.
      */
@@ -189,13 +189,18 @@ public class Log implements Initializable {
     protected Configuration configuration;
 
     /**
-     * Sets the configuration used for new logs.
+     * Sets the default configuration used for new logs.
+     *
+     * @param defaultConfiguration the default configuration
      */
     public static void setDefaultConfiguration(Configuration defaultConfiguration) {
         Feat.log().debug("setting new default log configuration");
         Log.defaultConfiguration = defaultConfiguration;
     }
 
+    /**
+     * Creates a log based on the default configuration.
+     */
     public Log() {
         this(defaultConfiguration);
     }
@@ -205,6 +210,8 @@ public class Log implements Initializable {
      * Overrides the standard output/error streams.
      * That is, calls to {@link System#out} are equivalent to calling {@link #info(String)}.
      * Analogously, calls to {@link System#err} are equivalent to calling {@link #error(String)}.
+     *
+     * @param configuration the configuration
      */
     public Log(Configuration configuration) {
         this.configuration = configuration;
@@ -212,7 +219,7 @@ public class Log implements Initializable {
     }
 
     /**
-     * De-initializes this log.
+     * {@inheritDoc}
      * Resets the standard output/error streams.
      */
     @Override
@@ -241,6 +248,8 @@ public class Log implements Initializable {
 
     /**
      * Sets this log's configuration.
+     *
+     * @param configuration the configuration
      */
     public void setConfiguration(Configuration configuration) {
         Feat.log().debug("setting new log configuration");

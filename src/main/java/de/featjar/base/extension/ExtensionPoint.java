@@ -21,6 +21,7 @@
 package de.featjar.base.extension;
 
 import de.featjar.base.Feat;
+import de.featjar.base.data.Problem;
 import de.featjar.base.data.Result;
 import java.util.HashMap;
 import java.util.List;
@@ -28,8 +29,9 @@ import java.util.Objects;
 import java.util.concurrent.CopyOnWriteArrayList;
 
 /**
- * An extension point installs {@link Extension extensions} of the same type.
- * As a naming convention, an extension named "Thing" belongs to an extension point named "Things".
+ * An extension point installs {@link Extension extensions} of a given type.
+ * As a naming convention, an extension named "Thing" should be registered in an extension point named "Things".
+ * Extension points can be registered in {@code resources/extensions.xml}.
  * Initialization is done by the {@link ExtensionManager} with a public no-arg constructor, which must be available.
  * De-initialization is done with {@link #close()}.
  *
@@ -38,15 +40,6 @@ import java.util.concurrent.CopyOnWriteArrayList;
  * @author Elias Kuiter
  */
 public abstract class ExtensionPoint<T extends Extension> {
-    /**
-     * Thrown when a requested extension cannot be found.
-     */
-    public static class NoSuchExtensionException extends Exception {
-        public NoSuchExtensionException(String message) {
-            super(message);
-        }
-    }
-
     private final HashMap<String, Integer> indexMap = new HashMap<>();
     private final List<T> extensions = new CopyOnWriteArrayList<>();
 
@@ -123,7 +116,7 @@ public abstract class ExtensionPoint<T extends Extension> {
         final Integer index = indexMap.get(identifier);
         return index != null
                 ? Result.of(extensions.get(index))
-                : Result.empty(new NoSuchExtensionException("No extension found for identifier " + identifier));
+                : Result.empty(new Problem("No extension found for identifier " + identifier, Problem.Severity.ERROR));
     }
 
     /**

@@ -45,7 +45,7 @@ class ComputationTest {
 
         @Override
         public FutureResult<Boolean> compute() {
-            return inputComputation.compute().thenCompute((integer, monitor) -> integer % 2 == 0);
+            return inputComputation.get().thenCompute((integer, monitor) -> integer % 2 == 0);
         }
     }
 
@@ -55,7 +55,7 @@ class ComputationTest {
         Computation<Boolean> isEvenComputation = new Computation<>() {
             @Override
             public FutureResult<Boolean> compute() {
-                return computation.compute().thenCompute((integer, monitor) -> integer % 2 == 0);
+                return computation.get().thenCompute((integer, monitor) -> integer % 2 == 0);
             }
         };
         assertTrue(isEvenComputation.getResult().get());
@@ -75,7 +75,7 @@ class ComputationTest {
 
         @Override
         public FutureResult<Boolean> compute() {
-            return inputComputation.compute().thenCompute(
+            return inputComputation.get().thenCompute(
                     (integer, monitor) -> parity == Parity.EVEN ? integer % 2 == 0 : integer % 2 == 1);
         }
     }

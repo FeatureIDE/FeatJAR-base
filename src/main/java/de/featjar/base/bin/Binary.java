@@ -129,7 +129,7 @@ public abstract class Binary implements Extension {
     }
 
     /**
-     * Runs a function (e.g., this binary's executable), which can make use of a temporary file.
+     * Runs a function (e.g., this binary's executable) that gets access to a temporary file.
      * The file is created in the default temporary-file directory and deleted after the function is done.
      *
      * @param prefix the prefix of the temporary file's name

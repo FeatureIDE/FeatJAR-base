@@ -20,6 +20,7 @@
  */
 package de.featjar.base.io.format;
 
+import de.featjar.base.data.Problem;
 import de.featjar.base.data.Result;
 import de.featjar.base.extension.ExtensionPoint;
 import de.featjar.base.io.IOObject;
@@ -76,7 +77,8 @@ public abstract class Formats<T> extends ExtensionPoint<Format<T>> implements Fo
                 .findFirst()
                 .map(Result::of)
                 .orElseGet(() ->
-                        Result.empty(new NoSuchExtensionException("No suitable format found for file extension \"."
-                                + inputHeader.getFileExtension() + "\". Possible formats: " + getExtensions())));
+                        Result.empty(new Problem("No suitable format found for file extension \"."
+                                + inputHeader.getFileExtension() + "\". Possible formats: " + getExtensions(),
+                                Problem.Severity.ERROR)));
     }
 }
