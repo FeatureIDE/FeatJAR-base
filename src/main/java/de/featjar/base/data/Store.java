@@ -74,7 +74,7 @@ public class Store implements Initializable {
     }
 
     protected static Configuration defaultConfiguration = null;
-    protected Configuration configuration = defaultConfiguration;
+    protected Configuration configuration;
 
     /**
      * Sets the configuration used for new stores.
@@ -85,7 +85,15 @@ public class Store implements Initializable {
     }
 
     public Store() {
+        this(defaultConfiguration);
+    }
+
+    /**
+     * Creates a store.
+     */
+    public Store(Store.Configuration configuration) {
         Feat.log().debug("initializing store");
+        this.configuration = configuration;
     }
 
     @Override
@@ -146,5 +154,14 @@ public class Store implements Initializable {
 
     public void clear() {
         computationMap.clear();
+    }
+
+    /**
+     * Stores nothing during (de-)initialization of FeatJAR, as there is no {@link Store} configured then.
+     */
+    public static class Fallback extends Store {
+        public Fallback() {
+            super(new Configuration());
+        }
     }
 }

@@ -26,7 +26,19 @@ import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
 
+/**
+ * Utilities for handling Java archives.
+ *
+ * @author Elias Kuiter
+ */
 public class JARs {
+    /**
+     * Extracts a resource from the current Java archive into an output directory.
+     *
+     * @param resourceName the extracted resource's name, relative to the {@code src/main/resources} directory
+     * @param outputPath the output directory
+     * @throws IOException if an I/O exception occurs
+     */
     public static void extractResource(String resourceName, Path outputPath) throws IOException {
         URL url = ClassLoader.getSystemClassLoader().getResource(resourceName);
         if (url == null) throw new IOException("no resource found at " + resourceName);

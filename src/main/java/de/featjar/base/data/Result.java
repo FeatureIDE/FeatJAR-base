@@ -333,7 +333,7 @@ public class Result<T> {
      * {@return this result's problems}
      */
     public List<Problem> getProblems() {
-        return Collections.unmodifiableList(problems);
+        return problems;
     }
 
     /**

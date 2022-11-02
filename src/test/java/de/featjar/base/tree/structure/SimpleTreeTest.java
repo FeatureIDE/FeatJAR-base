@@ -20,14 +20,6 @@
  */
 package de.featjar.base.tree.structure;
 
-import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertNull;
-import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.junit.jupiter.api.Assertions.assertTrue;
-
 import de.featjar.base.tree.Trees;
 import java.util.Arrays;
 import java.util.Collections;
@@ -38,6 +30,8 @@ import java.util.function.Function;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+
+import static org.junit.jupiter.api.Assertions.*;
 
 public class SimpleTreeTest {
 
@@ -135,17 +129,6 @@ public class SimpleTreeTest {
     }
 
     @Test
-    public void modifyChildrenIllegally() {
-        assertThrows(UnsupportedOperationException.class, () -> {
-            emptyRoot.getChildren().add(null);
-        });
-        emptyRoot.setChildren(firstChildren);
-        assertThrows(UnsupportedOperationException.class, () -> {
-            emptyRoot.getChildren().add(null);
-        });
-    }
-
-    @Test
     public void removeChildren() {
         root.setChildren(Collections.emptyList());
         assertFalse(root.hasChildren());
@@ -224,7 +207,7 @@ public class SimpleTreeTest {
 
         root.replaceChildren(oldChild -> oldChild);
 
-        assertTrue(children == root.getChildren());
+        assertSame(children, root.getChildren());
         assertDoesNotThrow(() -> {
             failFastIterator.next();
         });

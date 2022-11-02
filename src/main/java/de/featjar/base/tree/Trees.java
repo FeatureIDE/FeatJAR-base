@@ -433,7 +433,6 @@ public class Trees {
             return;
         }
         final ArrayList<T> path = new ArrayList<>();
-        final List<T> unmodifiablePath = Collections.unmodifiableList(path);
 
         final ArrayDeque<StackEntry<T>> stack = new ArrayDeque<>();
         stack.addLast(new StackEntry<>(node));
@@ -441,7 +440,7 @@ public class Trees {
             final StackEntry<T> entry = stack.getLast();
             if (entry.remainingChildren == null) {
                 path.add(entry.node);
-                final TraversalAction traversalAction = visitor.firstVisit(unmodifiablePath);
+                final TraversalAction traversalAction = visitor.firstVisit(path);
                 switch (traversalAction) {
                     case CONTINUE:
                         entry.remainingChildren =
@@ -458,7 +457,7 @@ public class Trees {
                         throw new IllegalStateException(String.valueOf(traversalAction));
                 }
             } else {
-                final TraversalAction traversalAction = visitor.visit(unmodifiablePath);
+                final TraversalAction traversalAction = visitor.visit(path);
                 switch (traversalAction) {
                     case CONTINUE:
                         break;
@@ -478,7 +477,7 @@ public class Trees {
             if (!entry.remainingChildren.isEmpty()) {
                 stack.addLast(new StackEntry<>(entry.remainingChildren.remove(0)));
             } else {
-                final TraversalAction traversalAction = visitor.lastVisit(unmodifiablePath);
+                final TraversalAction traversalAction = visitor.lastVisit(path);
                 switch (traversalAction) {
                     case CONTINUE:
                     case SKIP_CHILDREN:
@@ -500,7 +499,6 @@ public class Trees {
     private static <T extends Traversable<?>> void depthFirstSearch(T node, TreeVisitor<T, ?> visitor) throws VisitorFailException {
         if (node != null) {
             final ArrayList<T> path = new ArrayList<>();
-            final List<T> unmodifiablePath = Collections.unmodifiableList(path);
 
             final ArrayDeque<T> stack = new ArrayDeque<>();
             stack.addLast(node);
@@ -508,7 +506,7 @@ public class Trees {
                 final T curNode = stack.getLast();
                 if (path.isEmpty() || (curNode != path.get(path.size() - 1))) {
                     path.add(curNode);
-                    final TraversalAction traversalAction = visitor.firstVisit(unmodifiablePath);
+                    final TraversalAction traversalAction = visitor.firstVisit(path);
                     switch (traversalAction) {
                         case CONTINUE:
                             final Collection<? extends T> children = (Collection<? extends T>) curNode.getChildren();
@@ -525,7 +523,7 @@ public class Trees {
                             throw new IllegalStateException(String.valueOf(traversalAction));
                     }
                 } else {
-                    final TraversalAction traversalAction = visitor.lastVisit(unmodifiablePath);
+                    final TraversalAction traversalAction = visitor.lastVisit(path);
                     switch (traversalAction) {
                         case CONTINUE:
                         case SKIP_CHILDREN:

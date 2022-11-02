@@ -23,7 +23,7 @@ package de.featjar.base.bin;
 import de.featjar.base.extension.ExtensionPoint;
 
 /**
- * Manages all native binaries.
+ * Manages all native binaries bundled with FeatJAR.
  *
  * @author Elias Kuiter
  */

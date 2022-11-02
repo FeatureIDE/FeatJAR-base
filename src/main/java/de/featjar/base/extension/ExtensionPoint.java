@@ -22,7 +22,6 @@ package de.featjar.base.extension;
 
 import de.featjar.base.Feat;
 import de.featjar.base.data.Result;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Objects;
@@ -81,7 +80,7 @@ public abstract class ExtensionPoint<T extends Extension> {
      */
     public synchronized boolean uninstallExtension(T extension) {
         Feat.log().debug("uninstalling extension " + extension.getClass());
-        if ((extension != null) && indexMap.containsKey(extension.getIdentifier())) {
+        if (indexMap.containsKey(extension.getIdentifier())) {
             indexMap.remove(extension.getIdentifier());
             extensions.remove(extension);
             extension.close();
@@ -111,7 +110,7 @@ public abstract class ExtensionPoint<T extends Extension> {
      * The list is in the same order as the extensions were installed with {@link #installExtension(Extension)}.
      */
     public synchronized List<T> getExtensions() {
-        return Collections.unmodifiableList(extensions);
+        return extensions;
     }
 
     /**

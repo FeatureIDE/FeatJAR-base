@@ -201,7 +201,7 @@ public class Log implements Initializable {
     }
 
     /**
-     * Installs this log.
+     * Creates a log.
      * Overrides the standard output/error streams.
      * That is, calls to {@link System#out} are equivalent to calling {@link #info(String)}.
      * Analogously, calls to {@link System#err} are equivalent to calling {@link #error(String)}.
@@ -402,19 +402,19 @@ public class Log implements Initializable {
     /**
      * Logs messages during (de-)initialization of FeatJAR, as there is no {@link Log} configured then.
      */
-    public static class BootLog extends Log {
+    public static class Fallback extends Log {
         Formatter timeStampFormatter = new TimeStampFormatter();
         Formatter callerFormatter = new CallerFormatter();
 
-        public BootLog() {
+        public Fallback() {
             super(null);
         }
 
         @Override
         protected String formatMessage(String message) {
             // todo: this is a little hacky, it would be better to use compareTo and introduce a real NONE verbosity to avoid null
-            return Objects.equals(FeatJAR.initialVerbosity, Verbosity.DEBUG) || Objects.equals(FeatJAR.initialVerbosity, Verbosity.PROGRESS)
-                    ? "[boot]\t" + timeStampFormatter.getPrefix() + callerFormatter.getPrefix() + message
+            return Objects.equals(FeatJAR.defaultVerbosity, Verbosity.DEBUG) || Objects.equals(FeatJAR.defaultVerbosity, Verbosity.PROGRESS)
+                    ? timeStampFormatter.getPrefix() + callerFormatter.getPrefix() + message
                     : null;
         }
     }

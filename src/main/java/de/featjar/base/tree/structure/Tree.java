@@ -47,13 +47,9 @@ public abstract class Tree<T extends Traversable<T>> implements Traversable<T> {
      */
     private final List<T> children = new ArrayList<>();
 
-    /**
-     * {@inheritDoc}
-     * The returned object cannot be modified.
-     */
     @Override
     public List<? extends T> getChildren() {
-        return Collections.unmodifiableList(children);
+        return children;
     }
 
     protected void assertChildrenCountInRange(int newChildrenCount, Range range) {

@@ -60,9 +60,9 @@ public interface Computation<T> extends Supplier<FutureResult<T>>, Extension { /
         return Feat.store().compute(this);
     }
 
-    default Result<T> computeResult() { // computes (considering no cache) and waits for result
-        return compute().get(); // todo who decides what is cached, what is not? use cflowbelow to en/disable cache for certain computations? for now, cache everything
-    }
+//    default Result<T> computeResult() { // computes (considering no cache) and waits for result
+//        return compute().get(); // todo who decides what is cached, what is not? use cflowbelow to en/disable cache for certain computations? for now, cache everything
+//    }
 
     default Result<T> getResult() { // computes (considering the cache) and waits for result
         return get().get();

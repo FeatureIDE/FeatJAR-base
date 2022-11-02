@@ -13,14 +13,27 @@ import static org.junit.jupiter.api.Assertions.*;
 class ComputationTest {
     @Test
     void simpleComputation() {
-        Feat.store().clear();
-        Computation<Integer> computation = Computation.of(42);
-        assertEquals(42, computation.computeResult().get());
-        assertEquals(42, computation.computeResult().get());
-        assertFalse(Feat.store().has(computation));
-        assertEquals(42, computation.getResult().get());
-        assertEquals(42, computation.getResult().get());
-        assertTrue(Feat.store().has(computation));
+        {
+            Computation<Integer> computation = Computation.of(42);
+            assertEquals(42, computation.getResult().get());
+            assertFalse(Feat.store().has(computation));
+        }
+        assertTrue(Feat.store().computationMap.isEmpty());
+
+        Feat.run(fj -> {
+            Computation<Integer> computation = Computation.of(42);
+            assertEquals(42, computation.getResult().get());
+            assertTrue(Feat.store().has(computation));
+            assertFalse(Feat.store().computationMap.isEmpty());
+        });
+
+        assertTrue(Feat.store().computationMap.isEmpty());
+        {
+            Computation<Integer> computation = Computation.of(42);
+            assertEquals(42, computation.getResult().get());
+            assertFalse(Feat.store().has(computation));
+        }
+        assertTrue(Feat.store().computationMap.isEmpty());
     }
 
     static class IsEvenComputation implements Computation<Boolean> {
@@ -45,9 +58,9 @@ class ComputationTest {
                 return computation.compute().thenCompute((integer, monitor) -> integer % 2 == 0);
             }
         };
-        assertTrue(isEvenComputation.computeResult().get());
-        assertTrue(computation.then(IsEvenComputation.class).computeResult().get());
-        assertTrue(computation.then(IsEvenComputation::new).computeResult().get());
+        assertTrue(isEvenComputation.getResult().get());
+        assertTrue(computation.then(IsEvenComputation.class).getResult().get());
+        assertTrue(computation.then(IsEvenComputation::new).getResult().get());
     }
 
     static class IsParityComputation implements Computation<Boolean> {
@@ -70,15 +83,15 @@ class ComputationTest {
     @Test
     void computationWithArguments() {
         Computation<Integer> computation = Computation.of(42);
-        assertTrue(new IsParityComputation(computation, IsParityComputation.Parity.EVEN).computeResult().get());
-        assertFalse(new IsParityComputation(computation, IsParityComputation.Parity.ODD).computeResult().get());
-        assertTrue(computation.then(IsParityComputation.class, IsParityComputation.Parity.EVEN).computeResult().get());
-        assertTrue(computation.then(c -> new IsParityComputation(c, IsParityComputation.Parity.EVEN)).computeResult().get());
+        assertTrue(new IsParityComputation(computation, IsParityComputation.Parity.EVEN).getResult().get());
+        assertFalse(new IsParityComputation(computation, IsParityComputation.Parity.ODD).getResult().get());
+        assertTrue(computation.then(IsParityComputation.class, IsParityComputation.Parity.EVEN).getResult().get());
+        assertTrue(computation.then(c -> new IsParityComputation(c, IsParityComputation.Parity.EVEN)).getResult().get());
     }
 
     @Test
     void allOfSimple() {
-        List<?> r = Computation.allOf(Computation.of(1), Computation.of(2)).computeResult().get();
+        List<?> r = Computation.allOf(Computation.of(1), Computation.of(2)).getResult().get();
         assertEquals(1, r.get(0));
         assertEquals(2, r.get(1));
     }
@@ -87,7 +100,7 @@ class ComputationTest {
     void allOfComplex() {
         Computation<Integer> c1 = Computation.of(42);
         Computation<Boolean> c2 = c1.then(IsEvenComputation.class);
-        List<?> r = Computation.allOf(c1, c2).computeResult().get();
+        List<?> r = Computation.allOf(c1, c2).getResult().get();
         assertEquals(42, r.get(0));
         assertEquals(true, r.get(1));
     }
@@ -108,7 +121,7 @@ class ComputationTest {
             }
         };
         Computation<Boolean> c2 = c1.then(IsEvenComputation.class);
-        List<?> r = Computation.allOf(c1, c2).computeResult().get();
+        List<?> r = Computation.allOf(c1, c2).getResult().get();
         System.out.println(r);
         assertEquals(42, r.get(0));
         assertEquals(true, r.get(1));

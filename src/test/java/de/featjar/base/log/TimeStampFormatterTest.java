@@ -27,7 +27,7 @@ class TimeStampFormatterTest {
 
     @Test
     void getDefaultPrefix() {
-        assertEquals("01/08/2022, 11:00 ", timeStampFormatter.getPrefix());
+        assertEquals("[01/08/2022, 11:00]\t", timeStampFormatter.getPrefix());
     }
 
     @Test
@@ -35,6 +35,6 @@ class TimeStampFormatterTest {
         timeStampFormatter.setFormatter(DateTimeFormatter
                 .ofPattern("yyyy/MM/dd-HH:mm:ss")
                 .withZone(ZoneId.systemDefault()));
-        assertEquals("2022/08/01-11:00:00 ", timeStampFormatter.getPrefix());
+        assertEquals("[2022/08/01-11:00:00]\t", timeStampFormatter.getPrefix());
     }
 }

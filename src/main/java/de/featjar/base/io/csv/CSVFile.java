@@ -134,7 +134,7 @@ public class CSVFile {
      * {@return this CSV file's header fields}
      */
     public List<String> getHeaderFields() {
-        return Collections.unmodifiableList(headerFields);
+        return headerFields;
     }
 
     /**
