@@ -22,15 +22,9 @@ package de.featjar.base.tree.structure;
 
 import de.featjar.base.data.Range;
 import de.featjar.base.data.Result;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.ListIterator;
-import java.util.NoSuchElementException;
-import java.util.Objects;
-import java.util.Optional;
+
+import java.util.*;
 import java.util.function.BiFunction;
-import java.util.function.Function;
 
 /**
  * A traversable tree of nodes.
@@ -65,7 +59,7 @@ public abstract class Tree<T extends Traversable<T>> implements Traversable<T> {
     protected void assertChildrenValidator(List<? extends T> children) {
         if (!children.stream().allMatch(getChildrenValidator()))
             throw new IllegalArgumentException(String.format("child %s is invalid",
-                    children.stream().filter(c -> !getChildrenValidator().test(c)).findFirst().get()));
+                    children.stream().filter(c -> !getChildrenValidator().test(c)).findFirst().orElse(null)));
     }
 
     protected void assertChildrenValidator(T child) {

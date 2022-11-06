@@ -5,4 +5,5 @@
         <extension id="de.featjar.base.data.Cache" />
     </point>
     <point id="de.featjar.base.cli.Commands" />
+    <point id="de.featjar.base.data.Factories" />
 </extensions>

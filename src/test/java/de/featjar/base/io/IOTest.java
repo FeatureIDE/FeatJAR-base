@@ -43,11 +43,6 @@ import org.junit.jupiter.api.Test;
 public class IOTest {
     static class IntegerFormat implements Format<Integer> {
         @Override
-        public Optional<String> getFileExtension() {
-            return Optional.of("int");
-        }
-
-        @Override
         public String getName() {
             return "Integer";
         }
@@ -74,11 +69,6 @@ public class IOTest {
     }
 
     static class IntegerTreeFormat implements Format<LabeledTree<Integer>> {
-        @Override
-        public Optional<String> getFileExtension() {
-            return Optional.of("dat");
-        }
-
         @Override
         public String getName() {
             return "IntegerTree";
@@ -107,7 +97,7 @@ public class IOTest {
             LabeledTree<Integer> integerTree = new LabeledTree<>(Integer.valueOf(lines.remove(0)));
             for (String line : lines) {
                 Result<LabeledTree<Integer>> result = inputMapper.withMainPath(
-                        IOObject.getPathWithExtension(line, getFileExtension().orElse(null)),
+                        IOObject.getPathWithExtension(line, getFileExtension()),
                         () -> getInstance().parse(inputMapper));
                 if (result.isPresent()) integerTree.addChild(result.get());
                 else problems.add(new Problem("could not parse subtree", Problem.Severity.WARNING));
@@ -131,18 +121,13 @@ public class IOTest {
                                     .collect(Collectors.joining("\n")));
             for (LabeledTree<Integer> child : object.getChildren()) {
                 outputMapper.withMainPath(
-                        IOObject.getPathWithExtension(String.valueOf(child.hashCode()), getFileExtension().orElse(null)),
+                        IOObject.getPathWithExtension(String.valueOf(child.hashCode()), getFileExtension()),
                         () -> getInstance().write(child, outputMapper));
             }
         }
     }
 
     static class NestedFormat implements Format<List<Integer>> {
-        @Override
-        public Optional<String> getFileExtension() {
-            return Optional.of("dat");
-        }
-
         @Override
         public String getName() {
             return "Nested";
@@ -166,7 +151,7 @@ public class IOTest {
                                 .getPath(outputMapper.get())
                                 .get()
                                 .resolveSibling(IOObject.getPathWithExtension(
-                                                String.valueOf(object.remove(0)), getFileExtension().orElse(null))
+                                                String.valueOf(object.remove(0)), getFileExtension())
                                         .resolve("index")),
                         () -> getInstance().write(object, outputMapper));
             }

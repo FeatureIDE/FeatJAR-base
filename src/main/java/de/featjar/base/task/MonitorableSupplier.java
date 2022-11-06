@@ -27,6 +27,7 @@ import java.util.function.Function;
 /**
  * A task that potentially takes a long time to finish and may fail to return a result.
  * Can be monitored with a {@link Monitor}.
+ * TODO: this class can most likely be dropped in favor of Computation + FutureResult.
  *
  * @param <T> the supplied object's type
  * @author Sebastian Krieter

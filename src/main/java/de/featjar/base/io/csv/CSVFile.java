@@ -101,35 +101,6 @@ public class CSVFile {
         return this;
     }
 
-//    public Path getOutputDirectory() {
-//        return outputDirectoryPath;
-//    }
-//
-//    public boolean setOutputDirectory(Path outputPath) throws IOException {
-//        if (Files.isDirectory(outputPath)) {
-//            outputDirectoryPath = outputPath;
-//            return true;
-//        } else if (!Files.exists(outputPath)) {
-//            Files.createDirectories(outputPath);
-//            outputDirectoryPath = outputPath;
-//            return true;
-//        } else {
-//            return false;
-//        }
-//    }
-//
-//    public void setFileName(String fileName) throws IOException {
-//        setOutputFile(outputDirectoryPath.resolve(fileName));
-//    }
-//
-//    public void setOutputFile(Path outputFile) throws IOException {
-//        setOutputDirectory(outputFile.toAbsolutePath().getParent());
-//        outputFilePath = outputFile;
-//        newFile = true;
-//        reset();
-//    }
-
-
     /**
      * {@return this CSV file's header fields}
      */

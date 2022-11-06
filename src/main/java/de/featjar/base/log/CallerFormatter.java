@@ -20,16 +20,11 @@
  */
 package de.featjar.base.log;
 
-import java.time.Instant;
-import java.time.ZoneId;
-import java.time.format.DateTimeFormatter;
-import java.time.format.FormatStyle;
-import java.util.Locale;
-
 /**
- * Prepends a log message with a time stamp.
+ * Prepends a log message with the location of the logging code.
+ * To this end, looks for the most recent element on the stack that does not belong
+ * to {@link Thread} or to the {@link de.featjar.base.log} package and prints it.
  *
- * @author Sebastian Krieter
  * @author Elias Kuiter
  */
 public class CallerFormatter implements Formatter {

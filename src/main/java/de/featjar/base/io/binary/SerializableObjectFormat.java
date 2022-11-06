@@ -27,7 +27,6 @@ import de.featjar.base.io.OutputMapper;
 import de.featjar.base.io.format.Format;
 
 import java.io.*;
-import java.util.Optional;
 
 /**
  * Parses and writes serializable objects.
@@ -39,11 +38,6 @@ public class SerializableObjectFormat<T extends Serializable> implements Format<
     @Override
     public String getName() {
         return "Serializable Object";
-    }
-
-    @Override
-    public Optional<String> getFileExtension() {
-        return Optional.empty();
     }
 
     @Override

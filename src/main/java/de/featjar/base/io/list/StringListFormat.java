@@ -48,11 +48,6 @@ public class StringListFormat implements Format<List<String>> {
     }
 
     @Override
-    public Optional<String> getFileExtension() {
-        return Optional.empty();
-    }
-
-    @Override
     public boolean supportsParse() {
         return true;
     }

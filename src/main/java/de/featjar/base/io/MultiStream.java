@@ -61,6 +61,7 @@ public class MultiStream extends OutputStream {
         }
     }
 
+    @SuppressWarnings("NullableProblems")
     @Override
     public void write(byte[] buf, int off, int len) throws IOException {
         for (final OutputStream outputStream : streams) {
@@ -75,6 +76,7 @@ public class MultiStream extends OutputStream {
         }
     }
 
+    @SuppressWarnings("NullableProblems")
     @Override
     public void write(byte[] b) throws IOException {
         for (final OutputStream outputStream : streams) {

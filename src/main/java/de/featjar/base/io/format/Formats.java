@@ -56,7 +56,7 @@ public abstract class Formats<T> extends ExtensionPoint<Format<T>> implements Fo
     public List<Format<T>> getFormatList(final String fileExtension) {
         return getExtensions().stream()
                 .filter(Format::supportsParse)
-                .filter(format -> Objects.equals(fileExtension, format.getFileExtension().orElse(null)))
+                .filter(format -> Objects.equals(fileExtension, format.getFileExtension()))
                 .collect(Collectors.toList());
     }
 
@@ -72,7 +72,7 @@ public abstract class Formats<T> extends ExtensionPoint<Format<T>> implements Fo
     @Override
     public Result<Format<T>> getFormat(InputHeader inputHeader) {
         return getExtensions().stream()
-                .filter(format -> Objects.equals(inputHeader.getFileExtension(), format.getFileExtension()))
+                .filter(format -> Objects.equals(inputHeader.getFileExtension().orElse(null), format.getFileExtension()))
                 .filter(format -> format.supportsContent(inputHeader))
                 .findFirst()
                 .map(Result::of)

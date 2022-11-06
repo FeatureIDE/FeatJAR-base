@@ -21,6 +21,7 @@
 package de.featjar.base.data;
 
 import de.featjar.base.data.Problem.Severity;
+
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -32,8 +33,12 @@ import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
 /**
- * Wraps a nullable object, usually the return value of some function.
- * In contrast to {@link Optional}, can also store any {@link Problem} that occurred during execution of the function.
+ * An optional value that may be present, absent with intention, or absent due to some unintended problem.
+ * Similar to {@link Optional}, but also stores any {@link Problem} associated when trying to obtain a value.
+ * Usually, a {@link Result} wraps the result of a {@link Computation} or other potentially complex operation,
+ * such as parsing a {@link de.featjar.base.io.format.Format}.
+ * Instead of throwing exceptions, consider using a {@link Result} if there is some value to return.
+ * For void methods, throwing exceptions may be more reasonable than introducing a {@link Result} return value.
  *
  * @param <T> the type of the result's object
  * @author Sebastian Krieter

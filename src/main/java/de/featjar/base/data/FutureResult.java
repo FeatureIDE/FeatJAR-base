@@ -5,12 +5,23 @@ import de.featjar.base.task.Monitor;
 
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
-import java.util.concurrent.ForkJoinPool;
 import java.util.function.BiFunction;
 
-// ComputationFuture? // computable future?
+/**
+ * A result that will become available in the future.
+ * A {@link FutureResult} combines a {@link java.util.concurrent.Future} (which allows for asynchronous
+ * calculations) with a {@link Result} (which tracks errors).
+ * It wraps a {@link Result} that is not available yet, but will become available in the future.
+ * It can be converted into a {@link Result} by calling {@link #get()}, which blocks until the result is available.
+ * It can be chained with other calculations by calling {@link #thenCompute(BiFunction)} (and similar methods).
+ * Once the result is available, it is cached indefinitely and can be retrieved with {@link #get()}.
+ * TODO: javadoc is mostly missing
+ *
+ * @param <T> the type of the result
+ * @author Elias Kuiter
+ */
 public class FutureResult<T> extends CompletableFuture<Result<T>> {
-    protected Monitor monitor; // todo: how does this interact with the monitor's cancel, done ...? only report progress? does future's cancel work sensibly?
+    protected Monitor monitor;
 
     protected FutureResult(Monitor monitor) {
         this.monitor = monitor;
@@ -48,6 +59,7 @@ public class FutureResult<T> extends CompletableFuture<Result<T>> {
         return thenComputeFromResult(liftArgument(fn));
     }
 
+    @SuppressWarnings({"unchecked", "rawtypes"})
     public <U> FutureResult<U> thenComputeFromResult(BiFunction<Result<T>, Monitor, Result<U>> fn) {
         return (FutureResult) super.thenApply(tResult -> fn.apply(tResult, monitor));
     }
@@ -60,6 +72,7 @@ public class FutureResult<T> extends CompletableFuture<Result<T>> {
         return (tResult, monitor) -> tResult.isPresent() ? Result.of(fn.apply(tResult.get(), monitor)) : Result.empty(tResult);
     }
 
+    @SuppressWarnings({"unchecked", "rawtypes"})
     @Override
     public <U> CompletableFuture<U> newIncompleteFuture() {
         return (CompletableFuture) new FutureResult<>(monitor);
@@ -76,27 +89,4 @@ public class FutureResult<T> extends CompletableFuture<Result<T>> {
             return Result.empty(e);
         }
     }
-
-    // todo: override static allOf, anyOf ...
-
-    //        @Override
-//        public boolean complete(T i) {
-//            store.put(key);
-//            return super.complete(i);
-//        }
-//
-//        @Override
-//        public T get() throws InterruptedException, ExecutionException {
-//            FeatJAR.store().
-//            return super.get();
-//        }
-
-    //complete(result, [key])
-    // key = getclass()+inputcomputation(s)+parameters
-
-    //merge monitor and future?
-
-    //monitor
-    //result
-
 }

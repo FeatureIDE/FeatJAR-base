@@ -20,7 +20,6 @@
  */
 package de.featjar.base.tree.structure;
 
-import javax.naming.OperationNotSupportedException;
 import java.util.Collections;
 import java.util.List;
 

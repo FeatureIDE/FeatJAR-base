@@ -59,6 +59,7 @@ public class HostEnvironment {
 
     /**
      * FeatJAR's default verbosity.
+     *
      */
     public static final String FEATJAR_VERBOSITY = getEnvironmentVariable("FEATJAR_VERBOSITY").orElse("info");
 

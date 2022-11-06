@@ -45,14 +45,17 @@ import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 /**
- * Runs commands.
+ * Runs commands inside a shell.
+ * TODO: are there standard ways to communicate "system:out" etc.? should system:in.xml really include a file extension?
+ * TODO: add proper argument-parsing, probably with our own small library or something like
+ *  <a href="https://github.com/ekuiter/PCLocator/blob/master/src/de/ovgu/spldev/pclocator/Arguments.java">this</a>
  *
  * @author Sebastian Krieter
  * @author Elias Kuiter
  */
 public class CommandLine {
     public static final String DEFAULT_MAXIMUM_VERBOSITY = "info";
-    public static final String SYSTEM_INPUT = "system:in.xml"; //todo
+    public static final String SYSTEM_INPUT = "system:in.xml";
     public static final String SYSTEM_OUTPUT = "system:out";
     public static final String SYSTEM_ERROR = "system:err";
     private static final Pattern SYSTEM_INPUT_PATTERN = Pattern.compile("system:in\\.(.+)");
@@ -81,7 +84,7 @@ public class CommandLine {
         if (commands.size() > 0) {
             System.err.println("The following commands are available:");
             for (final Command command : commands) {
-                System.err.printf("\t%-20s %s\n", command.getName(), command.getDescription().orElse(""));
+                System.err.printf("\t%-20s %s\n", command.getName(), Optional.ofNullable(command.getDescription()).orElse(""));
             }
         } else {
             System.err.println("No commands are available. You can register commands using FeatJAR's extension manager.");
@@ -93,7 +96,8 @@ public class CommandLine {
             command.run(Arrays.asList(args).subList(1, args.length));
         } catch (final IllegalArgumentException e) {
             System.err.println(e.getMessage());
-            System.err.println(command.getUsage().orElse(""));
+            if (command.getUsage() != null)
+                System.err.println(command.getUsage());
         }
     }
 

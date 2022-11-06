@@ -218,7 +218,7 @@ public abstract class OutputMapper extends IOMapper<Output> {
     }
 
     /**
-     * {@return a file output mapper that optionaly writes to a ZIP or JAR file}
+     * {@return a file output mapper that optionally writes to a ZIP or JAR file}
      *
      * @param mainPath the main path
      * @param charset the charset
@@ -251,7 +251,7 @@ public abstract class OutputMapper extends IOMapper<Output> {
      */
     @SuppressWarnings("resource")
     public void withMainPath(Path newMainPath, IORunnable ioRunnable) throws IOException {
-        // todo: handle relative paths / subdirs?
+        // todo: handle relative paths / subdirectories?
         create(newMainPath);
         Path oldMainPath = mainPath;
         mainPath = newMainPath;

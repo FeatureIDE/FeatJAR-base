@@ -49,17 +49,22 @@ import java.util.stream.Collectors;
  * To ensure the determinism required by caching, all parameters of a computation must be stored in fields.
  * Whether a parameter of type T should be stored as T or Computation&lt;T&gt; depends on whether the parameter
  * is expected to depend on other computation's results.
+ * TODO: a validation scheme (e.g., against a simple feature model) and serialization scheme
+ *  (e.g., to sensibly compare and cache computations based on their parameters and hash code) are missing for now.
+ *  javadoc is also missing.
+ *  monitor and store should be injected once (see notes in {@link Monitor}, and then not worried about any further.
+ *  hash code computation is completely missing, so caching does not work well at all right now.
  *
  * @param <T> the type of the computation result
  * @author Sebastian Krieter
  * @author Elias Kuiter
  */
-public interface Computation<T> extends Supplier<FutureResult<T>>, Extension { // todo Validatable (validate against Feature Model)
+public interface Computation<T> extends Supplier<FutureResult<T>>, Extension {
     /**
      * {@return the (newly computed) asynchronous result of this computation}
      * The result is returned asynchronously; that is, as a {@link FutureResult}.
      * Calling this function directly is discouraged, as the result is forced to be re-computed.
-     * Usually, you should call {@link #get()} instea to leverage cached results.
+     * Usually, you should call {@link #get()} instead to leverage cached results.
      * Do not rename this method, as the {@link Cache.CachingPolicy} performs
      * reflection that depends on its name to detect nested computations.
      */
@@ -83,44 +88,47 @@ public interface Computation<T> extends Supplier<FutureResult<T>>, Extension { /
         return get().get();
     }
 
-    // todo: javadoc
-    static <T> Computation<T> of(T object, Monitor monitor) { // todo: refactor all usages to of...then
+    static <T> Computation<T> of(T object, Monitor monitor) {
         return () -> FutureResult.of(object, monitor);
     }
 
     static <T> Computation<T> of(T object) {
-        return of(object, new CancelableMonitor()); // todo NullMonitor
+        return of(object, new CancelableMonitor());
     }
 
     static <T> Computation<T> empty() {
-        return of(null, new CancelableMonitor()); // todo NullMonitor
+        return of(null, new CancelableMonitor());
     }
 
     static Computation<List<?>> allOf(Computation<?>... computations) {
-        return new Computation<>() {
-            //todo hashcode?
-            @Override
-            public FutureResult<List<?>> compute() {
-                List<FutureResult<?>> futureResults =
-                        Arrays.stream(computations).map(Computation::compute).collect(Collectors.toList());
-                return FutureResult.wrap(FutureResult.allOf(futureResults.toArray(CompletableFuture[]::new)))
-                        .thenComputeFromResult((unused, monitor) -> {
-                            List<?> x = futureResults.stream()
-                                    .map(FutureResult::get)
-                                    .map(Result::get)
-                                    .collect(Collectors.toList());
-                            return x.stream().noneMatch(Objects::isNull) ? Result.of(x) : Result.empty();
-                        });
+        // TODO: hashcode/caching of anonymous computation?
+        return () -> {
+            List<FutureResult<?>> futureResults =
+                    Arrays.stream(computations).map(Computation::compute).collect(Collectors.toList());
+            return FutureResult.wrap(FutureResult.allOf(futureResults.toArray(CompletableFuture[]::new)))
+                    .thenComputeFromResult((unused, monitor) -> {
+                        List<?> x = futureResults.stream()
+                                .map(FutureResult::get)
+                                .map(Result::get)
+                                .collect(Collectors.toList());
+                        return x.stream().noneMatch(Objects::isNull) ? Result.of(x) : Result.empty();
+                    });
 
-            }
         };
     }
 
-    default <U> Computation<U> then(Function<Computation<T>, Computation<U>> computationFunction) {
+    // TODO: anyOf?
+
+    default <U extends Computation<?>> U then(Function<Computation<T>, U> computationFunction) {
         return computationFunction.apply(this);
     }
 
-    default <U> Computation<U> then(Class<? extends Computation<U>> computationClass, Object... args) { // todo: drop this because it is not type-safe?
+    /*
+     TODO: keep this?
+      pro: also usable with non-final variables, does not require understanding of lambdas
+      con: args not type-checked
+    */
+    default <U> Computation<U> then(Class<? extends Computation<U>> computationClass, Object... args) {
         List<Object> arguments = new ArrayList<>();
         List<Class<?>> argumentClasses = new ArrayList<>();
         arguments.add(this);
@@ -136,23 +144,19 @@ public interface Computation<T> extends Supplier<FutureResult<T>>, Extension { /
     }
 
     default <U> Computation<U> map(Function<T, U> computationFunction) {
-        return new Computation<U>() {
-            // todo: what is the hash code? probably Computation.this + the identity of computationFunction??
-            @Override
-            public FutureResult<U> compute() {
-                return Computation.this.get().thenCompute((t, monitor) -> computationFunction.apply(t));
-            }
-        };
+        // TODO: what is the hash code? probably Computation.this + the identity of computationFunction??
+        return () -> Computation.this.get().thenCompute((t, monitor) -> computationFunction.apply(t));
     }
 
-    // todo: hashcode depends on all inputs. is there a default hashcode implementation?
-    //void serialize(); // use in equals + hashcode. requires that c1.serialize() == c2.serialize ==> same computation result. could abstract away complex identities to improve caching.
+    // TODO: hashcode depends on all inputs. is there a default hashcode implementation?
+    //  use in equals + hashcode. requires that c1.serialize() == c2.serialize ==> same computation result. could abstract away complex identities to improve caching.
+    // void serialize();
 
-    // todo: validate whether a computation is sensible. maybe by encoding valid computations in a feature model.
-    //boolean validate();
+    // TODO: validate whether a computation is sensible. maybe by encoding valid computations in a feature model.
+    // boolean validate();
 
-    // todo: besides using feature modeling to "magically" complete computations, it may be nice to denote THE canonical best input for a computation.
-    // maybe this can also be done with alternative constructors or something?
+    // TODO: besides using feature modeling to "magically" complete computations, it may be nice to denote THE canonical best input for a computation.
+    //  maybe this can also be done with alternative constructors or something?
 //    /**
 //     * {@return the preferred computation for the input of this computation}
 //     * Can be used to specify the recommended input for this computation.

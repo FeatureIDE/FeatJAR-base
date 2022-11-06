@@ -22,7 +22,6 @@ package de.featjar.base.cli;
 
 import de.featjar.base.extension.Extension;
 import java.util.List;
-import java.util.Optional;
 
 /**
  * A command run within a {@link CommandLine}.
@@ -39,17 +38,17 @@ public interface Command extends Extension {
     }
 
     /**
-     * {@return this command's description}
+     * {@return this command's description, if any}
      */
-    default Optional<String> getDescription() {
-        return Optional.empty(); // todo: optional or null?
+    default String getDescription() {
+        return null;
     }
 
     /**
-     * {@return this command's usage}
+     * {@return this command's usage, if any}
      */
-    default Optional<String> getUsage() {
-        return Optional.empty();
+    default String getUsage() {
+        return null;
     }
 
     /**

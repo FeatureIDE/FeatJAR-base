@@ -27,6 +27,8 @@ import java.util.ListIterator;
 
 /**
  * Interface for an algorithm to run via a {@link Command}.
+ * TODO: find a better name (just Algorithm?) and better way to pass arguments.
+ *  is this even needed, with the new computation implementation available?
  *
  * @author Sebastian Krieter
  */
@@ -49,6 +51,7 @@ public abstract class AlgorithmWrapper<T> implements Extension {
 
     protected abstract T createAlgorithm();
 
+    @SuppressWarnings("BooleanMethodIsAlwaysInverted")
     protected boolean parseArgument(T algorithm, String arg, ListIterator<String> iterator)
             throws IllegalArgumentException {
         return false;

@@ -26,8 +26,8 @@ import de.featjar.base.io.InputHeader;
 import de.featjar.base.io.InputMapper;
 import de.featjar.base.io.Output;
 import de.featjar.base.io.OutputMapper;
+
 import java.io.IOException;
-import java.util.Optional;
 import java.util.function.Supplier;
 
 /**
@@ -48,7 +48,7 @@ public interface Format<T> extends Extension {
      * @return the parsed result
      */
     default Result<T> parse(InputMapper inputMapper) {
-        throw new UnsupportedOperationException();
+        throw new UnsupportedOperationException(); // todo no exceptions should be thrown
     }
 
     /**
@@ -83,9 +83,13 @@ public interface Format<T> extends Extension {
 
     /**
      * {@return the file extension for this format, if any}
-     * Omits a leading ".".
+     * There should be no leading ".".
+     * The file extension is used to detect whether this format supports parsing a given file in {@link Formats}.
+     * If omitted, this format supports files without extensions.
      */
-    Optional<String> getFileExtension();
+    default String getFileExtension() {
+        return null;
+    }
 
     /**
      * {@return a meaningful name for this format}

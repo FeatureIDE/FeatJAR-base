@@ -175,7 +175,7 @@ public abstract class InputMapper extends IOMapper<Input> {
      * @param <T> the type of the supplier's result
      */
     public <T> Result<T> withMainPath(Path newMainPath, Supplier<Result<T>> supplier) {
-        // todo: handle relative paths / subdirs?
+        // todo: handle relative paths / subdirectories?
         if (ioMap.get(newMainPath) == null)
             return Result.empty(new Problem("could not find main path " + mainPath, Problem.Severity.WARNING));
         Path oldMainPath = mainPath;

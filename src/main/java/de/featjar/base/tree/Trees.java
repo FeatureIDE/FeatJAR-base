@@ -39,6 +39,7 @@ import java.util.stream.StreamSupport;
 
 /**
  * Traverses and manipulates trees.
+ * Most methods available in {@link Trees} are also available on {@link Traversable} instances.
  *
  * @author Sebastian Krieter
  */
@@ -477,20 +478,7 @@ public class Trees {
             if (!entry.remainingChildren.isEmpty()) {
                 stack.addLast(new StackEntry<>(entry.remainingChildren.remove(0)));
             } else {
-                final TraversalAction traversalAction = visitor.lastVisit(path);
-                switch (traversalAction) {
-                    case CONTINUE:
-                    case SKIP_CHILDREN:
-                        break;
-                    case SKIP_ALL:
-                        return;
-                    case FAIL:
-                        throw new VisitorFailException();
-                    default:
-                        throw new IllegalStateException(String.valueOf(traversalAction));
-                }
-                stack.removeLast();
-                path.remove(path.size() - 1);
+                if (lastVisit(visitor, path, stack)) return;
             }
         }
     }
@@ -523,22 +511,27 @@ public class Trees {
                             throw new IllegalStateException(String.valueOf(traversalAction));
                     }
                 } else {
-                    final TraversalAction traversalAction = visitor.lastVisit(path);
-                    switch (traversalAction) {
-                        case CONTINUE:
-                        case SKIP_CHILDREN:
-                            break;
-                        case SKIP_ALL:
-                            return;
-                        case FAIL:
-                            throw new VisitorFailException();
-                        default:
-                            throw new IllegalStateException(String.valueOf(traversalAction));
-                    }
-                    stack.removeLast();
-                    path.remove(path.size() - 1);
+                    if (lastVisit(visitor, path, stack)) return;
                 }
             }
         }
+    }
+
+    private static <T extends Traversable<?>> boolean lastVisit(TreeVisitor<T, ?> visitor, ArrayList<T> path, ArrayDeque<?> stack) throws VisitorFailException {
+        final TraversalAction traversalAction = visitor.lastVisit(path);
+        switch (traversalAction) {
+            case CONTINUE:
+            case SKIP_CHILDREN:
+                break;
+            case SKIP_ALL:
+                return true;
+            case FAIL:
+                throw new VisitorFailException();
+            default:
+                throw new IllegalStateException(String.valueOf(traversalAction));
+        }
+        stack.removeLast();
+        path.remove(path.size() - 1);
+        return false;
     }
 }

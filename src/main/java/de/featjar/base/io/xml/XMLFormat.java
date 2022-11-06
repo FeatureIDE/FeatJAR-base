@@ -61,8 +61,8 @@ import org.xml.sax.InputSource;
  * @author Elias Kuiter
  */
 public abstract class XMLFormat<T> implements Format<T> {
-    protected static final Pattern completeTagPattern = Pattern.compile("<(\\w+)[^\\/]*>.*<\\/\\1.*>");
-    protected static final Pattern incompleteTagPattern = Pattern.compile("(<\\w+[^\\/>]*>)|(<\\/\\w+[^>]*>)");
+    protected static final Pattern completeTagPattern = Pattern.compile("<(\\w+)[^/]*>.*</\\1.*>");
+    protected static final Pattern incompleteTagPattern = Pattern.compile("(<\\w+[^/>]*>)|(</\\w+[^>]*>)");
 
     protected List<Problem> parseProblems = new ArrayList<>();
 
@@ -73,8 +73,8 @@ public abstract class XMLFormat<T> implements Format<T> {
     protected abstract Pattern getInputHeaderPattern();
 
     @Override
-    public Optional<String> getFileExtension() {
-        return Optional.of("xml");
+    public String getFileExtension() {
+        return "xml";
     }
 
     @Override

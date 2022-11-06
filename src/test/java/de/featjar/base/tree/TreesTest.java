@@ -66,7 +66,7 @@ public class TreesTest {
 
         root1.setChildren(Arrays.asList(a, b, c));
         b.setChildren(Arrays.asList(b1, b2, b3));
-        c.setChildren(Arrays.asList(c1));
+        c.setChildren(List.of(c1));
         b1.setChildren(Arrays.asList(b1a, b1b, b1c));
         b3.setChildren(Arrays.asList(b3a, b3b));
         c1.setChildren(Arrays.asList(c1a, c1b, c1c, c1d));
@@ -96,7 +96,7 @@ public class TreesTest {
 
         root2.setChildren(Arrays.asList(a, b, c));
         b.setChildren(Arrays.asList(b1, b2, b3));
-        c.setChildren(Arrays.asList(c1));
+        c.setChildren(List.of(c1));
         b1.setChildren(Arrays.asList(b1a, b1b, b1c));
         b3.setChildren(Arrays.asList(b3a, b3b));
         c1.setChildren(Arrays.asList(c1a, c1b, c1c, c1d));
@@ -121,7 +121,7 @@ public class TreesTest {
 
         root3.setChildren(Arrays.asList(a, b, c));
         b.setChildren(Arrays.asList(b3, b2, b1));
-        c.setChildren(Arrays.asList(c1));
+        c.setChildren(List.of(c1));
         b1.setChildren(Arrays.asList(b1a, b1b, b1c));
         b3.setChildren(Arrays.asList(b3a, b3b));
         c1.setChildren(Arrays.asList(c1a, c1b, c1c, c1d));
@@ -179,7 +179,7 @@ public class TreesTest {
         final ArrayList<LabeledTree<String>> preOrderCollect = new ArrayList<>();
         final ArrayList<LabeledTree<String>> postOrderCollect = new ArrayList<>();
 
-        final Optional<Void> result = Trees.traverse(root1, new TreeVisitor<LabeledTree<String>, Void>() {
+        final Optional<Void> result = Trees.traverse(root1, new TreeVisitor<>() {
             @Override
             public Optional<Void> getResult() {
                 final Optional<Void> result = TreeVisitor.super.getResult();
@@ -281,9 +281,8 @@ public class TreesTest {
 
         final ArrayList<LabeledTree<String>> preOrderCollect = new ArrayList<>();
         final ArrayList<LabeledTree<String>> postOrderCollect = new ArrayList<>();
-        final ArrayList<LabeledTree<String>> innerCollect = new ArrayList<>();
 
-        final Optional<Void> result = Trees.traverse(root1, new InOrderTreeVisitor<LabeledTree<String>, Void>() {
+        final Optional<Void> result = Trees.traverse(root1, new InOrderTreeVisitor<>() {
             @Override
             public Optional<Void> getResult() {
                 final Optional<Void> result = InOrderTreeVisitor.super.getResult();
@@ -310,7 +309,6 @@ public class TreesTest {
             public TraversalAction visit(List<LabeledTree<String>> path) {
                 assertEquals(TraversalAction.CONTINUE, InOrderTreeVisitor.super.visit(path));
                 actualCallOrder.add("visit");
-                innerCollect.add(getCurrentNode(path));
                 return TraversalAction.CONTINUE;
             }
 

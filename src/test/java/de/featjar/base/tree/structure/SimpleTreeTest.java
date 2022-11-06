@@ -26,7 +26,6 @@ import java.util.Collections;
 import java.util.ConcurrentModificationException;
 import java.util.Iterator;
 import java.util.List;
-import java.util.function.Function;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -49,10 +48,10 @@ public class SimpleTreeTest {
         childE = new LabeledTree<>("E");
         childF = new LabeledTree<>("F");
 
-        firstChildren = Arrays.asList(childA);
+        firstChildren = List.of(childA);
         secondChildren = Arrays.asList(childB, childC);
         thirdChildren = Arrays.asList(childA, childB, childC);
-        fourthChildren = Arrays.asList(childD);
+        fourthChildren = List.of(childD);
         fifthChildren = Arrays.asList(childE, childF);
 
         root.setChildren(thirdChildren);
@@ -137,13 +136,9 @@ public class SimpleTreeTest {
 
     @Test
     public void removeChildrenIllegally() {
-        assertThrows(NullPointerException.class, () -> {
-            emptyRoot.setChildren(null);
-        });
+        assertThrows(NullPointerException.class, () -> emptyRoot.setChildren(null));
         emptyRoot.setChildren(firstChildren);
-        assertThrows(NullPointerException.class, () -> {
-            emptyRoot.setChildren(null);
-        });
+        assertThrows(NullPointerException.class, () -> emptyRoot.setChildren(null));
     }
 
     @Test
@@ -177,7 +172,7 @@ public class SimpleTreeTest {
 
         emptyRoot.replaceChildren(oldChild -> new LabeledTree<>());
 
-        assertTrue(children == emptyRoot.getChildren());
+        assertSame(children, emptyRoot.getChildren());
         assertTrue(emptyRoot.getChildren().isEmpty());
     }
 
@@ -188,7 +183,7 @@ public class SimpleTreeTest {
 
         root.replaceChildren(oldChild -> null);
 
-        assertTrue(children == root.getChildren());
+        assertSame(children, root.getChildren());
         assertDoesNotThrow(() -> {
             failFastIterator.next();
         });
@@ -257,9 +252,9 @@ public class SimpleTreeTest {
     public void replaceChildrenInEmptyTreeWithList() {
         final List<?> children = emptyRoot.getChildren();
 
-        emptyRoot.flatReplaceChildren(oldChild -> Arrays.asList(new LabeledTree<>()));
+        emptyRoot.flatReplaceChildren(oldChild -> List.of(new LabeledTree<>()));
 
-        assertTrue(children == emptyRoot.getChildren());
+        assertSame(children, emptyRoot.getChildren());
         assertTrue(emptyRoot.getChildren().isEmpty());
     }
 
@@ -270,7 +265,7 @@ public class SimpleTreeTest {
 
         root.flatReplaceChildren(oldChild -> null);
 
-        assertTrue(children == root.getChildren());
+        assertSame(children, root.getChildren());
         assertDoesNotThrow(() -> {
             failFastIterator.next();
         });
@@ -289,10 +284,8 @@ public class SimpleTreeTest {
 
         root.flatReplaceChildren(oldChild -> Collections.emptyList());
 
-        assertTrue(children == root.getChildren());
-        assertThrows(ConcurrentModificationException.class, () -> {
-            failFastIterator.next();
-        });
+        assertSame(children, root.getChildren());
+        assertThrows(ConcurrentModificationException.class, failFastIterator::next);
         assertTrue(emptyRoot.getChildren().isEmpty());
     }
 
@@ -302,9 +295,7 @@ public class SimpleTreeTest {
 
         root.flatReplaceChildren(oldChild -> oldChild == childB ? fifthChildren : fourthChildren);
 
-        assertThrows(ConcurrentModificationException.class, () -> {
-            failFastIterator.next();
-        });
+        assertThrows(ConcurrentModificationException.class, failFastIterator::next);
         final Iterator<?> iterator = root.getChildren().iterator();
         assertEquals(
                 (2 * fourthChildren.size()) + fifthChildren.size(),

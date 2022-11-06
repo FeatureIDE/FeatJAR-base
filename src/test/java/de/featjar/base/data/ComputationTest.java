@@ -51,14 +51,9 @@ class ComputationTest {
     @Test
     void chainedComputation() {
         Computation<Integer> computation = Computation.of(42);
-        Computation<Boolean> isEvenComputation = new Computation<>() {
-            @Override
-            public FutureResult<Boolean> compute() {
-                return computation.get().thenCompute((integer, monitor) -> integer % 2 == 0);
-            }
-        };
+        Computation<Boolean> isEvenComputation = () -> computation.get().thenCompute((integer, monitor) -> integer % 2 == 0);
         assertTrue(isEvenComputation.getResult().get());
-        assertTrue(computation.then(IsEvenComputation.class).getResult().get());
+        assertTrue(computation.then(IsEvenComputation::new).getResult().get());
         assertTrue(computation.then(IsEvenComputation::new).getResult().get());
     }
 
@@ -98,7 +93,7 @@ class ComputationTest {
     @Test
     void allOfComplex() {
         Computation<Integer> c1 = Computation.of(42);
-        Computation<Boolean> c2 = c1.then(IsEvenComputation.class);
+        Computation<Boolean> c2 = c1.then(IsEvenComputation::new);
         List<?> r = Computation.allOf(c1, c2).getResult().get();
         assertEquals(42, r.get(0));
         assertEquals(true, r.get(1));
@@ -106,20 +101,15 @@ class ComputationTest {
 
     @Test
     void allOfSleep() {
-        Computation<Integer> c1 = new Computation<>() {
-            @Override
-            public FutureResult<Integer> compute() {
-                return FutureResult.wrap(CompletableFuture.supplyAsync(() -> {
-                    try {
-                        Thread.sleep(10);
-                    } catch (InterruptedException e) {
-                        throw new RuntimeException(e);
-                    }
-                    return 42;
-                }));
+        Computation<Integer> c1 = () -> FutureResult.wrap(CompletableFuture.supplyAsync(() -> {
+            try {
+                Thread.sleep(10);
+            } catch (InterruptedException e) {
+                throw new RuntimeException(e);
             }
-        };
-        Computation<Boolean> c2 = c1.then(IsEvenComputation.class);
+            return 42;
+        }));
+        Computation<Boolean> c2 = c1.then(IsEvenComputation::new);
         List<?> r = Computation.allOf(c1, c2).getResult().get();
         System.out.println(r);
         assertEquals(42, r.get(0));

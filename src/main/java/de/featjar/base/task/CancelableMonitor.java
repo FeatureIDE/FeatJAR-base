@@ -24,6 +24,7 @@ import java.util.Optional;
 
 /**
  * Monitor that only allows to cancel a task and ignores progress information.
+ * TODO: replace this with a NullMonitor, as cancellation is already handled by FutureResult
  *
  * @author Sebastian Krieter
  * @author Elias Kuiter

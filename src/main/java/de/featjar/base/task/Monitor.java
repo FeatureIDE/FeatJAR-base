@@ -25,6 +25,13 @@ import java.util.Optional;
 /**
  * Monitors the execution of a long-running task.
  * A monitor can be used to cancel a task's execution and get information on its progress.
+ * TODO: this concept overlaps with FutureResult, which cancels a computation and returns whether it is done.
+ *  rather, a monitor should ONLY report progress.
+ *  possibly, the monitor could only be passed as a context into the computation, like a cache.
+ *  e.g., Computation.of(42) uses the NullMonitor and the global cache, while
+ *  Computation.of(42).withMonitor(...).withCache(...) injects a certain monitor and cache to use.
+ *  On the other hand, a computation should not really need to know about monitoring and caching.
+ *  so maybe a decorator (e.g., MonitoredComputation.of(computation)) may be reasonable.
  *
  * @author Sebastian Krieter
  * @author Elias Kuiter
