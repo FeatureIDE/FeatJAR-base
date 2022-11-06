@@ -249,6 +249,24 @@ public interface Traversable<T extends Traversable<T>> {
     }
 
     /**
+     * {@return the hash code of this node (not its children)}
+     * For deep hash code calculation, use {@link #hashCodeTree()}.
+     */
+    int hashCodeNode();
+
+    /**
+     * {@return the hash code of this node (and its children)}
+     * Relies on {@link #hashCodeNode()}.
+     */
+    default int hashCodeTree() {
+        int hashCode = hashCodeNode();
+        for (T child : getChildren()) {
+            hashCode += (hashCode * 37) + child.hashCode();
+        }
+        return hashCode;
+    }
+
+    /**
      * Traverses the tree using depth-first search, allowing for pre-, in-, and postorder traversal.
      * Only accepts tree visitors that operate on T.
      * For more general visitors, use {@link Trees#traverse(Traversable, InOrderTreeVisitor)} instead.

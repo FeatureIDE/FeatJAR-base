@@ -39,7 +39,9 @@ public abstract class Tree<T extends Traversable<T>> implements Traversable<T> {
     /**
      * The children of this node.
      */
-    private final List<T> children = new ArrayList<>();
+    protected final List<T> children = new ArrayList<>();
+    protected boolean hashCodeValid;
+    protected int hashCode;
 
     @Override
     public List<? extends T> getChildren() {
@@ -210,7 +212,7 @@ public abstract class Tree<T extends Traversable<T>> implements Traversable<T> {
     }
 
     /**
-     * {@return whether this node is equal to another}
+     * {@return whether this node (and its children) are equal to another (and its children)}
      *
      * @param other the other node
      */
@@ -218,5 +220,13 @@ public abstract class Tree<T extends Traversable<T>> implements Traversable<T> {
     @Override
     public boolean equals(Object other) {
         return getClass() == other.getClass() && equalsTree((T) other);
+    }
+
+    /**
+     * {@return the hash code of this node (and its children)}
+     */
+    @Override
+    public int hashCode() {
+        return hashCodeTree();
     }
 }
