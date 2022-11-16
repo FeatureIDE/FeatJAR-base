@@ -58,11 +58,6 @@ public class LabeledTree<T> extends Tree<LabeledTree<T>> {
     }
 
     @Override
-    public int hashCodeNode() {
-        return Objects.hash(getLabel());
-    }
-
-    @Override
     public String toString() {
         return String.format("LabeledTree[%s]", label);
     }
