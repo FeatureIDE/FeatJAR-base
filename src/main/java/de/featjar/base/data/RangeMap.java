@@ -55,10 +55,10 @@ public class RangeMap<T> {
     /**
      * Copies a range map.
      *
-     * @param map the map
+     * @param rangeMap the map
      */
-    public RangeMap(RangeMap<T> map) {
-        this(map.getObjects());
+    public RangeMap(RangeMap<T> rangeMap) {
+        this(rangeMap.getObjects());
     }
 
     /**
@@ -66,12 +66,12 @@ public class RangeMap<T> {
      * Joins on common objects and does not necessarily preserve indices.
      * If one map is empty, creates a clone of the other.
      *
-     * @param map1 the first map
-     * @param map2 the second map
+     * @param rangeMap1 the first map
+     * @param rangeMap2 the second map
      */
-    public RangeMap(RangeMap<T> map1, RangeMap<T> map2) {
-        SortedSet<T> objects = new TreeSet<>(map1.getObjects());
-        objects.addAll(map2.getObjects());
+    public RangeMap(RangeMap<T> rangeMap1, RangeMap<T> rangeMap2) {
+        SortedSet<T> objects = new TreeSet<>(rangeMap1.getObjects());
+        objects.addAll(rangeMap2.getObjects());
         clear();
         indexToObject.addAll(objects);
         updateObjectToIndex();
