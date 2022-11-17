@@ -229,12 +229,6 @@ public abstract class IntegerList<T extends IntegerList<?>> implements Comparabl
         return Arrays.equals(integers, ((IntegerList<?>) obj).integers);
     }
 
-    @SuppressWarnings("MethodDoesntCallSuperMethod")
-    @Override
-    public T clone() {
-        return newIntegerList(integers);
-    }
-
     @Override
     public int compareTo(IntegerList other) {
         final int lengthDiff = integers.length - other.integers.length;
