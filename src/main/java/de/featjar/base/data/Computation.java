@@ -49,6 +49,8 @@ import java.util.stream.Collectors;
  * To ensure the determinism required by caching, all parameters of a computation must be stored in fields.
  * Whether a parameter of type T should be stored as T or Computation&lt;T&gt; depends on whether the parameter
  * is expected to depend on other computation's results.
+ * Implementors should pass mandatory parameters in the constructor and optional parameters using dedicated setters.
+ * Dedicated setters should return the computation itself to allow for fluent configuration.
  * TODO: a validation scheme (e.g., against a simple feature model) and serialization scheme
  *  (e.g., to sensibly compare and cache computations based on their parameters and hash code) are missing for now.
  *  javadoc is also missing.

@@ -82,7 +82,7 @@ public interface MonitorableFunction<T, R> extends BiFunction<T, Monitor, Result
     default <S> MonitorableFunction<T, Result<S>> andThen(MonitorableFunction<R, S> monitorableFunction) {
         // todo: either create child monitor on parent monitor or implement compose with ... variadic number of monitorable functions
         return (t, monitor) ->
-                this.apply(t, monitor.createChildMonitor())
+                this.apply(t, monitor.newChildMonitor())
                 .map(r -> monitorableFunction.apply(r, monitor));
     }
 }

@@ -89,7 +89,7 @@ public class Cache implements Initializer {
          * Configures the caching policy.
          *
          * @param cachingPolicy the caching policy
-         * {@return this configuration}
+         * @return this configuration
          */
         public Configuration setCachingPolicy(CachingPolicy cachingPolicy) {
             this.cachingPolicy = cachingPolicy;

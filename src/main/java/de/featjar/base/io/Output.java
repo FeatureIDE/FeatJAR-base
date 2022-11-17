@@ -79,11 +79,11 @@ public abstract class Output implements IOObject {
          * @throws IOException if an I/O error occurs
          */
         public File(Path path, Charset charset) throws IOException {
-            super(createOutputStream(path), charset);
+            super(newOutputStream(path), charset);
         }
 
         @SuppressWarnings("ResultOfMethodCallIgnored")
-        private static OutputStream createOutputStream(Path path) throws IOException {
+        private static OutputStream newOutputStream(Path path) throws IOException {
             // todo: consider APPEND, and omitting CREATE (do not allow new files)
             if (path.getParent() != null)
                 path.getParent().toFile().mkdirs();

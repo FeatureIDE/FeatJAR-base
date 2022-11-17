@@ -20,7 +20,9 @@
  */
 package de.featjar.base.log;
 
+import java.util.Collection;
 import java.util.Objects;
+import java.util.stream.Collectors;
 
 /**
  * Prepends a log message with an appropriate indent.
@@ -60,5 +62,13 @@ public class IndentFormatter implements Formatter {
     @Override
     public String getPrefix() {
         return String.valueOf(symbol).repeat(Math.max(0, level));
+    }
+
+    public static String formatList(String prefix, Collection<?> collection) {
+        return String.format("%s[\n%s]",
+                prefix,
+                collection.stream()
+                        .map(o -> "\t" + o.toString() + "\n")
+                        .collect(Collectors.joining()));
     }
 }
