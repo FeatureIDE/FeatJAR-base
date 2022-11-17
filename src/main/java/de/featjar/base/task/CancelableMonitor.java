@@ -86,7 +86,7 @@ public class CancelableMonitor implements Monitor {
     }
 
     @Override
-    public CancelableMonitor createChildMonitor(int stepsInParent) {
+    public CancelableMonitor newChildMonitor(int stepsInParent) {
         return new CancelableMonitor(this);
     }
 }

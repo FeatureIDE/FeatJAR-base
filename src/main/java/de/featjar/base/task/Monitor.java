@@ -168,8 +168,8 @@ public interface Monitor {
      *
      * @return the child monitor
      */
-    default Monitor createChildMonitor() {
-        return createChildMonitor(1);
+    default Monitor newChildMonitor() {
+        return newChildMonitor(1);
     }
 
     /**
@@ -178,5 +178,5 @@ public interface Monitor {
      * @param stepsInParent the number of steps the child monitor should occupy in the parent monitor
      * @return the child monitor
      */
-    Monitor createChildMonitor(int stepsInParent);
+    Monitor newChildMonitor(int stepsInParent);
 }

@@ -53,7 +53,7 @@ public abstract class IntegerList<T extends IntegerList<?>> implements Comparabl
         hashCode = sortedIntegerList.hashCode;
     }
 
-    protected abstract T newSortedIntegerList(int[] integers);
+    protected abstract T newIntegerList(int[] integers);
 
     public int[] getIntegers() {
         return integers;
@@ -82,7 +82,7 @@ public abstract class IntegerList<T extends IntegerList<?>> implements Comparabl
                 positiveIntegers[i++] = integer;
             }
         }
-        return newSortedIntegerList(positiveIntegers);
+        return newIntegerList(positiveIntegers);
     }
 
     public T getNegatives() {
@@ -94,7 +94,7 @@ public abstract class IntegerList<T extends IntegerList<?>> implements Comparabl
                 negativeIntegers[i++] = integer;
             }
         }
-        return newSortedIntegerList(negativeIntegers);
+        return newIntegerList(negativeIntegers);
     }
 
     public boolean containsAny(int... integers) {
@@ -156,7 +156,7 @@ public abstract class IntegerList<T extends IntegerList<?>> implements Comparabl
             }
         }
         System.arraycopy(sortedIntegerList.integers, 0, newIntegers, j, sortedIntegerList.integers.length);
-        return newSortedIntegerList(newIntegers);
+        return newIntegerList(newIntegers);
     }
 
     public T removeAll(T sortedIntegerList) {
@@ -170,7 +170,7 @@ public abstract class IntegerList<T extends IntegerList<?>> implements Comparabl
                 newIntegers[j++] = integers[i];
             }
         }
-        return newSortedIntegerList(newIntegers);
+        return newIntegerList(newIntegers);
     }
 
     public T retainAll(T sortedIntegerList) {
@@ -184,7 +184,7 @@ public abstract class IntegerList<T extends IntegerList<?>> implements Comparabl
                 newIntegers[j++] = integers[i];
             }
         }
-        return newSortedIntegerList(newIntegers);
+        return newIntegerList(newIntegers);
     }
 
     protected int sizeOfIntersection(int[] integers, final boolean[] removeMarker) {
@@ -232,7 +232,7 @@ public abstract class IntegerList<T extends IntegerList<?>> implements Comparabl
     @SuppressWarnings("MethodDoesntCallSuperMethod")
     @Override
     public T clone() {
-        return newSortedIntegerList(integers);
+        return newIntegerList(integers);
     }
 
     @Override

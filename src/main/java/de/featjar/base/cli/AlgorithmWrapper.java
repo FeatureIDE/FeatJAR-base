@@ -35,7 +35,7 @@ import java.util.ListIterator;
 public abstract class AlgorithmWrapper<T> implements Extension {
 
     public Result<T> parseArguments(List<String> args) {
-        final T algorithm = createAlgorithm();
+        final T algorithm = newAlgorithm();
         try {
             for (final ListIterator<String> iterator = args.listIterator(); iterator.hasNext(); ) {
                 final String arg = iterator.next();
@@ -49,7 +49,7 @@ public abstract class AlgorithmWrapper<T> implements Extension {
         }
     }
 
-    protected abstract T createAlgorithm();
+    protected abstract T newAlgorithm();
 
     @SuppressWarnings("BooleanMethodIsAlwaysInverted")
     protected boolean parseArgument(T algorithm, String arg, ListIterator<String> iterator)

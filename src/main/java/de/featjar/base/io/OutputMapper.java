@@ -51,7 +51,7 @@ public abstract class OutputMapper extends IOMapper<Output> {
         super(ioMap, mainPath);
     }
 
-    protected abstract Output createOutput(Path path) throws IOException;
+    protected abstract Output newOutput(Path path) throws IOException;
 
     /**
      * Maps virtual paths to stream outputs.
@@ -72,7 +72,7 @@ public abstract class OutputMapper extends IOMapper<Output> {
         }
 
         @Override
-        protected Output createOutput(Path path) {
+        protected Output newOutput(Path path) {
             throw new UnsupportedOperationException("cannot guess kind of requested output stream");
         }
     }
@@ -113,7 +113,7 @@ public abstract class OutputMapper extends IOMapper<Output> {
         }
 
         @Override
-        protected Output createOutput(Path path) throws IOException {
+        protected Output newOutput(Path path) throws IOException {
             return new Output.File(resolveRootPath(rootPath, path), charset);
         }
     }
@@ -135,7 +135,7 @@ public abstract class OutputMapper extends IOMapper<Output> {
         }
 
         @Override
-        protected Output createOutput(Path path) {
+        protected Output newOutput(Path path) {
             return new Output.String(charset);
         }
 
@@ -171,7 +171,7 @@ public abstract class OutputMapper extends IOMapper<Output> {
         }
 
         @Override
-        protected Output createOutput(Path path) {
+        protected Output newOutput(Path path) {
             return new Output.ZIPEntry(path, zipOutputStream, charset);
         }
 
@@ -206,7 +206,7 @@ public abstract class OutputMapper extends IOMapper<Output> {
         }
 
         @Override
-        protected Output createOutput(Path path) {
+        protected Output newOutput(Path path) {
             return new Output.JAREntry(path, jarOutputStream, charset);
         }
 
@@ -271,7 +271,7 @@ public abstract class OutputMapper extends IOMapper<Output> {
     public Output create(Path path) throws IOException {
         Optional<Output> outputOptional = super.get(path);
         if (outputOptional.isPresent()) return outputOptional.get();
-        Output output = createOutput(path);
+        Output output = newOutput(path);
         ioMap.put(path, output);
         return output;
     }

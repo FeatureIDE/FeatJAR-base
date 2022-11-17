@@ -103,7 +103,7 @@ public class ProgressMonitor extends CancelableMonitor {
     }
 
     @Override
-    public ProgressMonitor createChildMonitor(int stepsInParent) {
+    public ProgressMonitor newChildMonitor(int stepsInParent) {
         final ProgressMonitor child = new ProgressMonitor(this, stepsInParent);
         children.add(child);
         return child;
