@@ -21,7 +21,6 @@
 package de.featjar.base.cli;
 
 import de.featjar.base.Feat;
-import de.featjar.base.FeatJAR;
 import de.featjar.base.data.Result;
 import de.featjar.base.io.IO;
 import de.featjar.base.io.format.Format;
@@ -46,61 +45,25 @@ import java.util.stream.Collectors;
 
 /**
  * Runs commands inside a shell.
- * TODO: are there standard ways to communicate "system:out" etc.? should system:in.xml really include a file extension?
  * TODO: add proper argument-parsing, probably with our own small library or something like
  *  <a href="https://github.com/ekuiter/PCLocator/blob/master/src/de/ovgu/spldev/pclocator/Arguments.java">this</a>
  *
  * @author Sebastian Krieter
  * @author Elias Kuiter
  */
-public class CommandLine {
+public class CommandLineInterface {
     public static final String DEFAULT_MAXIMUM_VERBOSITY = "info";
-    public static final String SYSTEM_INPUT = "system:in.xml";
-    public static final String SYSTEM_OUTPUT = "system:out";
-    public static final String SYSTEM_ERROR = "system:err";
-    private static final Pattern SYSTEM_INPUT_PATTERN = Pattern.compile("system:in\\.(.+)");
+    public static final String SYSTEM_INPUT = "<stdin>";
+    public static final String SYSTEM_OUTPUT = "<stdout>";
+    public static final String SYSTEM_ERROR = "<stderr>";
+    private static final Pattern SYSTEM_INPUT_PATTERN = Pattern.compile("<stdin>(\\.(.+))?");
 
-    public static void run(String[] args) {
+    public static void run(CLIArgumentParser argumentParser) {
         Feat.log().debug("running command-line interface");
-        if (args.length == 0) {
-            System.err.println("No command given. Please pass a command as the first argument.");
-            printUsage();
-            return;
-        }
-        final String commandName = args[0];
-        FeatJAR.extensionPoint(Commands.class).getExtensions().stream()
-                .filter(e -> Objects.equals(commandName, e.getName()))
-                .findFirst()
-                .ifPresentOrElse(
-                        command -> runCommand(command, args),
-                        () -> {
-                            System.err.println("The command " + commandName + " could not be found.");
-                            printUsage();
-                        });
+        argumentParser.getCommand().run(argumentParser);
     }
 
-    private static void printUsage() {
-        List<Command> commands = FeatJAR.extensionPoint(Commands.class).getExtensions();
-        if (commands.size() > 0) {
-            System.err.println("The following commands are available:");
-            for (final Command command : commands) {
-                System.err.printf("\t%-20s %s\n", command.getName(), Optional.ofNullable(command.getDescription()).orElse(""));
-            }
-        } else {
-            System.err.println("No commands are available. You can register commands using FeatJAR's extension manager.");
-        }
-    }
-
-    private static void runCommand(Command command, String[] args) {
-        try {
-            command.run(Arrays.asList(args).subList(1, args.length));
-        } catch (final IllegalArgumentException e) {
-            System.err.println(e.getMessage());
-            if (command.getUsage() != null)
-                System.err.println(command.getUsage());
-        }
-    }
-
+    //todo: remove this
     public static String getArgValue(final Iterator<String> iterator, final String arg) {
         if (iterator.hasNext()) {
             return iterator.next();
@@ -109,11 +72,11 @@ public class CommandLine {
         }
     }
 
-    public static <T> Optional<T> runInThread(Callable<T> method, long timeout) {
+    public static <T> Optional<T> runInThread(Callable<T> method, Long timeout) {
         final ExecutorService executor = Executors.newSingleThreadExecutor();
         final Future<T> future = executor.submit(method);
         try {
-            return Optional.of(timeout == 0 ? future.get() : future.get(timeout, TimeUnit.MILLISECONDS));
+            return Optional.of(timeout == null ? future.get() : future.get(timeout, TimeUnit.MILLISECONDS));
         } catch (final TimeoutException e) {
             System.exit(0);
         } catch (ExecutionException | InterruptedException e) {
@@ -126,13 +89,13 @@ public class CommandLine {
     }
 
     public static boolean isValidInput(String pathOrStdin) {
-        return SYSTEM_INPUT_PATTERN.matcher(pathOrStdin).matches() || Files.exists(Paths.get(pathOrStdin));
+        return SYSTEM_INPUT_PATTERN.matcher(pathOrStdin.toLowerCase()).matches() || Files.exists(Paths.get(pathOrStdin));
     }
 
     public static <T> Result<T> loadFile(String pathOrStdin, FormatSupplier<T> formatSupplier) {
-        Matcher matcher = SYSTEM_INPUT_PATTERN.matcher(pathOrStdin);
+        Matcher matcher = SYSTEM_INPUT_PATTERN.matcher(pathOrStdin.toLowerCase());
         if (matcher.matches()) {
-            Path path = Paths.get("stdin." + matcher.group(1));
+            Path path = Paths.get("<stdin>." + matcher.group(2));
             String content = new BufferedReader(new InputStreamReader(System.in, IO.DEFAULT_CHARSET))
                     .lines()
                     .collect(Collectors.joining("\n"));
@@ -144,7 +107,7 @@ public class CommandLine {
 
     public static <T> void saveFile(T object, String pathOrStdout, Format<T> format) {
         try {
-            if (pathOrStdout.equals(SYSTEM_OUTPUT)) {
+            if (pathOrStdout.equalsIgnoreCase(SYSTEM_OUTPUT)) {
                 IO.save(object, System.out, format);
             } else {
                 IO.save(object, Paths.get(pathOrStdout), format);

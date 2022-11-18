@@ -28,7 +28,6 @@ import de.featjar.base.extension.ExtensionPoint;
  * @author Sebastian Krieter
  */
 public abstract class Factories<T> extends ExtensionPoint<Factory<T>> implements FactorySupplier<T> {
-
     @Deprecated
     public Result<Factory<T>> getFactoryByIdentifier(String identifier) {
         return getExtension(identifier);

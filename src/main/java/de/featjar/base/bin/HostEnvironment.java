@@ -58,12 +58,6 @@ public class HostEnvironment {
     public static final String HOME_DIRECTORY = System.getProperty("user.home");
 
     /**
-     * FeatJAR's default verbosity.
-     *
-     */
-    public static final String FEATJAR_VERBOSITY = getEnvironmentVariable("FEATJAR_VERBOSITY").orElse("info");
-
-    /**
      * {@return the given environment variable}
      *
      * @param environmentVariable the environment variable
