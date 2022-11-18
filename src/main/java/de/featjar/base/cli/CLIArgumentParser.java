@@ -24,19 +24,35 @@ public class CLIArgumentParser extends ArgumentParser {
     public static final int COMMAND_NAME_POSITION = 0;
     private final String commandName;
 
+    /**
+     * Creates a new argument parser for the command-line interface.
+     *
+     * @param args the arguments to parse
+     */
     public CLIArgumentParser(String[] args) {
         super(args);
         commandName = parsePositionalArguments(COMMAND_NAME_POSITION).get(COMMAND_NAME_POSITION);
     }
 
+    /**
+     * {@return the command supplied in the given arguments}
+     */
     public Command getCommand() {
-        return parseRequiredExtension(FeatJAR.extensionPoint(Commands.class), commandName);
+        return getRequiredExtension(FeatJAR.extensionPoint(Commands.class), commandName);
     }
 
+    /**
+     * {@return the verbosity supplied in the given arguments}
+     */
     public Log.Verbosity getVerbosity() {
-        return Log.Verbosity.of(parseOption("--verbosity").orElse(CommandLine.DEFAULT_MAXIMUM_VERBOSITY));
+        return Log.Verbosity.of(parseOption("--verbosity").orElse(CommandLineInterface.DEFAULT_MAXIMUM_VERBOSITY));
     }
 
+    /**
+     * Appends the command-line interface usage to a string.
+     *
+     * @param sb the indent string builder
+     */
     public void appendUsage(IndentStringBuilder sb) {
         List<Command> commands = FeatJAR.extensionPoint(Commands.class).getExtensions();
         sb.appendLine("Usage: java -jar feat.jar <command> [--<flag> | --<option> <value>]...").appendLine();
@@ -55,7 +71,7 @@ public class CLIArgumentParser extends ArgumentParser {
         sb.removeIndent();
         sb.removeIndent();
         if (commandName != null) {
-            Result<Command> commandResult = parseExtension(FeatJAR.extensionPoint(Commands.class), commandName);
+            Result<Command> commandResult = getExtension(FeatJAR.extensionPoint(Commands.class), commandName);
             if (commandResult.isPresent() && commandResult.get().getUsage() != null) {
                 sb.appendLine();
                 sb.appendLine(String.format("Command %s has following flags and options:", commandResult.get().getIdentifier()));
@@ -66,25 +82,48 @@ public class CLIArgumentParser extends ArgumentParser {
         }
     }
 
+    /**
+     * {@return the command-line interface usage}
+     */
     public String getUsage() {
         IndentStringBuilder sb = new IndentStringBuilder();
         appendUsage(sb);
         return sb.toString();
     }
 
-    protected void handleException(ArgumentParseException e) {
-        System.err.println("Invalid usage: " + e.getMessage());
+    /**
+     * Handles argument parse exceptions by printing them and exiting.
+     *
+     * @param argumentParseException the argument parse exception
+     */
+    protected void handleException(ArgumentParseException argumentParseException) {
+        System.err.println("Invalid usage: " + argumentParseException.getMessage());
         System.err.println();
         System.err.println(getUsage());
         System.exit(1);
     }
 
-    public <T extends Extension> Result<T> parseExtension(ExtensionPoint<T> extensionPoint, String identifier) {
+    /**
+     * {@return the extension at the given extension point identified by the given identifier, if any}
+     *
+     * @param extensionPoint the extension point
+     * @param identifier the identifier
+     * @param <T> the type of the extension
+     */
+    public <T extends Extension> Result<T> getExtension(ExtensionPoint<T> extensionPoint, String identifier) {
         return extensionPoint.getExtension(identifier);
     }
 
-    public <T extends Extension> T parseRequiredExtension(ExtensionPoint<T> extensionPoint, String identifier) {
-        Result<T> extensionResult = parseExtension(extensionPoint, identifier);
+    /**
+     * {@return the extension at the given extension point identified by the given identifier}
+     * If the extension cannot be found, prints an error and exits.
+     *
+     * @param extensionPoint the extension point
+     * @param identifier the identifier
+     * @param <T> the type of the extension
+     */
+    public <T extends Extension> T getRequiredExtension(ExtensionPoint<T> extensionPoint, String identifier) {
+        Result<T> extensionResult = getExtension(extensionPoint, identifier);
         if (extensionResult.isEmpty())
             handleException(new ArgumentParseException(
                     String.format("Requested extension %s is not available.", identifier)));

@@ -51,7 +51,7 @@ import java.util.stream.Collectors;
  * @author Sebastian Krieter
  * @author Elias Kuiter
  */
-public class CommandLine {
+public class CommandLineInterface {
     public static final String DEFAULT_MAXIMUM_VERBOSITY = "info";
     public static final String SYSTEM_INPUT = "<stdin>";
     public static final String SYSTEM_OUTPUT = "<stdout>";

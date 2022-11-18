@@ -11,6 +11,9 @@ import java.util.stream.Collectors;
  * @author Elias Kuiter
  */
 public class ArgumentParser {
+    /**
+     * Thrown whenever an unexpected parsing error occurs.
+     */
     static class ArgumentParseException extends Exception {
         public ArgumentParseException(String message) {
             super(message);
@@ -20,15 +23,35 @@ public class ArgumentParser {
     List<String> arguments;
     List<String> unusedArguments;
 
+    /**
+     * Creates a new argument parser.
+     *
+     * @param args the arguments to parse
+     */
     ArgumentParser(String[] args) {
         this(List.of(args));
     }
 
+    /**
+     * Creates a new argument parser.
+     *
+     * @param arguments the arguments to parse
+     */
     ArgumentParser(List<String> arguments) {
         this.arguments = new ArrayList<>(arguments);
         this.unusedArguments = new ArrayList<>(arguments);
     }
 
+    /**
+     * Parses all positional arguments.
+     * For example, if passed 0 and -1, parses the first and last argument.
+     * Removes all parsed arguments from the argument list.
+     * Thus, should be called before parsing any flags or options.
+     *
+     * @param positions the positions where the arguments occur, may be negative
+     * @return a map of the positions to their argument values
+     * @throws ArgumentParseException when a parsing error occurs
+     */
     public Map<Integer, String> parsePositionalArguments(List<Integer> positions) throws ArgumentParseException {
         Map<Integer, String> positionalArguments = new HashMap<>();
         for (Integer position : positions) {
@@ -49,19 +72,26 @@ public class ArgumentParser {
         return positionalArguments;
     }
 
+    /**
+     * Parses all positional arguments.
+     * For example, if passed 0 and -1, parses the first and last argument.
+     * Removes all parsed arguments from the argument list.
+     * Thus, should be called before parsing any flags or options, and should only be called once.
+     *
+     * @param positions the positions where the arguments occur, may be negative
+     * @return a map of the positions to their argument values
+     * @throws ArgumentParseException when a parsing error occurs
+     */
     public Map<Integer, String> parsePositionalArguments(Integer... positions) throws ArgumentParseException {
         return parsePositionalArguments(List.of(positions));
     }
 
-    public void ensureAllowedValue(String option, String value, String... allowedValues) throws ArgumentParseException {
-        for (String allowedValue : allowedValues)
-            if (value.equals(allowedValue))
-                return;
-        throw new ArgumentParseException(
-                String.format("Value %s supplied for option %s, but one of the following was expected: %s",
-                        value, option, String.join(", ", allowedValues)));
-    }
-
+    /**
+     * {@return whether a given flag was supplied}
+     *
+     * @param flag the flag
+     * @throws ArgumentParseException when a parsing error occurs
+     */
     public boolean parseFlag(String flag) throws ArgumentParseException {
         boolean found = false;
         for (int i = 0; i < arguments.size(); i++) {
@@ -77,6 +107,12 @@ public class ArgumentParser {
         return found;
     }
 
+    /**
+     * {@return all values supplied for a given option}
+     *
+     * @param option the option
+     * @throws ArgumentParseException when a parsing error occurs
+     */
     public List<String> parseOptions(String option) throws ArgumentParseException {
         ArrayList<String> values = new ArrayList<>();
 
@@ -95,6 +131,12 @@ public class ArgumentParser {
         return values;
     }
 
+    /**
+     * {@return the value supplied for a given option, if any}
+     *
+     * @param option the option
+     * @throws ArgumentParseException when a parsing error occurs
+     */
     public Optional<String> parseOption(String option) throws ArgumentParseException {
         List<String> values = parseOptions(option);
         if (values.size() > 2)
@@ -104,6 +146,12 @@ public class ArgumentParser {
         return values.isEmpty() ? Optional.empty() : Optional.of(values.get(0));
     }
 
+    /**
+     * {@return the value supplied for a given option}
+     *
+     * @param option the option
+     * @throws ArgumentParseException when a parsing error occurs
+     */
     public String parseRequiredOption(String option) throws ArgumentParseException {
         Optional<String> value = parseOption(option);
         if (value.isEmpty())
@@ -112,15 +160,42 @@ public class ArgumentParser {
         return value.get();
     }
 
+    /**
+     * Ensures that a given option has one of the given values.
+     *
+     * @param option the option
+     * @param value the value
+     * @param allowedValues the allowed values
+     * @throws ArgumentParseException when a parsing error occurs
+     */
+    public void ensureAllowedValue(String option, String value, String... allowedValues) throws ArgumentParseException {
+        for (String allowedValue : allowedValues)
+            if (value.equals(allowedValue))
+                return;
+        throw new ArgumentParseException(
+                String.format("Value %s supplied for option %s, but one of the following was expected: %s",
+                        value, option, String.join(", ", allowedValues)));
+    }
+
+    /**
+     * Ensures that all given flags and options have been parsed.
+     *
+     * @throws ArgumentParseException when a parsing error occurs
+     */
     public void ensureAllArgumentsUsed() throws ArgumentParseException {
         String unusedString = unusedArguments.stream()
                 .filter(Objects::nonNull)
                 .collect(Collectors.joining(" "));
         if (!unusedString.isBlank())
             throw new ArgumentParseException(
-                    String.format("Option arguments %s supplied, but could not be recognized.", unusedString));
+                    String.format("Arguments %s supplied, but could not be recognized.", unusedString));
     }
 
+    /**
+     * Ensures that all given flags and options have been parsed.
+     *
+     * @throws ArgumentParseException when a parsing error occurs
+     */
     public void close() throws ArgumentParseException {
         ensureAllArgumentsUsed();
     }

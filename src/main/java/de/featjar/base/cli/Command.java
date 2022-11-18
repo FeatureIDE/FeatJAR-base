@@ -24,7 +24,7 @@ import de.featjar.base.extension.Extension;
 import de.featjar.base.log.IndentStringBuilder;
 
 /**
- * A command run within a {@link CommandLine}.
+ * A command run within a {@link CommandLineInterface}.
  *
  * @author Sebastian Krieter
  * @author Elias Kuiter
@@ -38,9 +38,10 @@ public interface Command extends Extension {
     }
 
     /**
-     * {@return appends this command's usage to a string, if any}
+     * Appends this command's usage to a string.
      *
      * @param sb the indent string builder
+     * @return whether this command has any usage to append
      */
     default boolean appendUsage(IndentStringBuilder sb) {
         return false;

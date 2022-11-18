@@ -1,8 +1,7 @@
 package de.featjar.base;
 
-import de.featjar.base.bin.HostEnvironment;
 import de.featjar.base.cli.CLIArgumentParser;
-import de.featjar.base.cli.CommandLine;
+import de.featjar.base.cli.CommandLineInterface;
 import de.featjar.base.data.Result;
 import de.featjar.base.data.Cache;
 import de.featjar.base.extension.Extension;
@@ -298,6 +297,6 @@ public class FeatJAR extends IO implements AutoCloseable {
     public static void main(String[] args) {
         CLIArgumentParser argumentParser = new CLIArgumentParser(args);
         defaultVerbosity = argumentParser.getVerbosity();
-        FeatJAR.run(featJAR -> CommandLine.run(argumentParser));
+        FeatJAR.run(featJAR -> CommandLineInterface.run(argumentParser));
     }
 }
