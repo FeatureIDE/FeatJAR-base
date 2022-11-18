@@ -25,77 +25,100 @@ import de.featjar.base.data.Result;
 import de.featjar.base.io.IO;
 import de.featjar.base.io.format.Format;
 import de.featjar.base.io.format.FormatSupplier;
+
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.*;
-import java.util.concurrent.Callable;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.Future;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
+import java.util.concurrent.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 /**
- * Runs commands inside a shell.
- * TODO: add proper argument-parsing, probably with our own small library or something like
- *  <a href="https://github.com/ekuiter/PCLocator/blob/master/src/de/ovgu/spldev/pclocator/Arguments.java">this</a>
+ * Helpers for running commands in a command-line interface.
  *
  * @author Sebastian Krieter
  * @author Elias Kuiter
  */
 public class CommandLineInterface {
+    /**
+     * The default verbosity on startup, if not specified elsewhere.
+     */
     public static final String DEFAULT_MAXIMUM_VERBOSITY = "info";
-    public static final String SYSTEM_INPUT = "<stdin>";
-    public static final String SYSTEM_OUTPUT = "<stdout>";
-    public static final String SYSTEM_ERROR = "<stderr>";
-    private static final Pattern SYSTEM_INPUT_PATTERN = Pattern.compile("<stdin>(\\.(.+))?");
 
+    /**
+     * A magic string that identifies the standard input stream.
+     */
+    public static final String STANDARD_INPUT = "<stdin>";
+
+    /**
+     * A magic string that identifies the standard output stream.
+     */
+    public static final String STANDARD_OUTPUT = "<stdout>";
+
+    /**
+     * A magic string that identifies the standard error stream.
+     */
+    public static final String STANDARD_ERROR = "<stderr>";
+
+    /**
+     * A pattern that matches the standard input identifier, accepting an optional file extension.
+     */
+    public static final Pattern STANDARD_INPUT_PATTERN = Pattern.compile("<stdin>(\\.(.+))?");
+
+    /**
+     * Runs the command supplied in the given argument parser.
+     *
+     * @param argumentParser the argument parser
+     */
     public static void run(CLIArgumentParser argumentParser) {
         Feat.log().debug("running command-line interface");
         argumentParser.getCommand().run(argumentParser);
     }
 
-    //todo: remove this
-    public static String getArgValue(final Iterator<String> iterator, final String arg) {
-        if (iterator.hasNext()) {
-            return iterator.next();
-        } else {
-            throw new IllegalArgumentException("No value specified for " + arg);
-        }
-    }
-
-    public static <T> Optional<T> runInThread(Callable<T> method, Long timeout) {
+    /**
+     * Runs a given function in a new thread, aborting it when it is not done after a timeout expires.
+     *
+     * @param fn the function
+     * @param timeout the timeout in milliseconds
+     * @return the result of the function, if any
+     * @param <T> the type of the result
+     */
+    public static <T> Result<T> runInThread(Callable<T> fn, Long timeout) {
         final ExecutorService executor = Executors.newSingleThreadExecutor();
-        final Future<T> future = executor.submit(method);
+        final Future<T> future = executor.submit(fn);
         try {
-            return Optional.of(timeout == null ? future.get() : future.get(timeout, TimeUnit.MILLISECONDS));
-        } catch (final TimeoutException e) {
-            System.exit(0);
-        } catch (ExecutionException | InterruptedException e) {
-            e.printStackTrace();
-            System.exit(0);
+            return Result.of(timeout == null ? future.get() : future.get(timeout, TimeUnit.MILLISECONDS));
+        } catch (final TimeoutException | ExecutionException | InterruptedException e) {
+            return Result.empty(e);
         } finally {
             executor.shutdownNow();
         }
-        return Optional.empty();
     }
 
+    /**
+     * {@return whether the given path or reference to the standard input stream is valid}
+     *
+     * @param pathOrStdin the path or reference to the standard input stream
+     */
     public static boolean isValidInput(String pathOrStdin) {
-        return SYSTEM_INPUT_PATTERN.matcher(pathOrStdin.toLowerCase()).matches() || Files.exists(Paths.get(pathOrStdin));
+        return STANDARD_INPUT_PATTERN.matcher(pathOrStdin.toLowerCase()).matches() || Files.exists(Paths.get(pathOrStdin));
     }
 
+    /**
+     * {@return an object loaded from the given path or the standard input stream}
+     *
+     * @param pathOrStdin the path or reference to the standard input stream
+     * @param formatSupplier the format supplier
+     * @param <T> the type of the result
+     */
     public static <T> Result<T> loadFile(String pathOrStdin, FormatSupplier<T> formatSupplier) {
-        Matcher matcher = SYSTEM_INPUT_PATTERN.matcher(pathOrStdin.toLowerCase());
+        Matcher matcher = STANDARD_INPUT_PATTERN.matcher(pathOrStdin.toLowerCase());
         if (matcher.matches()) {
-            Path path = Paths.get("<stdin>." + matcher.group(2));
+            Path path = Paths.get(matcher.groupCount() == 2 ? STANDARD_INPUT + "." + matcher.group(2) : STANDARD_INPUT);
             String content = new BufferedReader(new InputStreamReader(System.in, IO.DEFAULT_CHARSET))
                     .lines()
                     .collect(Collectors.joining("\n"));
@@ -105,9 +128,17 @@ public class CommandLineInterface {
         }
     }
 
+    /**
+     * Saves the given object to the given path or the standard output stream.
+     *
+     * @param object the object
+     * @param pathOrStdout the path or reference to the standard output stream
+     * @param format the format
+     * @param <T> the type of the object
+     */
     public static <T> void saveFile(T object, String pathOrStdout, Format<T> format) {
         try {
-            if (pathOrStdout.equalsIgnoreCase(SYSTEM_OUTPUT)) {
+            if (pathOrStdout.equalsIgnoreCase(STANDARD_OUTPUT)) {
                 IO.save(object, System.out, format);
             } else {
                 IO.save(object, Paths.get(pathOrStdout), format);

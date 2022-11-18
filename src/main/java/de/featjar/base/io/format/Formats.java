@@ -40,15 +40,6 @@ import java.util.stream.Collectors;
  */
 public abstract class Formats<T> extends ExtensionPoint<Format<T>> implements FormatSupplier<T> {
     /**
-     * {@return the format known by the given identifier}
-     *
-     * @param identifier the identifier
-     */
-    public Result<Format<T>> getFormatByIdentifier(String identifier) {
-        return getExtension(identifier);
-    }
-
-    /**
      * {@return all formats that support a given file extension}
      *
      * @param fileExtension the file extension

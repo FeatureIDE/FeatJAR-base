@@ -1,5 +1,10 @@
 package de.featjar.base.log;
 
+/**
+ * Builds multiline strings that are indented.
+ *
+ * @author Elias Kuiter
+ */
 public class IndentStringBuilder {
     protected final StringBuilder stringBuilder;
     protected final IndentFormatter indentFormatter;

@@ -54,7 +54,7 @@ import java.util.stream.Collectors;
  * TODO: a validation scheme (e.g., against a simple feature model) and serialization scheme
  *  (e.g., to sensibly compare and cache computations based on their parameters and hash code) are missing for now.
  *  javadoc is also missing.
- *  monitor and store should be injected once (see notes in {@link Monitor}, and then not worried about any further.
+ *  monitor and store should be injected once (see notes in {@link Monitor}), and then not worried about any further.
  *  hash code computation is completely missing, so caching does not work well at all right now.
  *
  * @param <T> the type of the computation result
@@ -167,4 +167,5 @@ public interface Computation<T> extends Supplier<FutureResult<T>>, Extension {
 //    default <S> Optional<Computation<S, T>> getPreferredInputComputation() {
 //        return Optional.empty();
 //    }
+    // maybe this is also something to be implemented in its own module?
 }
