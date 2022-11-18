@@ -1,12 +1,13 @@
 package de.featjar.base.cli;
 
-import de.featjar.base.Feat;
 import de.featjar.base.FeatJAR;
 import de.featjar.base.data.Result;
 import de.featjar.base.extension.Extension;
 import de.featjar.base.extension.ExtensionPoint;
 import de.featjar.base.log.IndentStringBuilder;
+import de.featjar.base.log.Log;
 
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -23,14 +24,17 @@ public class CLIArgumentParser extends ArgumentParser {
     public static final int COMMAND_NAME_POSITION = 0;
     private final String commandName;
 
-    CLIArgumentParser(String[] args) {
+    public CLIArgumentParser(String[] args) {
         super(args);
-        Feat.log().debug("parsing command");
         commandName = parsePositionalArguments(COMMAND_NAME_POSITION).get(COMMAND_NAME_POSITION);
     }
 
     public Command getCommand() {
         return parseRequiredExtension(FeatJAR.extensionPoint(Commands.class), commandName);
+    }
+
+    public Log.Verbosity getVerbosity() {
+        return Log.Verbosity.of(parseOption("--verbosity").orElse(CommandLine.DEFAULT_MAXIMUM_VERBOSITY));
     }
 
     public void appendUsage(IndentStringBuilder sb) {
@@ -44,10 +48,17 @@ public class CLIArgumentParser extends ArgumentParser {
             sb.appendLine(String.format("%s: %s", command.getIdentifier(), Optional.ofNullable(command.getDescription()).orElse("")));
         }
         sb.removeIndent();
+        sb.appendLine();
+        sb.appendLine("General flags and options:").addIndent();
+        sb.appendLine("--verbosity <level>: The logger verbosity. One of:").addIndent();
+        Arrays.stream(Log.Verbosity.values()).forEach(verbosity -> sb.appendLine(verbosity.toString().toLowerCase()));
+        sb.removeIndent();
+        sb.removeIndent();
         if (commandName != null) {
             Result<Command> commandResult = parseExtension(FeatJAR.extensionPoint(Commands.class), commandName);
             if (commandResult.isPresent() && commandResult.get().getUsage() != null) {
-                sb.appendLine(String.format("\nCommand %s has following flags and options:", commandResult.get().getIdentifier()));
+                sb.appendLine();
+                sb.appendLine(String.format("Command %s has following flags and options:", commandResult.get().getIdentifier()));
                 sb.addIndent();
                 commandResult.get().appendUsage(sb);
                 sb.removeIndent();
@@ -120,9 +131,9 @@ public class CLIArgumentParser extends ArgumentParser {
     }
 
     @Override
-    public List<String> parseValues(String option) {
+    public List<String> parseOptions(String option) {
         try {
-            return super.parseValues(option);
+            return super.parseOptions(option);
         } catch (ArgumentParseException e) {
             handleException(e);
             return null;
@@ -130,9 +141,9 @@ public class CLIArgumentParser extends ArgumentParser {
     }
 
     @Override
-    public Optional<String> parseValue(String option) {
+    public Optional<String> parseOption(String option) {
         try {
-            return super.parseValue(option);
+            return super.parseOption(option);
         } catch (ArgumentParseException e) {
             handleException(e);
             return Optional.empty();
@@ -140,9 +151,9 @@ public class CLIArgumentParser extends ArgumentParser {
     }
 
     @Override
-    public String parseRequiredValue(String option) {
+    public String parseRequiredOption(String option) {
         try {
-            return super.parseRequiredValue(option);
+            return super.parseRequiredOption(option);
         } catch (ArgumentParseException e) {
             handleException(e);
             return null;

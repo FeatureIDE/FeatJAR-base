@@ -77,7 +77,7 @@ public class ArgumentParser {
         return found;
     }
 
-    public List<String> parseValues(String option) throws ArgumentParseException {
+    public List<String> parseOptions(String option) throws ArgumentParseException {
         ArrayList<String> values = new ArrayList<>();
 
         for (int i = 0; i < arguments.size() - 1; i++)
@@ -95,8 +95,8 @@ public class ArgumentParser {
         return values;
     }
 
-    public Optional<String> parseValue(String option) throws ArgumentParseException {
-        List<String> values = parseValues(option);
+    public Optional<String> parseOption(String option) throws ArgumentParseException {
+        List<String> values = parseOptions(option);
         if (values.size() > 2)
             throw new ArgumentParseException(
                     String.format("Option %s supplied with several values, but only one value was expected.",
@@ -104,8 +104,8 @@ public class ArgumentParser {
         return values.isEmpty() ? Optional.empty() : Optional.of(values.get(0));
     }
 
-    public String parseRequiredValue(String option) throws ArgumentParseException {
-        Optional<String> value = parseValue(option);
+    public String parseRequiredOption(String option) throws ArgumentParseException {
+        Optional<String> value = parseOption(option);
         if (value.isEmpty())
             throw new ArgumentParseException(
                     String.format("Option %s not supplied, but was expected.", option));

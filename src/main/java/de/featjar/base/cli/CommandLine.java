@@ -58,12 +58,12 @@ public class CommandLine {
     public static final String SYSTEM_ERROR = "<stderr>";
     private static final Pattern SYSTEM_INPUT_PATTERN = Pattern.compile("<stdin>(\\.(.+))?");
 
-    public static void run(String[] args) {
+    public static void run(CLIArgumentParser argumentParser) {
         Feat.log().debug("running command-line interface");
-        CLIArgumentParser argumentParser = new CLIArgumentParser(args); // todo: maybe instantiate earlier to get at verbosity?
         argumentParser.getCommand().run(argumentParser);
     }
 
+    //todo: remove this
     public static String getArgValue(final Iterator<String> iterator, final String arg) {
         if (iterator.hasNext()) {
             return iterator.next();

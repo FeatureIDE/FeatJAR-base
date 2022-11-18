@@ -1,6 +1,7 @@
 package de.featjar.base;
 
 import de.featjar.base.bin.HostEnvironment;
+import de.featjar.base.cli.CLIArgumentParser;
 import de.featjar.base.cli.CommandLine;
 import de.featjar.base.data.Result;
 import de.featjar.base.data.Cache;
@@ -89,9 +90,9 @@ public class FeatJAR extends IO implements AutoCloseable {
 
     /**
      * The default verbosity of FeatJAR, if not adjusted otherwise.
-     * To allow showing log output even before this value is adjusted, an environment variable can be used.
+     * Can be set at startup to allow showing log output even before this value is adjusted.
      */
-    public static final Log.Verbosity defaultVerbosity = Log.Verbosity.of(HostEnvironment.FEATJAR_VERBOSITY);
+    public static Log.Verbosity defaultVerbosity;
 
     /**
      * Configures the default log configuration, if not adjusted otherwise.
@@ -295,6 +296,8 @@ public class FeatJAR extends IO implements AutoCloseable {
      * @param args command-line arguments
      */
     public static void main(String[] args) {
-        FeatJAR.run(featJAR -> CommandLine.run(args));
+        CLIArgumentParser argumentParser = new CLIArgumentParser(args);
+        defaultVerbosity = argumentParser.getVerbosity();
+        FeatJAR.run(featJAR -> CommandLine.run(argumentParser));
     }
 }
