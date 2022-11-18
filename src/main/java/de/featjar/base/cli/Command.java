@@ -21,7 +21,7 @@
 package de.featjar.base.cli;
 
 import de.featjar.base.extension.Extension;
-import java.util.List;
+import de.featjar.base.log.IndentStringBuilder;
 
 /**
  * A command run within a {@link CommandLine}.
@@ -31,13 +31,6 @@ import java.util.List;
  */
 public interface Command extends Extension {
     /**
-     * {@return this command's name}
-     */
-    default String getName() {
-        return getIdentifier();
-    }
-
-    /**
      * {@return this command's description, if any}
      */
     default String getDescription() {
@@ -45,16 +38,28 @@ public interface Command extends Extension {
     }
 
     /**
-     * {@return this command's usage, if any}
+     * {@return appends this command's usage to a string, if any}
+     *
+     * @param sb the indent string builder
      */
-    default String getUsage() {
-        return null;
+    default boolean appendUsage(IndentStringBuilder sb) {
+        return false;
     }
 
     /**
-     * Runs this command.
-     *
-     * @param args the arguments
+     * {@return this command's usage, if any}
      */
-    void run(List<String> args);
+    default String getUsage() {
+        IndentStringBuilder sb = new IndentStringBuilder();
+        if (!appendUsage(sb))
+            return null;
+        return sb.toString();
+    }
+
+    /**
+     * Runs this command with some given arguments.
+     *
+     * @param argumentParser the argument parser
+     */
+    void run(CLIArgumentParser argumentParser);
 }
