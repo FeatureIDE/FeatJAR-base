@@ -32,7 +32,7 @@ import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-public class SimpleTreeTest {
+public class LabeledTreeTest {
 
     LabeledTree<String> emptyRoot, root, childA, childB, childC, childD, childE, childF;
     List<LabeledTree<String>> firstChildren, secondChildren, thirdChildren, fourthChildren, fifthChildren;
