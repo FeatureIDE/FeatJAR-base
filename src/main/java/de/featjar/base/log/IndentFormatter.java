@@ -68,7 +68,7 @@ public class IndentFormatter implements Formatter {
         return String.format("%s[\n%s]",
                 prefix,
                 collection.stream()
-                        .map(o -> "\t" + o.toString() + "\n")
+                        .map(o -> "\t" + Objects.toString(o) + "\n")
                         .collect(Collectors.joining()));
     }
 }

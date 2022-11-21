@@ -20,6 +20,8 @@
  */
 package de.featjar.base.data;
 
+import de.featjar.base.log.IndentFormatter;
+
 import java.util.*;
 import java.util.stream.Stream;
 
@@ -346,13 +348,7 @@ public class RangeMap<T> {
 
     @Override
     public String toString() {
-        final StringBuilder sb = new StringBuilder("Map\n");
-        for (int i = 1; i < indexToObject.size(); i++) {
-            sb.append('\t');
-            sb.append(indexToObject.get(i));
-            sb.append('\n');
-        }
-        return sb.toString();
+        return IndentFormatter.formatList("RangeMap", indexToObject.subList(1, indexToObject.size()));
     }
 
     @SuppressWarnings("MethodDoesntCallSuperMethod")

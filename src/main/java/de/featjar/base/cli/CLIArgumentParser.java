@@ -1,5 +1,6 @@
 package de.featjar.base.cli;
 
+import de.featjar.base.Feat;
 import de.featjar.base.FeatJAR;
 import de.featjar.base.data.Result;
 import de.featjar.base.extension.Extension;
@@ -97,9 +98,9 @@ public class CLIArgumentParser extends ArgumentParser {
      * @param argumentParseException the argument parse exception
      */
     protected void handleException(ArgumentParseException argumentParseException) {
-        System.err.println("Invalid usage: " + argumentParseException.getMessage());
-        System.err.println();
-        System.err.println(getUsage());
+        Feat.log().error("Invalid usage: " + argumentParseException.getMessage());
+        Feat.log().error();
+        Feat.log().error(getUsage());
         System.exit(1);
     }
 

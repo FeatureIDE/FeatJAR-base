@@ -111,7 +111,6 @@ class ComputationTest {
         }));
         Computation<Boolean> c2 = c1.then(IsEvenComputation::new);
         List<?> r = Computation.allOf(c1, c2).getResult().get();
-        System.out.println(r);
         assertEquals(42, r.get(0));
         assertEquals(true, r.get(1));
     }
