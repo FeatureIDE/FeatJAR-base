@@ -30,6 +30,7 @@ import java.util.stream.Stream;
  * @author Sebastian Krieter
  * @author Elias Kuiter
  */
+@SuppressWarnings("OptionalGetWithoutIsPresent")
 public class RangeMap<T> {
     protected final ArrayList<T> indexToObject = new ArrayList<>();
     protected final LinkedHashMap<T, Integer> objectToIndex = new LinkedHashMap<>();
@@ -80,22 +81,22 @@ public class RangeMap<T> {
     /**
      * {@return the range of valid indices in this range map}
      */
-    public Range getValidIndexRange() {
-        return Range.of(1, indexToObject.size() - 1);
+    public Optional<Range> getValidIndexRange() {
+        return indexToObject.size() == 1
+                ? Optional.empty()
+                : Optional.of(Range.of(1, indexToObject.size() - 1));
     }
 
-    @SuppressWarnings("OptionalGetWithoutIsPresent")
-    protected int getMinimumIndex() {
-        return getValidIndexRange().getLowerBound().get();
+    protected Optional<Integer> getMinimumIndex() {
+        return getValidIndexRange().flatMap(Range::getLowerBound);
     }
 
-    @SuppressWarnings("OptionalGetWithoutIsPresent")
-    protected int getMaximumIndex() {
-        return getValidIndexRange().getUpperBound().get();
+    protected Optional<Integer> getMaximumIndex() {
+        return getValidIndexRange().flatMap(Range::getUpperBound);
     }
 
     private boolean isValidIndex(int index) {
-        return getValidIndexRange().test(index);
+        return getValidIndexRange().map(range -> range.test(index)).orElse(false);
     }
 
     /**
@@ -120,7 +121,7 @@ public class RangeMap<T> {
     /**
      * Sets a new object for an index mapped by this range map.
      *
-     * @param index the index
+     * @param index     the index
      * @param newObject the new object
      */
     public void setNewObject(int index, T newObject) {
@@ -161,7 +162,7 @@ public class RangeMap<T> {
     /**
      * Maps an index to an object.
      *
-     * @param index the index
+     * @param index  the index
      * @param object the object
      * @throws IllegalArgumentException if the index or object are invalid or already mapped
      */
@@ -169,14 +170,14 @@ public class RangeMap<T> {
         if (index < -1 || index == 0) {
             throw new IllegalArgumentException("index is invalid");
         } else if (index == -1) {
-            index = getMaximumIndex() + 1;
+            index = getMaximumIndex().map(i -> i + 1).orElse(1);
         } else if (isValidIndex(index) && indexToObject.get(index) != null) {
             throw new IllegalArgumentException("element with the index " + index + " already mapped");
         }
         if (objectToIndex.containsKey(object)) {
             throw new IllegalArgumentException("element with the object " + object + " already mapped");
         }
-        for (int i = getMaximumIndex(); i < index; i++) {
+        for (int i = getMaximumIndex().orElse(0); i < index; i++) {
             indexToObject.add(null);
         }
         objectToIndex.put(object, index);
@@ -201,7 +202,7 @@ public class RangeMap<T> {
     public boolean remove(T object) {
         Integer index = objectToIndex.get(object);
         if (index != null) {
-            if (index == getMaximumIndex()) {
+            if (index.equals(getMaximumIndex().get())) {
                 indexToObject.remove(index.intValue());
             } else {
                 indexToObject.set(index, null);
@@ -225,7 +226,7 @@ public class RangeMap<T> {
             if (object != null) {
                 objectToIndex.remove(object);
             }
-            if (index == getMaximumIndex()) {
+            if (index == getMaximumIndex().get()) {
                 indexToObject.remove(index);
             } else {
                 indexToObject.set(index, null);
@@ -257,9 +258,11 @@ public class RangeMap<T> {
      * {@return all objects mapped by this range map}
      */
     public List<T> getObjects() {
-        return indexToObject.subList(
-                getMinimumIndex(),
-                getMaximumIndex() + 1);
+        return !isEmpty()
+                ? indexToObject.subList(
+                getMinimumIndex().get(),
+                getMaximumIndex().get() + 1)
+                : new ArrayList<>();
     }
 
     /**
@@ -299,12 +302,13 @@ public class RangeMap<T> {
     }
 
     private void updateObjectToIndex() {
-        for (int i = getMinimumIndex(); i <= getMaximumIndex(); i++) {
-            T object = indexToObject.get(i);
-            if (object != null) {
-                objectToIndex.put(object, i);
+        if (!isEmpty())
+            for (int i = getMinimumIndex().get(); i <= getMaximumIndex().get(); i++) {
+                T object = indexToObject.get(i);
+                if (object != null) {
+                    objectToIndex.put(object, i);
+                }
             }
-        }
     }
 
     /**
@@ -313,8 +317,14 @@ public class RangeMap<T> {
      * @param random the random number generator
      */
     public void randomize(Random random) {
-        Collections.shuffle(indexToObject.subList(getMinimumIndex(), getMaximumIndex()), random);
-        updateObjectToIndex();
+        if (!isEmpty()) {
+            Collections.shuffle(indexToObject.subList(getMinimumIndex().get(), getMaximumIndex().get()), random);
+            updateObjectToIndex();
+        }
+    }
+
+    public boolean isEmpty() {
+        return getValidIndexRange().isEmpty();
     }
 
     @Override
