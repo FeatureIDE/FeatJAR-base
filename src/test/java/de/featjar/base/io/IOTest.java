@@ -48,6 +48,11 @@ public class IOTest {
         }
 
         @Override
+        public String getFileExtension() {
+            return "dat";
+        }
+
+        @Override
         public boolean supportsParse() {
             return true;
         }
@@ -72,6 +77,11 @@ public class IOTest {
         @Override
         public String getName() {
             return "IntegerTree";
+        }
+
+        @Override
+        public String getFileExtension() {
+            return "dat";
         }
 
         @Override
@@ -131,6 +141,11 @@ public class IOTest {
         @Override
         public String getName() {
             return "Nested";
+        }
+
+        @Override
+        public String getFileExtension() {
+            return "dat";
         }
 
         @Override
@@ -195,8 +210,14 @@ public class IOTest {
     public void integer() throws IOException {
         testInteger(Paths.get("ioTest.dat"));
         testInteger(Paths.get("./ioTest.dat"));
-        testInteger(Paths.get("temp/ioTest.dat"));
-        Files.delete(Paths.get("temp"));
+        try {
+            testInteger(Paths.get("tempInteger/ioTest.dat"));
+        } finally {
+            try {
+                Files.delete(Paths.get("tempInteger"));
+            } catch (Exception ignored) {
+            }
+        }
     }
 
     @SuppressWarnings("resource")
@@ -250,8 +271,14 @@ public class IOTest {
     public void integerTree() throws IOException {
         testIntegerTree(Paths.get("ioTest.dat"));
         testIntegerTree(Paths.get("./ioTest.dat"));
-        testIntegerTree(Paths.get("temp/ioTest.dat"));
-        Files.delete(Paths.get("temp"));
+        try {
+            testIntegerTree(Paths.get("tempIntegerTree/ioTest.dat"));
+        } finally {
+            try {
+                Files.delete(Paths.get("tempIntegerTree"));
+            } catch (Exception ignored) {
+            }
+        }
     }
 
     public void testNested(Path testPath) throws IOException {
@@ -276,8 +303,14 @@ public class IOTest {
     public void nested() throws IOException {
         testNested(Paths.get("ioTest.dat"));
         testNested(Paths.get("./ioTest.dat"));
-        testNested(Paths.get("temp/ioTest.dat"));
-        Files.delete(Paths.get("temp"));
+        try {
+            testNested(Paths.get("tempNested/ioTest.dat"));
+        } finally {
+            try {
+                Files.delete(Paths.get("tempNested"));
+            } catch (Exception ignored) {
+            }
+        }
     }
 
     // todo: absolute paths
