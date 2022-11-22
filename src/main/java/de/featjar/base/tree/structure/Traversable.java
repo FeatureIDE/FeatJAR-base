@@ -21,6 +21,7 @@
 package de.featjar.base.tree.structure;
 
 import de.featjar.base.data.Range;
+import de.featjar.base.data.Result;
 import de.featjar.base.tree.Trees;
 import de.featjar.base.tree.visitor.InOrderTreeVisitor;
 import de.featjar.base.tree.visitor.TreePrinter;
@@ -272,10 +273,10 @@ public interface Traversable<T extends Traversable<T>> {
      * For more general visitors, use {@link Trees#traverse(Traversable, InOrderTreeVisitor)} instead.
      *
      * @param treeVisitor the tree visitor
-     * @return the optional result from the visitor
+     * @return the result from the visitor
      * @param <R> the type of result
      */
-    default <R> Optional<R> traverse(InOrderTreeVisitor<T, R> treeVisitor) {
+    default <R> Result<R> traverse(InOrderTreeVisitor<T, R> treeVisitor) {
         return Trees.traverse((T) this, treeVisitor);
     }
 
@@ -285,10 +286,10 @@ public interface Traversable<T extends Traversable<T>> {
      * For more general visitors, use {@link Trees#traverse(Traversable, TreeVisitor)} instead.
      *
      * @param treeVisitor the tree visitor
-     * @return the optional result from the visitor
+     * @return the result from the visitor
      * @param <R> the type of result
      */
-    default <R> Optional<R> traverse(TreeVisitor<T, R> treeVisitor) {
+    default <R> Result<R> traverse(TreeVisitor<T, R> treeVisitor) {
         return Trees.traverse((T) this, treeVisitor);
     }
 

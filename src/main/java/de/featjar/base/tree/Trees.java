@@ -20,19 +20,14 @@
  */
 package de.featjar.base.tree;
 
+import de.featjar.base.data.Problem;
+import de.featjar.base.data.Result;
 import de.featjar.base.tree.structure.Traversable;
 import de.featjar.base.tree.visitor.InOrderTreeVisitor;
 import de.featjar.base.tree.visitor.TreeVisitor;
 import de.featjar.base.tree.visitor.TreeVisitor.TraversalAction;
-import java.util.ArrayDeque;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Optional;
-import java.util.Spliterator;
+
+import java.util.*;
 import java.util.function.Consumer;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
@@ -49,6 +44,11 @@ public class Trees {
      * Thrown when a visitor requests the {@link TreeVisitor.TraversalAction#FAIL} action.
      */
     public static class VisitorFailException extends Exception {
+        Problem problem;
+
+        public VisitorFailException(Problem problem) {
+            this.problem = problem;
+        }
     }
 
     /**
@@ -60,13 +60,13 @@ public class Trees {
      * @param <R> the type of result
      * @param <T> the type of tree
      */
-    public static <R, T extends Traversable<?>> Optional<R> traverse(T node, InOrderTreeVisitor<T, R> visitor) {
+    public static <R, T extends Traversable<?>> Result<R> traverse(T node, InOrderTreeVisitor<T, R> visitor) {
         visitor.reset();
         try {
             depthFirstSearch(node, visitor);
             return visitor.getResult();
         } catch (final VisitorFailException e) {
-            return Optional.empty();
+            return Result.empty(e.problem);
         }
     }
 
@@ -80,13 +80,13 @@ public class Trees {
      * @param <R> the type of result
      * @param <T> the type of tree
      */
-    public static <R, T extends Traversable<?>> Optional<R> traverse(T node, TreeVisitor<T, R> visitor) {
+    public static <R, T extends Traversable<?>> Result<R> traverse(T node, TreeVisitor<T, R> visitor) {
         visitor.reset();
         try {
             depthFirstSearch(node, visitor);
             return visitor.getResult();
         } catch (final VisitorFailException e) {
-            return Optional.empty();
+            return Result.empty(e.problem);
         }
     }
 
@@ -441,6 +441,9 @@ public class Trees {
             final StackEntry<T> entry = stack.getLast();
             if (entry.remainingChildren == null) {
                 path.add(entry.node);
+                Optional<Problem> problem = visitor.nodeValidator(path);
+                if (problem.isPresent())
+                    throw new VisitorFailException(problem.get());
                 final TraversalAction traversalAction = visitor.firstVisit(path);
                 switch (traversalAction) {
                     case CONTINUE:
@@ -453,7 +456,7 @@ public class Trees {
                     case SKIP_ALL:
                         return;
                     case FAIL:
-                        throw new VisitorFailException();
+                        throw new VisitorFailException(new Problem("visitor failed", Problem.Severity.ERROR));
                     default:
                         throw new IllegalStateException(String.valueOf(traversalAction));
                 }
@@ -469,7 +472,7 @@ public class Trees {
                     case SKIP_ALL:
                         return;
                     case FAIL:
-                        throw new VisitorFailException();
+                        throw new VisitorFailException(new Problem("visitor failed", Problem.Severity.ERROR));
                     default:
                         throw new IllegalStateException(String.valueOf(traversalAction));
                 }
@@ -494,6 +497,9 @@ public class Trees {
                 final T curNode = stack.getLast();
                 if (path.isEmpty() || (curNode != path.get(path.size() - 1))) {
                     path.add(curNode);
+                    Optional<Problem> problem = visitor.nodeValidator(path);
+                    if (problem.isPresent())
+                        throw new VisitorFailException(problem.get());
                     final TraversalAction traversalAction = visitor.firstVisit(path);
                     switch (traversalAction) {
                         case CONTINUE:
@@ -506,7 +512,7 @@ public class Trees {
                         case SKIP_ALL:
                             return;
                         case FAIL:
-                            throw new VisitorFailException();
+                            throw new VisitorFailException(new Problem("visitor failed", Problem.Severity.ERROR));
                         default:
                             throw new IllegalStateException(String.valueOf(traversalAction));
                     }
@@ -526,7 +532,7 @@ public class Trees {
             case SKIP_ALL:
                 return true;
             case FAIL:
-                throw new VisitorFailException();
+                throw new VisitorFailException(new Problem("visitor failed", Problem.Severity.ERROR));
             default:
                 throw new IllegalStateException(String.valueOf(traversalAction));
         }

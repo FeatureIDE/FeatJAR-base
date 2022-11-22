@@ -20,6 +20,7 @@
  */
 package de.featjar.base.tree.visitor;
 
+import de.featjar.base.data.Result;
 import de.featjar.base.tree.structure.Traversable;
 import java.util.List;
 import java.util.Optional;
@@ -62,7 +63,7 @@ public class TreeDepthCounter implements TreeVisitor<Traversable<?>, Integer> {
     }
 
     @Override
-    public Optional<Integer> getResult() {
-        return Optional.of(maxDepth);
+    public Result<Integer> getResult() {
+        return Result.of(maxDepth);
     }
 }

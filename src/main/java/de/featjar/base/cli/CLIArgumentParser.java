@@ -98,9 +98,9 @@ public class CLIArgumentParser extends ArgumentParser {
      * @param argumentParseException the argument parse exception
      */
     protected void handleException(ArgumentParseException argumentParseException) {
-        Feat.log().error("Invalid usage: " + argumentParseException.getMessage());
-        Feat.log().error();
-        Feat.log().error(getUsage());
+        System.err.println("Invalid usage: " + argumentParseException.getMessage());
+        System.err.println();
+        System.err.println(getUsage());
         System.exit(1);
     }
 

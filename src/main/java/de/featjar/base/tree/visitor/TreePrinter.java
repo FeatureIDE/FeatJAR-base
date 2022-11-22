@@ -20,6 +20,7 @@
  */
 package de.featjar.base.tree.visitor;
 
+import de.featjar.base.data.Result;
 import de.featjar.base.tree.structure.Traversable;
 import java.util.List;
 import java.util.Optional;
@@ -69,8 +70,8 @@ public class TreePrinter implements TreeVisitor<Traversable<?>, String> {
     }
 
     @Override
-    public Optional<String> getResult() {
-        return Optional.of(treeStringBuilder.toString());
+    public Result<String> getResult() {
+        return Result.of(treeStringBuilder.toString());
     }
 
     @Override

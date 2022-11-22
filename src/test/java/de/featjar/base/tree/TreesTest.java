@@ -25,6 +25,7 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import de.featjar.base.data.Result;
 import de.featjar.base.tree.structure.LabeledTree;
 import de.featjar.base.tree.visitor.InOrderTreeVisitor;
 import de.featjar.base.tree.visitor.TreeVisitor;
@@ -179,10 +180,10 @@ public class TreesTest {
         final ArrayList<LabeledTree<String>> preOrderCollect = new ArrayList<>();
         final ArrayList<LabeledTree<String>> postOrderCollect = new ArrayList<>();
 
-        final Optional<Void> result = Trees.traverse(root1, new TreeVisitor<>() {
+        final Result<Void> result = Trees.traverse(root1, new TreeVisitor<>() {
             @Override
-            public Optional<Void> getResult() {
-                final Optional<Void> result = TreeVisitor.super.getResult();
+            public Result<Void> getResult() {
+                final Result<Void> result = TreeVisitor.super.getResult();
                 assertTrue(result.isEmpty());
                 actualCallOrder.add("result");
                 return result;
@@ -238,7 +239,7 @@ public class TreesTest {
                 RuntimeException.class,
                 () -> Trees.traverse(root1, new TreeVisitor<LabeledTree<?>, Void>() {
                     @Override
-                    public Optional<Void> getResult() {
+                    public Result<Void> getResult() {
                         throw new RuntimeException();
                     }
                 }));
@@ -282,10 +283,10 @@ public class TreesTest {
         final ArrayList<LabeledTree<String>> preOrderCollect = new ArrayList<>();
         final ArrayList<LabeledTree<String>> postOrderCollect = new ArrayList<>();
 
-        final Optional<Void> result = Trees.traverse(root1, new InOrderTreeVisitor<>() {
+        final Result<Void> result = Trees.traverse(root1, new InOrderTreeVisitor<>() {
             @Override
-            public Optional<Void> getResult() {
-                final Optional<Void> result = InOrderTreeVisitor.super.getResult();
+            public Result<Void> getResult() {
+                final Result<Void> result = InOrderTreeVisitor.super.getResult();
                 assertTrue(result.isEmpty());
                 actualCallOrder.add("result");
                 return result;
@@ -357,7 +358,7 @@ public class TreesTest {
                 RuntimeException.class,
                 () -> Trees.traverse(root1, new InOrderTreeVisitor<LabeledTree<?>, Void>() {
                     @Override
-                    public Optional<Void> getResult() {
+                    public Result<Void> getResult() {
                         throw new RuntimeException();
                     }
                 }));

@@ -45,6 +45,13 @@ import java.util.stream.Collectors;
  * @author Elias Kuiter
  */
 public class Result<T> {
+    /**
+     * Unit type.
+     * Can be used to distinguish an erroneous empty result (i.e., {@link #empty()})
+     * from an intended empty result (i.e., {@link #unit()}).
+     */
+    public enum Unit { UNIT }
+
     private final T object;
 
     private final List<Problem> problems;
@@ -127,6 +134,14 @@ public class Result<T> {
      */
     public static <T> Result<T> empty() {
         return new Result<>(null, null);
+    }
+
+    /**
+     * {@return a unit result}
+     * A unit result can be considered an intentionally empty result (i.e., for {@code void} methods).
+     */
+    public static Result<Unit> unit() {
+        return of(Unit.UNIT);
     }
 
     private Result(T object, List<Problem> problems) {

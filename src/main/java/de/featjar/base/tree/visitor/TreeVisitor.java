@@ -20,10 +20,13 @@
  */
 package de.featjar.base.tree.visitor;
 
+import de.featjar.base.data.Problem;
+import de.featjar.base.data.Result;
 import de.featjar.base.tree.Trees;
 import de.featjar.base.tree.structure.Traversable;
 import java.util.List;
 import java.util.Optional;
+import java.util.function.Function;
 
 /**
  * Visits each node of a tree in a depth-first search.
@@ -60,6 +63,29 @@ public interface TreeVisitor<T extends Traversable<?>, U> {
     }
 
     /**
+     * {@return a problem with the the node about to be visited, if any}
+     * If a problem is returned, the traversal algorithm will fail.
+     *
+     * @param path the path to the visited node
+     */
+    @SuppressWarnings("BooleanMethodIsAlwaysInverted")
+    default Optional<Problem> nodeValidator(List<T> path) {
+        return Optional.empty();
+    }
+
+    /**
+     * {@return a condition that is {@code true} if visiting the root implies it satisfying a given predicate}
+     *
+     * @param path the path to the visited node
+     * @param predicate the predicate
+     */
+    default Optional<Problem> rootValidator(List<T> path, Function<T, Boolean> predicate, String message) {
+        return path.size() != 1 || predicate.apply(path.get(0))
+                ? Optional.empty()
+                : Optional.of(new Problem(message, Problem.Severity.ERROR));
+    }
+
+    /**
      * Visit a node for the first time.
      * Override this to implement preorder traversal.
      *
@@ -90,8 +116,8 @@ public interface TreeVisitor<T extends Traversable<?>, U> {
     /**
      * {@return} the result of the traversal, if any
      */
-    default Optional<U> getResult() {
-        return Optional.empty();
+    default Result<U> getResult() {
+        return Result.empty();
     }
 
     /**
