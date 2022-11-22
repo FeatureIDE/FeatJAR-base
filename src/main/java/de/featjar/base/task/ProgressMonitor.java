@@ -29,7 +29,9 @@ import java.util.concurrent.CopyOnWriteArrayList;
  *
  * @author Sebastian Krieter
  * @author Elias Kuiter
+ * @deprecated this should be merged with the new computation concept
  */
+@Deprecated
 public class ProgressMonitor extends CancelableMonitor {
 
     protected final List<ProgressMonitor> children = new CopyOnWriteArrayList<>();

@@ -27,7 +27,7 @@ package de.featjar.base.io.format;
  */
 public class ParseException extends Exception {
 
-    private final int lineNumber;
+    protected final int lineNumber;
 
     /**
      * Creates a parse exception.

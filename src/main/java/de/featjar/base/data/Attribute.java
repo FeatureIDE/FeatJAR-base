@@ -31,7 +31,9 @@ import java.util.function.Function;
  * This class does not store any attribute values, it acts as a key or descriptor.
  *
  * @author Elias Kuiter
+ * @deprecated planned to be used for formula and feature-model analysis
  */
+@Deprecated
 public class Attribute implements Function<Map<Attribute, Object>, Optional<Object>> {
     public static final String DEFAULT_NAMESPACE = Attribute.class.getCanonicalName();
 

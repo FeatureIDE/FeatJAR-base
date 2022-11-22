@@ -30,7 +30,9 @@ import java.util.function.Consumer;
  * @param <T> the type of the analyzable object
  * @param <U> the type of the analyzer object
  * @author Elias Kuiter
+ * @deprecated planned to be used for formula and feature-model analysis
  */
+@Deprecated
 public interface Analyzable<T, U extends Analyzer<T>> {
     U getAnalyzer();
 

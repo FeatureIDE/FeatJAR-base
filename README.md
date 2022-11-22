@@ -13,6 +13,13 @@ Some functionality included in this module:
 * logging facilities
 * tree data structures and algorithms
 
+## TODOs
+
+Besides `TODO` items in the source code, the following general `TODOs` apply:
+
+* The use of unchecked exceptions (e.g., `RuntimeException`) should be minimized.
+  Either throw checked exceptions or (better) use `Optional` or `Result`.
+
 ## License
 
 This repository belongs to [FeatJAR](https://github.com/FeatureIDE/FeatJAR), a collection of Java libraries for feature-oriented software development.

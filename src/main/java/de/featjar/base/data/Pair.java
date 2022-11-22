@@ -34,8 +34,8 @@ import java.util.Objects;
  */
 public class Pair<A, B> {
 
-    private final A key;
-    private final B value;
+    protected final A key;
+    protected final B value;
 
     /**
      * Creates a pair of two elements.

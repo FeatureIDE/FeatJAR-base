@@ -32,7 +32,9 @@ import java.util.function.Consumer;
  * @param <T> the type of the mutable object
  * @param <U> the type of the mutator object
  * @author Elias Kuiter
+ * @deprecated planned to be used for formula and feature-model analysis
  */
+@Deprecated
 public interface Mutable<T, U extends Mutator<T>> {
     U getMutator();
 

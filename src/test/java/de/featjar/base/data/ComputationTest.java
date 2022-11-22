@@ -79,7 +79,6 @@ class ComputationTest {
         Computation<Integer> computation = Computation.of(42);
         assertTrue(new IsParityComputation(computation, IsParityComputation.Parity.EVEN).getResult().get());
         assertFalse(new IsParityComputation(computation, IsParityComputation.Parity.ODD).getResult().get());
-        assertTrue(computation.then(IsParityComputation.class, IsParityComputation.Parity.EVEN).getResult().get());
         assertTrue(computation.then(c -> new IsParityComputation(c, IsParityComputation.Parity.EVEN)).getResult().get());
     }
 

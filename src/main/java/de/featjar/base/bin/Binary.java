@@ -54,7 +54,7 @@ public abstract class Binary implements Extension {
     /**
      * Initializes a native binary by extracting all its resources into the binary directory.
      */
-    public Binary() {
+    public Binary() throws IOException {
         extractResources(getResourceNames());
     }
 
@@ -157,17 +157,13 @@ public abstract class Binary implements Extension {
      * Each resource is set to be executable.
      */
     @SuppressWarnings("ResultOfMethodCallIgnored")
-    protected void extractResources(Set<String> resourceNames) {
+    protected void extractResources(Set<String> resourceNames) throws IOException {
         BINARY_DIRECTORY.toFile().mkdirs();
         for (String resourceName : resourceNames) {
-            try {
-                Path outputPath = BINARY_DIRECTORY.resolve(resourceName);
-                if (Files.notExists(outputPath)) {
-                    JARs.extractResource("bin/" + resourceName, outputPath);
-                    outputPath.toFile().setExecutable(true);
-                }
-            } catch (IOException e) {
-                throw new RuntimeException(e);
+            Path outputPath = BINARY_DIRECTORY.resolve(resourceName);
+            if (Files.notExists(outputPath)) {
+                JARs.extractResource("bin/" + resourceName, outputPath);
+                outputPath.toFile().setExecutable(true);
             }
         }
     }

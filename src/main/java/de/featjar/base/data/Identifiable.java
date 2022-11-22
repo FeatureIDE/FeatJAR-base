@@ -24,7 +24,9 @@ package de.featjar.base.data;
  * An object that is uniquely identified by an {@link Identifier}.
  *
  * @author Elias Kuiter
+ * @deprecated planned to be used for formula and feature-model analysis
  */
+@Deprecated
 public interface Identifiable {
     /**
      * {@return the identifier of this identifiable}

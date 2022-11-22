@@ -45,8 +45,9 @@ public class CLIArgumentParser extends ArgumentParser {
     /**
      * {@return the verbosity supplied in the given arguments}
      */
+    @SuppressWarnings("OptionalGetWithoutIsPresent")
     public Log.Verbosity getVerbosity() {
-        return Log.Verbosity.of(parseOption("--verbosity").orElse(CommandLineInterface.DEFAULT_MAXIMUM_VERBOSITY));
+        return Log.Verbosity.of(parseOption("--verbosity").orElse(CommandLineInterface.DEFAULT_MAXIMUM_VERBOSITY)).get();
     }
 
     /**

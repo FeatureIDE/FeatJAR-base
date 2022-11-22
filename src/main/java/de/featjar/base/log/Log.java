@@ -68,11 +68,11 @@ public class Log implements Initializer {
          */
         PROGRESS;
 
-        public static Verbosity of(String verbosityString) {
+        public static Optional<Verbosity> of(String verbosityString) {
             String[] verbosities = new String[]{"none", "error", "info", "debug", "progress"};
             if (!Arrays.asList(verbosities).contains(verbosityString))
-                throw new IllegalArgumentException("invalid verbosity " + verbosityString);
-            return verbosityString.equals("none") ? null : Verbosity.valueOf(verbosityString.toUpperCase());
+                return Optional.empty();
+            return Optional.ofNullable(verbosityString.equals("none") ? null : Verbosity.valueOf(verbosityString.toUpperCase()));
         }
     }
 
@@ -80,7 +80,8 @@ public class Log implements Initializer {
      * Configures a log.
      */
     public static class Configuration {
-        //todo: consider using an OutputMapper instead?
+        // TODO: to make this more general, we could use an OutputMapper here to
+        //  log to anything supported by an OutputMapper (even a ZIP file).
         protected final HashMap<Verbosity, de.featjar.base.io.PrintStream> logStreams = new HashMap<>();
         protected final LinkedList<Formatter> formatters = new LinkedList<>();
 
@@ -116,12 +117,8 @@ public class Log implements Initializer {
          * @param verbosities the logged verbosities
          * @return this configuration
          */
-        public Configuration logToFile(Path path, Verbosity... verbosities) {
-            try {
-                logToStream(new PrintStream(new FileOutputStream(path.toAbsolutePath().normalize().toFile())), verbosities);
-            } catch (FileNotFoundException e) {
-                throw new RuntimeException(e);
-            }
+        public Configuration logToFile(Path path, Verbosity... verbosities) throws FileNotFoundException {
+            logToStream(new PrintStream(new FileOutputStream(path.toAbsolutePath().normalize().toFile())), verbosities);
             return this;
         }
 
@@ -178,7 +175,10 @@ public class Log implements Initializer {
         }
 
         public Configuration logAtMost(String verbosityString) {
-            logAtMost(Verbosity.of(verbosityString));
+            Optional<Verbosity> verbosity = Verbosity.of(verbosityString);
+            if (verbosity.isEmpty())
+                throw new IllegalArgumentException("invalid verbosity " + verbosityString);
+            logAtMost(verbosity.get());
             return this;
         }
     }
@@ -421,7 +421,7 @@ public class Log implements Initializer {
 
         @Override
         protected String formatMessage(String message) {
-            // todo: this is a little hacky, it would be better to use compareTo and introduce a real NONE verbosity to avoid null
+            // TODO: this is a little hacky right now, it would be better to use compareTo and introduce a real NONE verbosity to avoid null.
             return Objects.equals(FeatJAR.defaultVerbosity, Verbosity.DEBUG) || Objects.equals(FeatJAR.defaultVerbosity, Verbosity.PROGRESS)
                     ? timeStampFormatter.getPrefix() + callerFormatter.getPrefix() + message
                     : null;

@@ -29,6 +29,7 @@ import java.util.stream.IntStream;
  * An unordered list of integers.
  * Subclasses implement specific interpretations of these integers (e.g., as an index into a {@link RangeMap}).
  * Negative integers are allowed.
+ * TODO: javadoc is mostly missing
  *
  * @param <T> the type of the implementing subclass
  * @author Sebastian Krieter

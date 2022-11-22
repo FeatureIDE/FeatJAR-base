@@ -28,8 +28,8 @@ import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * Caches computation results by storing a map of computations to their future results.
- * TODO: currently, this is implemented as a single large store (a Singleton inside{@link de.featjar.base.FeatJAR}).
- *  see the notes in {@link de.featjar.base.task.Monitor} how this might be improved.
+ * TODO: Currently, this is implemented as a single large store (a Singleton inside {@link de.featjar.base.FeatJAR}).
+ *  See the notes in {@link de.featjar.base.task.Monitor} how this might be improved.
  *
  * @author Sebastian Krieter
  * @author Elias Kuiter

@@ -27,7 +27,9 @@ import java.util.Optional;
  * An object that can be annotated with {@link Attribute} values to store additional metadata.
  *
  * @author Elias Kuiter
+ * @deprecated planned to be used for formula and feature-model analysis
  */
+@Deprecated
 public interface Attributable {
     Map<Attribute, Object> getAttributeToValueMap();
 

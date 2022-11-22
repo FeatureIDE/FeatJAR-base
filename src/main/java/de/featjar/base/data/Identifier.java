@@ -27,7 +27,9 @@ import java.util.Objects;
  * Implementors are responsible for guaranteeing uniqueness within a self-chosen scope (e.g., during program execution).
  *
  * @author Elias Kuiter
+ * @deprecated planned to be used for formula and feature-model analysis
  */
+@Deprecated
 public abstract class Identifier {
     protected final Factory factory;
 

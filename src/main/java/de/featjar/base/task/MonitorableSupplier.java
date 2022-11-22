@@ -32,7 +32,9 @@ import java.util.function.Function;
  * @param <T> the supplied object's type
  * @author Sebastian Krieter
  * @author Elias Kuiter
+ * @deprecated this should be merged with the new computation concept
  */
+@Deprecated
 @FunctionalInterface
 public interface MonitorableSupplier<T> extends Function<Monitor, Result<T>> {
     /**

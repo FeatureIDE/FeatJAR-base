@@ -22,14 +22,18 @@ package de.featjar.base.io.format;
 
 import de.featjar.base.data.Problem;
 
+import java.nio.file.Path;
+
 /**
  * A problem that occurs while parsing an {@link de.featjar.base.io.Input}.
- * Stores a line number where the problem occurred.
+ * Stores a path and line number where the problem occurred.
  *
  * @author Sebastian Krieter
  */
 public class ParseProblem extends Problem {
-    // todo: store file, too (for UVL)
+    // TODO: for hierarchical formats like UVL, there may be several files, so we should
+    //  also store the path of the file with a parse problem.
+    protected final Path path = null;
     protected final int lineNumber;
 
     /**

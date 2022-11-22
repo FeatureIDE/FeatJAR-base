@@ -38,7 +38,7 @@ import java.util.stream.Collectors;
  * Usually, a {@link Result} wraps the result of a {@link Computation} or other potentially complex operation,
  * such as parsing a {@link de.featjar.base.io.format.Format}.
  * Instead of throwing exceptions, consider using a {@link Result} if there is some value to return.
- * For void methods, throwing exceptions may be more reasonable than introducing a {@link Result} return value.
+ * For void methods, throwing checked exceptions may be more reasonable than introducing a {@link Result} return value.
  *
  * @param <T> the type of the result's object
  * @author Sebastian Krieter
@@ -49,6 +49,8 @@ public class Result<T> {
      * Unit type.
      * Can be used to distinguish an erroneous empty result (i.e., {@link #empty()})
      * from an intended empty result (i.e., {@link #unit()}).
+     * todo: maybe rename this to Void? or create a subclass VoidResult? seems a little unintuitive right now,
+     *  and is only used in the tree visitor
      */
     public enum Unit { UNIT }
 

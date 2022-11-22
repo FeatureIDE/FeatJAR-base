@@ -63,7 +63,7 @@ public class SerializableObjectFormat<T extends Serializable> implements Format<
     }
 
     @Override
-    public void write(T object, OutputMapper outputMapper) throws IOException {
+    public void write(T object, OutputMapper outputMapper) {
         final OutputStream outputStream = outputMapper.get().getOutputStream();
         try (ObjectOutputStream oos = new ObjectOutputStream(outputStream)) {
             oos.writeObject(object);

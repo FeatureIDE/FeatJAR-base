@@ -251,7 +251,7 @@ public abstract class OutputMapper extends IOMapper<Output> {
      */
     @SuppressWarnings("resource")
     public void withMainPath(Path newMainPath, IORunnable ioRunnable) throws IOException {
-        // todo: handle relative paths / subdirectories?
+        // TODO: are relative paths and subdirectories handled correctly?
         create(newMainPath);
         Path oldMainPath = mainPath;
         mainPath = newMainPath;

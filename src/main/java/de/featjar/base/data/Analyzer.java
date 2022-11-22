@@ -25,7 +25,9 @@ package de.featjar.base.data;
  *
  * @param <T> the type of the analyzable object
  * @author Elias Kuiter
+ * @deprecated planned to be used for formula and feature-model analysis
  */
+@Deprecated
 public interface Analyzer<T> {
     T getAnalyzable();
 }

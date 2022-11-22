@@ -85,7 +85,7 @@ public class StringListFormat implements Format<List<String>> {
     }
 
     @Override
-    public String serialize(List<String> object) {
-        return object.stream().collect(Collectors.joining(System.lineSeparator()));
+    public Result<String> serialize(List<String> object) {
+        return Result.of(object.stream().collect(Collectors.joining(System.lineSeparator())));
     }
 }

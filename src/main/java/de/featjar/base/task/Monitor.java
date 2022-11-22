@@ -35,7 +35,9 @@ import java.util.Optional;
  *
  * @author Sebastian Krieter
  * @author Elias Kuiter
+ * @deprecated this should be merged with the new computation concept
  */
+@Deprecated
 public interface Monitor {
     /**
      * Thrown to signal that a task has been canceled.

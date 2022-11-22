@@ -161,7 +161,7 @@ public abstract class XMLFormat<T> implements Format<T> {
     }
 
     @Override
-    public String serialize(T object) {
+    public Result<String> serialize(T object) {
         final DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
         dbf.setNamespaceAware(true);
         dbf.setIgnoringComments(true);
@@ -172,8 +172,7 @@ public abstract class XMLFormat<T> implements Format<T> {
         try {
             db = dbf.newDocumentBuilder();
         } catch (final ParserConfigurationException pce) {
-            Feat.log().error(pce);
-            return "";
+            return Result.empty(pce);
         }
         final Document doc = db.newDocument();
         writeDocument(object, doc);
@@ -186,10 +185,9 @@ public abstract class XMLFormat<T> implements Format<T> {
             transformer.setOutputProperty(OutputKeys.METHOD, "xml");
             transformer.setOutputProperty(OutputKeys.INDENT, "yes");
             transformer.transform(new DOMSource(doc), streamResult);
-            return prettyPrint(streamResult.getWriter().toString());
+            return Result.of(prettyPrint(streamResult.getWriter().toString()));
         } catch (final IOException | TransformerException e) {
-            Feat.log().error(e);
-            return null; // todo: how to handle serialization errors?
+            return Result.empty(e);
         }
     }
 

@@ -28,7 +28,9 @@ import java.util.Optional;
  *
  * @author Sebastian Krieter
  * @author Elias Kuiter
+ * @deprecated this should be merged with the new computation concept
  */
+@Deprecated
 public class CancelableMonitor implements Monitor {
     protected final CancelableMonitor parentMonitor;
     protected String taskName;

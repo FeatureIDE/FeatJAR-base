@@ -51,11 +51,10 @@ import java.util.stream.Collectors;
  * is expected to depend on other computation's results.
  * Implementors should pass mandatory parameters in the constructor and optional parameters using dedicated setters.
  * Dedicated setters should return the computation itself to allow for fluent configuration.
- * TODO: a validation scheme (e.g., against a simple feature model) and serialization scheme
+ * TODO: A validation scheme (e.g., against a simple feature model) and serialization scheme
  *  (e.g., to sensibly compare and cache computations based on their parameters and hash code) are missing for now.
- *  javadoc is also missing.
- *  monitor and store should be injected once (see notes in {@link Monitor}), and then not worried about any further.
- *  hash code computation is completely missing, so caching does not work well at all right now.
+ * TODO: Monitor and store should be injected once (see notes in {@link Monitor}), and then not worried about any further.
+ * TODO: A hash code computation is completely missing, so caching does not work well at all right now.
  *
  * @param <T> the type of the computation result
  * @author Sebastian Krieter
@@ -90,20 +89,44 @@ public interface Computation<T> extends Supplier<FutureResult<T>>, Extension {
         return get().get();
     }
 
+    /**
+     * {@return a trivial computation that computes a given object}
+     *
+     * @param object the object
+     * @param monitor the monitor
+     * @param <T> the type of the object
+     */
     static <T> Computation<T> of(T object, Monitor monitor) {
         return () -> FutureResult.of(object, monitor);
     }
 
+    /**
+     * {@return a trivial computation that computes a given object}
+     *
+     * @param object the object
+     * @param <T> the type of the object
+     */
     static <T> Computation<T> of(T object) {
         return of(object, new CancelableMonitor());
     }
 
+    /**
+     * {@return a trivial computation that computes nothing}
+     *
+     * @param <T> the type of the object
+     */
     static <T> Computation<T> empty() {
         return of(null, new CancelableMonitor());
     }
 
+    /**
+     * {@return a computation that computes all of the given computations, summarizing their results in a list}
+     *
+     * @param computations the computations
+     */
     static Computation<List<?>> allOf(Computation<?>... computations) {
-        // TODO: hashcode/caching of anonymous computation?
+        // TODO: what is the hashcode of an anonymous (lambda) computation like here?
+        // TODO: how to cache anonymous computations?
         return () -> {
             List<FutureResult<?>> futureResults =
                     Arrays.stream(computations).map(Computation::compute).collect(Collectors.toList());
@@ -119,53 +142,40 @@ public interface Computation<T> extends Supplier<FutureResult<T>>, Extension {
         };
     }
 
-    // TODO: anyOf?
-
-    default <U extends Computation<?>> U then(Function<Computation<T>, U> computationFunction) {
-        return computationFunction.apply(this);
+    /**
+     * {@return a computation that composes this computation with a given computation as specified by a given function}
+     *
+     * @param fn the function
+     */
+    default <U extends Computation<?>> U then(Function<Computation<T>, U> fn) {
+        return fn.apply(this);
     }
 
-    /*
-     TODO: keep this?
-      pro: also usable with non-final variables, does not require understanding of lambdas
-      con: args not type-checked
-    */
-    default <U> Computation<U> then(Class<? extends Computation<U>> computationClass, Object... args) {
-        List<Object> arguments = new ArrayList<>();
-        List<Class<?>> argumentClasses = new ArrayList<>();
-        arguments.add(this);
-        argumentClasses.add(Computation.class);
-        arguments.addAll(List.of(args));
-        argumentClasses.addAll(Arrays.stream(args).map(Object::getClass).collect(Collectors.toList()));
-        try {
-            Constructor<? extends Computation<U>> constructor = computationClass.getConstructor(argumentClasses.toArray(Class[]::new));
-            return constructor.newInstance(arguments.toArray(Object[]::new));
-        } catch (NoSuchMethodException | InvocationTargetException | InstantiationException | IllegalAccessException e) {
-            throw new RuntimeException(e);
-        }
+    /**
+     * {@return a computation that maps the result of this computation to another value}
+     *
+     * @param fn the function
+     */
+    default <U> Computation<U> map(Function<T, U> fn) {
+        // TODO: what is the hash code? probably Computation.this + the identity of computationFunction?
+        return () -> get().thenCompute((t, monitor) -> fn.apply(t));
     }
 
-    default <U> Computation<U> map(Function<T, U> computationFunction) {
-        // TODO: what is the hash code? probably Computation.this + the identity of computationFunction??
-        return () -> Computation.this.get().thenCompute((t, monitor) -> computationFunction.apply(t));
-    }
+    // future ideas
 
-    // TODO: hashcode depends on all inputs. is there a default hashcode implementation?
-    //  use in equals + hashcode. requires that c1.serialize() == c2.serialize ==> same computation result. could abstract away complex identities to improve caching.
-    // void serialize();
+    // TODO: the hashcode should depend on all inputs. can we create a default hashcode implementation?
+    //  serialisze should be used in equals + hashcode.
+    //  requires that c1.serialize() == c2.serialize yield the same computation result.
+    //  could abstract away complex identities to improve caching.
+    // ... serialize();
 
-    // TODO: validate whether a computation is sensible. maybe by encoding valid computations in a feature model.
+    // TODO: validate whether a computation is sensible.
+    //  maybe by encoding valid computations in a feature model, or some other way.
     // boolean validate();
 
-    // TODO: besides using feature modeling to "magically" complete computations, it may be nice to denote THE canonical best input for a computation.
+    // TODO: besides using feature modeling to "magically" complete computations (in a separate module),
+    //  it may be nice to denote THE canonical best input for a computation.
     //  maybe this can also be done with alternative constructors or something?
-//    /**
-//     * {@return the preferred computation for the input of this computation}
-//     * Can be used to specify the recommended input for this computation.
-//     * @param <S> the type of the input of the preferred input computation
-//     */
-//    default <S> Optional<Computation<S, T>> getPreferredInputComputation() {
-//        return Optional.empty();
-//    }
-    // maybe this is also something to be implemented in its own module?
+    //  maybe this is also something to be implemented in its own module?
+//    <S> Optional<Computation<S, T>> getPreferredInputComputation();
 }

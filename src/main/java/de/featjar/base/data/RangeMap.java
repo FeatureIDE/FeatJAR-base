@@ -28,6 +28,8 @@ import java.util.stream.Stream;
 /**
  * Maps a collection of at most n objects to the range of natural numbers [1, n].
  * Typically maps n objects one-to-one onto the range [1, n], but can contain definition gaps if needed.
+ * TODO: currently, the edge case of an empty range is not handled gracefully (with optionals everywhere).
+ *  maybe this can be solved in a better way.
  *
  * @author Sebastian Krieter
  * @author Elias Kuiter

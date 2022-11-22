@@ -20,6 +20,7 @@
  */
 package de.featjar.base.io.format;
 
+import de.featjar.base.data.Problem;
 import de.featjar.base.data.Result;
 import de.featjar.base.extension.Extension;
 import de.featjar.base.io.InputHeader;
@@ -29,6 +30,7 @@ import de.featjar.base.io.OutputMapper;
 
 import java.io.IOException;
 import java.util.function.Supplier;
+import java.util.stream.Collectors;
 
 /**
  * Parses and serializes objects.
@@ -48,7 +50,7 @@ public interface Format<T> extends Extension {
      * @return the parsed result
      */
     default Result<T> parse(InputMapper inputMapper) {
-        throw new UnsupportedOperationException(); // todo no exceptions should be thrown
+        return Result.empty();
     }
 
     /**
@@ -67,8 +69,8 @@ public interface Format<T> extends Extension {
      *
      * @param object the object
      */
-    default String serialize(T object) {
-        throw new UnsupportedOperationException();
+    default Result<String> serialize(T object) {
+        return Result.empty();
     }
 
     /**
@@ -78,7 +80,11 @@ public interface Format<T> extends Extension {
      * @param outputMapper  the output mapper
      */
     default void write(T object, OutputMapper outputMapper) throws IOException {
-        outputMapper.get().write(serialize(object));
+        String string = serialize(object)
+                // todo: improve exception handling - this should maybe be a Result instead?
+                .orElseThrow(p -> new IOException(p.stream()
+                        .map(Problem::toString).collect(Collectors.joining())));
+        outputMapper.get().write(string);
     }
 
     /**

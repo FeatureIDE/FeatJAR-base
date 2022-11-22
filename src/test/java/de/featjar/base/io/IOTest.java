@@ -68,8 +68,8 @@ public class IOTest {
         }
 
         @Override
-        public String serialize(Integer object) {
-            return object.toString();
+        public Result<String> serialize(Integer object) {
+            return Result.of(object.toString());
         }
     }
 
@@ -116,15 +116,15 @@ public class IOTest {
         }
 
         @Override
-        public String serialize(LabeledTree<Integer> object) {
-            return object.getLabel().toString();
+        public Result<String> serialize(LabeledTree<Integer> object) {
+            return Result.of(object.getLabel().toString());
         }
 
         @Override
         public void write(LabeledTree<Integer> object, OutputMapper outputMapper) throws IOException {
             outputMapper
                     .get()
-                    .write(serialize(object) + "\n"
+                    .write(serialize(object).get() + "\n"
                             + object.getChildren().stream()
                                     .map(Object::hashCode)
                                     .map(Objects::toString)
@@ -313,6 +313,6 @@ public class IOTest {
         }
     }
 
-    // todo: absolute paths
+    // TODO: absolute paths
 
 }

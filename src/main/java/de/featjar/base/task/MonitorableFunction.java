@@ -33,7 +33,9 @@ import java.util.function.BiFunction;
  * @param <R> the supplied object's type
  * @author Sebastian Krieter
  * @author Elias Kuiter
+ * @deprecated this should be merged with the new computation concept
  */
+@Deprecated
 @FunctionalInterface
 public interface MonitorableFunction<T, R> extends BiFunction<T, Monitor, Result<R>> {
     /**
@@ -80,7 +82,7 @@ public interface MonitorableFunction<T, R> extends BiFunction<T, Monitor, Result
      * @param <S> the type of the returned monitorable function's result
      */
     default <S> MonitorableFunction<T, Result<S>> andThen(MonitorableFunction<R, S> monitorableFunction) {
-        // todo: either create child monitor on parent monitor or implement compose with ... variadic number of monitorable functions
+        // TODO: either create child monitor on parent monitor or implement compose with ... variadic number of monitorable functions
         return (t, monitor) ->
                 this.apply(t, monitor.newChildMonitor())
                 .map(r -> monitorableFunction.apply(r, monitor));

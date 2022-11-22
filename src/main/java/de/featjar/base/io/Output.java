@@ -84,7 +84,8 @@ public abstract class Output implements IOObject {
 
         @SuppressWarnings("ResultOfMethodCallIgnored")
         private static OutputStream newOutputStream(Path path) throws IOException {
-            // todo: consider APPEND, and omitting CREATE (do not allow new files)
+            // TODO: currently, we always allow creating new files. this could be weakened with a flag, if necessary.
+            // TODO: also, we always truncate files. we could consider allowing appending to files as well.
             if (path.getParent() != null)
                 path.getParent().toFile().mkdirs();
             return Files.newOutputStream(
