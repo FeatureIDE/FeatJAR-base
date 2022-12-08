@@ -43,7 +43,7 @@ public interface InternalMonitor extends Monitor {
      *
      * @param work Absolute amount (must be positive).
      */
-    void setTotalWork(int work);
+    void setTotalWork(long work);
 
     /**
      * Increases the monitor's progress, invokes the intermediate function (with
@@ -57,11 +57,11 @@ public interface InternalMonitor extends Monitor {
      *
      * @param work the amount of work done
      */
-    void step(int work) throws MethodCancelException;
+    void step(long work) throws MethodCancelException;
 
     void uncertainStep() throws MethodCancelException;
 
-    void uncertainStep(int work) throws MethodCancelException;
+    void uncertainStep(long work) throws MethodCancelException;
 
     InternalMonitor subTask(int size);
 

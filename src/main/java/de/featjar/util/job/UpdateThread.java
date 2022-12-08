@@ -33,7 +33,7 @@ public class UpdateThread extends Thread {
     private long updateTime;
 
     public UpdateThread(UpdateFunction function) {
-        this(function, 1_000);
+        this(function, 5_000);
     }
 
     /**

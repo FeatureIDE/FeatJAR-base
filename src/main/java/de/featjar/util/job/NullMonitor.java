@@ -60,17 +60,17 @@ public final class NullMonitor implements InternalMonitor {
     }
 
     @Override
-    public int getRemainingWork() {
+    public long getRemainingWork() {
         return 0;
     }
 
     @Override
-    public int getTotalWork() {
+    public long getTotalWork() {
         return 0;
     }
 
     @Override
-    public int getWorkDone() {
+    public long getWorkDone() {
         return 0;
     }
 
@@ -90,19 +90,19 @@ public final class NullMonitor implements InternalMonitor {
     }
 
     @Override
-    public void setTotalWork(int work) {}
+    public void setTotalWork(long work) {}
 
     @Override
     public void step() throws MethodCancelException {}
 
     @Override
-    public void step(int work) throws MethodCancelException {}
+    public void step(long work) throws MethodCancelException {}
 
     @Override
     public void uncertainStep() throws MethodCancelException {}
 
     @Override
-    public void uncertainStep(int work) throws MethodCancelException {}
+    public void uncertainStep(long work) throws MethodCancelException {}
 
     @Override
     public void setTaskName(String name) {}

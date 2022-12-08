@@ -29,11 +29,11 @@ package de.featjar.util.job;
  */
 public interface Monitor {
 
-    int getTotalWork();
+    long getTotalWork();
 
-    int getRemainingWork();
+    long getRemainingWork();
 
-    int getWorkDone();
+    long getWorkDone();
 
     double getRelativeWorkDone();
 

@@ -38,8 +38,8 @@ public class DefaultMonitor implements InternalMonitor {
     protected String taskName;
 
     protected boolean canceled, done;
-    protected int currentWork;
-    protected int totalWork;
+    protected long currentWork;
+    protected long totalWork;
 
     public DefaultMonitor() {
         parent = null;
@@ -53,12 +53,12 @@ public class DefaultMonitor implements InternalMonitor {
         this.parentWork = parentWork;
     }
 
-    protected void uncertainWorked(int work) {
+    protected void uncertainWorked(long work) {
         currentWork += work;
         totalWork += work;
     }
 
-    protected void worked(int work) {
+    protected void worked(long work) {
         currentWork += work;
     }
 
@@ -69,7 +69,7 @@ public class DefaultMonitor implements InternalMonitor {
     }
 
     @Override
-    public final void uncertainStep(int work) throws MethodCancelException {
+    public final void uncertainStep(long work) throws MethodCancelException {
         uncertainWorked(work);
         checkCancel();
     }
@@ -81,13 +81,13 @@ public class DefaultMonitor implements InternalMonitor {
     }
 
     @Override
-    public final void step(int work) throws MethodCancelException {
+    public final void step(long work) throws MethodCancelException {
         worked(work);
         checkCancel();
     }
 
     @Override
-    public final void setTotalWork(int work) {
+    public final void setTotalWork(long work) {
         totalWork = work;
         checkCancel();
     }
@@ -124,18 +124,18 @@ public class DefaultMonitor implements InternalMonitor {
     }
 
     @Override
-    public int getTotalWork() {
+    public long getTotalWork() {
         return totalWork;
     }
 
     @Override
-    public int getRemainingWork() {
+    public long getRemainingWork() {
         return totalWork - getWorkDone();
     }
 
     @Override
-    public int getWorkDone() {
-        int workDone = currentWork;
+    public long getWorkDone() {
+        long workDone = currentWork;
         for (final DefaultMonitor child : children) {
             workDone += child.getRelativeWorkDone() * child.parentWork;
         }
