@@ -37,6 +37,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Locale;
 import java.util.Objects;
+import java.util.function.Consumer;
 
 /**
  * Writer for CSV files.
@@ -76,6 +77,7 @@ public class CSVWriter {
 
     private Path outputDirectoryPath = Paths.get("");
     private Path outputFilePath;
+    private Consumer<CSVWriter> lineWriter;
 
     private boolean append = false;
 
@@ -107,6 +109,10 @@ public class CSVWriter {
         outputFilePath = outputFile;
         newFile = true;
         reset();
+    }
+
+    public void setLineWriter(Consumer<CSVWriter> lineWriter) {
+        this.lineWriter = lineWriter;
     }
 
     public String getSeparator() {
@@ -167,6 +173,17 @@ public class CSVWriter {
 
     public void addValue(BigDecimal value) {
         addValue(value.doubleValue());
+    }
+
+    public final void writeLine() {
+        createNewLine();
+        try {
+            lineWriter.accept(this);
+        } catch (final Exception e) {
+            removeLastLine();
+            throw e;
+        }
+        flush();
     }
 
     public void flush() {
