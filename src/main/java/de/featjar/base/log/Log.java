@@ -263,10 +263,9 @@ public class Log implements Initializer {
      * @param problems the problems
      */
     public void problems(List<Problem> problems) {
-        problems.stream()
-                .map(Problem::getException)
-                .flatMap(Optional::stream)
-                .forEach(this::error);
+        for (Problem problem : problems) {
+            error(problem.toString());
+        }
     }
 
     /**

@@ -84,18 +84,18 @@ class ComputationTest {
 
     @Test
     void allOfSimple() {
-        List<?> r = Computation.allOf(Computation.of(1), Computation.of(2)).getResult().get();
-        assertEquals(1, r.get(0));
-        assertEquals(2, r.get(1));
+        Pair<Integer, Integer> r = Computation.allOf(Computation.of(1), Computation.of(2)).getResult().get();
+        assertEquals(1, r.getKey());
+        assertEquals(2, r.getValue());
     }
 
     @Test
     void allOfComplex() {
         Computation<Integer> c1 = Computation.of(42);
         Computation<Boolean> c2 = c1.then(IsEvenComputation::new);
-        List<?> r = Computation.allOf(c1, c2).getResult().get();
-        assertEquals(42, r.get(0));
-        assertEquals(true, r.get(1));
+        Pair<Integer, Boolean> r = Computation.allOf(c1, c2).getResult().get();
+        assertEquals(42, r.getKey());
+        assertEquals(true, r.getValue());
     }
 
     @Test
@@ -109,8 +109,8 @@ class ComputationTest {
             return 42;
         }));
         Computation<Boolean> c2 = c1.then(IsEvenComputation::new);
-        List<?> r = Computation.allOf(c1, c2).getResult().get();
-        assertEquals(42, r.get(0));
-        assertEquals(true, r.get(1));
+        Pair<Integer, Boolean> r = Computation.allOf(c1, c2).getResult().get();
+        assertEquals(42, r.getKey());
+        assertEquals(true, r.getValue());
     }
 }

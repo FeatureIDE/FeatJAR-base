@@ -20,6 +20,7 @@
  */
 package de.featjar.base.data;
 
+import de.featjar.base.Feat;
 import de.featjar.base.data.Problem.Severity;
 
 import java.util.ArrayList;
@@ -86,8 +87,7 @@ public class Result<T> {
      * @param <T> the type of the result's object
      */
     public static <T> Result<T> ofOptional(@SuppressWarnings("OptionalUsedAsFieldOrParameterType") Optional<T> optional) {
-        //noinspection OptionalGetWithoutIsPresent
-        return new Result<>(optional.get(), null);
+        return new Result<>(optional.orElse(null), null);
     }
 
     /**
@@ -170,6 +170,14 @@ public class Result<T> {
      */
     public T get() {
         return object;
+    }
+
+    /**
+     * {@return this result's object, logging all problems}
+     */
+    public T getAndLogProblems() {
+        Feat.log().problems(problems);
+        return get();
     }
 
     /**

@@ -25,14 +25,12 @@ import de.featjar.base.extension.Extension;
 import de.featjar.base.task.CancelableMonitor;
 import de.featjar.base.task.Monitor;
 
-import java.lang.reflect.Constructor;
-import java.lang.reflect.InvocationTargetException;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.BiFunction;
+import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
@@ -92,9 +90,9 @@ public interface Computation<T> extends Supplier<FutureResult<T>>, Extension {
     /**
      * {@return a trivial computation that computes a given object}
      *
-     * @param object the object
+     * @param object  the object
      * @param monitor the monitor
-     * @param <T> the type of the object
+     * @param <T>     the type of the object
      */
     static <T> Computation<T> of(T object, Monitor monitor) {
         return () -> FutureResult.of(object, monitor);
@@ -104,7 +102,7 @@ public interface Computation<T> extends Supplier<FutureResult<T>>, Extension {
      * {@return a trivial computation that computes a given object}
      *
      * @param object the object
-     * @param <T> the type of the object
+     * @param <T>    the type of the object
      */
     static <T> Computation<T> of(T object) {
         return of(object, new CancelableMonitor());
@@ -143,11 +141,24 @@ public interface Computation<T> extends Supplier<FutureResult<T>>, Extension {
     }
 
     /**
-     * {@return a computation that composes this computation with a given computation as specified by a given function}
+     * {@return a computation that computes both given computations, summarizing their results in a pair}
+     *
+     * @param computation1 the first computation
+     * @param computation2 the second computation
+     */
+    @SuppressWarnings("unchecked")
+    static <T, U> Computation<Pair<T, U>> allOf(Computation<T> computation1, Computation<U> computation2) {
+        Computation<?>[] computations = new Computation[]{computation1, computation2};
+        return allOf(computations).mapResult(list -> new Pair<>((T) list.get(0), (U) list.get(1)));
+    }
+
+    /**
+     * {@return the value returned by a given function applied to this computation}
+     * Typically, this returns a new computation composed with this computation.
      *
      * @param fn the function
      */
-    default <U extends Computation<?>> U then(Function<Computation<T>, U> fn) {
+    default <U> U then(Function<Computation<T>, U> fn) {
         return fn.apply(this);
     }
 
@@ -156,9 +167,21 @@ public interface Computation<T> extends Supplier<FutureResult<T>>, Extension {
      *
      * @param fn the function
      */
-    default <U> Computation<U> map(Function<T, U> fn) {
+    default <U> Computation<U> mapResult(Function<T, U> fn) {
         // TODO: what is the hash code? probably Computation.this + the identity of computationFunction?
         return () -> get().thenCompute((t, monitor) -> fn.apply(t));
+    }
+
+    /**
+     * {@return a computation that runs a given function on the result}
+     *
+     * @param fn the function
+     */
+    default Computation<T> peekResult(Consumer<T> fn) {
+        return mapResult(t -> {
+            fn.accept(t);
+            return t;
+        });
     }
 
     // future ideas
