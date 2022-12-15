@@ -23,11 +23,7 @@ package de.featjar.base.data;
 import de.featjar.base.Feat;
 import de.featjar.base.data.Problem.Severity;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Supplier;
@@ -389,6 +385,19 @@ public class Result<T> {
      */
     public static <U, V> Function<U, Optional<V>> wrapInOptional(Function<U, V> function) {
         return t -> Optional.ofNullable(function.apply(t));
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        Result<?> result = (Result<?>) o;
+        return Objects.equals(object, result.object) && Objects.equals(problems, result.problems);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(object, problems);
     }
 
     @Override

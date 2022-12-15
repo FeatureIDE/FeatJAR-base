@@ -70,14 +70,14 @@ public class ExtensionManager implements AutoCloseable {
             try {
                 final Class<ExtensionPoint<?>> extensionPointClass =
                         (Class<ExtensionPoint<?>>) systemClassLoader.loadClass(extensionPointId);
-                Feat.log().debug("installing extension point " + extensionPointClass);
+                Feat.log().debug("installing extension point " + extensionPointClass.getName());
                 final ExtensionPoint ep = extensionPointClass.getConstructor().newInstance();
                 extensionPoints.put(ep.getIdentifier(), ep);
                 for (final String extensionId : entry.getValue()) {
                     try {
                         final Class<Extension> extensionClass =
                                 (Class<Extension>) systemClassLoader.loadClass(extensionId);
-                        Feat.log().debug("installing extension " + extensionClass);
+                        Feat.log().debug("installing extension " + extensionClass.getName());
                         Extension e = extensionClass.getConstructor().newInstance();
                         ep.installExtension(e);
                         extensions.put(e.getIdentifier(), e);

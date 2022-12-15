@@ -165,14 +165,15 @@ public class Cache implements Initializer {
      * @param <T>         the type of the computation result
      */
     public <T> FutureResult<T> compute(Computation<T> computation) {
+        String computationClassName = computation.getClass().getName();
         if (has(computation)) {
-            Feat.log().debug("cache hit for " + computation);
+            Feat.log().debug("cache hit for " + computationClassName);
             return get(computation).get();
         }
-        Feat.log().debug("cache miss for " + computation);
+        Feat.log().debug("cache miss for " + computationClassName);
         FutureResult<T> futureResult = computation.compute();
         if (configuration.cachingPolicy.shouldCache(computation, new StackTrace())) {
-            Feat.log().debug("cache write for " + computation);
+            Feat.log().debug("cache write for " + computationClassName);
             put(computation, futureResult);
         }
         return futureResult;

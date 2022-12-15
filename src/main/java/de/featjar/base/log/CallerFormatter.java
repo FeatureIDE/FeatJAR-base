@@ -35,7 +35,9 @@ public class CallerFormatter implements Formatter {
         return String.format("[%s] ", new StackTrace()
                 .removeTop()
                 .removeClassNamePrefix(getClass().getPackageName()).getTop()
-                .map(stackTraceElement -> String.format("%s.%s", stackTraceElement.getClassName(), stackTraceElement.getMethodName()))
+                .map(stackTraceElement -> String.format("%s.%s",
+                        stackTraceElement.getClassName(),
+                        stackTraceElement.getMethodName()))
                 .orElse(""));
     }
 }

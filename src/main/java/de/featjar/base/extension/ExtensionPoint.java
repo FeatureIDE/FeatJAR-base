@@ -72,7 +72,7 @@ public abstract class ExtensionPoint<T extends Extension> {
      * @return whether this extension was installed before
      */
     public synchronized boolean uninstallExtension(T extension) {
-        Feat.log().debug("uninstalling extension " + extension.getClass());
+        Feat.log().debug("uninstalling extension " + extension.getClass().getName());
         if (indexMap.containsKey(extension.getIdentifier())) {
             indexMap.remove(extension.getIdentifier());
             extensions.remove(extension);
@@ -94,7 +94,7 @@ public abstract class ExtensionPoint<T extends Extension> {
      * Similar to {@link AutoCloseable#close()}, but called explicitly instead of implicitly in a try...with block.
      */
     public void close() {
-        Feat.log().debug("uninstalling extension point " + getClass());
+        Feat.log().debug("uninstalling extension point " + getClass().getName());
         uninstallExtensions();
     }
 
