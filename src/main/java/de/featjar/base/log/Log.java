@@ -38,6 +38,7 @@ import java.util.*;
 /**
  * Logs messages to standard output and files.
  * Formats log messages with {@link Formatter formatters}.
+ * TODO: add log methods accepting lambdas (Supplier of String) to avoid creating strings when log is disabled
  *
  * @author Sebastian Krieter
  * @author Elias Kuiter

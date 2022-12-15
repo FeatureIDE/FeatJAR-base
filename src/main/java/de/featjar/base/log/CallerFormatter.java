@@ -20,6 +20,8 @@
  */
 package de.featjar.base.log;
 
+import de.featjar.base.env.StackTrace;
+
 /**
  * Prepends a log message with the location of the logging code.
  * To this end, looks for the most recent element on the stack that does not belong
@@ -30,15 +32,10 @@ package de.featjar.base.log;
 public class CallerFormatter implements Formatter {
     @Override
     public String getPrefix() {
-        // todo: use same mechanism as Cache to avoid showing members of the "Log" class
-        StackTraceElement[] stackTrace = Thread.currentThread().getStackTrace();
-        // start at 1 to skip the entry for "getStackTrace"
-        for (int i = 1; i < stackTrace.length; i++) {
-            StackTraceElement stackTraceElement = stackTrace[i];
-            if (stackTraceElement.getClassName().startsWith(getClass().getPackageName()))
-                continue;
-            return "[" + stackTraceElement + "]\t";
-        }
-        return "";
+        return String.format("[%s] ", new StackTrace()
+                .removeTop()
+                .removeClassNamePrefix(getClass().getPackageName()).getTop()
+                .map(stackTraceElement -> String.format("%s.%s", stackTraceElement.getClassName(), stackTraceElement.getMethodName()))
+                .orElse(""));
     }
 }

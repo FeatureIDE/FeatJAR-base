@@ -22,6 +22,7 @@ package de.featjar.base.data;
 
 import de.featjar.base.Feat;
 import de.featjar.base.extension.Initializer;
+import de.featjar.base.env.StackTrace;
 
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
@@ -54,29 +55,16 @@ public class Cache implements Initializer {
          * Nested computations are detected by checking if {@link Computation#compute()} is already on the stack.
          * Nesting inside anonymous computations (e.g., lambdas) is not detected and therefore cached.
          */
-        CachingPolicy CACHE_TOP_LEVEL = new CachingPolicy() {
-            private boolean isComputationComputeMethod(StackTraceElement stackTraceElement) {
-                try {
-                    return Computation.class.isAssignableFrom(Class.forName(stackTraceElement.getClassName())) &&
-                            stackTraceElement.getMethodName().equals("compute");
-                } catch (ClassNotFoundException e) {
-                    return false;
-                }
-            }
-
-            @Override
-            public boolean shouldCache(Computation<?> computation, StackTraceElement[] stackTrace) {
-                return Arrays.stream(stackTrace).noneMatch(this::isComputationComputeMethod);
-            }
-        };
+        CachingPolicy CACHE_TOP_LEVEL = (computation, stackTrace) ->
+                !stackTrace.containsMethodCall(Computation.class, "compute");
 
         /**
          * {@return whether the calling cache should store the given computation}
          *
          * @param computation the computation
-         * @param stackTrace the current stack trace
+         * @param stackTrace  the current stack trace
          */
-        boolean shouldCache(Computation<?> computation, StackTraceElement[] stackTrace);
+        boolean shouldCache(Computation<?> computation, StackTrace stackTrace);
     }
 
     /**
@@ -174,14 +162,19 @@ public class Cache implements Initializer {
      * The computed {@link FutureResult} is cached if the current {@link CachingPolicy} agrees.
      *
      * @param computation the computation
-     * @param <T> the type of the computation result
+     * @param <T>         the type of the computation result
      */
     public <T> FutureResult<T> compute(Computation<T> computation) {
-        if (has(computation))
+        if (has(computation)) {
+            Feat.log().debug("cache hit for " + computation);
             return get(computation).get();
+        }
+        Feat.log().debug("cache miss for " + computation);
         FutureResult<T> futureResult = computation.compute();
-        if (configuration.cachingPolicy.shouldCache(computation, Thread.currentThread().getStackTrace()))
+        if (configuration.cachingPolicy.shouldCache(computation, new StackTrace())) {
+            Feat.log().debug("cache write for " + computation);
             put(computation, futureResult);
+        }
         return futureResult;
     }
 
@@ -189,7 +182,7 @@ public class Cache implements Initializer {
      * {@return whether the given computation has been cached in this cache}
      *
      * @param computation the computation
-     * @param <T> the type of the computation result
+     * @param <T>         the type of the computation result
      */
     public <T> boolean has(Computation<T> computation) {
         return computationMap.containsKey(computation);
@@ -199,7 +192,7 @@ public class Cache implements Initializer {
      * {@return the cached result of a given computation, if any}
      *
      * @param computation the computation
-     * @param <T> the type of the computation result
+     * @param <T>         the type of the computation result
      */
     @SuppressWarnings("unchecked")
     public <T> Result<FutureResult<T>> get(Computation<T> computation) {
@@ -212,9 +205,9 @@ public class Cache implements Initializer {
      * Sets the cached result for a given computation, if not already cached.
      * Does nothing if the computation has already been cached.
      *
-     * @param computation the computation
+     * @param computation  the computation
      * @param futureResult the future result
-     * @param <T> the type of the computation result
+     * @param <T>          the type of the computation result
      * @return whether the operation affected this cache
      */
     public <T> boolean put(Computation<T> computation, FutureResult<T> futureResult) {
@@ -229,12 +222,13 @@ public class Cache implements Initializer {
      * Does nothing if the computation has not already been cached.
      *
      * @param computation the computation
-     * @param <T> the type of the computation result
+     * @param <T>         the type of the computation result
      * @return whether the operation affected this cache
      */
     public <T> boolean remove(Computation<T> computation) {
         if (!has(computation))
             return false;
+        Feat.log().debug("cache remove for " + computation);
         computationMap.remove(computation);
         return true;
     }
@@ -243,6 +237,7 @@ public class Cache implements Initializer {
      * Removes all cached computation results.
      */
     public void clear() {
+        Feat.log().debug("clearing cache");
         computationMap.clear();
     }
 

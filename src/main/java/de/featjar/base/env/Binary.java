@@ -18,7 +18,7 @@
  *
  * See <https://github.com/FeatureIDE/FeatJAR-util> for further information.
  */
-package de.featjar.base.bin;
+package de.featjar.base.env;
 
 import de.featjar.base.data.Problem;
 import de.featjar.base.data.Result;

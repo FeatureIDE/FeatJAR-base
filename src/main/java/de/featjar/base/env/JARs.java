@@ -18,7 +18,7 @@
  *
  * See <https://github.com/FeatureIDE/FeatJAR-util> for further information.
  */
-package de.featjar.base.bin;
+package de.featjar.base.env;
 
 import java.io.IOException;
 import java.io.InputStream;

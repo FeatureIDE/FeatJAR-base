@@ -49,7 +49,7 @@ public class TimeStampFormatter implements Formatter {
 
     @Override
     public String getPrefix() {
-        return "[" + formatter.format(getInstant()) + "]\t";
+        return "[" + formatter.format(getInstant()) + "] ";
     }
 
     Instant getInstant() {
