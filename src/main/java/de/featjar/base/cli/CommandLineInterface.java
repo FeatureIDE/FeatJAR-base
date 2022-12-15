@@ -21,10 +21,12 @@
 package de.featjar.base.cli;
 
 import de.featjar.base.Feat;
+import de.featjar.base.FeatJAR;
 import de.featjar.base.data.Result;
 import de.featjar.base.io.IO;
 import de.featjar.base.io.format.Format;
 import de.featjar.base.io.format.FormatSupplier;
+import de.featjar.base.log.Log;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -47,7 +49,7 @@ public class CommandLineInterface {
     /**
      * The default verbosity on startup, if not specified elsewhere.
      */
-    public static final String DEFAULT_MAXIMUM_VERBOSITY = "info";
+    public static final Log.Verbosity DEFAULT_MAXIMUM_VERBOSITY = Log.Verbosity.INFO;
 
     /**
      * A magic string that identifies the standard input stream.
@@ -76,7 +78,14 @@ public class CommandLineInterface {
      */
     public static void run(CLIArgumentParser argumentParser) {
         Feat.log().debug("running command-line interface");
-        argumentParser.getCommand().run(argumentParser);
+        if (CLIArgumentParser.HELP_OPTION.parseFrom(argumentParser) || argumentParser.getCommand().isEmpty()) {
+            System.out.println(argumentParser.getHelp());
+        }
+        else if (CLIArgumentParser.VERSION_OPTION.parseFrom(argumentParser)) {
+            System.out.println(FeatJAR.LIBRARY_NAME + ", unreleased version");
+        } else {
+            argumentParser.getCommand().get().run(argumentParser);
+        }
     }
 
     /**

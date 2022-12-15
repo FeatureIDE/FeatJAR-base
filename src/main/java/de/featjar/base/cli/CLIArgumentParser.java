@@ -1,6 +1,5 @@
 package de.featjar.base.cli;
 
-import de.featjar.base.Feat;
 import de.featjar.base.FeatJAR;
 import de.featjar.base.data.Result;
 import de.featjar.base.extension.Extension;
@@ -8,14 +7,12 @@ import de.featjar.base.extension.ExtensionPoint;
 import de.featjar.base.log.IndentStringBuilder;
 import de.featjar.base.log.Log;
 
-import java.util.Arrays;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * Parses a list of string arguments supplied on the command-line interface.
- * Parses the first argument as a command name and the remaining arguments as flags and options.
+ * Parses the first argument as a command name and the remaining arguments as options.
  * Parse errors are treated as unrecoverable:
  * Whenever an error occurs, it is printed alongside the correct usage and FeatJAR is exited.
  *
@@ -23,7 +20,23 @@ import java.util.Optional;
  */
 public class CLIArgumentParser extends ArgumentParser {
     public static final int COMMAND_NAME_POSITION = 0;
-    private final String commandName;
+    protected final String commandName;
+
+    public static final Option<Boolean> HELP_OPTION =
+            new Flag("--help")
+                    .setDescription("Print usage information");
+    public static final Option<Boolean> VERSION_OPTION =
+            new Flag("--version")
+                    .setDescription("Print version information");
+
+    public static final Option<Log.Verbosity> VERBOSITY_OPTION =
+            new Option<>("--verbosity", s -> Result.ofOptional(Log.Verbosity.of(s)))
+                    .setDescription("The logger verbosity, one of none, " + // todo: make none an explicit value
+                            Arrays.stream(Log.Verbosity.values())
+                                    .map(Objects::toString)
+                                    .map(String::toLowerCase)
+                                    .collect(Collectors.joining(", ")))
+                    .setDefaultValue(CommandLineInterface.DEFAULT_MAXIMUM_VERBOSITY);
 
     /**
      * Creates a new argument parser for the command-line interface.
@@ -32,34 +45,45 @@ public class CLIArgumentParser extends ArgumentParser {
      */
     public CLIArgumentParser(String[] args) {
         super(args);
-        commandName = parsePositionalArguments(COMMAND_NAME_POSITION).get(COMMAND_NAME_POSITION);
+        if (args.length > 0)
+            commandName = parsePositionalArguments(COMMAND_NAME_POSITION).get(COMMAND_NAME_POSITION);
+        else
+            commandName = null;
     }
 
     /**
      * {@return the command supplied in the given arguments}
      */
-    public Command getCommand() {
-        return getRequiredExtension(FeatJAR.extensionPoint(Commands.class), commandName);
+    public Optional<Command> getCommand() {
+        return commandName != null
+                ? Optional.of(getRequiredExtension(FeatJAR.extensionPoint(Commands.class), commandName))
+                : Optional.empty();
     }
 
     /**
      * {@return the verbosity supplied in the given arguments}
      */
-    @SuppressWarnings("OptionalGetWithoutIsPresent")
     public Log.Verbosity getVerbosity() {
-        return Log.Verbosity.of(parseOption("--verbosity").orElse(CommandLineInterface.DEFAULT_MAXIMUM_VERBOSITY)).get();
+        return VERBOSITY_OPTION.parseFrom(this);
     }
 
     /**
-     * Appends the command-line interface usage to a string.
+     * {@return the general options of the command-line interface}
+     */
+    public List<Option<?>> getOptions() {
+        return List.of(HELP_OPTION, VERSION_OPTION, VERBOSITY_OPTION);
+    }
+
+    /**
+     * Appends the command-line interface help to a string.
      *
      * @param sb the indent string builder
      */
-    public void appendUsage(IndentStringBuilder sb) {
+    public void appendHelp(IndentStringBuilder sb) {
         List<Command> commands = FeatJAR.extensionPoint(Commands.class).getExtensions();
-        sb.appendLine("Usage: java -jar feat.jar <command> [--<flag> | --<option> <value>]...").appendLine();
+        sb.appendLine("Usage: java -jar " + FeatJAR.LIBRARY_NAME + " <command> [--<flag> | --<option> <value>]...").appendLine();
         if (commands.size() == 0) {
-            sb.append("No commands are available. You can register commands in an extensions.xml file when building feat.jar.\n");
+            sb.append("No commands are available. You can register commands in an extensions.xml file when building " + FeatJAR.LIBRARY_NAME + ".\n");
         }
         sb.append("The following commands are available:\n").addIndent();
         for (final Command command : commands) {
@@ -67,29 +91,27 @@ public class CLIArgumentParser extends ArgumentParser {
         }
         sb.removeIndent();
         sb.appendLine();
-        sb.appendLine("General flags and options:").addIndent();
-        sb.appendLine("--verbosity <level>: The logger verbosity. One of:").addIndent();
-        Arrays.stream(Log.Verbosity.values()).forEach(verbosity -> sb.appendLine(verbosity.toString().toLowerCase()));
-        sb.removeIndent();
+        sb.appendLine("General options:").addIndent();
+        sb.appendLine(getOptions());
         sb.removeIndent();
         if (commandName != null) {
             Result<Command> commandResult = getExtension(FeatJAR.extensionPoint(Commands.class), commandName);
-            if (commandResult.isPresent() && commandResult.get().getUsage() != null) {
+            if (commandResult.isPresent() && !commandResult.get().getOptions().isEmpty()) {
                 sb.appendLine();
-                sb.appendLine(String.format("Command %s has following flags and options:", commandResult.get().getIdentifier()));
+                sb.appendLine(String.format("Options of command %s:", commandResult.get().getIdentifier()));
                 sb.addIndent();
-                commandResult.get().appendUsage(sb);
+                sb.appendLine(commandResult.get().getOptions());
                 sb.removeIndent();
             }
         }
     }
 
     /**
-     * {@return the command-line interface usage}
+     * {@return the command-line interface help}
      */
-    public String getUsage() {
+    public String getHelp() {
         IndentStringBuilder sb = new IndentStringBuilder();
-        appendUsage(sb);
+        appendHelp(sb);
         return sb.toString();
     }
 
@@ -101,7 +123,7 @@ public class CLIArgumentParser extends ArgumentParser {
     protected void handleException(ArgumentParseException argumentParseException) {
         System.err.println("Invalid usage: " + argumentParseException.getMessage());
         System.err.println();
-        System.err.println(getUsage());
+        System.err.println(getHelp());
         System.exit(1);
     }
 
@@ -109,8 +131,8 @@ public class CLIArgumentParser extends ArgumentParser {
      * {@return the extension at the given extension point identified by the given identifier, if any}
      *
      * @param extensionPoint the extension point
-     * @param identifier the identifier
-     * @param <T> the type of the extension
+     * @param identifier     the identifier
+     * @param <T>            the type of the extension
      */
     public <T extends Extension> Result<T> getExtension(ExtensionPoint<T> extensionPoint, String identifier) {
         return extensionPoint.getExtension(identifier);
@@ -121,8 +143,8 @@ public class CLIArgumentParser extends ArgumentParser {
      * If the extension cannot be found, prints an error and exits.
      *
      * @param extensionPoint the extension point
-     * @param identifier the identifier
-     * @param <T> the type of the extension
+     * @param identifier     the identifier
+     * @param <T>            the type of the extension
      */
     public <T extends Extension> T getRequiredExtension(ExtensionPoint<T> extensionPoint, String identifier) {
         Result<T> extensionResult = getExtension(extensionPoint, identifier);

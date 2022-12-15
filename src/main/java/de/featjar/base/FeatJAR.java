@@ -32,6 +32,7 @@ import java.util.function.Function;
  * @author Elias Kuiter
  */
 public class FeatJAR extends IO implements AutoCloseable {
+    public static final String LIBRARY_NAME = "feat.jar";
 
     /**
      * Configures FeatJAR.

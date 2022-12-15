@@ -23,6 +23,9 @@ package de.featjar.base.cli;
 import de.featjar.base.extension.Extension;
 import de.featjar.base.log.IndentStringBuilder;
 
+import java.util.ArrayList;
+import java.util.List;
+
 /**
  * A command run within a {@link CommandLineInterface}.
  *
@@ -38,23 +41,10 @@ public interface Command extends Extension {
     }
 
     /**
-     * Appends this command's usage to a string.
-     *
-     * @param sb the indent string builder
-     * @return whether this command has any usage to append
+     * {@return this command's options}
      */
-    default boolean appendUsage(IndentStringBuilder sb) {
-        return false;
-    }
-
-    /**
-     * {@return this command's usage, if any}
-     */
-    default String getUsage() {
-        IndentStringBuilder sb = new IndentStringBuilder();
-        if (!appendUsage(sb))
-            return null;
-        return sb.toString();
+    default List<ArgumentParser.Option<?>> getOptions() {
+        return new ArrayList<>();
     }
 
     /**

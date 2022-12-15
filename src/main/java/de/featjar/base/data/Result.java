@@ -383,6 +383,15 @@ public class Result<T> {
      *
      * @param function the function
      */
+    public static <U, V> Function<U, Result<V>> wrapInResult(Function<U, V> function) {
+        return t -> Result.of(function.apply(t));
+    }
+
+    /**
+     * {@return a wrapped function that converts its results into {@link Optional}}
+     *
+     * @param function the function
+     */
     public static <U, V> Function<U, Optional<V>> wrapInOptional(Function<U, V> function) {
         return t -> Optional.ofNullable(function.apply(t));
     }

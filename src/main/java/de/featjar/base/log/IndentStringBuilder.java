@@ -1,5 +1,7 @@
 package de.featjar.base.log;
 
+import java.util.Collection;
+
 /**
  * Builds multiline strings that are indented.
  *
@@ -36,6 +38,11 @@ public class IndentStringBuilder {
 
     public IndentStringBuilder append(String string) {
         stringBuilder.append(indentFormatter.getPrefix()).append(string);
+        return this;
+    }
+
+    public IndentStringBuilder appendLine(Collection<?> collection) {
+        collection.stream().map(Object::toString).forEach(this::appendLine);
         return this;
     }
 

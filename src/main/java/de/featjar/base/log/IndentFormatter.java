@@ -64,11 +64,15 @@ public class IndentFormatter implements Formatter {
         return String.valueOf(symbol).repeat(Math.max(0, level));
     }
 
+    public static String formatList(Collection<?> collection) {
+        return collection.stream()
+                .map(o -> "\t" + o + "\n")
+                .collect(Collectors.joining());
+    }
+
     public static String formatList(String prefix, Collection<?> collection) {
         return String.format("%s[\n%s]",
                 prefix,
-                collection.stream()
-                        .map(o -> "\t" + Objects.toString(o) + "\n")
-                        .collect(Collectors.joining()));
+                formatList(collection));
     }
 }
