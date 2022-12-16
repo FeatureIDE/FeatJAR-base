@@ -3,7 +3,6 @@ package de.featjar.base.data;
 import de.featjar.base.Feat;
 import org.junit.jupiter.api.Test;
 
-import java.util.List;
 import java.util.concurrent.CompletableFuture;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -53,8 +52,8 @@ class ComputationTest {
         Computation<Integer> computation = Computation.of(42);
         Computation<Boolean> isEvenComputation = () -> computation.get().thenCompute((integer, monitor) -> integer % 2 == 0);
         assertTrue(isEvenComputation.getResult().get());
-        assertTrue(computation.then(IsEvenComputation::new).getResult().get());
-        assertTrue(computation.then(IsEvenComputation::new).getResult().get());
+        assertTrue(computation.map(IsEvenComputation::new).getResult().get());
+        assertTrue(computation.map(IsEvenComputation::new).getResult().get());
     }
 
     static class IsParityComputation implements Computation<Boolean> {
@@ -79,7 +78,7 @@ class ComputationTest {
         Computation<Integer> computation = Computation.of(42);
         assertTrue(new IsParityComputation(computation, IsParityComputation.Parity.EVEN).getResult().get());
         assertFalse(new IsParityComputation(computation, IsParityComputation.Parity.ODD).getResult().get());
-        assertTrue(computation.then(c -> new IsParityComputation(c, IsParityComputation.Parity.EVEN)).getResult().get());
+        assertTrue(computation.map(c -> new IsParityComputation(c, IsParityComputation.Parity.EVEN)).getResult().get());
     }
 
     @Test
@@ -92,7 +91,7 @@ class ComputationTest {
     @Test
     void allOfComplex() {
         Computation<Integer> c1 = Computation.of(42);
-        Computation<Boolean> c2 = c1.then(IsEvenComputation::new);
+        Computation<Boolean> c2 = c1.map(IsEvenComputation::new);
         Pair<Integer, Boolean> r = Computation.allOf(c1, c2).getResult().get();
         assertEquals(42, r.getKey());
         assertEquals(true, r.getValue());
@@ -108,7 +107,7 @@ class ComputationTest {
             }
             return 42;
         }));
-        Computation<Boolean> c2 = c1.then(IsEvenComputation::new);
+        Computation<Boolean> c2 = c1.map(IsEvenComputation::new);
         Pair<Integer, Boolean> r = Computation.allOf(c1, c2).getResult().get();
         assertEquals(42, r.getKey());
         assertEquals(true, r.getValue());

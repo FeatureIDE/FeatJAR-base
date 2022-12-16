@@ -23,10 +23,10 @@ public class CLIArgumentParser extends ArgumentParser {
     protected final String commandName;
 
     public static final Option<Boolean> HELP_OPTION =
-            new Flag("--help")
+            new Option.Flag("--help")
                     .setDescription("Print usage information");
     public static final Option<Boolean> VERSION_OPTION =
-            new Flag("--version")
+            new Option.Flag("--version")
                     .setDescription("Print version information");
 
     public static final Option<Log.Verbosity> VERBOSITY_OPTION =

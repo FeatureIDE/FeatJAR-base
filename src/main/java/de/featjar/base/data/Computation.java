@@ -147,9 +147,9 @@ public interface Computation<T> extends Supplier<FutureResult<T>>, Extension {
      * @param computation2 the second computation
      */
     @SuppressWarnings("unchecked")
-    static <T, U> Computation<Pair<T, U>> allOf(Computation<T> computation1, Computation<U> computation2) {
+    static <T, U> Computation<de.featjar.base.data.Pair<T, U>> allOf(Computation<T> computation1, Computation<U> computation2) {
         Computation<?>[] computations = new Computation[]{computation1, computation2};
-        return allOf(computations).mapResult(list -> new Pair<>((T) list.get(0), (U) list.get(1)));
+        return allOf(computations).mapResult(list -> new de.featjar.base.data.Pair<>((T) list.get(0), (U) list.get(1)));
     }
 
     /**
@@ -158,7 +158,7 @@ public interface Computation<T> extends Supplier<FutureResult<T>>, Extension {
      *
      * @param fn the function
      */
-    default <U> U then(Function<Computation<T>, U> fn) {
+    default <U> U map(Function<Computation<T>, U> fn) {
         return fn.apply(this);
     }
 
@@ -184,10 +184,25 @@ public interface Computation<T> extends Supplier<FutureResult<T>>, Extension {
         });
     }
 
+    interface Pair<T, U> extends Computation<de.featjar.base.data.Pair<T, U>> {
+        default Computation<T> getFirst() {
+            return () -> compute().thenCompute((pair, monitor) -> pair.getKey());
+        }
+
+        default Computation<U> getSecond() {
+            return () -> compute().thenCompute((pair, monitor) -> pair.getValue());
+        }
+
+        default <V, W> Computation<de.featjar.base.data.Pair<V, W>> mapResultPair(Function<T, V> firstFn, Function<U, W> secondFn) {
+            return () -> compute().thenCompute(((pair, monitor) ->
+                    new de.featjar.base.data.Pair<>(firstFn.apply(pair.getKey()), secondFn.apply(pair.getValue()))));
+        }
+    }
+
     // future ideas
 
     // TODO: the hashcode should depend on all inputs. can we create a default hashcode implementation?
-    //  serialisze should be used in equals + hashcode.
+    //  serialize should be used in equals + hashcode.
     //  requires that c1.serialize() == c2.serialize yield the same computation result.
     //  could abstract away complex identities to improve caching.
     // ... serialize();

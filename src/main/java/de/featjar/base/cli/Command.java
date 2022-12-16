@@ -21,7 +21,6 @@
 package de.featjar.base.cli;
 
 import de.featjar.base.extension.Extension;
-import de.featjar.base.log.IndentStringBuilder;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -43,7 +42,7 @@ public interface Command extends Extension {
     /**
      * {@return this command's options}
      */
-    default List<ArgumentParser.Option<?>> getOptions() {
+    default List<Option<?>> getOptions() {
         return new ArrayList<>();
     }
 
