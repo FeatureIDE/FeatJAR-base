@@ -157,7 +157,7 @@ public class CLIArgumentParser extends ArgumentParser {
     }
 
     @Override
-    public Map<Integer, String> parsePositionalArguments(List<Integer> positions) {
+    public LinkedHashMap<Integer, String> parsePositionalArguments(List<Integer> positions) {
         try {
             return super.parsePositionalArguments(positions);
         } catch (ArgumentParseException e) {
@@ -167,7 +167,7 @@ public class CLIArgumentParser extends ArgumentParser {
     }
 
     @Override
-    public Map<Integer, String> parsePositionalArguments(Integer... positions) {
+    public LinkedHashMap<Integer, String> parsePositionalArguments(Integer... positions) {
         try {
             return super.parsePositionalArguments(positions);
         } catch (ArgumentParseException e) {

@@ -31,8 +31,8 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.LinkedHashSet;
 import java.util.List;
-import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Stream;
 
@@ -62,7 +62,7 @@ public abstract class Binary implements Extension {
      * {@return the names of all resources (i.e., executables and libraries) to be extracted for this binary}
      * All names are relative to the {@code src/main/resources/bin} directory.
      */
-    protected abstract Set<String> getResourceNames();
+    protected abstract LinkedHashSet<String> getResourceNames();
 
     /**
      * {@return the name of this binary's executable}
@@ -157,7 +157,7 @@ public abstract class Binary implements Extension {
      * Each resource is set to be executable.
      */
     @SuppressWarnings("ResultOfMethodCallIgnored")
-    protected void extractResources(Set<String> resourceNames) throws IOException {
+    protected void extractResources(LinkedHashSet<String> resourceNames) throws IOException {
         BINARY_DIRECTORY.toFile().mkdirs();
         for (String resourceName : resourceNames) {
             Path outputPath = BINARY_DIRECTORY.resolve(resourceName);

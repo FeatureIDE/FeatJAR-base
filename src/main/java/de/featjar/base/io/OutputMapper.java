@@ -20,15 +20,14 @@
  */
 package de.featjar.base.io;
 
+import de.featjar.base.data.Maps;
+
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.nio.charset.Charset;
 import java.nio.file.Path;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 import java.util.jar.Attributes;
 import java.util.jar.JarOutputStream;
 import java.util.jar.Manifest;
@@ -47,7 +46,7 @@ public abstract class OutputMapper extends IOMapper<Output> {
         super(mainPath);
     }
 
-    protected OutputMapper(Map<Path, Output> ioMap, Path mainPath) {
+    protected OutputMapper(LinkedHashMap<Path, Output> ioMap, Path mainPath) {
         super(ioMap, mainPath);
     }
 
@@ -57,7 +56,7 @@ public abstract class OutputMapper extends IOMapper<Output> {
      * Maps virtual paths to stream outputs.
      */
     public static class Stream extends OutputMapper {
-        protected Stream(Map<Path, Output> ioMap, Path mainPath) {
+        protected Stream(LinkedHashMap<Path, Output> ioMap, Path mainPath) {
             super(ioMap, mainPath);
         }
 
@@ -68,7 +67,7 @@ public abstract class OutputMapper extends IOMapper<Output> {
          * @param charset the charset
          */
         public Stream(OutputStream outputStream, Charset charset) {
-            super(Map.of(DEFAULT_MAIN_PATH, new Output.Stream(outputStream, charset)), DEFAULT_MAIN_PATH);
+            super(Maps.of(DEFAULT_MAIN_PATH, new Output.Stream(outputStream, charset)), DEFAULT_MAIN_PATH);
         }
 
         @Override
@@ -130,7 +129,7 @@ public abstract class OutputMapper extends IOMapper<Output> {
          * @param charset the charset
          */
         public String(Charset charset) {
-            super(Map.of(DEFAULT_MAIN_PATH, new Output.String(charset)), DEFAULT_MAIN_PATH);
+            super(Maps.of(DEFAULT_MAIN_PATH, new Output.String(charset)), DEFAULT_MAIN_PATH);
             this.charset = charset;
         }
 
@@ -142,10 +141,9 @@ public abstract class OutputMapper extends IOMapper<Output> {
         /**
          * {@return the collection of strings}
          */
-        public Map<Path, java.lang.String> getOutputStrings() {
-            return ioMap.entrySet().stream().collect(Collectors.toMap(Map.Entry::getKey, e -> e.getValue()
-                    .getOutputStream()
-                    .toString()));
+        public LinkedHashMap<Path, java.lang.String> getOutputStrings() {
+            return ioMap.entrySet().stream().collect(
+                    Maps.toMap(Map.Entry::getKey, e -> e.getValue().getOutputStream().toString()));
         }
     }
 

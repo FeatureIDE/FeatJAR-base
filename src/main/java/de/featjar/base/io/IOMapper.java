@@ -25,12 +25,7 @@ import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Optional;
+import java.util.*;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -67,7 +62,7 @@ public abstract class IOMapper<T extends IOObject> implements AutoCloseable, Sup
     }
 
     protected static final Path DEFAULT_MAIN_PATH = Paths.get("__main__");
-    protected final Map<Path, T> ioMap = new HashMap<>();
+    protected final LinkedHashMap<Path, T> ioMap = new LinkedHashMap<>();
     protected Path mainPath;
 
     protected IOMapper(Path mainPath) {
@@ -75,7 +70,7 @@ public abstract class IOMapper<T extends IOObject> implements AutoCloseable, Sup
         this.mainPath = mainPath;
     }
 
-    protected IOMapper(Map<Path, T> ioMap, Path mainPath) {
+    protected IOMapper(LinkedHashMap<Path, T> ioMap, Path mainPath) {
         this(mainPath);
         Objects.requireNonNull(ioMap);
         if (ioMap.get(mainPath) == null) throw new IllegalArgumentException("could not find main path " + mainPath);

@@ -20,7 +20,7 @@
  */
 package de.featjar.base.data;
 
-import java.util.Map;
+import java.util.LinkedHashMap;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.function.BiPredicate;
@@ -34,7 +34,7 @@ import java.util.function.Function;
  * @deprecated planned to be used for formula and feature-model analysis
  */
 @Deprecated
-public class Attribute implements Function<Map<Attribute, Object>, Optional<Object>> {
+public class Attribute implements Function<LinkedHashMap<Attribute, Object>, Optional<Object>> {
     public static final String DEFAULT_NAMESPACE = Attribute.class.getCanonicalName();
 
     protected final String namespace;
@@ -75,7 +75,7 @@ public class Attribute implements Function<Map<Attribute, Object>, Optional<Obje
     }
 
     @Override
-    public Optional<Object> apply(Map<Attribute, Object> attributeToValueMap) {
+    public Optional<Object> apply(LinkedHashMap<Attribute, Object> attributeToValueMap) {
         return Optional.ofNullable(attributeToValueMap.get(this));
     }
 
@@ -127,7 +127,7 @@ public class Attribute implements Function<Map<Attribute, Object>, Optional<Obje
             return defaultValueFunction.apply(attributable);
         }
 
-        public Object applyWithDefaultValue(Map<Attribute, Object> attributeToValueMap, Attributable attributable) {
+        public Object applyWithDefaultValue(LinkedHashMap<Attribute, Object> attributeToValueMap, Attributable attributable) {
             return attributeToValueMap.getOrDefault(this, defaultValueFunction.apply(attributable));
         }
     }

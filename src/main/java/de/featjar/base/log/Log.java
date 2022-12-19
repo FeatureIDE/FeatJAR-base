@@ -84,7 +84,7 @@ public class Log implements Initializer {
     public static class Configuration {
         // TODO: to make this more general, we could use an OutputMapper here to
         //  log to anything supported by an OutputMapper (even a ZIP file).
-        protected final HashMap<Verbosity, de.featjar.base.io.PrintStream> logStreams = new HashMap<>();
+        protected final LinkedHashMap<Verbosity, de.featjar.base.io.PrintStream> logStreams = new LinkedHashMap<>();
         protected final LinkedList<Formatter> formatters = new LinkedList<>();
 
         {

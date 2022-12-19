@@ -22,6 +22,7 @@ package de.featjar.base.tree.structure;
 
 import de.featjar.base.data.Range;
 import de.featjar.base.data.Result;
+import de.featjar.base.data.Sets;
 import de.featjar.base.tree.Trees;
 import de.featjar.base.tree.visitor.InOrderTreeVisitor;
 import de.featjar.base.tree.visitor.TreePrinter;
@@ -331,8 +332,8 @@ public interface Traversable<T extends Traversable<T>> {
     /**
      * {@return the descendants of this node}
      */
-    default Set<? extends T> getDescendants() {
-        return parallelStream().collect(Collectors.toSet());
+    default LinkedHashSet<? extends T> getDescendants() {
+        return parallelStream().collect(Sets.toSet());
     }
 
     /**

@@ -23,12 +23,13 @@ package de.featjar.base.extension;
 import de.featjar.base.Feat;
 import de.featjar.base.data.Problem;
 import de.featjar.base.data.Result;
+import de.featjar.base.data.Sets;
 import de.featjar.base.log.IndentFormatter;
 
-import java.util.HashMap;
+import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Objects;
-import java.util.Set;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.stream.Collectors;
 
@@ -44,7 +45,7 @@ import java.util.stream.Collectors;
  * @author Elias Kuiter
  */
 public abstract class ExtensionPoint<T extends Extension> {
-    private final HashMap<String, Integer> indexMap = new HashMap<>();
+    private final LinkedHashMap<String, Integer> indexMap = new LinkedHashMap<>();
     private final List<T> extensions = new CopyOnWriteArrayList<>();
 
     /**
@@ -124,9 +125,9 @@ public abstract class ExtensionPoint<T extends Extension> {
     }
 
     public Result<T> guessExtension(String partOfIdentifier) {
-        Set<String> matchingIdentifiers = indexMap.keySet().stream()
+        LinkedHashSet<String> matchingIdentifiers = indexMap.keySet().stream()
                 .filter(identifier -> identifier.toLowerCase().contains(partOfIdentifier.toLowerCase()))
-                .collect(Collectors.toSet());
+                .collect(Sets.toSet());
         if (matchingIdentifiers.isEmpty())
             return Result.empty(new Problem("found no extensions matching " + partOfIdentifier, Problem.Severity.ERROR));
         if (matchingIdentifiers.size() > 1)

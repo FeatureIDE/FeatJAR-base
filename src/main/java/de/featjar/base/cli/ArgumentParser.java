@@ -56,8 +56,8 @@ public class ArgumentParser {
      * @return a map of the positions to their argument values
      * @throws ArgumentParseException when a parsing error occurs
      */
-    public Map<Integer, String> parsePositionalArguments(List<Integer> positions) throws ArgumentParseException {
-        Map<Integer, String> positionalArguments = new HashMap<>();
+    public LinkedHashMap<Integer, String> parsePositionalArguments(List<Integer> positions) throws ArgumentParseException {
+        LinkedHashMap<Integer, String> positionalArguments = new LinkedHashMap<>();
         for (Integer position : positions) {
             int actualPosition = position;
             int expected = position;
@@ -86,7 +86,7 @@ public class ArgumentParser {
      * @return a map of the positions to their argument values
      * @throws ArgumentParseException when a parsing error occurs
      */
-    public Map<Integer, String> parsePositionalArguments(Integer... positions) throws ArgumentParseException {
+    public LinkedHashMap<Integer, String> parsePositionalArguments(Integer... positions) throws ArgumentParseException {
         return parsePositionalArguments(List.of(positions));
     }
 

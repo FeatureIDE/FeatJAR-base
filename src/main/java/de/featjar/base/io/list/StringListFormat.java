@@ -36,7 +36,7 @@ import java.util.stream.Collectors;
  */
 public class StringListFormat implements Format<List<String>> {
     private static final String MULTILINE_COMMENT = "###";
-    private static final Set<String> COMMENTS = new HashSet<>();
+    private static final LinkedHashSet<String> COMMENTS = new LinkedHashSet<>();
     static {
         COMMENTS.add("#");
         COMMENTS.add("\t");

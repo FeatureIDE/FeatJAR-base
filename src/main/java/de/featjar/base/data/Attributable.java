@@ -20,7 +20,7 @@
  */
 package de.featjar.base.data;
 
-import java.util.Map;
+import java.util.LinkedHashMap;
 import java.util.Optional;
 
 /**
@@ -31,7 +31,7 @@ import java.util.Optional;
  */
 @Deprecated
 public interface Attributable {
-    Map<Attribute, Object> getAttributeToValueMap();
+    LinkedHashMap<Attribute, Object> getAttributeToValueMap();
 
     default Optional<Object> getAttributeValue(Attribute attribute) {
         return attribute.apply(getAttributeToValueMap());

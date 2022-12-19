@@ -20,6 +20,7 @@
  */
 package de.featjar.base.io;
 
+import de.featjar.base.data.Maps;
 import de.featjar.base.data.Problem;
 import de.featjar.base.data.Result;
 import java.io.IOException;
@@ -27,8 +28,8 @@ import java.io.InputStream;
 import java.nio.charset.Charset;
 import java.nio.file.Path;
 import java.util.Arrays;
+import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.function.Supplier;
 
 /**
@@ -43,7 +44,7 @@ public abstract class InputMapper extends IOMapper<Input> {
         super(mainPath);
     }
 
-    protected InputMapper(Map<Path, Input> ioMap, Path mainPath) {
+    protected InputMapper(LinkedHashMap<Path, Input> ioMap, Path mainPath) {
         super(ioMap, mainPath);
     }
 
@@ -61,7 +62,7 @@ public abstract class InputMapper extends IOMapper<Input> {
          * @param fileExtension the file extension
          */
         public Stream(
-                Map<Path, InputStream> pathInputStreamMap,
+                LinkedHashMap<Path, InputStream> pathInputStreamMap,
                 Path rootPath,
                 Path mainPath,
                 Charset charset,
@@ -83,7 +84,7 @@ public abstract class InputMapper extends IOMapper<Input> {
          * @param fileExtension the file extension
          */
         public Stream(InputStream inputStream, Charset charset, java.lang.String fileExtension) {
-            this(Map.of(DEFAULT_MAIN_PATH, inputStream), null, DEFAULT_MAIN_PATH, charset, fileExtension);
+            this(Maps.of(DEFAULT_MAIN_PATH, inputStream), null, DEFAULT_MAIN_PATH, charset, fileExtension);
         }
     }
 
@@ -139,7 +140,7 @@ public abstract class InputMapper extends IOMapper<Input> {
          * @param fileExtension the file extension
          */
         public String(
-                Map<Path, java.lang.String> pathStringMap,
+                LinkedHashMap<Path, java.lang.String> pathStringMap,
                 Path rootPath,
                 Path mainPath,
                 Charset charset,
@@ -161,7 +162,7 @@ public abstract class InputMapper extends IOMapper<Input> {
          * @param fileExtension the file extension
          */
         public String(java.lang.String string, Charset charset, java.lang.String fileExtension) {
-            this(Map.of(DEFAULT_MAIN_PATH, string), null, DEFAULT_MAIN_PATH, charset, fileExtension);
+            this(Maps.of(DEFAULT_MAIN_PATH, string), null, DEFAULT_MAIN_PATH, charset, fileExtension);
         }
     }
 

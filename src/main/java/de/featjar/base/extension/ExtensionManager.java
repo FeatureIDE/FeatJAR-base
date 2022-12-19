@@ -50,9 +50,9 @@ import org.w3c.dom.NodeList;
  * @author Elias Kuiter
  */
 public class ExtensionManager implements AutoCloseable {
-    private final Map<String, List<String>> extensionMap = new HashMap<>();
-    private final Map<String, ExtensionPoint<?>> extensionPoints = new HashMap<>();
-    private final Map<String, Extension> extensions = new HashMap<>();
+    private final LinkedHashMap<String, List<String>> extensionMap = new LinkedHashMap<>();
+    private final LinkedHashMap<String, ExtensionPoint<?>> extensionPoints = new LinkedHashMap<>();
+    private final LinkedHashMap<String, Extension> extensions = new LinkedHashMap<>();
 
     /**
      * Installs all extensions and extension points that can be found on the classpath.
@@ -165,8 +165,8 @@ public class ExtensionManager implements AutoCloseable {
     /**
      * {@return all names of files on the classpath}
      */
-    private static Set<String> getResources() {
-        final HashSet<String> resources = new HashSet<>();
+    private static LinkedHashSet<String> getResources() {
+        final LinkedHashSet<String> resources = new LinkedHashSet<>();
         final String classPathProperty = System.getProperty("java.class.path", ".");
         final String pathSeparatorProperty = System.getProperty("path.separator");
         for (final String element : classPathProperty.split(pathSeparatorProperty)) {

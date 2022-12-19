@@ -22,6 +22,7 @@ package de.featjar.base.io;
 
 import de.featjar.base.data.Factory;
 import de.featjar.base.data.FactorySupplier;
+import de.featjar.base.data.Maps;
 import de.featjar.base.data.Result;
 import de.featjar.base.io.format.Format;
 import de.featjar.base.io.format.FormatSupplier;
@@ -36,7 +37,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
 import java.util.Collections;
-import java.util.Map;
+import java.util.LinkedHashMap;
 import java.util.function.Supplier;
 
 /**
@@ -629,14 +630,14 @@ public class IO {
      * @param format the format
      * @param <T>    the type of the object
      */
-    public static <T> Map<Path, String> printHierarchy(T object, Format<T> format) throws IOException {
+    public static <T> LinkedHashMap<Path, String> printHierarchy(T object, Format<T> format) throws IOException {
         if (format.supportsSerialize()) {
             try (OutputMapper.String outputMapper = new OutputMapper.String(DEFAULT_CHARSET)) {
                 format.getInstance().write(object, outputMapper);
                 return outputMapper.getOutputStrings();
             }
         }
-        return Collections.emptyMap();
+        return Maps.empty();
     }
 
     /**

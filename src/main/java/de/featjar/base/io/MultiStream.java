@@ -20,6 +20,8 @@
  */
 package de.featjar.base.io;
 
+import de.featjar.base.data.Sets;
+
 import java.io.IOException;
 import java.io.OutputStream;
 import java.util.*;
@@ -32,13 +34,13 @@ import java.util.*;
  */
 public class MultiStream extends OutputStream {
 
-    protected final Set<OutputStream> streams = new HashSet<>();
+    protected final LinkedHashSet<OutputStream> streams = new LinkedHashSet<>();
 
     public MultiStream(OutputStream... streams) {
-        this(Set.of(streams));
+        this(Sets.of(streams));
     }
 
-    public MultiStream(Set<OutputStream> streams) {
+    public MultiStream(LinkedHashSet<OutputStream> streams) {
         this.streams.addAll(streams);
     }
 
@@ -50,7 +52,7 @@ public class MultiStream extends OutputStream {
         streams.clear();
     }
 
-    public Set<OutputStream> getStreams() {
+    public LinkedHashSet<OutputStream> getStreams() {
         return streams;
     }
 
