@@ -88,14 +88,12 @@ public interface Computation<T> extends Supplier<FutureResult<T>>, Extension {
     }
 
     /**
-     * {@return a trivial computation that computes a given object}
+     * {@return a trivial computation that computes nothing}
      *
-     * @param object  the object
-     * @param monitor the monitor
-     * @param <T>     the type of the object
+     * @param <T> the type of the object
      */
-    static <T> Computation<T> of(T object, Monitor monitor) {
-        return () -> FutureResult.of(object, monitor);
+    static <T> Computation<T> empty() {
+        return of(null, new CancelableMonitor());
     }
 
     /**
@@ -109,12 +107,26 @@ public interface Computation<T> extends Supplier<FutureResult<T>>, Extension {
     }
 
     /**
-     * {@return a trivial computation that computes nothing}
+     * {@return a trivial computation that computes a given object}
      *
-     * @param <T> the type of the object
+     * @param object  the object
+     * @param monitor the monitor
+     * @param <T>     the type of the object
      */
-    static <T> Computation<T> empty() {
-        return of(null, new CancelableMonitor());
+    static <T> Computation<T> of(T object, Monitor monitor) {
+        return () -> FutureResult.of(object, monitor);
+    }
+
+    /**
+     * {@return a computation that computes both given computations, summarizing their results in a pair}
+     *
+     * @param computation1 the first computation
+     * @param computation2 the second computation
+     */
+    @SuppressWarnings("unchecked")
+    static <T, U> Computation<Pair<T, U>> of(Computation<T> computation1, Computation<U> computation2) {
+        Computation<?>[] computations = new Computation[]{computation1, computation2};
+        return Computation.allOf(computations).mapResult(list -> new Pair<>((T) list.get(0), (U) list.get(1)));
     }
 
     /**
@@ -138,18 +150,6 @@ public interface Computation<T> extends Supplier<FutureResult<T>>, Extension {
                     });
 
         };
-    }
-
-    /**
-     * {@return a computation that computes both given computations, summarizing their results in a pair}
-     *
-     * @param computation1 the first computation
-     * @param computation2 the second computation
-     */
-    @SuppressWarnings("unchecked")
-    static <T, U> Computation<de.featjar.base.data.Pair<T, U>> allOf(Computation<T> computation1, Computation<U> computation2) {
-        Computation<?>[] computations = new Computation[]{computation1, computation2};
-        return allOf(computations).mapResult(list -> new de.featjar.base.data.Pair<>((T) list.get(0), (U) list.get(1)));
     }
 
     /**
@@ -182,21 +182,6 @@ public interface Computation<T> extends Supplier<FutureResult<T>>, Extension {
             fn.accept(t);
             return t;
         });
-    }
-
-    interface Pair<T, U> extends Computation<de.featjar.base.data.Pair<T, U>> {
-        default Computation<T> getKey() {
-            return () -> compute().thenCompute((pair, monitor) -> pair.getKey());
-        }
-
-        default Computation<U> getValue() {
-            return () -> compute().thenCompute((pair, monitor) -> pair.getValue());
-        }
-
-        default <V, W> Computation<de.featjar.base.data.Pair<V, W>> mapResultPair(Function<T, V> firstFn, Function<U, W> secondFn) {
-            return () -> compute().thenCompute(((pair, monitor) ->
-                    new de.featjar.base.data.Pair<>(firstFn.apply(pair.getKey()), secondFn.apply(pair.getValue()))));
-        }
     }
 
     // future ideas

@@ -46,6 +46,12 @@ public interface Command extends Extension {
         return new ArrayList<>();
     }
 
+    static List<Option<?>> addOptions(List<Option<?>> options, Option<?>... newOptions) {
+        options = new ArrayList<>(options);
+        options.addAll(List.of(newOptions));
+        return options;
+    }
+
     /**
      * Runs this command with some given arguments.
      *

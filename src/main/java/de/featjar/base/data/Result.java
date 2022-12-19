@@ -74,7 +74,7 @@ public class Result<T> {
      */
     public static <T> Result<T> of(T object, List<Problem> problems) {
         return new Result<>(object, problems);
-    }
+    } // todo: immediately log warning/error here?
 
     /**
      * {@return a result of an {@link Optional}}

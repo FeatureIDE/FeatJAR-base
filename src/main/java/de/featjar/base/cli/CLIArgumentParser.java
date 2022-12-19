@@ -1,6 +1,7 @@
 package de.featjar.base.cli;
 
 import de.featjar.base.FeatJAR;
+import de.featjar.base.data.Problem;
 import de.featjar.base.data.Result;
 import de.featjar.base.extension.Extension;
 import de.featjar.base.extension.ExtensionPoint;
@@ -95,7 +96,7 @@ public class CLIArgumentParser extends ArgumentParser {
         sb.appendLine(getOptions());
         sb.removeIndent();
         if (commandName != null) {
-            Result<Command> commandResult = getExtension(FeatJAR.extensionPoint(Commands.class), commandName);
+            Result<Command> commandResult = guessExtension(FeatJAR.extensionPoint(Commands.class), commandName);
             if (commandResult.isPresent() && !commandResult.get().getOptions().isEmpty()) {
                 sb.appendLine();
                 sb.appendLine(String.format("Options of command %s:", commandResult.get().getIdentifier()));
@@ -134,8 +135,8 @@ public class CLIArgumentParser extends ArgumentParser {
      * @param identifier     the identifier
      * @param <T>            the type of the extension
      */
-    public <T extends Extension> Result<T> getExtension(ExtensionPoint<T> extensionPoint, String identifier) {
-        return extensionPoint.getExtension(identifier);
+    public <T extends Extension> Result<T> guessExtension(ExtensionPoint<T> extensionPoint, String identifier) {
+        return extensionPoint.guessExtension(identifier);
     }
 
     /**
@@ -147,10 +148,11 @@ public class CLIArgumentParser extends ArgumentParser {
      * @param <T>            the type of the extension
      */
     public <T extends Extension> T getRequiredExtension(ExtensionPoint<T> extensionPoint, String identifier) {
-        Result<T> extensionResult = getExtension(extensionPoint, identifier);
+        Result<T> extensionResult = guessExtension(extensionPoint, identifier);
         if (extensionResult.isEmpty())
-            handleException(new ArgumentParseException(
-                    String.format("Requested extension %s is not available.", identifier)));
+            handleException(new ArgumentParseException(extensionResult.getProblems().stream()
+                    .map(Problem::toString)
+                    .collect(Collectors.joining(", "))));
         return extensionResult.get();
     }
 

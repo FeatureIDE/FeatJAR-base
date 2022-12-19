@@ -127,7 +127,7 @@ public class CommandLineInterface {
     public static <T> Result<T> loadFile(String pathOrStdin, FormatSupplier<T> formatSupplier) {
         Matcher matcher = STANDARD_INPUT_PATTERN.matcher(pathOrStdin.toLowerCase());
         if (matcher.matches()) {
-            Path path = Paths.get(matcher.groupCount() == 2 ? STANDARD_INPUT + "." + matcher.group(2) : STANDARD_INPUT);
+            Path path = Paths.get(matcher.group(2) != null ? "stdin." + matcher.group(2) : "stdin");
             String content = new BufferedReader(new InputStreamReader(System.in, IO.DEFAULT_CHARSET))
                     .lines()
                     .collect(Collectors.joining("\n"));

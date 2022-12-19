@@ -171,6 +171,8 @@ public abstract class Input implements IOObject {
             try {
                 inputStream.mark(InputHeader.MAX_HEADER_SIZE);
                 final int byteCount = inputStream.read(bytes, 0, InputHeader.MAX_HEADER_SIZE);
+                if (byteCount == -1)
+                    return Result.empty();
                 return Result.of(new InputHeader(
                         fileExtension, //
                         byteCount == InputHeader.MAX_HEADER_SIZE ? bytes : Arrays.copyOf(bytes, byteCount), //

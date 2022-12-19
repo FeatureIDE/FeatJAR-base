@@ -34,16 +34,16 @@ class ComputationTest {
         assertTrue(Feat.cache().computationMap.isEmpty());
     }
 
-    static class IsEvenComputation implements Computation<Boolean> {
-        Computation<Integer> inputComputation;
+    static class ComputeIsEven implements Computation<Boolean> {
+        Computation<Integer> input;
 
-        public IsEvenComputation(Computation<Integer> inputComputation) {
-            this.inputComputation = inputComputation;
+        public ComputeIsEven(Computation<Integer> input) {
+            this.input = input;
         }
 
         @Override
         public FutureResult<Boolean> compute() {
-            return inputComputation.get().thenCompute((integer, monitor) -> integer % 2 == 0);
+            return input.get().thenCompute((integer, monitor) -> integer % 2 == 0);
         }
     }
 
@@ -52,23 +52,23 @@ class ComputationTest {
         Computation<Integer> computation = Computation.of(42);
         Computation<Boolean> isEvenComputation = () -> computation.get().thenCompute((integer, monitor) -> integer % 2 == 0);
         assertTrue(isEvenComputation.getResult().get());
-        assertTrue(computation.map(IsEvenComputation::new).getResult().get());
-        assertTrue(computation.map(IsEvenComputation::new).getResult().get());
+        assertTrue(computation.map(ComputeIsEven::new).getResult().get());
+        assertTrue(computation.map(ComputeIsEven::new).getResult().get());
     }
 
-    static class IsParityComputation implements Computation<Boolean> {
+    static class ComputeIsParity implements Computation<Boolean> {
         enum Parity { EVEN, ODD }
-        Computation<Integer> inputComputation;
+        Computation<Integer> input;
         Parity parity;
 
-        public IsParityComputation(Computation<Integer> inputComputation, Parity parity) {
-            this.inputComputation = inputComputation;
+        public ComputeIsParity(Computation<Integer> input, Parity parity) {
+            this.input = input;
             this.parity = parity;
         }
 
         @Override
         public FutureResult<Boolean> compute() {
-            return inputComputation.get().thenCompute(
+            return input.get().thenCompute(
                     (integer, monitor) -> parity == Parity.EVEN ? integer % 2 == 0 : integer % 2 == 1);
         }
     }
@@ -76,14 +76,14 @@ class ComputationTest {
     @Test
     void computationWithArguments() {
         Computation<Integer> computation = Computation.of(42);
-        assertTrue(new IsParityComputation(computation, IsParityComputation.Parity.EVEN).getResult().get());
-        assertFalse(new IsParityComputation(computation, IsParityComputation.Parity.ODD).getResult().get());
-        assertTrue(computation.map(c -> new IsParityComputation(c, IsParityComputation.Parity.EVEN)).getResult().get());
+        assertTrue(new ComputeIsParity(computation, ComputeIsParity.Parity.EVEN).getResult().get());
+        assertFalse(new ComputeIsParity(computation, ComputeIsParity.Parity.ODD).getResult().get());
+        assertTrue(computation.map(c -> new ComputeIsParity(c, ComputeIsParity.Parity.EVEN)).getResult().get());
     }
 
     @Test
     void allOfSimple() {
-        Pair<Integer, Integer> r = Computation.allOf(Computation.of(1), Computation.of(2)).getResult().get();
+        Pair<Integer, Integer> r = Computation.of(Computation.of(1), Computation.of(2)).getResult().get();
         assertEquals(1, r.getKey());
         assertEquals(2, r.getValue());
     }
@@ -91,8 +91,8 @@ class ComputationTest {
     @Test
     void allOfComplex() {
         Computation<Integer> c1 = Computation.of(42);
-        Computation<Boolean> c2 = c1.map(IsEvenComputation::new);
-        Pair<Integer, Boolean> r = Computation.allOf(c1, c2).getResult().get();
+        Computation<Boolean> c2 = c1.map(ComputeIsEven::new);
+        Pair<Integer, Boolean> r = Computation.of(c1, c2).getResult().get();
         assertEquals(42, r.getKey());
         assertEquals(true, r.getValue());
     }
@@ -107,8 +107,8 @@ class ComputationTest {
             }
             return 42;
         }));
-        Computation<Boolean> c2 = c1.map(IsEvenComputation::new);
-        Pair<Integer, Boolean> r = Computation.allOf(c1, c2).getResult().get();
+        Computation<Boolean> c2 = c1.map(ComputeIsEven::new);
+        Pair<Integer, Boolean> r = Computation.of(c1, c2).getResult().get();
         assertEquals(42, r.getKey());
         assertEquals(true, r.getValue());
     }

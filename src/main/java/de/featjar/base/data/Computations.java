@@ -11,12 +11,20 @@ public class Computations {
         return Computation.of(t);
     }
 
+    public static <T, U> Computation<Pair<T, U>> async(T t, U u) {
+        return Computation.of(async(t), async(u));
+    }
+
     public static <T> Computation<T> async(Result<T> tResult) {
         return tResult.map(Computation::of).orElseThrow(); // todo: better error handling?
     }
 
     public static <T> Computation<T> async(Computation<T> tComputation) {
         return tComputation;
+    }
+
+    public static <T, U> Computation<Pair<T, U>> async(Computation<T> tComputation, Computation<U> uComputation) {
+        return Computation.of(tComputation, uComputation);
     }
 
     public static <T, U> Function<Computation<T>, Computation<U>> async(Function<T, U> fn) {
@@ -39,7 +47,19 @@ public class Computations {
         return t -> await(fn.apply(Computation.of(t)));
     }
 
+    public static <T, U> T getKey(Pair<T, U> tuPair) {
+        return tuPair.getKey();
+    }
 
+    public static <T, U> Computation<T> getKey(Computation<Pair<T, U>> tuPair) {
+        return () -> tuPair.compute().thenCompute((pair, monitor) -> pair.getKey());
+    }
 
-    // async?
+    public static <T, U> U getValue(Pair<T, U> tuPair) {
+        return tuPair.getValue();
+    }
+
+    public static <T, U> Computation<U> getValue(Computation<Pair<T, U>> tuPair) {
+        return () -> tuPair.compute().thenCompute((pair, monitor) -> pair.getValue());
+    }
 }

@@ -23,10 +23,14 @@ package de.featjar.base.extension;
 import de.featjar.base.Feat;
 import de.featjar.base.data.Problem;
 import de.featjar.base.data.Result;
+import de.featjar.base.log.IndentFormatter;
+
 import java.util.HashMap;
 import java.util.List;
 import java.util.Objects;
+import java.util.Set;
 import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.stream.Collectors;
 
 /**
  * An extension point installs {@link Extension extensions} of a given type.
@@ -116,7 +120,19 @@ public abstract class ExtensionPoint<T extends Extension> {
         final Integer index = indexMap.get(identifier);
         return index != null
                 ? Result.of(extensions.get(index))
-                : Result.empty(new Problem("No extension found for identifier " + identifier, Problem.Severity.ERROR));
+                : Result.empty(new Problem("no extension found for identifier " + identifier, Problem.Severity.ERROR));
+    }
+
+    public Result<T> guessExtension(String partOfIdentifier) {
+        Set<String> matchingIdentifiers = indexMap.keySet().stream()
+                .filter(identifier -> identifier.toLowerCase().contains(partOfIdentifier.toLowerCase()))
+                .collect(Collectors.toSet());
+        if (matchingIdentifiers.isEmpty())
+            return Result.empty(new Problem("found no extensions matching " + partOfIdentifier, Problem.Severity.ERROR));
+        if (matchingIdentifiers.size() > 1)
+            return Result.empty(new Problem("found more than one extensions matching " + partOfIdentifier + ": \n" +
+                    IndentFormatter.formatList(matchingIdentifiers), Problem.Severity.ERROR));
+        return getExtension(matchingIdentifiers.iterator().next());
     }
 
     /**

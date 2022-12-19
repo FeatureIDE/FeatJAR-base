@@ -20,6 +20,7 @@
  */
 package de.featjar.base.log;
 
+import de.featjar.base.FeatJAR;
 import de.featjar.base.env.StackTrace;
 
 /**
@@ -35,9 +36,15 @@ public class CallerFormatter implements Formatter {
         return String.format("[%s] ", new StackTrace()
                 .removeTop()
                 .removeClassNamePrefix(getClass().getPackageName()).getTop()
-                .map(stackTraceElement -> String.format("%s.%s",
+                .map(stackTraceElement -> shorten(String.format("%s.%s",
                         stackTraceElement.getClassName(),
-                        stackTraceElement.getMethodName()))
+                        stackTraceElement.getMethodName())))
                 .orElse(""));
+    }
+
+    private static String shorten(String s) {
+        return s.replace(FeatJAR.ROOT_PACKAGE_NAME + ".", "")
+                .replaceAll("\\.<.*", "")
+                .replaceAll("\\.lambda\\$.*", "");
     }
 }

@@ -48,11 +48,12 @@ public class Log implements Initializer {
      * Verbosity of the log.
      */
     public enum Verbosity {
+        // todo: none level?
         /**
          * Error message.
          * Typically used to log exceptions and warnings.
          */
-        ERROR,
+        ERROR, // todo: warning level?
         /**
          * Info message.
          * Typically used to log high-level information.
