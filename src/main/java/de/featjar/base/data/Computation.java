@@ -185,11 +185,11 @@ public interface Computation<T> extends Supplier<FutureResult<T>>, Extension {
     }
 
     interface Pair<T, U> extends Computation<de.featjar.base.data.Pair<T, U>> {
-        default Computation<T> getFirst() {
+        default Computation<T> getKey() {
             return () -> compute().thenCompute((pair, monitor) -> pair.getKey());
         }
 
-        default Computation<U> getSecond() {
+        default Computation<U> getValue() {
             return () -> compute().thenCompute((pair, monitor) -> pair.getValue());
         }
 
