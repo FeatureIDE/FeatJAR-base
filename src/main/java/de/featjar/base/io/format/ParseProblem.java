@@ -21,11 +21,12 @@
 package de.featjar.base.io.format;
 
 import de.featjar.base.data.Problem;
+import de.featjar.base.io.AInput;
 
 import java.nio.file.Path;
 
 /**
- * A problem that occurs while parsing an {@link de.featjar.base.io.Input}.
+ * A problem that occurs while parsing an {@link AInput}.
  * Stores a path and line number where the problem occurred.
  *
  * @author Sebastian Krieter

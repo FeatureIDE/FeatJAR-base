@@ -20,13 +20,15 @@
  */
 package de.featjar.base.io;
 
+import de.featjar.base.io.format.IFormat;
+
 import java.nio.charset.Charset;
 import java.util.Optional;
 import java.util.function.Supplier;
 import java.util.stream.Stream;
 
 /**
- * Input file header to determine whether a {@link de.featjar.base.io.format.Format} can parse a particular content.
+ * Input file header to determine whether a {@link IFormat} can parse a particular content.
  *
  * @author Sebastian Krieter
  */

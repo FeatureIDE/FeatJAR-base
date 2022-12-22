@@ -20,12 +20,12 @@
  */
 package de.featjar.base.env;
 
-import de.featjar.base.extension.ExtensionPoint;
+import de.featjar.base.extension.AExtensionPoint;
 
 /**
  * Manages all native binaries bundled with FeatJAR.
  *
  * @author Elias Kuiter
  */
-public class Binaries extends ExtensionPoint<Binary> {
+public class Binaries extends AExtensionPoint<ABinary> {
 }

@@ -4,7 +4,7 @@ import de.featjar.base.FeatJAR;
 import de.featjar.base.data.Problem;
 import de.featjar.base.data.Result;
 import de.featjar.base.extension.IExtension;
-import de.featjar.base.extension.ExtensionPoint;
+import de.featjar.base.extension.AExtensionPoint;
 import de.featjar.base.log.IndentStringBuilder;
 import de.featjar.base.log.Log;
 
@@ -145,7 +145,7 @@ public class ArgumentParser extends AArgumentParser {
      * @param identifier     the identifier
      * @param <T>            the type of the extension
      */
-    public <T extends IExtension> Result<T> guessExtension(ExtensionPoint<T> extensionPoint, String identifier) {
+    public <T extends IExtension> Result<T> guessExtension(AExtensionPoint<T> extensionPoint, String identifier) {
         return extensionPoint.guessExtension(identifier);
     }
 
@@ -157,7 +157,7 @@ public class ArgumentParser extends AArgumentParser {
      * @param identifier     the identifier
      * @param <T>            the type of the extension
      */
-    public <T extends IExtension> T getRequiredExtension(ExtensionPoint<T> extensionPoint, String identifier) {
+    public <T extends IExtension> T getRequiredExtension(AExtensionPoint<T> extensionPoint, String identifier) {
         Result<T> extensionResult = guessExtension(extensionPoint, identifier);
         if (extensionResult.isEmpty())
             handleException(new ArgumentParseException(extensionResult.getProblems().stream()

@@ -20,8 +20,10 @@
  */
 package de.featjar.base.io.format;
 
+import de.featjar.base.io.AInput;
+
 /**
- * An exception that occurs while parsing an {@link de.featjar.base.io.Input}.
+ * An exception that occurs while parsing an {@link AInput}.
  *
  * @author Sebastian Krieter
  */

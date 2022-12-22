@@ -41,13 +41,13 @@ public class Attribute implements Function<LinkedHashMap<Attribute, Object>, Opt
     protected final String name;
     protected final Class<?> type;
 
-    protected final BiPredicate<Attributable, Object> valueValidator;
+    protected final BiPredicate<IAttributable, Object> valueValidator;
 
     public Attribute(String namespace, String name, Class<?> type) {
         this(namespace, name, type, (a, o) -> true);
     }
 
-    public Attribute(String namespace, String name, Class<?> type, BiPredicate<Attributable, Object> valueValidator) {
+    public Attribute(String namespace, String name, Class<?> type, BiPredicate<IAttributable, Object> valueValidator) {
         Objects.requireNonNull(namespace);
         Objects.requireNonNull(name);
         Objects.requireNonNull(type);
@@ -70,7 +70,7 @@ public class Attribute implements Function<LinkedHashMap<Attribute, Object>, Opt
         return type;
     }
 
-    public BiPredicate<Attributable, Object> getValueValidator() {
+    public BiPredicate<IAttributable, Object> getValueValidator() {
         return valueValidator;
     }
 
@@ -98,17 +98,17 @@ public class Attribute implements Function<LinkedHashMap<Attribute, Object>, Opt
     }
 
     public static class WithDefaultValue extends Attribute {
-        protected final Function<Attributable, Object> defaultValueFunction;
+        protected final Function<IAttributable, Object> defaultValueFunction;
 
         public WithDefaultValue(
-                String namespace, String name, Class<?> type, BiPredicate<Attributable, Object> valueValidator, Function<Attributable, Object> defaultValueFunction) {
+                String namespace, String name, Class<?> type, BiPredicate<IAttributable, Object> valueValidator, Function<IAttributable, Object> defaultValueFunction) {
             super(namespace, name, type, valueValidator);
             Objects.requireNonNull(defaultValueFunction);
             this.defaultValueFunction = defaultValueFunction;
         }
 
         public WithDefaultValue(
-                String namespace, String name, Class<?> type, Function<Attributable, Object> defaultValueFunction) {
+                String namespace, String name, Class<?> type, Function<IAttributable, Object> defaultValueFunction) {
             super(namespace, name, type);
             Objects.requireNonNull(defaultValueFunction);
             this.defaultValueFunction = defaultValueFunction;
@@ -119,15 +119,15 @@ public class Attribute implements Function<LinkedHashMap<Attribute, Object>, Opt
             Objects.requireNonNull(defaultValue);
         }
 
-        public Function<Attributable, Object> getDefaultValueFunction() {
+        public Function<IAttributable, Object> getDefaultValueFunction() {
             return defaultValueFunction;
         }
 
-        public Object getDefaultValue(Attributable attributable) {
+        public Object getDefaultValue(IAttributable attributable) {
             return defaultValueFunction.apply(attributable);
         }
 
-        public Object applyWithDefaultValue(LinkedHashMap<Attribute, Object> attributeToValueMap, Attributable attributable) {
+        public Object applyWithDefaultValue(LinkedHashMap<Attribute, Object> attributeToValueMap, IAttributable attributable) {
             return attributeToValueMap.getOrDefault(this, defaultValueFunction.apply(attributable));
         }
     }

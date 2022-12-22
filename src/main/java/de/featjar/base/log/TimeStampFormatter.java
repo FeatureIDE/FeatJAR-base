@@ -32,7 +32,7 @@ import java.util.Locale;
  * @author Sebastian Krieter
  * @author Elias Kuiter
  */
-public class TimeStampFormatter implements Formatter {
+public class TimeStampFormatter implements IFormatter {
     private DateTimeFormatter formatter =
             DateTimeFormatter
                     .ofLocalizedDateTime(FormatStyle.SHORT)

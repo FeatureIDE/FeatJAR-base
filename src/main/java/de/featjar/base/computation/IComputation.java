@@ -25,8 +25,8 @@ import de.featjar.base.data.Pair;
 import de.featjar.base.data.Result;
 import de.featjar.base.extension.IExtension;
 import de.featjar.base.task.CancelableMonitor;
-import de.featjar.base.task.Monitor;
-import de.featjar.base.tree.structure.Traversable;
+import de.featjar.base.task.IMonitor;
+import de.featjar.base.tree.structure.ITree;
 
 import java.util.*;
 import java.util.function.BiFunction;
@@ -43,7 +43,7 @@ import static de.featjar.base.computation.Computations.async;
  * If computed with {@link #get()} or {@link #compute()}, the result is returned as an
  * asynchronous {@link FutureResult}, which can be shared, cached, and waited for.
  * When computed with {@link #get()}, results are possibly cached in a {@link Cache}; {@link #compute()} does not cache.
- * Computation progress can optionally be reported with a {@link Monitor}.
+ * Computation progress can optionally be reported with a {@link IMonitor}.
  * Computations can depend on other computations by declaring a {@link Dependency} on such a computation
  * and calling {@link #allOf(IComputation[])} or {@link FutureResult#thenCompute(BiFunction)} in {@link #compute()}.
  * To ensure the determinism required by caching, all parameters of a computation must be depended on.
@@ -52,14 +52,14 @@ import static de.featjar.base.computation.Computations.async;
  * Every computation is a tree of computations, where the dependencies of the computation are its children.
  * TODO: A validation scheme (e.g., against a simple feature model) and serialization scheme
  *  (e.g., to sensibly compare and cache computations based on their parameters and hash code) are missing for now.
- * TODO: Monitor and store should be injected once (see notes in {@link Monitor}), and then not worried about any further.
+ * TODO: Monitor and store should be injected once (see notes in {@link IMonitor}), and then not worried about any further.
  * TODO: A hash code computation is completely missing, so caching does not work well at all right now.
  *
  * @param <T> the type of the computation result
  * @author Sebastian Krieter
  * @author Elias Kuiter
  */
-public interface IComputation<T> extends Supplier<FutureResult<T>>, IExtension, Traversable<IComputation<?>> {
+public interface IComputation<T> extends Supplier<FutureResult<T>>, IExtension, ITree<IComputation<?>> {
     /**
      * {@return the (newly computed) asynchronous result of this computation}
      * The result is returned asynchronously; that is, as a {@link FutureResult}.
@@ -114,7 +114,7 @@ public interface IComputation<T> extends Supplier<FutureResult<T>>, IExtension, 
      * @param monitor the monitor
      * @param <T>     the type of the object
      */
-    static <T> IComputation<T> of(T object, Monitor monitor) {
+    static <T> IComputation<T> of(T object, IMonitor monitor) {
         return new AComputation.Constant<>(object, monitor);
     }
 

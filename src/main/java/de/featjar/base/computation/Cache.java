@@ -22,8 +22,9 @@ package de.featjar.base.computation;
 
 import de.featjar.base.Feat;
 import de.featjar.base.data.Result;
-import de.featjar.base.extension.Initializer;
+import de.featjar.base.extension.IInitializer;
 import de.featjar.base.env.StackTrace;
+import de.featjar.base.task.IMonitor;
 
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
@@ -31,12 +32,12 @@ import java.util.concurrent.ConcurrentHashMap;
 /**
  * Caches computation results by storing a map of computations to their future results.
  * TODO: Currently, this is implemented as a single large store (a Singleton inside {@link de.featjar.base.FeatJAR}).
- *  See the notes in {@link de.featjar.base.task.Monitor} how this might be improved.
+ *  See the notes in {@link IMonitor} how this might be improved.
  *
  * @author Sebastian Krieter
  * @author Elias Kuiter
  */
-public class Cache implements Initializer {
+public class Cache implements IInitializer {
     /**
      * Specifies which computation results a cache should contain.
      */

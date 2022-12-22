@@ -22,10 +22,10 @@ package de.featjar.base.tree;
 
 import de.featjar.base.data.Problem;
 import de.featjar.base.data.Result;
-import de.featjar.base.tree.structure.Traversable;
-import de.featjar.base.tree.visitor.InOrderTreeVisitor;
-import de.featjar.base.tree.visitor.TreeVisitor;
-import de.featjar.base.tree.visitor.TreeVisitor.TraversalAction;
+import de.featjar.base.tree.structure.ITree;
+import de.featjar.base.tree.visitor.IInOrderTreeVisitor;
+import de.featjar.base.tree.visitor.ITreeVisitor;
+import de.featjar.base.tree.visitor.ITreeVisitor.TraversalAction;
 
 import java.util.*;
 import java.util.function.Consumer;
@@ -34,14 +34,14 @@ import java.util.stream.StreamSupport;
 
 /**
  * Traverses and manipulates trees.
- * Most methods available in {@link Trees} are also available on {@link Traversable} instances.
+ * Most methods available in {@link Trees} are also available on {@link ITree} instances.
  *
  * @author Sebastian Krieter
  */
 public class Trees {
 
     /**
-     * Thrown when a visitor requests the {@link TreeVisitor.TraversalAction#FAIL} action.
+     * Thrown when a visitor requests the {@link ITreeVisitor.TraversalAction#FAIL} action.
      */
     public static class VisitorFailException extends Exception {
         Problem problem;
@@ -60,7 +60,7 @@ public class Trees {
      * @param <R> the type of result
      * @param <T> the type of tree
      */
-    public static <R, T extends Traversable<?>> Result<R> traverse(T node, InOrderTreeVisitor<T, R> visitor) {
+    public static <R, T extends ITree<?>> Result<R> traverse(T node, IInOrderTreeVisitor<T, R> visitor) {
         visitor.reset();
         try {
             depthFirstSearch(node, visitor);
@@ -72,7 +72,7 @@ public class Trees {
 
     /**
      * Traverses a tree using depth-first search, allowing for pre- and postorder traversal.
-     * This is equivalent to using a trivial {@link InOrderTreeVisitor}, but more efficient.
+     * This is equivalent to using a trivial {@link IInOrderTreeVisitor}, but more efficient.
      *
      * @param node the starting node of the tree
      * @param visitor the visitor
@@ -80,7 +80,7 @@ public class Trees {
      * @param <R> the type of result
      * @param <T> the type of tree
      */
-    public static <R, T extends Traversable<?>> Result<R> traverse(T node, TreeVisitor<T, R> visitor) {
+    public static <R, T extends ITree<?>> Result<R> traverse(T node, ITreeVisitor<T, R> visitor) {
         visitor.reset();
         try {
             depthFirstSearch(node, visitor);
@@ -92,25 +92,25 @@ public class Trees {
 
     /**
      * Creates a preorder stream of the descendents of a tree.
-     * Is more efficient than {@link #traverse(Traversable, TreeVisitor)}, but lacks support for {@link TraversalAction}.
+     * Is more efficient than {@link #traverse(ITree, ITreeVisitor)}, but lacks support for {@link TraversalAction}.
      *
      * @param node the starting node of the tree
      * @return the stream
      * @param <T> the type of tree
      */
-    public static <T extends Traversable<T>> Stream<T> preOrderStream(T node) {
+    public static <T extends ITree<T>> Stream<T> preOrderStream(T node) {
         return StreamSupport.stream(new PreOrderSpliterator<>(node), false);
     }
 
     /**
      * Creates a postorder stream of the descendents of a tree.
-     * Is more efficient than {@link #traverse(Traversable, TreeVisitor)}, but lacks support for {@link TraversalAction}.
+     * Is more efficient than {@link #traverse(ITree, ITreeVisitor)}, but lacks support for {@link TraversalAction}.
      *
      * @param node the starting node of the tree
      * @return the stream
      * @param <T> the type of tree
      */
-    public static <T extends Traversable<T>> Stream<T> postOrderStream(T node) {
+    public static <T extends ITree<T>> Stream<T> postOrderStream(T node) {
         return StreamSupport.stream(new PostOrderSpliterator<>(node), false);
     }
 
@@ -121,7 +121,7 @@ public class Trees {
      * @return the stream
      * @param <T> the type of tree
      */
-    public static <T extends Traversable<T>> Stream<T> levelOrderStream(T node) {
+    public static <T extends ITree<T>> Stream<T> levelOrderStream(T node) {
         return StreamSupport.stream(new LevelOrderSpliterator<>(node), false);
     }
 
@@ -133,7 +133,7 @@ public class Trees {
      * @return the stream
      * @param <T> the type of tree
      */
-    public static <T extends Traversable<T>> Stream<T> parallelStream(T node) {
+    public static <T extends ITree<T>> Stream<T> parallelStream(T node) {
         return StreamSupport.stream(new ParallelSpliterator<>(node), true);
     }
 
@@ -145,7 +145,7 @@ public class Trees {
      * @return whether the first node is deeply equal to the second node
      * @param <T> the type of tree
      */
-    public static <T extends Traversable<T>> boolean equals(T node1, T node2) {
+    public static <T extends ITree<T>> boolean equals(T node1, T node2) {
         if (node1 == node2) {
             return true;
         }
@@ -184,7 +184,7 @@ public class Trees {
      * @param <T> the type of tree
      */
     @SuppressWarnings("unchecked")
-    public static <T extends Traversable<T>> T clone(T root) {
+    public static <T extends ITree<T>> T clone(T root) {
         if (root == null) {
             return null;
         }
@@ -221,7 +221,7 @@ public class Trees {
      * @param root the node
      * @param <T> the type of tree
      */
-    public static <T extends Traversable<T>> void sort(T root) {
+    public static <T extends ITree<T>> void sort(T root) {
         sort(root, Comparator.comparing(T::toString));
     }
 
@@ -232,7 +232,7 @@ public class Trees {
      * @param comparator comparator used for sorting
      * @param <T> the type of tree
      */
-    public static <T extends Traversable<T>> void sort(T root, Comparator<T> comparator) {
+    public static <T extends ITree<T>> void sort(T root, Comparator<T> comparator) {
         final LinkedList<StackEntry<T>> stack = new LinkedList<>();
         stack.push(new StackEntry<>(root));
 
@@ -262,7 +262,7 @@ public class Trees {
         }
     }
 
-    private static class PreOrderSpliterator<T extends Traversable<T>> implements Spliterator<T> {
+    private static class PreOrderSpliterator<T extends ITree<T>> implements Spliterator<T> {
 
 
         final LinkedList<T> stack = new LinkedList<>();
@@ -301,7 +301,7 @@ public class Trees {
         }
     }
 
-    private static class PostOrderSpliterator<T extends Traversable<T>> implements Spliterator<T> {
+    private static class PostOrderSpliterator<T extends ITree<T>> implements Spliterator<T> {
 
         final LinkedList<StackEntry<T>> stack = new LinkedList<>();
 
@@ -347,7 +347,7 @@ public class Trees {
         }
     }
 
-    private static class LevelOrderSpliterator<T extends Traversable<T>> implements Spliterator<T> {
+    private static class LevelOrderSpliterator<T extends ITree<T>> implements Spliterator<T> {
 
         final LinkedList<T> queue = new LinkedList<>();
 
@@ -385,7 +385,7 @@ public class Trees {
         }
     }
 
-    private static class ParallelSpliterator<T extends Traversable<T>> implements Spliterator<T> {
+    private static class ParallelSpliterator<T extends ITree<T>> implements Spliterator<T> {
 
         final LinkedList<T> stack = new LinkedList<>();
 
@@ -428,7 +428,7 @@ public class Trees {
     }
 
     @SuppressWarnings("unchecked")
-    private static <T extends Traversable<?>> void depthFirstSearch(T node, InOrderTreeVisitor<T, ?> visitor)
+    private static <T extends ITree<?>> void depthFirstSearch(T node, IInOrderTreeVisitor<T, ?> visitor)
             throws VisitorFailException {
         if (node == null) {
             return;
@@ -487,7 +487,7 @@ public class Trees {
     }
 
     @SuppressWarnings("unchecked")
-    private static <T extends Traversable<?>> void depthFirstSearch(T node, TreeVisitor<T, ?> visitor) throws VisitorFailException {
+    private static <T extends ITree<?>> void depthFirstSearch(T node, ITreeVisitor<T, ?> visitor) throws VisitorFailException {
         if (node != null) {
             final ArrayList<T> path = new ArrayList<>();
 
@@ -523,7 +523,7 @@ public class Trees {
         }
     }
 
-    private static <T extends Traversable<?>> boolean lastVisit(TreeVisitor<T, ?> visitor, ArrayList<T> path, ArrayDeque<?> stack) throws VisitorFailException {
+    private static <T extends ITree<?>> boolean lastVisit(ITreeVisitor<T, ?> visitor, ArrayList<T> path, ArrayDeque<?> stack) throws VisitorFailException {
         final TraversalAction traversalAction = visitor.lastVisit(path);
         switch (traversalAction) {
             case CONTINUE:

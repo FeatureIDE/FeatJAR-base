@@ -22,7 +22,7 @@ package de.featjar.base.io.csv;
 
 import de.featjar.base.Feat;
 import de.featjar.base.io.IO;
-import de.featjar.base.io.Output;
+import de.featjar.base.io.AOutput;
 
 import java.io.IOException;
 import java.math.BigDecimal;
@@ -49,19 +49,19 @@ public class CSVFile {
     protected List<String> headerFields = null;
     protected boolean headerFieldsFlushed;
     protected final LinkedList<List<String>> values = new LinkedList<>();
-    protected Output output;
+    protected AOutput output;
 
     /**
      * Creates CSV file written to the given output.
      * @param output the output
      */
-    public CSVFile(Output output) {
+    public CSVFile(AOutput output) {
         this.output = output;
         newLine();
     }
 
     public CSVFile(Path path) throws IOException {
-        this(new Output.File(path, IO.DEFAULT_CHARSET));
+        this(new AOutput.File(path, IO.DEFAULT_CHARSET));
     }
 
     /**

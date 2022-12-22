@@ -21,9 +21,8 @@
 package de.featjar.base.tree.visitor;
 
 import de.featjar.base.data.Result;
-import de.featjar.base.tree.structure.Traversable;
+import de.featjar.base.tree.structure.ITree;
 import java.util.List;
-import java.util.Optional;
 
 /**
  * Counts the maximum depth of a tree.
@@ -31,25 +30,25 @@ import java.util.Optional;
  *
  * @author Sebastian Krieter
  */
-public class TreeDepthCounter implements TreeVisitor<Traversable<?>, Integer> {
-    private Class<? extends Traversable<?>> terminalClass = null;
+public class TreeDepthCounter implements ITreeVisitor<ITree<?>, Integer> {
+    private Class<? extends ITree<?>> terminalClass = null;
     private int maxDepth = 0;
 
-    public Class<? extends Traversable<?>> getTerminalClass() {
+    public Class<? extends ITree<?>> getTerminalClass() {
         return terminalClass;
     }
 
-    public void setTerminalClass(Class<? extends Traversable<?>> terminalClass) {
+    public void setTerminalClass(Class<? extends ITree<?>> terminalClass) {
         this.terminalClass = terminalClass;
     }
 
     @Override
-    public TraversalAction firstVisit(List<Traversable<?>> path) {
+    public TraversalAction firstVisit(List<ITree<?>> path) {
         final int depth = path.size();
         if (maxDepth < depth) {
             maxDepth = depth;
         }
-        final Traversable<?> node = getCurrentNode(path);
+        final ITree<?> node = getCurrentNode(path);
         if ((terminalClass != null) && terminalClass.isInstance(node)) {
             return TraversalAction.SKIP_CHILDREN;
         } else {

@@ -20,12 +20,12 @@
  */
 package de.featjar.base.cli;
 
-import de.featjar.base.extension.ExtensionPoint;
+import de.featjar.base.extension.AExtensionPoint;
 
 /**
  * Extension point for registering commands.
  *
  * @author Sebastian Krieter
  */
-public class Commands extends ExtensionPoint<ICommand> {
+public class Commands extends AExtensionPoint<ICommand> {
 }

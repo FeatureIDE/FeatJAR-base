@@ -43,7 +43,7 @@ import org.w3c.dom.NodeList;
 
 /**
  * Searches, installs, and uninstalls extension points and extensions defined on the classpath.
- * An {@link ExtensionPoint} or {@link IExtension} can be defined on the classpath by
+ * An {@link AExtensionPoint} or {@link IExtension} can be defined on the classpath by
  * registering it in {@code resources/extensions.xml}.
  *
  * @author Sebastian Krieter
@@ -51,7 +51,7 @@ import org.w3c.dom.NodeList;
  */
 public class ExtensionManager implements AutoCloseable {
     private final LinkedHashMap<String, List<String>> extensionMap = new LinkedHashMap<>();
-    private final LinkedHashMap<String, ExtensionPoint<?>> extensionPoints = new LinkedHashMap<>();
+    private final LinkedHashMap<String, AExtensionPoint<?>> extensionPoints = new LinkedHashMap<>();
     private final LinkedHashMap<String, IExtension> extensions = new LinkedHashMap<>();
 
     /**
@@ -68,10 +68,10 @@ public class ExtensionManager implements AutoCloseable {
         for (final Entry<String, List<String>> entry : extensionMap.entrySet()) {
             final String extensionPointId = entry.getKey();
             try {
-                final Class<ExtensionPoint<?>> extensionPointClass =
-                        (Class<ExtensionPoint<?>>) systemClassLoader.loadClass(extensionPointId);
+                final Class<AExtensionPoint<?>> extensionPointClass =
+                        (Class<AExtensionPoint<?>>) systemClassLoader.loadClass(extensionPointId);
                 Feat.log().debug("installing extension point " + extensionPointClass.getName());
-                final ExtensionPoint ep = extensionPointClass.getConstructor().newInstance();
+                final AExtensionPoint ep = extensionPointClass.getConstructor().newInstance();
                 extensionPoints.put(ep.getIdentifier(), ep);
                 for (final String extensionId : entry.getValue()) {
                     try {
@@ -96,7 +96,7 @@ public class ExtensionManager implements AutoCloseable {
      */
     @Override
     public void close() {
-        extensionPoints.values().forEach(ExtensionPoint::close);
+        extensionPoints.values().forEach(AExtensionPoint::close);
     }
 
     /**
@@ -191,7 +191,7 @@ public class ExtensionManager implements AutoCloseable {
     /**
      * {@return all installed extension points}
      */
-    public Collection<ExtensionPoint<?>> getExtensionPoints() {
+    public Collection<AExtensionPoint<?>> getExtensionPoints() {
         return extensionPoints.values();
     }
 
@@ -207,9 +207,9 @@ public class ExtensionManager implements AutoCloseable {
      *
      * @param identifier the identifier
      */
-    public Result<ExtensionPoint<?>> getExtensionPoint(String identifier) {
+    public Result<AExtensionPoint<?>> getExtensionPoint(String identifier) {
         Objects.requireNonNull(identifier, "identifier must not be null!");
-        final ExtensionPoint<?> extensionPoint = extensionPoints.get(identifier);
+        final AExtensionPoint<?> extensionPoint = extensionPoints.get(identifier);
         return extensionPoint != null
                 ? Result.of(extensionPoint)
                 : Result.empty();
@@ -221,7 +221,7 @@ public class ExtensionManager implements AutoCloseable {
      * @param klass the class
      */
     @SuppressWarnings("unchecked")
-    public <T extends ExtensionPoint<?>> Result<T> getExtensionPoint(Class<T> klass) {
+    public <T extends AExtensionPoint<?>> Result<T> getExtensionPoint(Class<T> klass) {
         return (Result<T>) getExtensionPoint(klass.getCanonicalName());
     }
 

@@ -1,7 +1,7 @@
 package de.featjar.base.computation;
 
 import de.featjar.base.Feat;
-import de.featjar.base.extension.Initializer;
+import de.featjar.base.extension.IInitializer;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -14,7 +14,7 @@ import java.util.List;
  *
  * @author Elias Kuiter
  */
-public class DependencyManager implements Initializer {
+public class DependencyManager implements IInitializer {
     protected final LinkedHashMap<Class<? extends IComputation<?>>, List<Dependency<?>>>
             dependencyMap = new LinkedHashMap<>();
 
@@ -32,6 +32,7 @@ public class DependencyManager implements Initializer {
     @Override
     public void close() {
         Feat.log().debug("de-initializing dependency manager");
+        clear();
     }
 
     /**

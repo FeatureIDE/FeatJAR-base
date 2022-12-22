@@ -21,8 +21,8 @@
 package de.featjar.base.io.list;
 
 import de.featjar.base.data.Result;
-import de.featjar.base.io.InputMapper;
-import de.featjar.base.io.format.Format;
+import de.featjar.base.io.AInputMapper;
+import de.featjar.base.io.format.IFormat;
 
 import java.util.*;
 import java.util.function.Supplier;
@@ -34,7 +34,7 @@ import java.util.stream.Collectors;
  * @author Sebastian Krieter
  * @author Elias Kuiter
  */
-public class StringListFormat implements Format<List<String>> {
+public class StringListFormat implements IFormat<List<String>> {
     private static final String MULTILINE_COMMENT = "###";
     private static final LinkedHashSet<String> COMMENTS = new LinkedHashSet<>();
     static {
@@ -58,13 +58,13 @@ public class StringListFormat implements Format<List<String>> {
     }
 
     @Override
-    public Result<List<String>> parse(InputMapper inputMapper) {
+    public Result<List<String>> parse(AInputMapper inputMapper) {
         final List<String> lines = inputMapper.get().readLines();
         return parse(inputMapper.get().readLines(), new ArrayList<>(lines.size()));
     }
 
     @Override
-    public Result<List<String>> parse(InputMapper inputMapper, Supplier<List<String>> supplier) {
+    public Result<List<String>> parse(AInputMapper inputMapper, Supplier<List<String>> supplier) {
         return parse(inputMapper.get().readLines(), supplier.get());
     }
 

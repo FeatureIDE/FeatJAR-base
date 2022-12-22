@@ -24,8 +24,8 @@ import de.featjar.base.Feat;
 import de.featjar.base.FeatJAR;
 import de.featjar.base.data.Result;
 import de.featjar.base.io.IO;
-import de.featjar.base.io.format.Format;
-import de.featjar.base.io.format.FormatSupplier;
+import de.featjar.base.io.format.IFormat;
+import de.featjar.base.io.format.IFormatSupplier;
 import de.featjar.base.log.Log;
 
 import java.io.BufferedReader;
@@ -124,7 +124,7 @@ public class CommandLineInterface {
      * @param formatSupplier the format supplier
      * @param <T> the type of the result
      */
-    public static <T> Result<T> loadFile(String pathOrStdin, FormatSupplier<T> formatSupplier) {
+    public static <T> Result<T> loadFile(String pathOrStdin, IFormatSupplier<T> formatSupplier) {
         Matcher matcher = STANDARD_INPUT_PATTERN.matcher(pathOrStdin.toLowerCase());
         if (matcher.matches()) {
             Path path = Paths.get(matcher.group(2) != null ? "stdin." + matcher.group(2) : "stdin");
@@ -145,7 +145,7 @@ public class CommandLineInterface {
      * @param format the format
      * @param <T> the type of the object
      */
-    public static <T> void saveFile(T object, String pathOrStdout, Format<T> format) {
+    public static <T> void saveFile(T object, String pathOrStdout, IFormat<T> format) {
         try {
             if (pathOrStdout.equalsIgnoreCase(STANDARD_OUTPUT)) {
                 IO.save(object, System.out, format);

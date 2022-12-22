@@ -30,7 +30,7 @@ import de.featjar.base.env.StackTrace;
  *
  * @author Elias Kuiter
  */
-public class CallerFormatter implements Formatter {
+public class CallerFormatter implements IFormatter {
     @Override
     public String getPrefix() {
         return String.format("[%s] ", new StackTrace()

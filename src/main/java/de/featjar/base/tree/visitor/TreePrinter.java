@@ -21,9 +21,8 @@
 package de.featjar.base.tree.visitor;
 
 import de.featjar.base.data.Result;
-import de.featjar.base.tree.structure.Traversable;
+import de.featjar.base.tree.structure.ITree;
 import java.util.List;
-import java.util.Optional;
 import java.util.function.Function;
 import java.util.function.Predicate;
 
@@ -34,21 +33,21 @@ import java.util.function.Predicate;
  *
  * @author Sebastian Krieter
  */
-public class TreePrinter implements TreeVisitor<Traversable<?>, String> {
+public class TreePrinter implements ITreeVisitor<ITree<?>, String> {
     private final StringBuilder treeStringBuilder = new StringBuilder();
     private String indentation = "  ";
-    private Predicate<Traversable<?>> filter = null;
-    private Function<Traversable<?>, String> toStringFunction = Object::toString;
+    private Predicate<ITree<?>> filter = null;
+    private Function<ITree<?>, String> toStringFunction = Object::toString;
 
     public String getIndentation() {
         return indentation;
     }
 
-    public Predicate<Traversable<?>> getFilter() {
+    public Predicate<ITree<?>> getFilter() {
         return filter;
     }
 
-    public Function<Traversable<?>, String> getToStringFunction() {
+    public Function<ITree<?>, String> getToStringFunction() {
         return toStringFunction;
     }
 
@@ -56,11 +55,11 @@ public class TreePrinter implements TreeVisitor<Traversable<?>, String> {
         this.indentation = indentation;
     }
 
-    public void setFilter(Predicate<Traversable<?>> filter) {
+    public void setFilter(Predicate<ITree<?>> filter) {
         this.filter = filter;
     }
 
-    public void setToStringFunction(Function<Traversable<?>, String> toStringFunction) {
+    public void setToStringFunction(Function<ITree<?>, String> toStringFunction) {
         this.toStringFunction = toStringFunction;
     }
 
@@ -75,8 +74,8 @@ public class TreePrinter implements TreeVisitor<Traversable<?>, String> {
     }
 
     @Override
-    public TraversalAction firstVisit(List<Traversable<?>> path) {
-        final Traversable<?> currentNode = getCurrentNode(path);
+    public TraversalAction firstVisit(List<ITree<?>> path) {
+        final ITree<?> currentNode = getCurrentNode(path);
         if ((filter == null) || filter.test(currentNode)) {
             try {
                 treeStringBuilder.append(String.valueOf(indentation).repeat(Math.max(0, path.size() - 1)));

@@ -27,7 +27,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import de.featjar.base.data.Problem;
 import de.featjar.base.data.Result;
-import de.featjar.base.io.format.Format;
+import de.featjar.base.io.format.IFormat;
 import de.featjar.base.tree.structure.LabeledTree;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -41,7 +41,7 @@ import org.junit.jupiter.api.Test;
 
 @SuppressWarnings("OptionalGetWithoutIsPresent")
 public class IOTest {
-    static class IntegerFormat implements Format<Integer> {
+    static class IntegerFormat implements IFormat<Integer> {
         @Override
         public String getName() {
             return "Integer";
@@ -63,7 +63,7 @@ public class IOTest {
         }
 
         @Override
-        public Result<Integer> parse(InputMapper inputMapper) {
+        public Result<Integer> parse(AInputMapper inputMapper) {
             return inputMapper.get().read().map(Integer::valueOf);
         }
 
@@ -73,7 +73,7 @@ public class IOTest {
         }
     }
 
-    static class IntegerTreeFormat implements Format<LabeledTree<Integer>> {
+    static class IntegerTreeFormat implements IFormat<LabeledTree<Integer>> {
         @Override
         public String getName() {
             return "IntegerTree";
@@ -95,19 +95,19 @@ public class IOTest {
         }
 
         @Override
-        public Format<LabeledTree<Integer>> getInstance() {
+        public IFormat<LabeledTree<Integer>> getInstance() {
             return new IntegerTreeFormat();
         }
 
         @Override
-        public Result<LabeledTree<Integer>> parse(InputMapper inputMapper) {
+        public Result<LabeledTree<Integer>> parse(AInputMapper inputMapper) {
             List<Problem> problems = new ArrayList<>();
             List<String> lines = inputMapper.get().readLines();
             if (lines.isEmpty()) return Result.empty();
             LabeledTree<Integer> integerTree = new LabeledTree<>(Integer.valueOf(lines.remove(0)));
             for (String line : lines) {
                 Result<LabeledTree<Integer>> result = inputMapper.withMainPath(
-                        IOObject.getPathWithExtension(line, getFileExtension()),
+                        IIOObject.getPathWithExtension(line, getFileExtension()),
                         () -> getInstance().parse(inputMapper));
                 if (result.isPresent()) integerTree.addChild(result.get());
                 else problems.add(new Problem("could not parse subtree", Problem.Severity.WARNING));
@@ -121,7 +121,7 @@ public class IOTest {
         }
 
         @Override
-        public void write(LabeledTree<Integer> object, OutputMapper outputMapper) throws IOException {
+        public void write(LabeledTree<Integer> object, AOutputMapper outputMapper) throws IOException {
             outputMapper
                     .get()
                     .write(serialize(object).get() + "\n"
@@ -131,13 +131,13 @@ public class IOTest {
                                     .collect(Collectors.joining("\n")));
             for (LabeledTree<Integer> child : object.getChildren()) {
                 outputMapper.withMainPath(
-                        IOObject.getPathWithExtension(String.valueOf(child.hashCode()), getFileExtension()),
+                        IIOObject.getPathWithExtension(String.valueOf(child.hashCode()), getFileExtension()),
                         () -> getInstance().write(child, outputMapper));
             }
         }
     }
 
-    static class NestedFormat implements Format<List<Integer>> {
+    static class NestedFormat implements IFormat<List<Integer>> {
         @Override
         public String getName() {
             return "Nested";
@@ -154,18 +154,18 @@ public class IOTest {
         }
 
         @Override
-        public Format<List<Integer>> getInstance() {
+        public IFormat<List<Integer>> getInstance() {
             return new NestedFormat();
         }
 
         @Override
-        public void write(List<Integer> object, OutputMapper outputMapper) throws IOException {
+        public void write(List<Integer> object, AOutputMapper outputMapper) throws IOException {
             if (!object.isEmpty()) {
                 outputMapper.withMainPath(
                         outputMapper
                                 .getPath(outputMapper.get())
                                 .get()
-                                .resolveSibling(IOObject.getPathWithExtension(
+                                .resolveSibling(IIOObject.getPathWithExtension(
                                                 String.valueOf(object.remove(0)), getFileExtension())
                                         .resolve("index")),
                         () -> getInstance().write(object, outputMapper));
@@ -235,7 +235,7 @@ public class IOTest {
             assertEquals(1, result.get().getLabel());
             assertEquals(0, result.get().getChildren().size());
             assertEquals(2, result.getProblems().size());
-            result = IO.load(testPath, new IntegerTreeFormat(), IOMapper.Options.INPUT_FILE_HIERARCHY);
+            result = IO.load(testPath, new IntegerTreeFormat(), AIOMapper.Options.INPUT_FILE_HIERARCHY);
             assertTrue(result.isPresent());
             assertEquals(1, result.get().getLabel());
             assertEquals(2, result.get().getChildren().size());
@@ -248,9 +248,9 @@ public class IOTest {
             assertTrue(stringMap.get(Paths.get("__main__")).startsWith("1"));
 
             assertDoesNotThrow(
-                    () -> IO.save(integerTree, testPath, new IntegerTreeFormat(), IOMapper.Options.OUTPUT_FILE_ZIP));
+                    () -> IO.save(integerTree, testPath, new IntegerTreeFormat(), AIOMapper.Options.OUTPUT_FILE_ZIP));
             assertDoesNotThrow(
-                    () -> IO.save(integerTree, testPath, new IntegerTreeFormat(), IOMapper.Options.OUTPUT_FILE_JAR));
+                    () -> IO.save(integerTree, testPath, new IntegerTreeFormat(), AIOMapper.Options.OUTPUT_FILE_JAR));
         } finally {
             Files.walk(testPath.getParent() == null ? Paths.get("") : testPath.getParent(), 1)
                     .forEach(path -> {

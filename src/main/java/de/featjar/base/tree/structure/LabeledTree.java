@@ -30,7 +30,7 @@ import java.util.Objects;
  * @param <T> the type of label
  * @author Sebastian Krieter
  */
-public class LabeledTree<T> extends Tree<LabeledTree<T>> {
+public class LabeledTree<T> extends ATree<LabeledTree<T>> {
     protected T label;
 
     public LabeledTree() {

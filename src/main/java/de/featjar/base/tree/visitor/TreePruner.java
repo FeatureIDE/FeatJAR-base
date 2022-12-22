@@ -20,7 +20,7 @@
  */
 package de.featjar.base.tree.visitor;
 
-import de.featjar.base.tree.structure.Traversable;
+import de.featjar.base.tree.structure.ITree;
 import java.util.Collections;
 import java.util.List;
 
@@ -30,7 +30,7 @@ import java.util.List;
  *
  * @author Sebastian Krieter
  */
-public class TreePruner implements TreeVisitor<Traversable<?>, Void> {
+public class TreePruner implements ITreeVisitor<ITree<?>, Void> {
 
     private int depthLimit = Integer.MAX_VALUE;
 
@@ -43,10 +43,10 @@ public class TreePruner implements TreeVisitor<Traversable<?>, Void> {
     }
 
     @Override
-    public TraversalAction firstVisit(List<Traversable<?>> path) {
+    public TraversalAction firstVisit(List<ITree<?>> path) {
         try {
             if (path.size() > depthLimit) {
-                final Traversable<?> node = getCurrentNode(path);
+                final ITree<?> node = getCurrentNode(path);
                 node.setChildren(Collections.emptyList());
                 return TraversalAction.SKIP_CHILDREN;
             }

@@ -7,7 +7,7 @@ import de.featjar.base.data.Result;
 import de.featjar.base.computation.Cache;
 import de.featjar.base.extension.IExtension;
 import de.featjar.base.extension.ExtensionManager;
-import de.featjar.base.extension.ExtensionPoint;
+import de.featjar.base.extension.AExtensionPoint;
 import de.featjar.base.io.IO;
 import de.featjar.base.log.CallerFormatter;
 import de.featjar.base.log.Log;
@@ -168,7 +168,7 @@ public class FeatJAR extends IO implements AutoCloseable {
      * @param <T>   the type of the extension point's class
      * @param klass the extension point's class
      */
-    public <T extends ExtensionPoint<?>> Result<T> getExtensionPoint(Class<T> klass) {
+    public <T extends AExtensionPoint<?>> Result<T> getExtensionPoint(Class<T> klass) {
         return extensionManager.getExtensionPoint(klass);
     }
 
@@ -262,7 +262,7 @@ public class FeatJAR extends IO implements AutoCloseable {
      * @param <T>   the type of the extension point's class
      * @param klass the extension point's class
      */
-    public static <T extends ExtensionPoint<?>> T extensionPoint(Class<T> klass) {
+    public static <T extends AExtensionPoint<?>> T extensionPoint(Class<T> klass) {
         if (instance == null)
             throw new RuntimeException("FeatJAR not initialized yet");
         Result<T> extensionPoint = instance.getExtensionPoint(klass);

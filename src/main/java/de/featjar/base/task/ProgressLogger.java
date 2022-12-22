@@ -30,9 +30,9 @@ import java.util.function.Supplier;
  * @author Sebastian Krieter
  */
 public class ProgressLogger implements Supplier<Boolean> {
-    protected final Monitor monitor;
+    protected final IMonitor monitor;
 
-    public ProgressLogger(Monitor monitor) {
+    public ProgressLogger(IMonitor monitor) {
         this.monitor = monitor;
     }
 

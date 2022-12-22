@@ -30,7 +30,7 @@ import java.util.stream.Collectors;
  * @author Sebastian Krieter
  * @author Elias Kuiter
  */
-public class IndentFormatter implements Formatter {
+public class IndentFormatter implements IFormatter {
     private int level = 0;
     private String symbol = "\t";
 

@@ -22,9 +22,9 @@ package de.featjar.base.io.binary;
 
 import de.featjar.base.Feat;
 import de.featjar.base.data.Result;
-import de.featjar.base.io.InputMapper;
-import de.featjar.base.io.OutputMapper;
-import de.featjar.base.io.format.Format;
+import de.featjar.base.io.AInputMapper;
+import de.featjar.base.io.AOutputMapper;
+import de.featjar.base.io.format.IFormat;
 
 import java.io.*;
 
@@ -34,7 +34,7 @@ import java.io.*;
  * @param <T> the type of the object
  * @author Sebastian Krieter
  */
-public class SerializableObjectFormat<T extends Serializable> implements Format<T> {
+public class SerializableObjectFormat<T extends Serializable> implements IFormat<T> {
     @Override
     public String getName() {
         return "Serializable Object";
@@ -51,7 +51,7 @@ public class SerializableObjectFormat<T extends Serializable> implements Format<
     }
 
     @Override
-    public Result<T> parse(InputMapper inputMapper) {
+    public Result<T> parse(AInputMapper inputMapper) {
         try (ObjectInputStream in = new ObjectInputStream(inputMapper.get().getInputStream())) {
             @SuppressWarnings("unchecked")
             final T readObject = (T) in.readObject();
@@ -63,7 +63,7 @@ public class SerializableObjectFormat<T extends Serializable> implements Format<
     }
 
     @Override
-    public void write(T object, OutputMapper outputMapper) {
+    public void write(T object, AOutputMapper outputMapper) {
         final OutputStream outputStream = outputMapper.get().getOutputStream();
         try (ObjectOutputStream oos = new ObjectOutputStream(outputStream)) {
             oos.writeObject(object);

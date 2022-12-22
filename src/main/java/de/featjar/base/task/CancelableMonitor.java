@@ -31,7 +31,7 @@ import java.util.Optional;
  * @deprecated this should be merged with the new computation concept
  */
 @Deprecated
-public class CancelableMonitor implements Monitor {
+public class CancelableMonitor implements IMonitor {
     protected final CancelableMonitor parentMonitor;
     protected String taskName;
     protected boolean canceled = false;

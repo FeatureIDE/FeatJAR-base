@@ -2,10 +2,10 @@ package de.featjar.base.computation;
 
 import de.featjar.base.FeatJAR;
 import de.featjar.base.data.Result;
-import de.featjar.base.task.Monitor;
-import de.featjar.base.tree.structure.LeafNode;
-import de.featjar.base.tree.structure.Traversable;
-import de.featjar.base.tree.structure.Tree;
+import de.featjar.base.task.IMonitor;
+import de.featjar.base.tree.structure.ALeafNode;
+import de.featjar.base.tree.structure.ITree;
+import de.featjar.base.tree.structure.ATree;
 
 import java.util.Arrays;
 import java.util.List;
@@ -21,7 +21,7 @@ import java.util.stream.Collectors;
  * @param <T> the type of the computation result
  * @author Elias Kuiter
  */
-public abstract class AComputation<T> extends Tree<IComputation<?>> implements IComputation<T> {
+public abstract class AComputation<T> extends ATree<IComputation<?>> implements IComputation<T> {
     protected AComputation(IComputation<?>... computations) {
         if (computations.length > 0)
             super.setChildren(Arrays.asList(computations));
@@ -81,9 +81,9 @@ public abstract class AComputation<T> extends Tree<IComputation<?>> implements I
      *
      * @param <T> the type of the computed value
      */
-    public static class Constant<T> extends LeafNode<IComputation<?>> implements IComputation<T> {
+    public static class Constant<T> extends ALeafNode<IComputation<?>> implements IComputation<T> {
         protected final T value;
-        protected final Monitor monitor;
+        protected final IMonitor monitor;
 
         /**
          * Creates a constant computation.
@@ -91,7 +91,7 @@ public abstract class AComputation<T> extends Tree<IComputation<?>> implements I
          * @param value the value
          * @param monitor the monitor
          */
-        public Constant(T value, Monitor monitor) {
+        public Constant(T value, IMonitor monitor) {
             this.value = value;
             this.monitor = monitor;
         }
@@ -112,7 +112,7 @@ public abstract class AComputation<T> extends Tree<IComputation<?>> implements I
         }
 
         @Override
-        public Traversable<IComputation<?>> cloneNode() {
+        public ITree<IComputation<?>> cloneNode() {
             return new Constant<>(value, monitor);
         }
     }
@@ -166,7 +166,7 @@ public abstract class AComputation<T> extends Tree<IComputation<?>> implements I
         }
 
         @Override
-        public Traversable<IComputation<?>> cloneNode() {
+        public ITree<IComputation<?>> cloneNode() {
             return new Mapper<>(getInput(), identifier, function);
         }
     }
@@ -198,7 +198,7 @@ public abstract class AComputation<T> extends Tree<IComputation<?>> implements I
         }
 
         @Override
-        public Traversable<IComputation<?>> cloneNode() {
+        public ITree<IComputation<?>> cloneNode() {
             return new AllOf();
         }
     }

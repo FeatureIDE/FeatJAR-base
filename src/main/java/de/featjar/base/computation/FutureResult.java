@@ -2,7 +2,7 @@ package de.featjar.base.computation;
 
 import de.featjar.base.data.Result;
 import de.featjar.base.task.CancelableMonitor;
-import de.featjar.base.task.Monitor;
+import de.featjar.base.task.IMonitor;
 
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
@@ -21,9 +21,9 @@ import java.util.function.BiFunction;
  * @author Elias Kuiter
  */
 public class FutureResult<T> extends CompletableFuture<Result<T>> {
-    protected Monitor monitor;
+    protected IMonitor monitor;
 
-    protected FutureResult(Monitor monitor) {
+    protected FutureResult(IMonitor monitor) {
         this.monitor = monitor;
     }
 
@@ -34,7 +34,7 @@ public class FutureResult<T> extends CompletableFuture<Result<T>> {
      * @param monitor the monitor
      * @param <T> the type of the future result
      */
-    public static <T> FutureResult<T> ofResult(Result<T> result, Monitor monitor) {
+    public static <T> FutureResult<T> ofResult(Result<T> result, IMonitor monitor) {
         FutureResult<T> futureResult = new FutureResult<>(monitor);
         futureResult.complete(result);
         return futureResult;
@@ -47,7 +47,7 @@ public class FutureResult<T> extends CompletableFuture<Result<T>> {
      * @param monitor the monitor
      * @param <T> the type of the future result
      */
-    public static <T> FutureResult<T> of(T object, Monitor monitor) {
+    public static <T> FutureResult<T> of(T object, IMonitor monitor) {
         return ofResult(Result.of(object), monitor);
     }
 
@@ -56,7 +56,7 @@ public class FutureResult<T> extends CompletableFuture<Result<T>> {
      *
      * @param monitor the monitor
      */
-    public static FutureResult<Void> empty(Monitor monitor) {
+    public static FutureResult<Void> empty(IMonitor monitor) {
         return of(null, monitor); // careful, is considered erroneous
     }
 
@@ -82,7 +82,7 @@ public class FutureResult<T> extends CompletableFuture<Result<T>> {
      * @param fn the function
      * @param <U> the type of the future result
      */
-    public <U> FutureResult<U> thenCompute(BiFunction<T, Monitor, U> fn) {
+    public <U> FutureResult<U> thenCompute(BiFunction<T, IMonitor, U> fn) {
         return thenComputeFromResult(liftArgumentAndReturnValue(fn));
     }
 
@@ -92,7 +92,7 @@ public class FutureResult<T> extends CompletableFuture<Result<T>> {
      * @param fn the function
      * @param <U> the type of the future result
      */
-    public <U> FutureResult<U> thenComputeResult(BiFunction<T, Monitor, Result<U>> fn) {
+    public <U> FutureResult<U> thenComputeResult(BiFunction<T, IMonitor, Result<U>> fn) {
         return thenComputeFromResult(liftArgument(fn));
     }
 
@@ -103,15 +103,15 @@ public class FutureResult<T> extends CompletableFuture<Result<T>> {
      * @param <U> the type of the future result
      */
     @SuppressWarnings({"unchecked", "rawtypes"})
-    public <U> FutureResult<U> thenComputeFromResult(BiFunction<Result<T>, Monitor, Result<U>> fn) {
+    public <U> FutureResult<U> thenComputeFromResult(BiFunction<Result<T>, IMonitor, Result<U>> fn) {
         return (FutureResult) super.thenApply(tResult -> fn.apply(tResult, monitor));
     }
 
-    protected static <T, U> BiFunction<Result<T>, Monitor, Result<U>> liftArgument(BiFunction<T, Monitor, Result<U>> fn) {
+    protected static <T, U> BiFunction<Result<T>, IMonitor, Result<U>> liftArgument(BiFunction<T, IMonitor, Result<U>> fn) {
         return (tResult, monitor) -> tResult.isPresent() ? fn.apply(tResult.get(), monitor) : Result.empty(tResult);
     }
 
-    protected static <T, U> BiFunction<Result<T>, Monitor, Result<U>> liftArgumentAndReturnValue(BiFunction<T, Monitor, U> fn) {
+    protected static <T, U> BiFunction<Result<T>, IMonitor, Result<U>> liftArgumentAndReturnValue(BiFunction<T, IMonitor, U> fn) {
         return (tResult, monitor) -> tResult.isPresent() ? Result.of(fn.apply(tResult.get(), monitor)) : Result.empty(tResult);
     }
 

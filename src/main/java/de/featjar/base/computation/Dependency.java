@@ -1,6 +1,6 @@
 package de.featjar.base.computation;
 
-import de.featjar.base.tree.structure.Tree;
+import de.featjar.base.tree.structure.ATree;
 
 import static de.featjar.base.computation.Computations.async;
 
@@ -9,7 +9,7 @@ import static de.featjar.base.computation.Computations.async;
  *
  * @param <U> the type of the dependency's computation result
  */
-public class Dependency<U> extends Tree.Entry<IComputation<?>, IComputation<U>> {
+public class Dependency<U> extends ATree.Entry<IComputation<?>, IComputation<U>> {
     /**
      * Creates a new dependency.
      */

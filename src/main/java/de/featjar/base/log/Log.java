@@ -23,9 +23,9 @@ package de.featjar.base.log;
 import de.featjar.base.Feat;
 import de.featjar.base.FeatJAR;
 import de.featjar.base.data.Problem;
-import de.featjar.base.extension.Initializer;
+import de.featjar.base.extension.IInitializer;
 import de.featjar.base.io.MultiStream;
-import de.featjar.base.task.Monitor;
+import de.featjar.base.task.IMonitor;
 import de.featjar.base.task.ProgressLogger;
 import de.featjar.base.task.IntervalThread;
 
@@ -37,13 +37,13 @@ import java.util.*;
 
 /**
  * Logs messages to standard output and files.
- * Formats log messages with {@link Formatter formatters}.
+ * Formats log messages with {@link IFormatter formatters}.
  * TODO: add log methods accepting lambdas (Supplier of String) to avoid creating strings when log is disabled
  *
  * @author Sebastian Krieter
  * @author Elias Kuiter
  */
-public class Log implements Initializer {
+public class Log implements IInitializer {
     /**
      * Verbosity of the log.
      */
@@ -85,7 +85,7 @@ public class Log implements Initializer {
         // TODO: to make this more general, we could use an OutputMapper here to
         //  log to anything supported by an OutputMapper (even a ZIP file).
         protected final LinkedHashMap<Verbosity, de.featjar.base.io.PrintStream> logStreams = new LinkedHashMap<>();
-        protected final LinkedList<Formatter> formatters = new LinkedList<>();
+        protected final LinkedList<IFormatter> formatters = new LinkedList<>();
 
         {
             resetLogStreams();
@@ -152,7 +152,7 @@ public class Log implements Initializer {
          * @param formatter the formatter
          * @return this configuration
          */
-        public Configuration addFormatter(Formatter formatter) {
+        public Configuration addFormatter(IFormatter formatter) {
             formatters.add(formatter);
             return this;
         }
@@ -385,11 +385,11 @@ public class Log implements Initializer {
             return message;
         } else {
             final StringBuilder sb = new StringBuilder();
-            for (final Formatter formatter : configuration.formatters) {
+            for (final IFormatter formatter : configuration.formatters) {
                 sb.append(formatter.getPrefix());
             }
             sb.append(message);
-            for (final Formatter formatter : configuration.formatters) {
+            for (final IFormatter formatter : configuration.formatters) {
                 sb.append(formatter.getSuffix());
             }
             return sb.toString();
@@ -403,7 +403,7 @@ public class Log implements Initializer {
      * @param interval the interval
      * @return the interval thread
      */
-    public IntervalThread startProgressLogger(Monitor monitor, long interval) {
+    public IntervalThread startProgressLogger(IMonitor monitor, long interval) {
         final IntervalThread intervalThread = new IntervalThread(new ProgressLogger(monitor), interval);
         intervalThread.start();
         return intervalThread;
@@ -413,8 +413,8 @@ public class Log implements Initializer {
      * Logs messages during (de-)initialization of FeatJAR, as there is no {@link Log} configured then.
      */
     public static class Fallback extends Log {
-        Formatter timeStampFormatter = new TimeStampFormatter();
-        Formatter callerFormatter = new CallerFormatter();
+        IFormatter timeStampFormatter = new TimeStampFormatter();
+        IFormatter callerFormatter = new CallerFormatter();
 
         public Fallback() {
             super(null);
