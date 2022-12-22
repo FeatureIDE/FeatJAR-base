@@ -1,207 +1,255 @@
 package de.featjar.base.cli;
 
+import de.featjar.base.FeatJAR;
+import de.featjar.base.data.Problem;
 import de.featjar.base.data.Result;
+import de.featjar.base.extension.IExtension;
+import de.featjar.base.extension.ExtensionPoint;
+import de.featjar.base.log.IndentStringBuilder;
+import de.featjar.base.log.Log;
 
 import java.util.*;
-import java.util.function.Function;
-import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 /**
- * Parses a list of string arguments.
- * Adapted from
- * <a href="https://github.com/ekuiter/PCLocator/blob/master/src/de/ovgu/spldev/pclocator/Arguments.java">PCLocator</a>.
+ * Parses a list of string arguments supplied on the command-line interface.
+ * Parses the first argument as a command name and the remaining arguments as options.
+ * Parse errors are treated as unrecoverable:
+ * Whenever an error occurs, it is printed alongside the correct usage and the process is exited.
  *
  * @author Elias Kuiter
  */
-public class ArgumentParser {
+public class ArgumentParser extends AArgumentParser {
     /**
-     * Thrown whenever an unexpected parsing error occurs.
+     * Option for printing usage information.
      */
-    static class ArgumentParseException extends Exception {
-        public ArgumentParseException(String message) {
-            super(message);
-        }
-    }
-
-    List<String> arguments;
-    List<String> unusedArguments;
+    public static final Option<Boolean> HELP_OPTION =
+            new Option.Flag("--help")
+                    .setDescription("Print usage information");
 
     /**
-     * Creates a new argument parser.
+     * Option for printing version information.
+     */
+    public static final Option<Boolean> VERSION_OPTION =
+            new Option.Flag("--version")
+                    .setDescription("Print version information");
+
+    /**
+     * Option for setting the logger verbosity.
+     */
+    public static final Option<Log.Verbosity> VERBOSITY_OPTION =
+            new Option<>("--verbosity", s -> Result.ofOptional(Log.Verbosity.of(s)))
+                    .setDescription("The logger verbosity, one of none, " + // todo: make none an explicit value
+                            Arrays.stream(Log.Verbosity.values())
+                                    .map(Objects::toString)
+                                    .map(String::toLowerCase)
+                                    .collect(Collectors.joining(", ")))
+                    .setDefaultValue(CommandLineInterface.DEFAULT_MAXIMUM_VERBOSITY);
+
+    protected static final int COMMAND_NAME_POSITION = 0;
+    protected final String commandName;
+
+    /**
+     * Creates a new argument parser for the command-line interface.
      *
      * @param args the arguments to parse
      */
-    ArgumentParser(String[] args) {
-        this(List.of(args));
+    public ArgumentParser(String[] args) {
+        super(args);
+        if (args.length > 0)
+            commandName = parsePositionalArguments(COMMAND_NAME_POSITION).get(COMMAND_NAME_POSITION);
+        else
+            commandName = null;
     }
 
     /**
-     * Creates a new argument parser.
-     *
-     * @param arguments the arguments to parse
+     * {@return the command supplied in the given arguments}
      */
-    ArgumentParser(List<String> arguments) {
-        this.arguments = new ArrayList<>(arguments);
-        this.unusedArguments = new ArrayList<>(arguments);
+    public Optional<ICommand> getCommand() {
+        return commandName != null
+                ? Optional.of(getRequiredExtension(FeatJAR.extensionPoint(Commands.class), commandName))
+                : Optional.empty();
     }
 
     /**
-     * Parses all positional arguments.
-     * For example, if passed 0 and -1, parses the first and last argument.
-     * Removes all parsed arguments from the argument list.
-     * Thus, should be called before parsing any options.
-     *
-     * @param positions the positions where the arguments occur, may be negative
-     * @return a map of the positions to their argument values
-     * @throws ArgumentParseException when a parsing error occurs
+     * {@return the verbosity supplied in the given arguments}
      */
-    public LinkedHashMap<Integer, String> parsePositionalArguments(List<Integer> positions) throws ArgumentParseException {
-        LinkedHashMap<Integer, String> positionalArguments = new LinkedHashMap<>();
-        for (Integer position : positions) {
-            int actualPosition = position;
-            int expected = position;
-            if (position < 0) {
-                actualPosition = arguments.size() + position;
-                expected = arguments.size() - actualPosition;
-            }
-            expected++;
-            if (actualPosition < 0 || actualPosition >= arguments.size())
-                throw new ArgumentParseException(String.format(
-                        "Only %d arguments supplied, but at least %s expected.",
-                        arguments.size(), expected == 1 ? "one was" : expected + " were"));
-            positionalArguments.put(position, arguments.remove(actualPosition));
-            unusedArguments.remove(actualPosition);
+    public Log.Verbosity getVerbosity() {
+        return VERBOSITY_OPTION.parseFrom(this);
+    }
+
+    /**
+     * {@return the general options of the command-line interface}
+     */
+    public List<Option<?>> getOptions() {
+        return List.of(HELP_OPTION, VERSION_OPTION, VERBOSITY_OPTION);
+    }
+
+    /**
+     * Appends the command-line interface help to a string.
+     *
+     * @param sb the indent string builder
+     */
+    public void appendHelp(IndentStringBuilder sb) {
+        List<ICommand> commands = FeatJAR.extensionPoint(Commands.class).getExtensions();
+        sb.appendLine("Usage: java -jar " + FeatJAR.LIBRARY_NAME + " <command> [--<flag> | --<option> <value>]...").appendLine();
+        if (commands.size() == 0) {
+            sb.append("No commands are available. You can register commands in an extensions.xml file when building " + FeatJAR.LIBRARY_NAME + ".\n");
         }
-        return positionalArguments;
-    }
-
-    /**
-     * Parses all positional arguments.
-     * For example, if passed 0 and -1, parses the first and last argument.
-     * Removes all parsed arguments from the argument list.
-     * Thus, should be called before parsing any options, and should only be called once.
-     *
-     * @param positions the positions where the arguments occur, may be negative
-     * @return a map of the positions to their argument values
-     * @throws ArgumentParseException when a parsing error occurs
-     */
-    public LinkedHashMap<Integer, String> parsePositionalArguments(Integer... positions) throws ArgumentParseException {
-        return parsePositionalArguments(List.of(positions));
-    }
-
-    /**
-     * {@return whether a given flag (i.e., a Boolean option) was supplied}
-     *
-     * @param flag the flag
-     * @throws ArgumentParseException when a parsing error occurs
-     */
-    public boolean parseFlag(String flag) throws ArgumentParseException {
-        boolean found = false;
-        for (int i = 0; i < arguments.size(); i++) {
-            String currentArgument = arguments.get(i);
-            if (flag.equals(currentArgument) && !found) {
-                unusedArguments.set(i, null);
-                found = true;
-            } else if (flag.equals(currentArgument))
-                throw new ArgumentParseException(
-                        String.format("Flag %s supplied several times, but may only be supplied once.",
-                                flag));
+        sb.append("The following commands are available:\n").addIndent();
+        for (final ICommand command : commands) {
+            sb.appendLine(String.format("%s: %s", command.getIdentifier(), Optional.ofNullable(command.getDescription()).orElse("")));
         }
-        return found;
-    }
-
-    /**
-     * {@return all values supplied for a given option}
-     *
-     * @param option the option
-     * @throws ArgumentParseException when a parsing error occurs
-     */
-    public List<String> parseOptions(String option) throws ArgumentParseException {
-        ArrayList<String> values = new ArrayList<>();
-
-        for (int i = 0; i < arguments.size() - 1; i++)
-            if (option.equals(arguments.get(i))) {
-                unusedArguments.set(i, null);
-                unusedArguments.set(i + 1, null);
-                values.add(arguments.get(i + 1));
-                i++;
+        sb.removeIndent();
+        sb.appendLine();
+        sb.appendLine("General options:").addIndent();
+        sb.appendLine(getOptions());
+        sb.removeIndent();
+        if (commandName != null) {
+            Result<ICommand> commandResult = guessExtension(FeatJAR.extensionPoint(Commands.class), commandName);
+            if (commandResult.isPresent() && !commandResult.get().getOptions().isEmpty()) {
+                sb.appendLine();
+                sb.appendLine(String.format("Options of command %s:", commandResult.get().getIdentifier()));
+                sb.addIndent();
+                sb.appendLine(commandResult.get().getOptions());
+                sb.removeIndent();
             }
-
-        if (!arguments.isEmpty() && arguments.get(arguments.size() - 1).equals(option))
-            throw new ArgumentParseException(
-                    String.format("Option %s supplied without value, but a value was expected.", option));
-
-        return values;
+        }
     }
 
     /**
-     * {@return the value supplied for a given option, if any}
-     *
-     * @param option the option
-     * @throws ArgumentParseException when a parsing error occurs
+     * {@return the command-line interface help}
      */
-    public Optional<String> parseOption(String option) throws ArgumentParseException {
-        List<String> values = parseOptions(option);
-        if (values.size() > 2)
-            throw new ArgumentParseException(
-                    String.format("Option %s supplied with several values, but only one value was expected.",
-                            option));
-        return values.isEmpty() ? Optional.empty() : Optional.of(values.get(0));
+    public String getHelp() {
+        IndentStringBuilder sb = new IndentStringBuilder();
+        appendHelp(sb);
+        return sb.toString();
     }
 
     /**
-     * {@return the value supplied for a given option}
+     * Handles argument parse exceptions by printing them and exiting.
      *
-     * @param option the option
-     * @throws ArgumentParseException when a parsing error occurs
+     * @param argumentParseException the argument parse exception
      */
-    public String parseRequiredOption(String option) throws ArgumentParseException {
-        Optional<String> value = parseOption(option);
-        if (value.isEmpty())
-            throw new ArgumentParseException(
-                    String.format("Option %s not supplied, but was expected.", option));
-        return value.get();
+    protected void handleException(ArgumentParseException argumentParseException) {
+        System.err.println("Invalid usage: " + argumentParseException.getMessage());
+        System.err.println();
+        System.err.println(getHelp());
+        System.exit(1);
     }
 
     /**
-     * Ensures that a given option has one of the given values.
+     * {@return the extension at the given extension point identified by the given identifier, if any}
      *
-     * @param option        the option
-     * @param value         the value
-     * @param allowedValues the allowed values
-     * @throws ArgumentParseException when a parsing error occurs
+     * @param extensionPoint the extension point
+     * @param identifier     the identifier
+     * @param <T>            the type of the extension
      */
-    public void ensureAllowedValue(String option, String value, String... allowedValues) throws ArgumentParseException {
-        for (String allowedValue : allowedValues)
-            if (value.equals(allowedValue))
-                return;
-        throw new ArgumentParseException(
-                String.format("Value %s supplied for option %s, but one of the following was expected: %s",
-                        value, option, String.join(", ", allowedValues)));
+    public <T extends IExtension> Result<T> guessExtension(ExtensionPoint<T> extensionPoint, String identifier) {
+        return extensionPoint.guessExtension(identifier);
     }
 
     /**
-     * Ensures that all given options have been parsed.
+     * {@return the extension at the given extension point identified by the given identifier}
+     * If the extension cannot be found, prints an error and exits.
      *
-     * @throws ArgumentParseException when a parsing error occurs
+     * @param extensionPoint the extension point
+     * @param identifier     the identifier
+     * @param <T>            the type of the extension
      */
-    public void ensureAllArgumentsUsed() throws ArgumentParseException {
-        String unusedString = unusedArguments.stream()
-                .filter(Objects::nonNull)
-                .collect(Collectors.joining(" "));
-        if (!unusedString.isBlank())
-            throw new ArgumentParseException(
-                    String.format("Arguments %s supplied, but could not be recognized.", unusedString));
+    public <T extends IExtension> T getRequiredExtension(ExtensionPoint<T> extensionPoint, String identifier) {
+        Result<T> extensionResult = guessExtension(extensionPoint, identifier);
+        if (extensionResult.isEmpty())
+            handleException(new ArgumentParseException(extensionResult.getProblems().stream()
+                    .map(Problem::toString)
+                    .collect(Collectors.joining(", "))));
+        return extensionResult.get();
     }
 
-    /**
-     * Ensures that all given options have been parsed.
-     *
-     * @throws ArgumentParseException when a parsing error occurs
-     */
-    public void close() throws ArgumentParseException {
-        ensureAllArgumentsUsed();
+    @Override
+    public LinkedHashMap<Integer, String> parsePositionalArguments(List<Integer> positions) {
+        try {
+            return super.parsePositionalArguments(positions);
+        } catch (ArgumentParseException e) {
+            handleException(e);
+            return null;
+        }
     }
 
+    @Override
+    public LinkedHashMap<Integer, String> parsePositionalArguments(Integer... positions) {
+        try {
+            return super.parsePositionalArguments(positions);
+        } catch (ArgumentParseException e) {
+            handleException(e);
+            return null;
+        }
+    }
+
+    @Override
+    public void ensureAllowedValue(String option, String value, String... allowedValues) {
+        try {
+            super.ensureAllowedValue(option, value, allowedValues);
+        } catch (ArgumentParseException e) {
+            handleException(e);
+        }
+    }
+
+    @Override
+    public boolean parseFlag(String flag) {
+        try {
+            return super.parseFlag(flag);
+        } catch (ArgumentParseException e) {
+            handleException(e);
+            return false;
+        }
+    }
+
+    @Override
+    public List<String> parseOptions(String option) {
+        try {
+            return super.parseOptions(option);
+        } catch (ArgumentParseException e) {
+            handleException(e);
+            return null;
+        }
+    }
+
+    @Override
+    public Optional<String> parseOption(String option) {
+        try {
+            return super.parseOption(option);
+        } catch (ArgumentParseException e) {
+            handleException(e);
+            return Optional.empty();
+        }
+    }
+
+    @Override
+    public String parseRequiredOption(String option) {
+        try {
+            return super.parseRequiredOption(option);
+        } catch (ArgumentParseException e) {
+            handleException(e);
+            return null;
+        }
+    }
+
+    @Override
+    public void ensureAllArgumentsUsed() {
+        try {
+            super.ensureAllArgumentsUsed();
+        } catch (ArgumentParseException e) {
+            handleException(e);
+        }
+    }
+
+    @Override
+    public void close() {
+        try {
+            super.close();
+        } catch (ArgumentParseException e) {
+            handleException(e);
+        }
+    }
 }

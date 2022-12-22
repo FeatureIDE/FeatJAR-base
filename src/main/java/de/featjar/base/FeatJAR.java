@@ -1,10 +1,11 @@
 package de.featjar.base;
 
-import de.featjar.base.cli.CLIArgumentParser;
+import de.featjar.base.cli.ArgumentParser;
 import de.featjar.base.cli.CommandLineInterface;
+import de.featjar.base.computation.DependencyManager;
 import de.featjar.base.data.Result;
 import de.featjar.base.computation.Cache;
-import de.featjar.base.extension.Extension;
+import de.featjar.base.extension.IExtension;
 import de.featjar.base.extension.ExtensionManager;
 import de.featjar.base.extension.ExtensionPoint;
 import de.featjar.base.io.IO;
@@ -177,7 +178,7 @@ public class FeatJAR extends IO implements AutoCloseable {
      * @param <T>   the type of the extension's class
      * @param klass the extension's class
      */
-    public <T extends Extension> Result<T> getExtension(Class<T> klass) {
+    public <T extends IExtension> Result<T> getExtension(Class<T> klass) {
         return extensionManager.getExtension(klass);
     }
 
@@ -193,6 +194,14 @@ public class FeatJAR extends IO implements AutoCloseable {
      */
     public Cache getCache() {
         return initialized ? getExtension(Cache.class).orElse(Cache.Fallback::new) : new Cache.Fallback();
+    }
+
+    /**
+     * {@return this FeatJAR instance's dependency manager}
+     */
+    public DependencyManager getDependencyManager() {
+        if (initialized) return getExtension(DependencyManager.class).orElseThrow();
+        throw new IllegalStateException();
     }
 
     /**
@@ -268,7 +277,7 @@ public class FeatJAR extends IO implements AutoCloseable {
      * @param <T>   the type of the extension point's class
      * @param klass the extension point's class
      */
-    public static <T extends Extension> T extension(Class<T> klass) {
+    public static <T extends IExtension> T extension(Class<T> klass) {
         if (instance == null)
             throw new RuntimeException("FeatJAR not initialized yet");
         Result<T> extension = instance.getExtension(klass);
@@ -292,12 +301,20 @@ public class FeatJAR extends IO implements AutoCloseable {
     }
 
     /**
+     * {@return the current FeatJAR instance's dependency manager}
+     */
+    public static DependencyManager dependencyManager() {
+        if (instance == null) throw new IllegalStateException();
+        return instance.getDependencyManager();
+    }
+
+    /**
      * Main entry point of FeatJAR.
      *
      * @param args command-line arguments
      */
     public static void main(String[] args) {
-        CLIArgumentParser argumentParser = new CLIArgumentParser(args);
+        ArgumentParser argumentParser = new ArgumentParser(args);
         defaultVerbosity = argumentParser.getVerbosity();
         FeatJAR.run(featJAR -> CommandLineInterface.run(argumentParser));
     }

@@ -43,7 +43,7 @@ import org.w3c.dom.NodeList;
 
 /**
  * Searches, installs, and uninstalls extension points and extensions defined on the classpath.
- * An {@link ExtensionPoint} or {@link Extension} can be defined on the classpath by
+ * An {@link ExtensionPoint} or {@link IExtension} can be defined on the classpath by
  * registering it in {@code resources/extensions.xml}.
  *
  * @author Sebastian Krieter
@@ -52,7 +52,7 @@ import org.w3c.dom.NodeList;
 public class ExtensionManager implements AutoCloseable {
     private final LinkedHashMap<String, List<String>> extensionMap = new LinkedHashMap<>();
     private final LinkedHashMap<String, ExtensionPoint<?>> extensionPoints = new LinkedHashMap<>();
-    private final LinkedHashMap<String, Extension> extensions = new LinkedHashMap<>();
+    private final LinkedHashMap<String, IExtension> extensions = new LinkedHashMap<>();
 
     /**
      * Installs all extensions and extension points that can be found on the classpath.
@@ -75,10 +75,10 @@ public class ExtensionManager implements AutoCloseable {
                 extensionPoints.put(ep.getIdentifier(), ep);
                 for (final String extensionId : entry.getValue()) {
                     try {
-                        final Class<Extension> extensionClass =
-                                (Class<Extension>) systemClassLoader.loadClass(extensionId);
+                        final Class<IExtension> extensionClass =
+                                (Class<IExtension>) systemClassLoader.loadClass(extensionId);
                         Feat.log().debug("installing extension " + extensionClass.getName());
-                        Extension e = extensionClass.getConstructor().newInstance();
+                        IExtension e = extensionClass.getConstructor().newInstance();
                         ep.installExtension(e);
                         extensions.put(e.getIdentifier(), e);
                     } catch (final Exception e) {
@@ -198,7 +198,7 @@ public class ExtensionManager implements AutoCloseable {
     /**
      * {@return all installed extensions}
      */
-    public Collection<Extension> getExtensions() {
+    public Collection<IExtension> getExtensions() {
         return extensions.values();
     }
 
@@ -230,9 +230,9 @@ public class ExtensionManager implements AutoCloseable {
      *
      * @param identifier the identifier
      */
-    public Result<Extension> getExtension(String identifier) {
+    public Result<IExtension> getExtension(String identifier) {
         Objects.requireNonNull(identifier, "identifier must not be null!");
-        final Extension extension = extensions.get(identifier);
+        final IExtension extension = extensions.get(identifier);
         return extension != null
                 ? Result.of(extension)
                 : Result.empty();
@@ -246,7 +246,7 @@ public class ExtensionManager implements AutoCloseable {
      * @param klass the class
      */
     @SuppressWarnings("unchecked")
-    public <T extends Extension> Result<T> getExtension(Class<T> klass) {
+    public <T extends IExtension> Result<T> getExtension(Class<T> klass) {
         return (Result<T>) getExtension(klass.getCanonicalName());
     }
 }

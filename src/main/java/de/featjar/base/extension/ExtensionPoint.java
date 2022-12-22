@@ -31,10 +31,9 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.CopyOnWriteArrayList;
-import java.util.stream.Collectors;
 
 /**
- * An extension point installs {@link Extension extensions} of a given type.
+ * An extension point installs {@link IExtension extensions} of a given type.
  * As a naming convention, an extension named "Thing" should be registered in an extension point named "Things".
  * Extension points can be registered in {@code resources/extensions.xml}.
  * Initialization is done by the {@link ExtensionManager} with a public no-arg constructor, which must be available.
@@ -44,7 +43,7 @@ import java.util.stream.Collectors;
  * @author Sebastian Krieter
  * @author Elias Kuiter
  */
-public abstract class ExtensionPoint<T extends Extension> {
+public abstract class ExtensionPoint<T extends IExtension> {
     private final LinkedHashMap<String, Integer> indexMap = new LinkedHashMap<>();
     private final List<T> extensions = new CopyOnWriteArrayList<>();
 
@@ -105,7 +104,7 @@ public abstract class ExtensionPoint<T extends Extension> {
 
     /**
      * {@return all extensions installed at this extension point}
-     * The list is in the same order as the extensions were installed with {@link #installExtension(Extension)}.
+     * The list is in the same order as the extensions were installed with {@link #installExtension(IExtension)}.
      */
     public synchronized List<T> getExtensions() {
         return extensions;
@@ -141,7 +140,7 @@ public abstract class ExtensionPoint<T extends Extension> {
      *
      * @param klass the class
      */
-    public Result<T> getExtension(Class<? extends Extension> klass) {
+    public Result<T> getExtension(Class<? extends IExtension> klass) {
         return getExtension(klass.getCanonicalName());
     }
 }

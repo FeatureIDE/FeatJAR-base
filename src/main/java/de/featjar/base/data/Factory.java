@@ -20,7 +20,7 @@
  */
 package de.featjar.base.data;
 
-import de.featjar.base.extension.Extension;
+import de.featjar.base.extension.IExtension;
 import java.util.function.Supplier;
 
 /**
@@ -29,4 +29,4 @@ import java.util.function.Supplier;
  * @param <T> the type of the created instance
  * @author Sebastian Krieter
  */
-public interface Factory<T> extends Extension, Supplier<T> {}
+public interface Factory<T> extends IExtension, Supplier<T> {}

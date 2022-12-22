@@ -20,27 +20,20 @@
  */
 package de.featjar.base.computation;
 
-import de.featjar.base.Feat;
-import de.featjar.base.data.Result;
-
-import java.util.Optional;
-import java.util.Random;
 import java.util.function.Function;
 
 /**
- * asynchronous function
- * Base class for an analysis performed by a {@link Solver solver}.
- * Contains several mixins to control exactly what capabilities a concrete implementation has.
+ * A computation that analyzes its input.
+ * Can be considered an asynchronous {@link java.util.function.Function}.
  *
- * @param <T> the type of the (primary) analysis input
- * @param <U> the type of the analysis result
- * @author Sebastian Krieter
+ * @param <T> the type of the input
+ * @param <U> the type of the result
  * @author Elias Kuiter
  */
-public interface Analysis<T, U> extends Computable<U>, Computable.WithInput<T>, Function<Computable<T>, FutureResult<U>> {
+public interface IAnalysis<T, U> extends IComputation<U>, IComputation.WithInput<T>, Function<IComputation<T>, FutureResult<U>> {
     @Override
-    default FutureResult<U> apply(Computable<T> tComputable) {
-        setInput(tComputable);
+    default FutureResult<U> apply(IComputation<T> tComputation) {
+        setInput(tComputation);
         return get();
     }
 }

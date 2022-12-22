@@ -76,12 +76,12 @@ public class CommandLineInterface {
      *
      * @param argumentParser the argument parser
      */
-    public static void run(CLIArgumentParser argumentParser) {
+    public static void run(ArgumentParser argumentParser) {
         Feat.log().debug("running command-line interface");
-        if (CLIArgumentParser.HELP_OPTION.parseFrom(argumentParser) || argumentParser.getCommand().isEmpty()) {
+        if (ArgumentParser.HELP_OPTION.parseFrom(argumentParser) || argumentParser.getCommand().isEmpty()) {
             System.out.println(argumentParser.getHelp());
         }
-        else if (CLIArgumentParser.VERSION_OPTION.parseFrom(argumentParser)) {
+        else if (ArgumentParser.VERSION_OPTION.parseFrom(argumentParser)) {
             System.out.println(FeatJAR.LIBRARY_NAME + ", unreleased version");
         } else {
             argumentParser.getCommand().get().run(argumentParser);

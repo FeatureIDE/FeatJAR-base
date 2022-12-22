@@ -22,7 +22,7 @@ package de.featjar.base.io.format;
 
 import de.featjar.base.data.Problem;
 import de.featjar.base.data.Result;
-import de.featjar.base.extension.Extension;
+import de.featjar.base.extension.IExtension;
 import de.featjar.base.io.InputHeader;
 import de.featjar.base.io.InputMapper;
 import de.featjar.base.io.Output;
@@ -41,7 +41,7 @@ import java.util.stream.Collectors;
  * @author Sebastian Krieter
  * @author Elias Kuiter
  */
-public interface Format<T> extends Extension {
+public interface Format<T> extends IExtension {
 
     /**
      * Parses the content of an {@link InputMapper} into a new object.

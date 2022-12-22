@@ -481,7 +481,7 @@ public interface Traversable<T extends Traversable<T>> {
 
     class Entry<T extends Traversable<T>, U extends T> implements Function<T, U> {
         protected final U defaultValue;
-        protected int index;
+        protected int index = -1;
 
         public Entry() {
             this(null);

@@ -20,7 +20,7 @@
  */
 package de.featjar.base.cli;
 
-import de.featjar.base.extension.Extension;
+import de.featjar.base.extension.IExtension;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -31,7 +31,7 @@ import java.util.List;
  * @author Sebastian Krieter
  * @author Elias Kuiter
  */
-public interface Command extends Extension {
+public interface ICommand extends IExtension {
     /**
      * {@return this command's description, if any}
      */
@@ -57,5 +57,5 @@ public interface Command extends Extension {
      *
      * @param argumentParser the argument parser
      */
-    void run(CLIArgumentParser argumentParser);
+    void run(ArgumentParser argumentParser);
 }

@@ -29,7 +29,7 @@ package de.featjar.base.extension;
  * @author Sebastian Krieter
  * @author Elias Kuiter
  */
-public interface Extension {
+public interface IExtension {
 
     /**
      * {@return a unique identifier for this extension}

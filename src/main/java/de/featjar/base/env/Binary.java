@@ -22,7 +22,7 @@ package de.featjar.base.env;
 
 import de.featjar.base.data.Problem;
 import de.featjar.base.data.Result;
-import de.featjar.base.extension.Extension;
+import de.featjar.base.extension.IExtension;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -45,7 +45,7 @@ import java.util.stream.Stream;
  *
  * @author Elias Kuiter
  */
-public abstract class Binary implements Extension {
+public abstract class Binary implements IExtension {
     /**
      * The directory used to store native binaries.
      */

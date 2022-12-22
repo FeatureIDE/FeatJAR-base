@@ -9,5 +9,5 @@ import de.featjar.base.computation.Cache;
  *
  * @author Elias Kuiter
  */
-public interface Initializer extends Extension {
+public interface Initializer extends IExtension {
 }

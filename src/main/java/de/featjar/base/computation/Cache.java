@@ -53,19 +53,19 @@ public class Cache implements Initializer {
 
         /**
          * Caches top-level computation results; that is, those not nested in other computations.
-         * Nested computations are detected by checking if {@link Computable#compute()} is already on the stack.
+         * Nested computations are detected by checking if {@link IComputation#compute()} is already on the stack.
          * Nesting inside anonymous computations (e.g., lambdas) is not detected and therefore cached.
          */
         CachingPolicy CACHE_TOP_LEVEL = (computation, stackTrace) ->
-                !stackTrace.containsMethodCall(Computable.class, "compute");
+                !stackTrace.containsMethodCall(IComputation.class, "compute");
 
         /**
          * {@return whether the calling cache should store the given computation}
          *
-         * @param computable the computation
+         * @param computation the computation
          * @param stackTrace  the current stack trace
          */
-        boolean shouldCache(Computable<?> computable, StackTrace stackTrace);
+        boolean shouldCache(IComputation<?> computation, StackTrace stackTrace);
     }
 
     /**
@@ -98,9 +98,9 @@ public class Cache implements Initializer {
 
     /**
      * A cache that maps computations to their future results.
-     * A {@link Computable} of type {@code T} should be mapped to a {@link FutureResult} of the same type {@code T}.
+     * A {@link IComputation} of type {@code T} should be mapped to a {@link FutureResult} of the same type {@code T}.
      */
-    protected final Map<Computable<?>, FutureResult<?>> computationMap = new ConcurrentHashMap<>();
+    protected final Map<IComputation<?>, FutureResult<?>> computationMap = new ConcurrentHashMap<>();
 
     /**
      * Sets the default configuration used for new caches.
@@ -158,24 +158,24 @@ public class Cache implements Initializer {
 
     /**
      * {@return the result of a given computation}
-     * Returns the {@link FutureResult} for the {@link Computable} from the cache if it has already been stored.
+     * Returns the {@link FutureResult} for the {@link IComputation} from the cache if it has already been stored.
      * Otherwise, computes the {@link FutureResult} and returns it.
      * The computed {@link FutureResult} is cached if the current {@link CachingPolicy} agrees.
      *
-     * @param computable the computation
+     * @param computation the computation
      * @param <T>         the type of the computation result
      */
-    public <T> FutureResult<T> compute(Computable<T> computable) {
-        String computationClassName = computable.getClass().getName();
-        if (has(computable)) {
+    public <T> FutureResult<T> compute(IComputation<T> computation) {
+        String computationClassName = computation.getClass().getName();
+        if (has(computation)) {
             Feat.log().debug("cache hit for " + computationClassName);
-            return get(computable).get();
+            return get(computation).get();
         }
         Feat.log().debug("cache miss for " + computationClassName);
-        FutureResult<T> futureResult = computable.compute();
-        if (configuration.cachingPolicy.shouldCache(computable, new StackTrace())) {
+        FutureResult<T> futureResult = computation.compute();
+        if (configuration.cachingPolicy.shouldCache(computation, new StackTrace())) {
             Feat.log().debug("cache write for " + computationClassName);
-            put(computable, futureResult);
+            put(computation, futureResult);
         }
         return futureResult;
     }
@@ -183,23 +183,23 @@ public class Cache implements Initializer {
     /**
      * {@return whether the given computation has been cached in this cache}
      *
-     * @param computable the computation
+     * @param computation the computation
      * @param <T>         the type of the computation result
      */
-    public <T> boolean has(Computable<T> computable) {
-        return computationMap.containsKey(computable);
+    public <T> boolean has(IComputation<T> computation) {
+        return computationMap.containsKey(computation);
     }
 
     /**
      * {@return the cached result of a given computation, if any}
      *
-     * @param computable the computation
+     * @param computation the computation
      * @param <T>         the type of the computation result
      */
     @SuppressWarnings("unchecked")
-    public <T> Result<FutureResult<T>> get(Computable<T> computable) {
-        return has(computable)
-                ? Result.of((FutureResult<T>) computationMap.get(computable))
+    public <T> Result<FutureResult<T>> get(IComputation<T> computation) {
+        return has(computation)
+                ? Result.of((FutureResult<T>) computationMap.get(computation))
                 : Result.empty();
     }
 
@@ -207,15 +207,15 @@ public class Cache implements Initializer {
      * Sets the cached result for a given computation, if not already cached.
      * Does nothing if the computation has already been cached.
      *
-     * @param computable  the computation
+     * @param computation  the computation
      * @param futureResult the future result
      * @param <T>          the type of the computation result
      * @return whether the operation affected this cache
      */
-    public <T> boolean put(Computable<T> computable, FutureResult<T> futureResult) {
-        if (has(computable)) // once set, immutable
+    public <T> boolean put(IComputation<T> computation, FutureResult<T> futureResult) {
+        if (has(computation)) // once set, immutable
             return false;
-        computationMap.put(computable, futureResult);
+        computationMap.put(computation, futureResult);
         return true;
     }
 
@@ -223,15 +223,15 @@ public class Cache implements Initializer {
      * Removes the cached result for a given computation, if already cached.
      * Does nothing if the computation has not already been cached.
      *
-     * @param computable the computation
+     * @param computation the computation
      * @param <T>         the type of the computation result
      * @return whether the operation affected this cache
      */
-    public <T> boolean remove(Computable<T> computable) {
-        if (!has(computable))
+    public <T> boolean remove(IComputation<T> computation) {
+        if (!has(computation))
             return false;
-        Feat.log().debug("cache remove for " + computable);
-        computationMap.remove(computable);
+        Feat.log().debug("cache remove for " + computation);
+        computationMap.remove(computation);
         return true;
     }
 
