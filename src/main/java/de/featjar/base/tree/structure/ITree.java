@@ -377,7 +377,7 @@ public interface ITree<T extends ITree<T>> extends IBrowsable<GraphVizTreeFormat
     default int hashCodeTree() {
         int hashCode = hashCodeNode();
         for (T child : getChildren()) {
-            hashCode += (hashCode * 37) + child.hashCode();
+            hashCode += (hashCode * 37) + child.hashCodeTree();
         }
         return hashCode;
     }

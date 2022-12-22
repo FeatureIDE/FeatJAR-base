@@ -110,7 +110,7 @@ public class FeatJAR extends IO implements AutoCloseable {
      */
     public static final Function<Cache.Configuration, Cache.Configuration> defaultCacheConfiguration =
             cfg -> cfg
-                    .setCachingPolicy(Cache.CachingPolicy.CACHE_TOP_LEVEL);
+                    .setCachingPolicy(Cache.CachingPolicy.CACHE_ALL); // todo: only top level
 
     /**
      * {@return the current FeatJAR instance}

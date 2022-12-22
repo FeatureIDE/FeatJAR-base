@@ -71,4 +71,9 @@ public abstract class ALeafNode<T extends ITree<T>> implements ITree<T> {
     public boolean equals(Object other) {
         return getClass() == other.getClass() && equalsTree((T) other);
     }
+
+    @Override
+    public int hashCode() {
+        return hashCodeNode();
+    }
 }

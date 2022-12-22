@@ -176,11 +176,11 @@ public class Cache implements IInitializer, IBrowsable<GraphVizTreeFormat<ICompu
     public <T> FutureResult<T> compute(IComputation<T> computation) {
         if (has(computation)) {
             Feat.log().debug("cache hit for " + computation);
+            hitStatistics.putIfAbsent(computation, 0L);
             hitStatistics.put(computation, hitStatistics.get(computation) + 1);
             return get(computation).get();
         }
         Feat.log().debug("cache miss for " + computation);
-        hitStatistics.putIfAbsent(computation, 0L);
         FutureResult<T> futureResult = computation.compute();
         if (configuration.cachingPolicy.shouldCache(computation, new StackTrace())) {
             Feat.log().debug("cache write for " + computation);
@@ -256,10 +256,14 @@ public class Cache implements IInitializer, IBrowsable<GraphVizTreeFormat<ICompu
         return Optional.ofNullable(hitStatistics.get(computation)).orElse(0L);
     }
 
-    public IComputation<?> getCacheComputation() {
+    public List<IComputation<?>> getCachedComputations() {
         ArrayList<IComputation<?>> computations = new ArrayList<>(computationMap.keySet());
         computations.sort(Comparator.comparingInt(ITree::hashCodeTree));
-        return IComputation.allOf(computations);
+        return computations;
+    }
+
+    public IComputation<List<?>> getCacheComputation() {
+        return IComputation.allOf(getCachedComputations());
     }
 
     @Override

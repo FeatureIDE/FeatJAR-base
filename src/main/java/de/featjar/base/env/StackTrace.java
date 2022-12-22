@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 /**
  * A stack trace of a thread.
@@ -86,5 +87,10 @@ public class StackTrace {
      */
     public Optional<StackTraceElement> getTop() {
         return stackTraceElements.isEmpty() ? Optional.empty() : Optional.of(stackTraceElements.get(0));
+    }
+
+    @Override
+    public String toString() {
+        return stackTraceElements.stream().map(StackTraceElement::toString).collect(Collectors.joining("\n"));
     }
 }

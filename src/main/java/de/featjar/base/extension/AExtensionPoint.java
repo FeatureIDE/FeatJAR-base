@@ -123,7 +123,7 @@ public abstract class AExtensionPoint<T extends IExtension> {
                 : Result.empty(new Problem("no extension found for identifier " + identifier, Problem.Severity.ERROR));
     }
 
-    public Result<T> guessExtension(String partOfIdentifier) {
+    public Result<T> getMatchingExtension(String partOfIdentifier) {
         LinkedHashSet<String> matchingIdentifiers = indexMap.keySet().stream()
                 .filter(identifier -> identifier.toLowerCase().contains(partOfIdentifier.toLowerCase()))
                 .collect(Sets.toSet());
@@ -133,6 +133,17 @@ public abstract class AExtensionPoint<T extends IExtension> {
             return Result.empty(new Problem("found more than one extensions matching " + partOfIdentifier + ": \n" +
                     IndentFormatter.formatList(matchingIdentifiers), Problem.Severity.ERROR));
         return getExtension(matchingIdentifiers.iterator().next());
+    }
+
+    public LinkedHashSet<T> getMatchingExtensions(String regex) {
+        LinkedHashSet<String> matchingIdentifiers = indexMap.keySet().stream()
+                .filter(identifier -> identifier.toLowerCase().matches(String.format(".*%s.*", regex)))
+                .collect(Sets.toSet());
+        return matchingIdentifiers.stream()
+                .map(this::getExtension)
+                .filter(Result::isPresent)
+                .map(Result::get)
+                .collect(Sets.toSet());
     }
 
     /**

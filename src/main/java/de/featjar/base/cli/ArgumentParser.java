@@ -1,8 +1,8 @@
 package de.featjar.base.cli;
 
 import de.featjar.base.FeatJAR;
-import de.featjar.base.data.Problem;
 import de.featjar.base.data.Result;
+import de.featjar.base.data.Sets;
 import de.featjar.base.extension.IExtension;
 import de.featjar.base.extension.AExtensionPoint;
 import de.featjar.base.log.IndentStringBuilder;
@@ -47,7 +47,7 @@ public class ArgumentParser extends AArgumentParser {
                     .setDefaultValue(CommandLineInterface.DEFAULT_MAXIMUM_VERBOSITY);
 
     protected static final int COMMAND_NAME_POSITION = 0;
-    protected final String commandName;
+    protected final String commandNameRegex;
 
     /**
      * Creates a new argument parser for the command-line interface.
@@ -57,18 +57,18 @@ public class ArgumentParser extends AArgumentParser {
     public ArgumentParser(String[] args) {
         super(args);
         if (args.length > 0)
-            commandName = parsePositionalArguments(COMMAND_NAME_POSITION).get(COMMAND_NAME_POSITION);
+            commandNameRegex = parsePositionalArguments(COMMAND_NAME_POSITION).get(COMMAND_NAME_POSITION);
         else
-            commandName = null;
+            commandNameRegex = null;
     }
 
     /**
-     * {@return the command supplied in the given arguments}
+     * {@return the commands supplied in the given arguments}
      */
-    public Optional<ICommand> getCommand() {
-        return commandName != null
-                ? Optional.of(getRequiredExtension(FeatJAR.extensionPoint(Commands.class), commandName))
-                : Optional.empty();
+    public LinkedHashSet<ICommand> getCommands() {
+        return commandNameRegex != null
+                ? getMatchingCommands(commandNameRegex)
+                : Sets.empty();
     }
 
     /**
@@ -105,14 +105,15 @@ public class ArgumentParser extends AArgumentParser {
         sb.appendLine("General options:").addIndent();
         sb.appendLine(getOptions());
         sb.removeIndent();
-        if (commandName != null) {
-            Result<ICommand> commandResult = guessExtension(FeatJAR.extensionPoint(Commands.class), commandName);
-            if (commandResult.isPresent() && !commandResult.get().getOptions().isEmpty()) {
-                sb.appendLine();
-                sb.appendLine(String.format("Options of command %s:", commandResult.get().getIdentifier()));
-                sb.addIndent();
-                sb.appendLine(commandResult.get().getOptions());
-                sb.removeIndent();
+        if (commandNameRegex != null) {
+            for (ICommand command : getMatchingCommands(commandNameRegex)) {
+                if (!command.getOptions().isEmpty()) {
+                    sb.appendLine();
+                    sb.appendLine(String.format("Options of command %s:", command.getIdentifier()));
+                    sb.addIndent();
+                    sb.appendLine(command.getOptions());
+                    sb.removeIndent();
+                }
             }
         }
     }
@@ -139,31 +140,25 @@ public class ArgumentParser extends AArgumentParser {
     }
 
     /**
-     * {@return the extension at the given extension point identified by the given identifier, if any}
+     * {@return the extensions at the given extension point matching the given regular expression}
+     * If no extension cannot be found, prints an error and exits.
      *
      * @param extensionPoint the extension point
-     * @param identifier     the identifier
+     * @param regex          the regex
      * @param <T>            the type of the extension
      */
-    public <T extends IExtension> Result<T> guessExtension(AExtensionPoint<T> extensionPoint, String identifier) {
-        return extensionPoint.guessExtension(identifier);
+    public <T extends IExtension> LinkedHashSet<T> getMatchingExtensions(AExtensionPoint<T> extensionPoint, String regex) {
+        return extensionPoint.getMatchingExtensions(regex);
     }
 
     /**
-     * {@return the extension at the given extension point identified by the given identifier}
-     * If the extension cannot be found, prints an error and exits.
+     * {@return the commands matching the given regular expression}
+     * If no command cannot be found, prints an error and exits.
      *
-     * @param extensionPoint the extension point
-     * @param identifier     the identifier
-     * @param <T>            the type of the extension
+     * @param regex the regex
      */
-    public <T extends IExtension> T getRequiredExtension(AExtensionPoint<T> extensionPoint, String identifier) {
-        Result<T> extensionResult = guessExtension(extensionPoint, identifier);
-        if (extensionResult.isEmpty())
-            handleException(new ArgumentParseException(extensionResult.getProblems().stream()
-                    .map(Problem::toString)
-                    .collect(Collectors.joining(", "))));
-        return extensionResult.get();
+    public LinkedHashSet<ICommand> getMatchingCommands(String regex) {
+        return getMatchingExtensions(FeatJAR.extensionPoint(Commands.class), regex);
     }
 
     @Override

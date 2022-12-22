@@ -23,6 +23,7 @@ package de.featjar.base.cli;
 import de.featjar.base.Feat;
 import de.featjar.base.FeatJAR;
 import de.featjar.base.data.Result;
+import de.featjar.base.extension.IExtension;
 import de.featjar.base.io.IO;
 import de.featjar.base.io.format.IFormat;
 import de.featjar.base.io.format.IFormatSupplier;
@@ -34,6 +35,7 @@ import java.io.InputStreamReader;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.LinkedHashSet;
 import java.util.concurrent.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -78,13 +80,16 @@ public class CommandLineInterface {
      */
     public static void run(ArgumentParser argumentParser) {
         Feat.log().debug("running command-line interface");
-        if (ArgumentParser.HELP_OPTION.parseFrom(argumentParser) || argumentParser.getCommand().isEmpty()) {
+        LinkedHashSet<ICommand> matchingCommands = argumentParser.getCommands();
+        if (ArgumentParser.HELP_OPTION.parseFrom(argumentParser) || matchingCommands.isEmpty()) {
             System.out.println(argumentParser.getHelp());
         }
         else if (ArgumentParser.VERSION_OPTION.parseFrom(argumentParser)) {
             System.out.println(FeatJAR.LIBRARY_NAME + ", unreleased version");
         } else {
-            argumentParser.getCommand().get().run(argumentParser);
+            Feat.log().info("running matching commands: " +
+                    matchingCommands.stream().map(IExtension::getIdentifier).collect(Collectors.joining(", ")));
+            matchingCommands.forEach(command -> command.run(argumentParser));
         }
     }
 
