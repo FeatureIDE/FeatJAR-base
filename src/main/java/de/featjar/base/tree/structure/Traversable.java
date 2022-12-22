@@ -90,24 +90,130 @@ public interface Traversable<T extends Traversable<T>> {
         return t -> true;
     }
 
+    default void assertChildrenCountInRange(int newChildrenCount, Range range) {
+        if (!range.test(newChildrenCount))
+            throw new IllegalArgumentException(
+                    String.format("attempted to set %d children, but expected one in %s", newChildrenCount, range));
+    }
+
+    default void assertChildrenCountInRange(int newChildrenCount) {
+        assertChildrenCountInRange(newChildrenCount, getChildrenCountRange());
+    }
+
+    default void assertChildrenValidator(List<? extends T> children) {
+        if (!children.stream().allMatch(getChildrenValidator()))
+            throw new IllegalArgumentException(String.format("child %s is invalid",
+                    children.stream().filter(c -> !getChildrenValidator().test(c)).findFirst().orElse(null)));
+    }
+
+    default void assertChildrenValidator(T child) {
+        if (!getChildrenValidator().test(child))
+            throw new IllegalArgumentException("child did not pass validation");
+    }
+
+    /**
+     * {@return the n-th child of this node, if any}
+     *
+     * @param idx the index
+     */
+    default Optional<T> getChild(int idx) {
+        if (idx < 0 || idx >= getChildren().size())
+            return Optional.empty();
+        return Optional.ofNullable(getChildren().get(idx));
+    }
+
     /**
      * {@return the first child of this node, if any}
      */
     default Optional<T> getFirstChild() {
-        if (getChildren().isEmpty()) {
-            return Optional.empty();
-        }
-        return Optional.of(getChildren().get(0));
+        return getChild(0);
     }
 
     /**
      * {@return the last child of this node, if any}
      */
     default Optional<T> getLastChild() {
-        if (getChildren().isEmpty()) {
-            return Optional.empty();
+        return getChild(getChildrenCount() - 1);
+    }
+
+    /**
+     * {@return the index of the given node in the list of children, if any}
+     *
+     * @param node the node
+     */
+    default Optional<Integer> getChildIndex(T node) {
+        return Result.indexToOptional(getChildren().indexOf(node));
+    }
+
+    /**
+     * {@return whether the given node is a child of this node}
+     *
+     * @param child the node
+     */
+    default boolean hasChild(T child) {
+        return getChildIndex(child).isPresent();
+    }
+
+    /**
+     * Adds a new child at a given position.
+     * If the position is out of bounds, add the new child as the last child.
+     *
+     * @param index the new position
+     * @param newChild the new child
+     */
+    default void addChild(int index, T newChild) {
+        assertChildrenCountInRange(getChildren().size() + 1);
+        assertChildrenValidator(newChild);
+        List<T> newChildren = new ArrayList<>(getChildren());
+        if (index > getChildrenCount()) {
+            newChildren.add(newChild);
+        } else {
+            newChildren.add(index, newChild);
         }
-        return Optional.of(getChildren().get(getChildrenCount() - 1));
+        setChildren(newChildren);
+    }
+
+    /**
+     * Adds a new child as the last child.
+     *
+     * @param newChild the new child
+     */
+    default void addChild(T newChild) {
+        assertChildrenCountInRange(getChildren().size() + 1);
+        assertChildrenValidator(newChild);
+        List<T> newChildren = new ArrayList<>(getChildren());
+        newChildren.add(newChild);
+        setChildren(newChildren);
+    }
+
+    /**
+     * Removes a child.
+     *
+     * @param child the child to be removed
+     * @throws NoSuchElementException if the given old node is not a child
+     */
+    default void removeChild(T child) {
+        assertChildrenCountInRange(getChildren().size() - 1);
+        List<T> newChildren = new ArrayList<>(getChildren());
+        if (!newChildren.remove(child)) {
+            throw new NoSuchElementException();
+        }
+        setChildren(newChildren);
+    }
+
+    /**
+     * Removes the child at a given position.
+     *
+     * @param index the position to be removed
+     * @return the removed child
+     * @throws IndexOutOfBoundsException if the given index is out of bounds
+     */
+    default T removeChild(int index) {
+        assertChildrenCountInRange(getChildren().size() - 1);
+        List<T> newChildren = new ArrayList<>(getChildren());
+        T t = newChildren.remove(index);
+        setChildren(newChildren);
+        return t;
     }
 
     /**
@@ -165,7 +271,7 @@ public interface Traversable<T extends Traversable<T>> {
      * Replaces a child at an index with a new child.
      * Does nothing if the index is out of bounds.
      *
-     * @param idx the index
+     * @param idx      the index
      * @param newChild the new child
      */
     default void replaceChild(int idx, T newChild) {
@@ -242,7 +348,7 @@ public interface Traversable<T extends Traversable<T>> {
     /**
      * Tests whether two nodes (and their children) are equal.
      * Relies on {@link #equalsNode(Traversable)}.
-
+     *
      * @param other the other node
      * @return whether this node is deeply equal to the other node
      */
@@ -274,8 +380,8 @@ public interface Traversable<T extends Traversable<T>> {
      * For more general visitors, use {@link Trees#traverse(Traversable, InOrderTreeVisitor)} instead.
      *
      * @param treeVisitor the tree visitor
+     * @param <R>         the type of result
      * @return the result from the visitor
-     * @param <R> the type of result
      */
     default <R> Result<R> traverse(InOrderTreeVisitor<T, R> treeVisitor) {
         return Trees.traverse((T) this, treeVisitor);
@@ -287,8 +393,8 @@ public interface Traversable<T extends Traversable<T>> {
      * For more general visitors, use {@link Trees#traverse(Traversable, TreeVisitor)} instead.
      *
      * @param treeVisitor the tree visitor
+     * @param <R>         the type of result
      * @return the result from the visitor
-     * @param <R> the type of result
      */
     default <R> Result<R> traverse(TreeVisitor<T, R> treeVisitor) {
         return Trees.traverse((T) this, treeVisitor);
@@ -371,5 +477,52 @@ public interface Traversable<T extends Traversable<T>> {
      */
     default void sort(Comparator<T> comparator) {
         Trees.sort((T) this, comparator);
+    }
+
+    class Entry<T extends Traversable<T>, U extends T> implements Function<T, U> {
+        protected final U defaultValue;
+        protected int index;
+
+        public Entry() {
+            this(null);
+        }
+
+        public Entry(U defaultValue) {
+            this.defaultValue = defaultValue;
+        }
+
+        public Optional<U> getDefaultValue() {
+            return Optional.ofNullable(defaultValue);
+        }
+
+        public int getIndex() {
+            return index;
+        }
+
+        public void setIndex(int index) {
+            this.index = index;
+        }
+
+        public <V> V get(List<V> list) {
+            if (index < 0 || index >= list.size())
+                throw new IllegalArgumentException();
+            return list.get(index);
+        }
+
+        @SuppressWarnings("unchecked")
+        public U get(T tree) {
+            return (U) tree.getChild(index).orElse(defaultValue);
+        }
+
+        public U apply(T tree) {
+            return get(tree);
+        }
+
+        public void set(T tree, U child) {
+            Objects.requireNonNull(child);
+            while (tree.getChildrenCount() <= index)
+                tree.addChild(null);
+            tree.replaceChild(index, child);
+        }
     }
 }

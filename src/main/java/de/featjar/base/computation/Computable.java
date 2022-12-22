@@ -18,31 +18,33 @@
  *
  * See <https://github.com/FeatureIDE/FeatJAR-util> for further information.
  */
-package de.featjar.base.data;
+package de.featjar.base.computation;
 
 import de.featjar.base.Feat;
+import de.featjar.base.cli.Option;
+import de.featjar.base.data.Pair;
+import de.featjar.base.data.Result;
 import de.featjar.base.extension.Extension;
 import de.featjar.base.task.CancelableMonitor;
 import de.featjar.base.task.Monitor;
+import de.featjar.base.tree.structure.Traversable;
 
-import java.util.Arrays;
-import java.util.List;
-import java.util.Objects;
-import java.util.concurrent.CompletableFuture;
+import java.util.*;
 import java.util.function.BiFunction;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Supplier;
-import java.util.stream.Collectors;
+
+import static de.featjar.base.computation.Computations.async;
 
 /**
  * Describes a deterministic (potentially complex or long-running) computation.
- * A {@link Computation} does not contain the computation result itself, which is only computed on demand.
+ * A {@link Computable} does not contain the computation result itself, which is only computed on demand.
  * If computed with {@link #get()} or {@link #compute()}, the result is returned as an
  * asynchronous {@link FutureResult}, which can be shared, cached, and waited for.
  * When computed with {@link #get()}, results are possibly cached in a {@link Cache}; {@link #compute()} does not cache.
  * Computation progress can optionally be reported with a {@link Monitor}.
- * Computations can depend on other computations by assigning them to fields and calling {@link #allOf(Computation[])}
+ * Computations can depend on other computations by assigning them to fields and calling {@link #allOf(Computable[])}
  * or {@link FutureResult#thenCompute(BiFunction)} in {@link #compute()}.
  * To ensure the determinism required by caching, all parameters of a computation must be stored in fields.
  * Whether a parameter of type T should be stored as T or Computation&lt;T&gt; depends on whether the parameter
@@ -54,11 +56,13 @@ import java.util.stream.Collectors;
  * TODO: Monitor and store should be injected once (see notes in {@link Monitor}), and then not worried about any further.
  * TODO: A hash code computation is completely missing, so caching does not work well at all right now.
  *
+ * asynchronous supplier
+ *
  * @param <T> the type of the computation result
  * @author Sebastian Krieter
  * @author Elias Kuiter
  */
-public interface Computation<T> extends Supplier<FutureResult<T>>, Extension {
+public interface Computable<T> extends Supplier<FutureResult<T>>, Extension, Traversable<Computable<?>> {
     /**
      * {@return the (newly computed) asynchronous result of this computation}
      * The result is returned asynchronously; that is, as a {@link FutureResult}.
@@ -92,7 +96,7 @@ public interface Computation<T> extends Supplier<FutureResult<T>>, Extension {
      *
      * @param <T> the type of the object
      */
-    static <T> Computation<T> empty() {
+    static <T> Computable<T> empty() {
         return of(null, new CancelableMonitor());
     }
 
@@ -102,7 +106,7 @@ public interface Computation<T> extends Supplier<FutureResult<T>>, Extension {
      * @param object the object
      * @param <T>    the type of the object
      */
-    static <T> Computation<T> of(T object) {
+    static <T> Computable<T> of(T object) {
         return of(object, new CancelableMonitor());
     }
 
@@ -113,43 +117,39 @@ public interface Computation<T> extends Supplier<FutureResult<T>>, Extension {
      * @param monitor the monitor
      * @param <T>     the type of the object
      */
-    static <T> Computation<T> of(T object, Monitor monitor) {
-        return () -> FutureResult.of(object, monitor);
+    static <T> Computable<T> of(T object, Monitor monitor) {
+        return new Computation.Constant<>(object, monitor);
     }
 
     /**
      * {@return a computation that computes both given computations, summarizing their results in a pair}
      *
-     * @param computation1 the first computation
-     * @param computation2 the second computation
+     * @param computable1 the first computation
+     * @param computable2 the second computation
      */
     @SuppressWarnings("unchecked")
-    static <T, U> Computation<Pair<T, U>> of(Computation<T> computation1, Computation<U> computation2) {
-        Computation<?>[] computations = new Computation[]{computation1, computation2};
-        return Computation.allOf(computations).mapResult(list -> new Pair<>((T) list.get(0), (U) list.get(1)));
+    static <T, U> Computable<Pair<T, U>> of(Computable<T> computable1, Computable<U> computable2) {
+        Computable<?>[] list = new Computable[]{computable1, computable2};
+        return Computable.allOf(list).mapResult(
+                Computable.class, "of", _list -> new Pair<>((T) _list.get(0), (U) _list.get(1)));
     }
 
     /**
      * {@return a computation that computes all of the given computations, summarizing their results in a list}
      *
-     * @param computations the computations
+     * @param dependencies the computations
      */
-    static Computation<List<?>> allOf(Computation<?>... computations) {
-        // TODO: what is the hashcode of an anonymous (lambda) computation like here?
-        // TODO: how to cache anonymous computations?
-        return () -> {
-            List<FutureResult<?>> futureResults =
-                    Arrays.stream(computations).map(Computation::compute).collect(Collectors.toList());
-            return FutureResult.wrap(FutureResult.allOf(futureResults.toArray(CompletableFuture[]::new)))
-                    .thenComputeFromResult((unused, monitor) -> {
-                        List<?> x = futureResults.stream()
-                                .map(FutureResult::get)
-                                .map(Result::get)
-                                .collect(Collectors.toList());
-                        return x.stream().noneMatch(Objects::isNull) ? Result.of(x) : Result.empty();
-                    });
+    static Computable<List<?>> allOf(List<? extends Computable<?>> dependencies) {
+        return allOf(dependencies.toArray(Computable[]::new));
+    }
 
-        };
+    /**
+     * {@return a computation that computes all of the given computations, summarizing their results in a list}
+     *
+     * @param dependencies the computations
+     */
+    static Computable<List<?>> allOf(Computable<?>... dependencies) {
+        return new Computation.AllOf(dependencies);
     }
 
     /**
@@ -158,8 +158,14 @@ public interface Computation<T> extends Supplier<FutureResult<T>>, Extension {
      *
      * @param fn the function
      */
-    default <U> U map(Function<Computation<T>, U> fn) {
+    default <U> U map(Function<Computable<T>, U> fn) {
         return fn.apply(this);
+    }
+
+    @SuppressWarnings("unchecked")
+    default <U extends Computable<T>> Computable<T> peek(Consumer<U> fn) {
+        fn.accept((U) this);
+        return this;
     }
 
     /**
@@ -167,9 +173,17 @@ public interface Computation<T> extends Supplier<FutureResult<T>>, Extension {
      *
      * @param fn the function
      */
-    default <U> Computation<U> mapResult(Function<T, U> fn) {
-        // TODO: what is the hash code? probably Computation.this + the identity of computationFunction?
-        return () -> get().thenCompute((t, monitor) -> fn.apply(t));
+    default <U> Computable<U> mapResult(Class<?> klass, String scope, Function<T, U> fn) {
+        return flatMapResult(klass, scope, t -> Result.of(fn.apply(t)));
+    }
+
+    /**
+     * {@return a computation that maps the result of this computation to another value}
+     *
+     * @param fn the function
+     */
+    default <U> Computable<U> flatMapResult(Class<?> klass, String scope, Function<T, Result<U>> fn) {
+        return new Computation.Mapper<>(this, klass.getCanonicalName() + "." + scope, fn);
     }
 
     /**
@@ -177,8 +191,8 @@ public interface Computation<T> extends Supplier<FutureResult<T>>, Extension {
      *
      * @param fn the function
      */
-    default Computation<T> peekResult(Consumer<T> fn) {
-        return mapResult(t -> {
+    default Computable<T> peekResult(Class<?> klass, String scope, Consumer<T> fn) {
+        return mapResult(klass, scope, t -> {
             fn.accept(t);
             return t;
         });
@@ -201,4 +215,98 @@ public interface Computation<T> extends Supplier<FutureResult<T>>, Extension {
     //  maybe this can also be done with alternative constructors or something?
     //  maybe this is also something to be implemented in its own module?
 //    <S> Optional<Computation<S, T>> getPreferredInputComputation();
+
+    default <U> Computable<U> getDependency(Dependency<U> dependency) {
+        return dependency.get(this);
+    }
+
+    default <U> void setDependency(Dependency<U> dependency, Computable<U> computable) {
+        dependency.set(this, computable);
+    }
+
+    // assumes that this can be cast to Computable
+    interface WithInput<T> {
+        Dependency<T> getInputDependency();
+
+        /**
+         * {@return the input of this analysis}
+         * This analysis uses the result of this computation as its primary input (e.g., the formula to analyze).
+         */
+        default Computable<T> getInput() {
+            return getInputDependency().get((Computable<?>) this);
+        }
+
+        /**
+         * Sets the input of this analysis.
+         *
+         * @param input the input computation
+         */
+        default void setInput(Computable<T> input) {
+            getInputDependency().set((Computable<?>) this, input);
+        }
+    }
+
+    /**
+     * A potentially long-running analysis that can be canceled if a given time has passed.
+     */
+    interface WithTimeout { // todo: how to handle partial results?
+        Dependency<Long> getTimeoutDependency();
+
+        /**
+         * {@return the timeout of this analysis in milliseconds, if any}
+         * This analysis terminates with an empty {@link Result} when it has
+         * not terminated until the timeout passes.
+         */
+        default Computable<Long> getTimeout() {
+            return getTimeoutDependency().get((Computable<?>) this);
+        }
+
+        /**
+         * Sets the timeout of this analysis in milliseconds.
+         *
+         * @param timeout the timeout in milliseconds, if any
+         */
+        default void setTimeout(Computable<Long> timeout) {
+            getTimeoutDependency().set((Computable<?>) this, timeout);
+        }
+    }
+
+    /**
+     * An analysis that may need to generate pseudorandom numbers.
+     */
+    interface WithRandom {
+        /**
+         * The default seed for the pseudorandom number generator returned by {@link #getRandom()}, if not specified otherwise.
+         */
+        long DEFAULT_RANDOM_SEED = 0;// todo: needed?
+
+        Dependency<Random> getRandomDependency();
+
+        /**
+         * {@return the pseudorandom number generator of this analysis}
+         */
+        default Computable<Random> getRandom() {
+            return getRandomDependency().get((Computable<?>) this);
+        }
+
+        /**
+         * Sets the pseudorandom number generator of this analysis.
+         *
+         * @param random the pseudorandom number generator
+         */
+        default void setRandom(Computable<Random> random) {
+            getRandomDependency().set((Computable<?>) this, random);
+        }
+
+        /**
+         * Sets the pseudorandom number generator of this analysis based on a given seed.
+         * Uses Java's default PRNG implementation.
+         * If no seed is given, uses the default seed.
+         *
+         * @param seed the seed
+         */
+        default void setRandomSeed(Computable<Long> seed) {
+            setRandom(seed.mapResult(WithRandom.class, "setRandom", Random::new));
+        }
+    }
 }

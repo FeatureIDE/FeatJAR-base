@@ -21,6 +21,7 @@
 package de.featjar.base.data;
 
 import de.featjar.base.Feat;
+import de.featjar.base.computation.Computable;
 import de.featjar.base.data.Problem.Severity;
 
 import java.util.*;
@@ -32,7 +33,7 @@ import java.util.stream.Collectors;
 /**
  * An optional value that may be present, absent with intention, or absent due to some unintended problem.
  * Similar to {@link Optional}, but also stores any {@link Problem} associated when trying to obtain a value.
- * Usually, a {@link Result} wraps the result of a {@link Computation} or other potentially complex operation,
+ * Usually, a {@link Result} wraps the result of a {@link Computable} or other potentially complex operation,
  * such as parsing a {@link de.featjar.base.io.format.Format}.
  * Instead of throwing exceptions, consider using a {@link Result} if there is some value to return.
  * For void methods, throwing checked exceptions may be more reasonable than introducing a {@link Result} return value.

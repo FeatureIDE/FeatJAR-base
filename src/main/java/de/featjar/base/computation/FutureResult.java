@@ -1,5 +1,6 @@
-package de.featjar.base.data;
+package de.featjar.base.computation;
 
+import de.featjar.base.data.Result;
 import de.featjar.base.task.CancelableMonitor;
 import de.featjar.base.task.Monitor;
 

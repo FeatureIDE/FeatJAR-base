@@ -3,7 +3,7 @@ package de.featjar.base;
 import de.featjar.base.cli.CLIArgumentParser;
 import de.featjar.base.cli.CommandLineInterface;
 import de.featjar.base.data.Result;
-import de.featjar.base.data.Cache;
+import de.featjar.base.computation.Cache;
 import de.featjar.base.extension.Extension;
 import de.featjar.base.extension.ExtensionManager;
 import de.featjar.base.extension.ExtensionPoint;

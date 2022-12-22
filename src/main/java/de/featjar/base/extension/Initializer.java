@@ -1,6 +1,6 @@
 package de.featjar.base.extension;
 
-import de.featjar.base.data.Cache;
+import de.featjar.base.computation.Cache;
 
 /**
  * An extension that can be (de-)initialized.
