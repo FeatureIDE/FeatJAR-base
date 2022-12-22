@@ -18,22 +18,20 @@
  *
  * See <https://github.com/FeatureIDE/FeatJAR-util> for further information.
  */
-package de.featjar.base.io;
+package de.featjar.base.io.input;
 
 import de.featjar.base.Feat;
 import de.featjar.base.data.Result;
+import de.featjar.base.io.IIOObject;
+import de.featjar.base.io.NonEmptyLineIterator;
 import de.featjar.base.io.format.IFormat;
 
 import java.io.BufferedInputStream;
 import java.io.BufferedReader;
-import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.nio.charset.Charset;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.StandardOpenOption;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
@@ -57,55 +55,6 @@ public abstract class AInput implements IIOObject {
         this.inputStream = new BufferedInputStream(inputStream);
         this.charset = charset;
         this.fileExtension = fileExtension;
-    }
-
-    /**
-     * A stream input.
-     */
-    public static class Stream extends AInput {
-        /**
-         * Creates a stream input.
-         *
-         * @param inputStream the input stream
-         * @param charset the charset
-         * @param fileExtension the file extension
-         */
-        public Stream(InputStream inputStream, Charset charset, java.lang.String fileExtension) {
-            super(inputStream, charset, fileExtension);
-        }
-    }
-
-    /**
-     * A physical file input.
-     */
-    public static class File extends AInput {
-        /**
-         * Creates a physical file input.
-         *
-         * @param path the path
-         * @param charset the charset
-         * @throws IOException if an I/O error occurs
-         */
-        public File(Path path, Charset charset) throws IOException {
-            super(Files.newInputStream(path, StandardOpenOption.READ), charset,
-                    IIOObject.getFileExtension(path).orElse(null));
-        }
-    }
-
-    /**
-     * A string input.
-     */
-    public static class String extends AInput {
-        /**
-         * Creates a string input.
-         *
-         * @param string the string
-         * @param charset the charset
-         * @param fileExtension the file extension
-         */
-        public String(java.lang.String string, Charset charset, java.lang.String fileExtension) {
-            super(new ByteArrayInputStream(string.getBytes(charset)), charset, fileExtension);
-        }
     }
 
     /**

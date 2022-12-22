@@ -1,0 +1,47 @@
+package de.featjar.base.io.output;
+
+import java.io.IOException;
+import java.nio.charset.Charset;
+import java.nio.file.Path;
+import java.util.List;
+
+/**
+ * Maps physical paths to physical outputs.
+ */
+public class FileOutputMapper extends AOutputMapper {
+    protected final Path rootPath;
+    protected final Charset charset;
+
+    /**
+     * Creates a file output mapper for a collection of files.
+     *
+     * @param paths    the list of file paths
+     * @param rootPath the root path
+     * @param mainPath the main path
+     * @param charset  the charset
+     */
+    public FileOutputMapper(List<Path> paths, Path rootPath, Path mainPath, Charset charset) throws IOException {
+        super(relativizeRootPath(rootPath, mainPath));
+        checkParameters(paths, rootPath, mainPath);
+        for (Path currentPath : paths) {
+            ioMap.put(relativizeRootPath(rootPath, currentPath), new FileOutput(currentPath, charset));
+        }
+        this.rootPath = rootPath;
+        this.charset = charset;
+    }
+
+    /**
+     * Creates a file output mapper for a single file.
+     *
+     * @param mainPath the main path
+     * @param charset  the charset
+     */
+    public FileOutputMapper(Path mainPath, Charset charset) throws IOException {
+        this(List.of(mainPath), mainPath.getParent(), mainPath, charset);
+    }
+
+    @Override
+    protected AOutput newOutput(Path path) throws IOException {
+        return new FileOutput(resolveRootPath(rootPath, path), charset);
+    }
+}

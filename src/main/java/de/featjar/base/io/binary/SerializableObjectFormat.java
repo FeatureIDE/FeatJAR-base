@@ -22,8 +22,8 @@ package de.featjar.base.io.binary;
 
 import de.featjar.base.Feat;
 import de.featjar.base.data.Result;
-import de.featjar.base.io.AInputMapper;
-import de.featjar.base.io.AOutputMapper;
+import de.featjar.base.io.input.AInputMapper;
+import de.featjar.base.io.output.AOutputMapper;
 import de.featjar.base.io.format.IFormat;
 
 import java.io.*;

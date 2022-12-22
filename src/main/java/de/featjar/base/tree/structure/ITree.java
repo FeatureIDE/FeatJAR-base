@@ -23,11 +23,15 @@ package de.featjar.base.tree.structure;
 import de.featjar.base.data.Range;
 import de.featjar.base.data.Result;
 import de.featjar.base.data.Sets;
+import de.featjar.base.env.IBrowsable;
+import de.featjar.base.io.graphviz.GraphVizTreeFormat;
 import de.featjar.base.tree.Trees;
 import de.featjar.base.tree.visitor.IInOrderTreeVisitor;
 import de.featjar.base.tree.visitor.TreePrinter;
 import de.featjar.base.tree.visitor.ITreeVisitor;
 
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.*;
 import java.util.function.BiFunction;
 import java.util.function.Function;
@@ -41,13 +45,17 @@ import java.util.stream.Stream;
  * For an example usage, see {@link LabeledTree}.
  * It is not supported to store children of a type different from the implementing type.
  * For this use case, consider a multi-level tree, where a {@link ALeafNode} references another {@link ITree}.
+ * The parentage of nodes is not specified, so a node may occur in several nodes.
+ * Thus, it is possible to store any directed acyclic graph.
+ * For a directed acyclic graph with at most one parent per node, use {@link ARootedTree}.
+ * Note that most consumers of {@link ITree} assume it to be acyclic.
  *
  * @param <T> the type of children, the implementing type must be castable to T
  * @author Sebastian Krieter
  * @author Elias Kuiter
  */
 @SuppressWarnings("unchecked")
-public interface ITree<T extends ITree<T>> {
+public interface ITree<T extends ITree<T>> extends IBrowsable<GraphVizTreeFormat<T>> {
     /**
      * {@return the children of this node}
      */
@@ -523,6 +531,18 @@ public interface ITree<T extends ITree<T>> {
             while (tree.getChildrenCount() <= index)
                 tree.addChild(null);
             tree.replaceChild(index, child);
+        }
+    }
+
+    @Override
+    default Result<URI> getBrowseURI(GraphVizTreeFormat<T> argument) {
+        Result<String> dot = argument.serialize((T) this);
+        if (dot.isEmpty())
+            return Result.empty(dot);
+        try {
+            return Result.of(new URI("https", "edotor.net", "", "engine=dot", dot.get()));
+        } catch (URISyntaxException e) {
+            return Result.empty(e);
         }
     }
 }

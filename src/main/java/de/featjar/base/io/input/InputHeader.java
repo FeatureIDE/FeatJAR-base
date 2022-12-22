@@ -18,7 +18,7 @@
  *
  * See <https://github.com/FeatureIDE/FeatJAR-util> for further information.
  */
-package de.featjar.base.io;
+package de.featjar.base.io.input;
 
 import de.featjar.base.io.format.IFormat;
 

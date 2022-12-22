@@ -48,7 +48,7 @@ import static de.featjar.base.computation.Computations.async;
  * and calling {@link #allOf(IComputation[])} or {@link FutureResult#thenCompute(BiFunction)} in {@link #compute()}.
  * To ensure the determinism required by caching, all parameters of a computation must be depended on.
  * Implementors should pass mandatory parameters in the constructor and optional parameters using dedicated setters.
- * This can be facilitated by using specializations of {@link IComputation} (e.g., {@link WithInput}).
+ * This can be facilitated by using specializations of {@link IComputation} (e.g., {@link IInputDependency}).
  * Every computation is a tree of computations, where the dependencies of the computation are its children.
  * TODO: A validation scheme (e.g., against a simple feature model) and serialization scheme
  *  (e.g., to sensibly compare and cache computations based on their parameters and hash code) are missing for now.
@@ -115,7 +115,7 @@ public interface IComputation<T> extends Supplier<FutureResult<T>>, IExtension, 
      * @param <T>     the type of the object
      */
     static <T> IComputation<T> of(T object, IMonitor monitor) {
-        return new AComputation.Constant<>(object, monitor);
+        return new ConstantComputation<>(object, monitor);
     }
 
     /**
@@ -124,11 +124,8 @@ public interface IComputation<T> extends Supplier<FutureResult<T>>, IExtension, 
      * @param computation1 the first computation
      * @param computation2 the second computation
      */
-    @SuppressWarnings("unchecked")
     static <T, U> IComputation<Pair<T, U>> of(IComputation<T> computation1, IComputation<U> computation2) {
-        IComputation<?>[] list = new IComputation[]{computation1, computation2};
-        return IComputation.allOf(list).mapResult(
-                IComputation.class, "of", _list -> new Pair<>((T) _list.get(0), (U) _list.get(1)));
+        return new PairComputation<>(computation1, computation2);
     }
 
     /**
@@ -146,7 +143,7 @@ public interface IComputation<T> extends Supplier<FutureResult<T>>, IExtension, 
      * @param computations the computations
      */
     static IComputation<List<?>> allOf(IComputation<?>... computations) {
-        return new AComputation.AllOf(computations);
+        return new AllOfComputation(computations);
     }
 
     /**
@@ -195,7 +192,7 @@ public interface IComputation<T> extends Supplier<FutureResult<T>>, IExtension, 
      * @param <U> the type of the mapped result
      */
     default <U> IComputation<U> flatMapResult(Class<?> klass, String scope, Function<T, Result<U>> fn) {
-        return new AComputation.Mapper<>(this, klass.getCanonicalName() + "." + scope, fn);
+        return new FunctionComputation<>(this, klass, scope, fn);
     }
 
     /**
@@ -250,102 +247,4 @@ public interface IComputation<T> extends Supplier<FutureResult<T>>, IExtension, 
     }
 
 
-    /**
-     * A computation that depends on some (primary, typically mandatory) input.
-     * Assumes that the implementing class can be cast to {@link IComputation}.
-     *
-     * @param <T> the type of the input
-     */
-    interface WithInput<T> {
-        /**
-         * {@return the input dependency of this computation}
-         */
-        Dependency<T> getInputDependency();
-
-        /**
-         * {@return the input computation of this computation}
-         */
-        default IComputation<T> getInput() {
-            return getInputDependency().get((IComputation<?>) this);
-        }
-
-        /**
-         * Sets the input computation of this computation.
-         *
-         * @param input the input computation
-         */
-        default void setInput(IComputation<T> input) {
-            getInputDependency().set((IComputation<?>) this, input);
-        }
-    }
-
-    /**
-     * A potentially long-running computation that can be canceled if a given time has passed.
-     * This computation terminates with an empty {@link Result} when it has
-     * not terminated until the timeout passes.
-     */
-    interface WithTimeout { // todo: how to handle partial results (i.e., to return a lower bound for counting)?
-        /**
-         * {@return the timeout dependency of this computation}
-         */
-        Dependency<Long> getTimeoutDependency();
-
-        /**
-         * {@return the timeout computation in milliseconds of this computation}
-         */
-        default IComputation<Long> getTimeout() {
-            return getTimeoutDependency().get((IComputation<?>) this);
-        }
-
-        /**
-         * Sets the timeout computation in milliseconds of this computation.
-         *
-         * @param timeout the timeout computation in milliseconds, if any
-         */
-        default void setTimeout(IComputation<Long> timeout) {
-            getTimeoutDependency().set((IComputation<?>) this, timeout);
-        }
-    }
-
-    /**
-     * An analysis that may need to generate pseudorandom numbers.
-     */
-    interface WithRandom {
-        /**
-         * The default seed for the pseudorandom number generator returned by {@link #getRandom()}, if not specified otherwise.
-         */
-        long DEFAULT_RANDOM_SEED = 0;// todo: needed?
-
-        /**
-         * {@return the random dependency of this computation}
-         */
-        Dependency<Random> getRandomDependency();
-
-        /**
-         * {@return the pseudorandom number generator computation of this computation}
-         */
-        default IComputation<Random> getRandom() {
-            return getRandomDependency().get((IComputation<?>) this);
-        }
-
-        /**
-         * Sets the pseudorandom number generator computation of this computation.
-         *
-         * @param random the pseudorandom number generator computation
-         */
-        default void setRandom(IComputation<Random> random) {
-            getRandomDependency().set((IComputation<?>) this, random);
-        }
-
-        /**
-         * Sets the pseudorandom number generator computation of this computation based on a given seed.
-         * Uses Java's default pseudorandom number generator implementation.
-         * If no seed is given, uses the default seed. (todo: not currently true)
-         *
-         * @param seed the seed
-         */
-        default void setRandomSeed(IComputation<Long> seed) {
-            setRandom(seed.mapResult(WithRandom.class, "setRandom", Random::new));
-        }
-    }
 }

@@ -20,6 +20,9 @@
  */
 package de.featjar.base.io;
 
+import de.featjar.base.io.input.FileInput;
+import de.featjar.base.io.output.AOutputMapper;
+
 import java.io.IOException;
 import java.nio.charset.Charset;
 import java.nio.file.Files;
@@ -40,26 +43,6 @@ import java.util.stream.Stream;
  * @author Elias Kuiter
  */
 public abstract class AIOMapper<T extends IIOObject> implements AutoCloseable, Supplier<T> {
-    /**
-     * Options for an {@link AIOMapper}.
-     */
-    public enum Options {
-        /**
-         * Whether to map not only the given main file, but also all other files residing in the same directory.
-         * Only supported for parsing {@link AInput.File} objects.
-         */
-        INPUT_FILE_HIERARCHY,
-        /**
-         * Whether to create a single ZIP archive instead of (several) physical files.
-         * Only supported for writing with {@link AOutputMapper#of(Path, Charset, Options...)}.
-         */
-        OUTPUT_FILE_ZIP,
-        /**
-         * Whether to create a single JAR archive instead of (several) physical files.
-         * Only supported for writing with {@link AOutputMapper#of(Path, Charset, Options...)}.
-         */
-        OUTPUT_FILE_JAR
-    }
 
     protected static final Path DEFAULT_MAIN_PATH = Paths.get("__main__");
     protected final LinkedHashMap<Path, T> ioMap = new LinkedHashMap<>();

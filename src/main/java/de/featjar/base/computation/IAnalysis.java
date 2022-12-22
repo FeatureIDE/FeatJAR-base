@@ -30,7 +30,7 @@ import java.util.function.Function;
  * @param <U> the type of the result
  * @author Elias Kuiter
  */
-public interface IAnalysis<T, U> extends IComputation<U>, IComputation.WithInput<T>, Function<IComputation<T>, FutureResult<U>> {
+public interface IAnalysis<T, U> extends IComputation<U>, IInputDependency<T>, Function<IComputation<T>, FutureResult<U>> {
     @Override
     default FutureResult<U> apply(IComputation<T> tComputation) {
         setInput(tComputation);

@@ -22,7 +22,8 @@ package de.featjar.base.io.csv;
 
 import de.featjar.base.Feat;
 import de.featjar.base.io.IO;
-import de.featjar.base.io.AOutput;
+import de.featjar.base.io.output.AOutput;
+import de.featjar.base.io.output.FileOutput;
 
 import java.io.IOException;
 import java.math.BigDecimal;
@@ -61,7 +62,7 @@ public class CSVFile {
     }
 
     public CSVFile(Path path) throws IOException {
-        this(new AOutput.File(path, IO.DEFAULT_CHARSET));
+        this(new FileOutput(path, IO.DEFAULT_CHARSET));
     }
 
     /**

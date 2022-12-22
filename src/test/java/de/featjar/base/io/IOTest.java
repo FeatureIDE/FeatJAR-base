@@ -28,6 +28,8 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import de.featjar.base.data.Problem;
 import de.featjar.base.data.Result;
 import de.featjar.base.io.format.IFormat;
+import de.featjar.base.io.input.AInputMapper;
+import de.featjar.base.io.output.AOutputMapper;
 import de.featjar.base.tree.structure.LabeledTree;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -235,7 +237,7 @@ public class IOTest {
             assertEquals(1, result.get().getLabel());
             assertEquals(0, result.get().getChildren().size());
             assertEquals(2, result.getProblems().size());
-            result = IO.load(testPath, new IntegerTreeFormat(), AIOMapper.Options.INPUT_FILE_HIERARCHY);
+            result = IO.load(testPath, new IntegerTreeFormat(), IOMapperOptions.INPUT_FILE_HIERARCHY);
             assertTrue(result.isPresent());
             assertEquals(1, result.get().getLabel());
             assertEquals(2, result.get().getChildren().size());
@@ -248,9 +250,9 @@ public class IOTest {
             assertTrue(stringMap.get(Paths.get("__main__")).startsWith("1"));
 
             assertDoesNotThrow(
-                    () -> IO.save(integerTree, testPath, new IntegerTreeFormat(), AIOMapper.Options.OUTPUT_FILE_ZIP));
+                    () -> IO.save(integerTree, testPath, new IntegerTreeFormat(), IOMapperOptions.OUTPUT_FILE_ZIP));
             assertDoesNotThrow(
-                    () -> IO.save(integerTree, testPath, new IntegerTreeFormat(), AIOMapper.Options.OUTPUT_FILE_JAR));
+                    () -> IO.save(integerTree, testPath, new IntegerTreeFormat(), IOMapperOptions.OUTPUT_FILE_JAR));
         } finally {
             Files.walk(testPath.getParent() == null ? Paths.get("") : testPath.getParent(), 1)
                     .forEach(path -> {

@@ -20,7 +20,7 @@
  */
 package de.featjar.base.io.format;
 
-import de.featjar.base.io.AInput;
+import de.featjar.base.io.input.AInput;
 
 /**
  * An exception that occurs while parsing an {@link AInput}.

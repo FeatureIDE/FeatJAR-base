@@ -22,10 +22,15 @@ package de.featjar.base.computation;
 
 import de.featjar.base.Feat;
 import de.featjar.base.data.Result;
+import de.featjar.base.env.IBrowsable;
 import de.featjar.base.extension.IInitializer;
 import de.featjar.base.env.StackTrace;
+import de.featjar.base.io.graphviz.GraphVizComputationTreeFormat;
+import de.featjar.base.io.graphviz.GraphVizTreeFormat;
 import de.featjar.base.task.IMonitor;
+import de.featjar.base.tree.structure.ITree;
 
+import java.net.URI;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -37,7 +42,7 @@ import java.util.concurrent.ConcurrentHashMap;
  * @author Sebastian Krieter
  * @author Elias Kuiter
  */
-public class Cache implements IInitializer {
+public class Cache implements IInitializer, IBrowsable<GraphVizTreeFormat<IComputation<?>>> {
     /**
      * Specifies which computation results a cache should contain.
      */
@@ -103,6 +108,8 @@ public class Cache implements IInitializer {
      */
     protected final Map<IComputation<?>, FutureResult<?>> computationMap = new ConcurrentHashMap<>();
 
+    protected final Map<IComputation<?>, Long> hitStatistics = new ConcurrentHashMap<>();
+
     /**
      * Sets the default configuration used for new caches.
      *
@@ -167,15 +174,16 @@ public class Cache implements IInitializer {
      * @param <T>         the type of the computation result
      */
     public <T> FutureResult<T> compute(IComputation<T> computation) {
-        String computationClassName = computation.getClass().getName();
         if (has(computation)) {
-            Feat.log().debug("cache hit for " + computationClassName);
+            Feat.log().debug("cache hit for " + computation);
+            hitStatistics.put(computation, hitStatistics.get(computation) + 1);
             return get(computation).get();
         }
-        Feat.log().debug("cache miss for " + computationClassName);
+        Feat.log().debug("cache miss for " + computation);
+        hitStatistics.putIfAbsent(computation, 0L);
         FutureResult<T> futureResult = computation.compute();
         if (configuration.cachingPolicy.shouldCache(computation, new StackTrace())) {
-            Feat.log().debug("cache write for " + computationClassName);
+            Feat.log().debug("cache write for " + computation);
             put(computation, futureResult);
         }
         return futureResult;
@@ -242,6 +250,22 @@ public class Cache implements IInitializer {
     public void clear() {
         Feat.log().debug("clearing cache");
         computationMap.clear();
+    }
+
+    public Long getNumberOfHits(IComputation<?> computation) {
+        return Optional.ofNullable(hitStatistics.get(computation)).orElse(0L);
+    }
+
+    public IComputation<?> getCacheComputation() {
+        ArrayList<IComputation<?>> computations = new ArrayList<>(computationMap.keySet());
+        computations.sort(Comparator.comparingInt(ITree::hashCodeTree));
+        return IComputation.allOf(computations);
+    }
+
+    @Override
+    public Result<URI> getBrowseURI(GraphVizTreeFormat<IComputation<?>> graphVizComputationTreeFormat) {
+        graphVizComputationTreeFormat.setIncludeRoot(false);
+        return getCacheComputation().getBrowseURI(graphVizComputationTreeFormat);
     }
 
     /**

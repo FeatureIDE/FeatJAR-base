@@ -99,6 +99,6 @@ public class Pair<A, B> {
 
     @Override
     public String toString() {
-        return "Pair[" + key + " -> " + value + "]";
+        return "Pair[" + key + ", " + value + "]";
     }
 }

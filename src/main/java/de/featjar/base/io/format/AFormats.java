@@ -24,7 +24,7 @@ import de.featjar.base.data.Problem;
 import de.featjar.base.data.Result;
 import de.featjar.base.extension.AExtensionPoint;
 import de.featjar.base.io.IIOObject;
-import de.featjar.base.io.InputHeader;
+import de.featjar.base.io.input.InputHeader;
 import java.nio.file.Path;
 import java.util.List;
 import java.util.Objects;

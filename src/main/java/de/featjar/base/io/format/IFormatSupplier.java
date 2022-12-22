@@ -21,7 +21,7 @@
 package de.featjar.base.io.format;
 
 import de.featjar.base.data.Result;
-import de.featjar.base.io.InputHeader;
+import de.featjar.base.io.input.InputHeader;
 
 /**
  * Decides on a format for a given file content and file path.

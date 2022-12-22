@@ -23,7 +23,11 @@ package de.featjar.base.io.format;
 import de.featjar.base.data.Problem;
 import de.featjar.base.data.Result;
 import de.featjar.base.extension.IExtension;
-import de.featjar.base.io.*;
+import de.featjar.base.io.input.AInput;
+import de.featjar.base.io.input.AInputMapper;
+import de.featjar.base.io.input.InputHeader;
+import de.featjar.base.io.output.AOutput;
+import de.featjar.base.io.output.AOutputMapper;
 
 import java.io.IOException;
 import java.util.function.Supplier;
