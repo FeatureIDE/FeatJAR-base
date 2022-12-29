@@ -45,7 +45,7 @@ public class Computations {
      * @param <T>     the type of the object
      */
     public static <T> IComputation<T> of(T object, IMonitor monitor) {
-        return new ConstantComputation<>(object, monitor);
+        return new ComputeConstant<>(object, monitor);
     }
 
     /**
@@ -55,7 +55,7 @@ public class Computations {
      * @param computation2 the second computation
      */
     public static <T, U> IComputation<Pair<T, U>> of(IComputation<T> computation1, IComputation<U> computation2) {
-        return new PairComputation<>(computation1, computation2);
+        return new ComputePair<>(computation1, computation2);
     }
 
     /**
@@ -73,7 +73,7 @@ public class Computations {
      * @param computations the computations
      */
     public static IComputation<List<?>> allOf(IComputation<?>... computations) {
-        return new AllOfComputation(computations);
+        return new ComputeAllOf(computations);
     }
 
     /**

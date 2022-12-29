@@ -13,11 +13,11 @@ import java.util.List;
  *
  * @author Elias Kuiter
  */
-public class PairComputation<T, U> extends AComputation<Pair<T, U>> {
+public class ComputePair<T, U> extends AComputation<Pair<T, U>> {
     protected static Dependency<?> KEY_COMPUTATION = newRequiredDependency();
     protected static Dependency<?> VALUE_COMPUTATION = newRequiredDependency();
 
-    public PairComputation(IComputation<T> key, IComputation<U> value) {
+    public ComputePair(IComputation<T> key, IComputation<U> value) {
         dependOn(KEY_COMPUTATION, VALUE_COMPUTATION);
         setKeyComputation(key);
         setValueComputation(value);
@@ -51,6 +51,6 @@ public class PairComputation<T, U> extends AComputation<Pair<T, U>> {
 
     @Override
     public ITree<IComputation<?>> cloneNode() {
-        return new PairComputation<>(getKeyComputation(), getValueComputation());
+        return new ComputePair<>(getKeyComputation(), getValueComputation());
     }
 }

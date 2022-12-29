@@ -8,6 +8,7 @@ import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 import java.util.function.BiFunction;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 /**
@@ -71,11 +72,16 @@ public class FutureResult<T> extends CompletableFuture<Result<T>> {
                 }));
     }
 
+    public static FutureResult<List<?>> allOf(List<FutureResult<?>> futureResults, Function<List<Result<?>>, Result<List<?>>> resultMerger) {
+        return ofCompletableFuture(allOf(futureResults.toArray(CompletableFuture[]::new)))
+                .thenComputeFromResult((_void, monitor) ->
+                        resultMerger.apply(futureResults.stream()
+                                .map(FutureResult::get)
+                                .collect(Collectors.toList())));
+    }
+
     public static FutureResult<List<?>> allOf(List<FutureResult<?>> futureResults) {
-            return ofCompletableFuture(allOf(futureResults.toArray(CompletableFuture[]::new)))
-                    .thenComputeFromResult((_void, monitor) -> Result.mergeAll(futureResults.stream()
-                            .map(FutureResult::get)
-                            .collect(Collectors.toList())));
+        return allOf(futureResults, Result::mergeAll);
     }
 
     /**
@@ -108,7 +114,7 @@ public class FutureResult<T> extends CompletableFuture<Result<T>> {
     public <U> FutureResult<U> thenComputeFromResult(BiFunction<Result<T>, IMonitor, Result<U>> fn) {
         return (FutureResult) super.thenApply(tResult -> {
             try {
-                return fn.apply(tResult, monitor);
+                return tResult.merge(fn.apply(tResult, monitor));
             } catch (Exception e) {
                 return Result.empty(e);
             }
@@ -117,14 +123,14 @@ public class FutureResult<T> extends CompletableFuture<Result<T>> {
 
     protected static <T, U> BiFunction<Result<T>, IMonitor, Result<U>> mapArgument(BiFunction<T, IMonitor, Result<U>> fn) {
         return (tResult, monitor) -> tResult.isPresent()
-                ? tResult.merge(fn.apply(tResult.get(), monitor))
-                : tResult.merge(Result.empty());
+                ? fn.apply(tResult.get(), monitor)
+                : Result.empty();
     }
 
     protected static <T, U> BiFunction<Result<T>, IMonitor, Result<U>> mapArgumentAndReturnValue(BiFunction<T, IMonitor, U> fn) {
         return (tResult, monitor) -> tResult.isPresent()
-                ? tResult.merge(Result.ofNullable(fn.apply(tResult.get(), monitor)))
-                : tResult.merge(Result.empty());
+                ? Result.ofNullable(fn.apply(tResult.get(), monitor))
+                : Result.empty();
     }
 
     @SuppressWarnings({"unchecked", "rawtypes"})

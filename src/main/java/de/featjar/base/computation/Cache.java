@@ -58,11 +58,10 @@ public class Cache implements IInitializer, IBrowsable<GraphVizTreeFormat<ICompu
 
         /**
          * Caches top-level computation results; that is, those not nested in other computations.
-         * Nested computations are detected by checking if {@link IComputation#computeFutureResult()} is already on the stack.
-         * Nesting inside anonymous computations (e.g., lambdas) is not detected and therefore cached.
+         * Nested computations are detected by checking if {@link IComputation#computeResult()} is already on the stack.
          */
         CachePolicy CACHE_TOP_LEVEL = (computation, stackTrace) ->
-                !stackTrace.containsMethodCall(IComputation.class, "compute");
+                !stackTrace.containsMethodCall(IComputation.class, "computeResult");
 
         /**
          * {@return whether the calling cache should store the given computation}
@@ -172,7 +171,7 @@ public class Cache implements IInitializer, IBrowsable<GraphVizTreeFormat<ICompu
      * @param computation the computation
      * @param <T>         the type of the computation result
      */
-    public <T> FutureResult<T> compute(IComputation<T> computation) {
+    public <T> FutureResult<T> computeFutureResult(IComputation<T> computation) {
         if (has(computation)) {
             Feat.log().debug("cache hit for " + computation);
             hitStatistics.putIfAbsent(computation, 0L);

@@ -5,15 +5,13 @@ import de.featjar.base.task.IMonitor;
 import de.featjar.base.tree.structure.ITree;
 
 import java.util.List;
-import java.util.concurrent.CompletableFuture;
-import java.util.stream.Collectors;
 
 /**
  * A computation that computes all its dependencies.
  * If any dependency fails to compute, the entire computation fails.
  */
-public class AllOfComputation extends AComputation<List<?>> {
-    public AllOfComputation(IComputation<?>... computations) {
+public class ComputeAllOf extends AComputation<List<?>> {
+    public ComputeAllOf(IComputation<?>... computations) {
         super(computations);
     }
 
@@ -24,6 +22,6 @@ public class AllOfComputation extends AComputation<List<?>> {
 
     @Override
     public ITree<IComputation<?>> cloneNode() {
-        return new AllOfComputation();
+        return new ComputeAllOf();
     }
 }

@@ -59,6 +59,8 @@ import java.util.function.Supplier;
  */
 public interface IComputation<T> extends Supplier<FutureResult<T>>, IExtension, ITree<IComputation<?>> {
     //must be deterministic and only depend on results
+    // Do not rename this method, as the {@link Cache.CachePolicy} performs
+    // reflection that depends on its name to detect nested computations.
     Result<T> computeResult(List<?> results, IMonitor monitor);
 
     /**
@@ -66,16 +68,18 @@ public interface IComputation<T> extends Supplier<FutureResult<T>>, IExtension, 
      * The result is returned asynchronously; that is, as a {@link FutureResult}.
      * Calling this function directly is discouraged, as the result is forced to be re-computed.
      * Usually, you should call {@link #get()} instead to leverage cached results.
-     * Do not rename this method, as the {@link Cache.CachePolicy} performs
-     * reflection that depends on its name to detect nested computations.
      */
     default FutureResult<T> computeFutureResult() {
         List<FutureResult<?>> futureResults = new ArrayList<>();
         for (IComputation<?> child : getChildren()) {
             futureResults.add(child.get());
         }
-        return FutureResult.allOf(futureResults)
+        return FutureResult.allOf(futureResults, getResultMerger())
                 .thenComputeResult(this::computeResult);
+    }
+
+    default Function<List<Result<?>>, Result<List<?>>> getResultMerger() {
+        return Result::mergeAll;
     }
 
     /**
@@ -84,7 +88,17 @@ public interface IComputation<T> extends Supplier<FutureResult<T>>, IExtension, 
      */
     @Override
     default FutureResult<T> get() {
-        return Feat.cache().compute(this);
+        return Feat.cache().computeFutureResult(this);
+    }
+
+    /**
+     * {@return the (newly computed) synchronous result of this computation}
+     * The result is returned synchronously; that is, as a {@link Result}.
+     * Calling this function directly is discouraged, as the result is forced to be re-computed.
+     * Usually, you should call {@link #getResult()} instead to leverage cached results.
+     */
+    default Result<T> computeResult() {
+        return computeFutureResult().get();
     }
 
     /**
@@ -142,7 +156,7 @@ public interface IComputation<T> extends Supplier<FutureResult<T>>, IExtension, 
      * @param <U>   the type of the mapped result
      */
     default <U> IComputation<U> flatMapResult(Class<?> klass, String scope, Function<T, Result<U>> fn) {
-        return new FunctionComputation<>(this, klass, scope, fn);
+        return new ComputeFunction<>(this, klass, scope, fn);
     }
 
     /**

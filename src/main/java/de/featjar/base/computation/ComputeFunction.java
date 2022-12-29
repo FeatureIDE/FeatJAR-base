@@ -16,7 +16,7 @@ import java.util.function.Function;
  * @param <T> the type of the mapped value
  * @param <U> the type of the mapped result
  */
-public class FunctionComputation<T, U> extends AComputation<U> implements IAnalysis<T, U> {
+public class ComputeFunction<T, U> extends AComputation<U> implements IAnalysis<T, U> {
     protected static final Dependency<?> INPUT = newRequiredDependency();
     protected final Class<?> klass;
     protected final String scope;
@@ -30,7 +30,7 @@ public class FunctionComputation<T, U> extends AComputation<U> implements IAnaly
      * @param scope    the calling scope
      * @param function the mapper function
      */
-    public FunctionComputation(IComputation<T> input, Class<?> klass, String scope, Function<T, Result<U>> function) {
+    public ComputeFunction(IComputation<T> input, Class<?> klass, String scope, Function<T, Result<U>> function) {
         dependOn(INPUT);
         setInput(input);
         this.klass = klass;
@@ -54,8 +54,8 @@ public class FunctionComputation<T, U> extends AComputation<U> implements IAnaly
     @Override
     public boolean equalsNode(IComputation<?> other) {
         return super.equalsNode(other)
-                && Objects.equals(klass, ((FunctionComputation<?, ?>) other).klass)
-                && Objects.equals(scope, ((FunctionComputation<?, ?>) other).scope); //todo:monitor?
+                && Objects.equals(klass, ((ComputeFunction<?, ?>) other).klass)
+                && Objects.equals(scope, ((ComputeFunction<?, ?>) other).scope); //todo:monitor?
     }
 
     @Override
@@ -65,7 +65,7 @@ public class FunctionComputation<T, U> extends AComputation<U> implements IAnaly
 
     @Override
     public ITree<IComputation<?>> cloneNode() {
-        return new FunctionComputation<>(getInput(), klass, scope, function);
+        return new ComputeFunction<>(getInput(), klass, scope, function);
     }
 
     @Override

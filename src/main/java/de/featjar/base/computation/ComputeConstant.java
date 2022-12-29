@@ -15,7 +15,7 @@ import java.util.Objects;
  *
  * @param <T> the type of the computed value
  */
-public class ConstantComputation<T> extends ALeafNode<IComputation<?>> implements IComputation<T> {
+public class ComputeConstant<T> extends ALeafNode<IComputation<?>> implements IComputation<T> {
     protected final T value;
     protected final IMonitor monitor;
 
@@ -25,7 +25,7 @@ public class ConstantComputation<T> extends ALeafNode<IComputation<?>> implement
      * @param value   the value
      * @param monitor the monitor
      */
-    public ConstantComputation(T value, IMonitor monitor) {
+    public ComputeConstant(T value, IMonitor monitor) {
         this.value = Objects.requireNonNull(value, "constant computation of null not allowed");
         this.monitor = monitor;
     }
@@ -37,7 +37,7 @@ public class ConstantComputation<T> extends ALeafNode<IComputation<?>> implement
 
     @Override
     public boolean equalsNode(IComputation<?> other) {
-        return getClass() == other.getClass() && Objects.equals(value, ((ConstantComputation<?>) other).value); //todo:monitor?
+        return getClass() == other.getClass() && Objects.equals(value, ((ComputeConstant<?>) other).value); //todo:monitor?
     }
 
     @Override
@@ -47,7 +47,7 @@ public class ConstantComputation<T> extends ALeafNode<IComputation<?>> implement
 
     @Override
     public ITree<IComputation<?>> cloneNode() {
-        return new ConstantComputation<>(value, monitor);
+        return new ComputeConstant<>(value, monitor);
     }
 
     @Override

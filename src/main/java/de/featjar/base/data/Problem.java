@@ -136,12 +136,13 @@ public class Problem extends ATree<Problem> {
 
     @Override
     public boolean equalsNode(Problem other) {
-        return Objects.equals(exception, other.exception)
-                && Objects.equals(severity, other.severity);
+        // exceptions cannot be meaningfully compared in Java
+        throw new UnsupportedOperationException();
     }
 
     @Override
     public int hashCodeNode() {
-        return Objects.hash(exception, severity);
+        // exceptions cannot be meaningfully hashed in Java
+        throw new UnsupportedOperationException();
     }
 }

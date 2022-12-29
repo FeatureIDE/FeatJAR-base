@@ -91,7 +91,8 @@ public class GraphVizTreeFormat<T extends ITree<T>> implements IFormat<T> {
     }
 
     protected String getNodeIdentifier(T tree) {
-        return String.valueOf(tree.hashCode());
+        return String.valueOf(tree.hashCode()); // todo: technically, two objects can be different but have the same hash code
+        // so node identifiers should also take .equals into account
     }
 
     protected String getNodeOptions(T tree) {

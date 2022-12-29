@@ -44,7 +44,7 @@ import java.util.stream.Stream;
  * @author Sebastian Krieter
  * @author Elias Kuiter
  */
-public class Result<T> {// implements Supplier<T> { // todo
+public class Result<T> implements Supplier<T> {
     protected static final Result<?> EMPTY = new Result<>(null, null);
 
     private final T object;
@@ -195,6 +195,11 @@ public class Result<T> {// implements Supplier<T> { // todo
         return results.stream().noneMatch(Result::isEmpty)
                 ? Result.of(results.stream().map(Result::get).collect(Collectors.toList()), problems)
                 : Result.empty(problems);
+    }
+
+    public static Result<List<?>> mergeAllNullable(List<Result<?>> results) {
+        List<Problem> problems = getProblems(results);
+        return Result.of(results.stream().map(r -> r.orElse(null)).collect(Collectors.toList()), problems);
     }
 
     public static Result<?> mergeLast(List<Result<?>> results) {
@@ -380,15 +385,17 @@ public class Result<T> {// implements Supplier<T> { // todo
 
     @Override
     public boolean equals(Object o) {
+        // the problem is ignored as it cannot be compared for equality, and it only carries metadata for the user
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         Result<?> result = (Result<?>) o;
-        return Objects.equals(object, result.object) && Objects.equals(problem, result.problem);
+        return Objects.equals(object, result.object);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(object, problem);
+        // the problem is ignored as it cannot be hashed, and it only carries metadata for the user
+        return Objects.hash(object);
     }
 
     @Override
