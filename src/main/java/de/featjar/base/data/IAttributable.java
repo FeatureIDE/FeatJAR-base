@@ -21,7 +21,6 @@
 package de.featjar.base.data;
 
 import java.util.LinkedHashMap;
-import java.util.Optional;
 
 /**
  * An object that can be annotated with {@link Attribute} values to store additional metadata.
@@ -33,7 +32,7 @@ import java.util.Optional;
 public interface IAttributable {
     LinkedHashMap<Attribute, Object> getAttributeToValueMap();
 
-    default Optional<Object> getAttributeValue(Attribute attribute) {
+    default Result<Object> getAttributeValue(Attribute attribute) {
         return attribute.apply(getAttributeToValueMap());
     }
 

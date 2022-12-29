@@ -20,6 +20,7 @@
  */
 package de.featjar.base.tree.structure;
 
+import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
 
@@ -43,7 +44,7 @@ public class LabeledTree<T> extends ATree<LabeledTree<T>> {
     @SafeVarargs
     public static <T> LabeledTree<T> of(T label, LabeledTree<T>... children) {
         LabeledTree<T> labeledTree = new LabeledTree<>(label);
-        labeledTree.setChildren(List.of(children));
+        labeledTree.setChildren(Arrays.asList(children));
         return labeledTree;
     }
 

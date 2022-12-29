@@ -20,7 +20,8 @@
  */
 package de.featjar.base.env;
 
-import java.util.Optional;
+import de.featjar.base.data.Result;
+
 
 /**
  * Utilities for host-specific operations and information.
@@ -63,8 +64,8 @@ public class HostEnvironment {
      * @param environmentVariable the environment variable
      */
     @SuppressWarnings("SameParameterValue")
-    private static Optional<String> getEnvironmentVariable(String environmentVariable) {
-        return Optional.ofNullable(System.getenv(environmentVariable));
+    private static Result<String> getEnvironmentVariable(String environmentVariable) {
+        return Result.ofNullable(System.getenv(environmentVariable));
     }
 
     /**

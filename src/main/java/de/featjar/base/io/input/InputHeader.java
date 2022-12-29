@@ -20,10 +20,10 @@
  */
 package de.featjar.base.io.input;
 
+import de.featjar.base.data.Result;
 import de.featjar.base.io.format.IFormat;
 
 import java.nio.charset.Charset;
-import java.util.Optional;
 import java.util.function.Supplier;
 import java.util.stream.Stream;
 
@@ -68,8 +68,8 @@ public class InputHeader implements Supplier<String> {
     /**
      * {@return this input header's file extension, if any}
      */
-    public Optional<String> getFileExtension() {
-        return Optional.ofNullable(fileExtension);
+    public Result<String> getFileExtension() {
+        return Result.ofNullable(fileExtension);
     }
 
     /**

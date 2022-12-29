@@ -110,7 +110,7 @@ public class FeatJAR extends IO implements AutoCloseable {
      */
     public static final Function<Cache.Configuration, Cache.Configuration> defaultCacheConfiguration =
             cfg -> cfg
-                    .setCachingPolicy(Cache.CachingPolicy.CACHE_ALL); // todo: only top level
+                    .setCachePolicy(Cache.CachePolicy.CACHE_ALL); // todo: only top level
 
     /**
      * {@return the current FeatJAR instance}
@@ -186,14 +186,14 @@ public class FeatJAR extends IO implements AutoCloseable {
      * {@return this FeatJAR instance's log, or a fallback log if uninitialized}
      */
     public Log getLog() {
-        return initialized ? getExtension(Log.class).orElse(Log.Fallback::new) : new Log.Fallback();
+        return initialized ? getExtension(Log.class).orElseGet(Log.Fallback::new) : new Log.Fallback();
     }
 
     /**
      * {@return this FeatJAR instance's cache, or a fallback cache if uninitialized}
      */
     public Cache getCache() {
-        return initialized ? getExtension(Cache.class).orElse(Cache.Fallback::new) : new Cache.Fallback();
+        return initialized ? getExtension(Cache.class).orElseGet(Cache.Fallback::new) : new Cache.Fallback();
     }
 
     /**

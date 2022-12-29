@@ -83,8 +83,7 @@ public interface IFormat<T> extends IExtension {
     default void write(T object, AOutputMapper outputMapper) throws IOException {
         String string = serialize(object)
                 // todo: improve exception handling - this should maybe be a Result instead?
-                .orElseThrow(p -> new IOException(p.stream()
-                        .map(Problem::toString).collect(Collectors.joining())));
+                .orElseThrow(p -> new IOException(p.getException()));
         outputMapper.get().write(string);
     }
 

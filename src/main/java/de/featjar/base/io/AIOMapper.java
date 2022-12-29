@@ -20,6 +20,7 @@
  */
 package de.featjar.base.io;
 
+import de.featjar.base.data.Result;
 import de.featjar.base.io.input.FileInput;
 import de.featjar.base.io.output.AOutputMapper;
 
@@ -98,8 +99,8 @@ public abstract class AIOMapper<T extends IIOObject> implements AutoCloseable, S
      *
      * @param path the path
      */
-    public Optional<T> get(Path path) {
-        return Optional.ofNullable(ioMap.get(path));
+    public Result<T> get(Path path) {
+        return Result.ofNullable(ioMap.get(path));
     }
 
     /**
@@ -107,10 +108,11 @@ public abstract class AIOMapper<T extends IIOObject> implements AutoCloseable, S
      *
      * @param ioObject the IO object
      */
-    public Optional<Path> getPath(T ioObject) {
-        return ioMap.entrySet().stream()
-                .filter(e -> Objects.equals(e.getValue(), ioObject))
-                .findAny()
+    public Result<Path> getPath(T ioObject) {
+        return Result.ofOptional(
+                        ioMap.entrySet().stream()
+                                .filter(e -> Objects.equals(e.getValue(), ioObject))
+                                .findAny())
                 .map(Map.Entry::getKey);
     }
 
@@ -118,9 +120,9 @@ public abstract class AIOMapper<T extends IIOObject> implements AutoCloseable, S
      * {@return the absolute path for a sibling of a given IO object, if any}
      *
      * @param sibling the IO object
-     * @param path the relative path of the sibling
+     * @param path    the relative path of the sibling
      */
-    public Optional<Path> resolve(T sibling, Path path) {
+    public Result<Path> resolve(T sibling, Path path) {
         return getPath(sibling).map(_path -> _path.resolveSibling(path));
     }
 
@@ -129,7 +131,7 @@ public abstract class AIOMapper<T extends IIOObject> implements AutoCloseable, S
      *
      * @param path the relative path of the sibling
      */
-    public Optional<Path> resolve(Path path) {
+    public Result<Path> resolve(Path path) {
         return resolve(get(), path);
     }
 

@@ -1,8 +1,10 @@
 package de.featjar.base.computation;
 
 import de.featjar.base.data.Result;
+import de.featjar.base.task.IMonitor;
 import de.featjar.base.tree.structure.ITree;
 
+import java.util.List;
 import java.util.Objects;
 import java.util.function.Function;
 
@@ -15,7 +17,7 @@ import java.util.function.Function;
  * @param <U> the type of the mapped result
  */
 public class FunctionComputation<T, U> extends AComputation<U> implements IAnalysis<T, U> {
-    protected static final Dependency<?> INPUT = newDependency();
+    protected static final Dependency<?> INPUT = newRequiredDependency();
     protected final Class<?> klass;
     protected final String scope;
     protected final Function<T, Result<U>> function;
@@ -23,9 +25,10 @@ public class FunctionComputation<T, U> extends AComputation<U> implements IAnaly
     /**
      * Creates a function computation.
      *
-     * @param input      the input computation
-     * @param identifier the unique identifier
-     * @param function   the mapper function
+     * @param input    the input computation
+     * @param klass    the calling class
+     * @param scope    the calling scope
+     * @param function the mapper function
      */
     public FunctionComputation(IComputation<T> input, Class<?> klass, String scope, Function<T, Result<U>> function) {
         dependOn(INPUT);
@@ -41,9 +44,11 @@ public class FunctionComputation<T, U> extends AComputation<U> implements IAnaly
         return (Dependency<T>) INPUT;
     }
 
+    @SuppressWarnings("unchecked")
     @Override
-    public FutureResult<U> compute() {
-        return getInput().get().thenComputeResult((t, monitor) -> function.apply(t));
+    public Result<U> computeResult(List<?> results, IMonitor monitor) {
+        T input = (T) INPUT.get(results);
+        return function.apply(input);
     }
 
     @Override

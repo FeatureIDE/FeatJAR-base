@@ -1,5 +1,7 @@
 package de.featjar.base.cli;
 
+import de.featjar.base.data.Result;
+
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -137,13 +139,13 @@ public abstract class AArgumentParser {
      * @param option the option
      * @throws ArgumentParseException when a parsing error occurs
      */
-    public Optional<String> parseOption(String option) throws ArgumentParseException {
+    public Result<String> parseOption(String option) throws ArgumentParseException {
         List<String> values = parseOptions(option);
         if (values.size() > 2)
             throw new ArgumentParseException(
                     String.format("Option %s supplied with several values, but only one value was expected.",
                             option));
-        return values.isEmpty() ? Optional.empty() : Optional.of(values.get(0));
+        return values.isEmpty() ? Result.empty() : Result.of(values.get(0));
     }
 
     /**
@@ -153,7 +155,7 @@ public abstract class AArgumentParser {
      * @throws ArgumentParseException when a parsing error occurs
      */
     public String parseRequiredOption(String option) throws ArgumentParseException {
-        Optional<String> value = parseOption(option);
+        Result<String> value = parseOption(option);
         if (value.isEmpty())
             throw new ArgumentParseException(
                     String.format("Option %s not supplied, but was expected.", option));

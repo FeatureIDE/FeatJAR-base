@@ -25,7 +25,6 @@ import de.featjar.base.data.Result;
 import de.featjar.base.env.IBrowsable;
 import de.featjar.base.extension.IInitializer;
 import de.featjar.base.env.StackTrace;
-import de.featjar.base.io.graphviz.GraphVizComputationTreeFormat;
 import de.featjar.base.io.graphviz.GraphVizTreeFormat;
 import de.featjar.base.task.IMonitor;
 import de.featjar.base.tree.structure.ITree;
@@ -46,23 +45,23 @@ public class Cache implements IInitializer, IBrowsable<GraphVizTreeFormat<ICompu
     /**
      * Specifies which computation results a cache should contain.
      */
-    public interface CachingPolicy {
+    public interface CachePolicy {
         /**
          * Caches no computation results.
          */
-        CachingPolicy CACHE_NONE = (computation, stackTrace) -> false;
+        CachePolicy CACHE_NONE = (computation, stackTrace) -> false;
 
         /**
          * Caches all computation results, even those nested in other computations.
          */
-        CachingPolicy CACHE_ALL = (computation, stackTrace) -> true;
+        CachePolicy CACHE_ALL = (computation, stackTrace) -> true;
 
         /**
          * Caches top-level computation results; that is, those not nested in other computations.
-         * Nested computations are detected by checking if {@link IComputation#compute()} is already on the stack.
+         * Nested computations are detected by checking if {@link IComputation#computeFutureResult()} is already on the stack.
          * Nesting inside anonymous computations (e.g., lambdas) is not detected and therefore cached.
          */
-        CachingPolicy CACHE_TOP_LEVEL = (computation, stackTrace) ->
+        CachePolicy CACHE_TOP_LEVEL = (computation, stackTrace) ->
                 !stackTrace.containsMethodCall(IComputation.class, "compute");
 
         /**
@@ -78,16 +77,16 @@ public class Cache implements IInitializer, IBrowsable<GraphVizTreeFormat<ICompu
      * Configures a cache.
      */
     public static class Configuration {
-        protected CachingPolicy cachingPolicy = CachingPolicy.CACHE_NONE;
+        protected CachePolicy cachePolicy = CachePolicy.CACHE_NONE;
 
         /**
-         * Configures the caching policy.
+         * Configures the cache policy.
          *
-         * @param cachingPolicy the caching policy
+         * @param cachePolicy the cache policy
          * @return this configuration
          */
-        public Configuration setCachingPolicy(CachingPolicy cachingPolicy) {
-            this.cachingPolicy = cachingPolicy;
+        public Configuration setCachePolicy(CachePolicy cachePolicy) {
+            this.cachePolicy = cachePolicy;
             return this;
         }
     }
@@ -168,7 +167,7 @@ public class Cache implements IInitializer, IBrowsable<GraphVizTreeFormat<ICompu
      * {@return the result of a given computation}
      * Returns the {@link FutureResult} for the {@link IComputation} from the cache if it has already been stored.
      * Otherwise, computes the {@link FutureResult} and returns it.
-     * The computed {@link FutureResult} is cached if the current {@link CachingPolicy} agrees.
+     * The computed {@link FutureResult} is cached if the current {@link CachePolicy} agrees.
      *
      * @param computation the computation
      * @param <T>         the type of the computation result
@@ -181,8 +180,8 @@ public class Cache implements IInitializer, IBrowsable<GraphVizTreeFormat<ICompu
             return get(computation).get();
         }
         Feat.log().debug("cache miss for " + computation);
-        FutureResult<T> futureResult = computation.compute();
-        if (configuration.cachingPolicy.shouldCache(computation, new StackTrace())) {
+        FutureResult<T> futureResult = computation.computeFutureResult();
+        if (configuration.cachePolicy.shouldCache(computation, new StackTrace())) {
             Feat.log().debug("cache write for " + computation);
             put(computation, futureResult);
         }
@@ -253,7 +252,7 @@ public class Cache implements IInitializer, IBrowsable<GraphVizTreeFormat<ICompu
     }
 
     public Long getNumberOfHits(IComputation<?> computation) {
-        return Optional.ofNullable(hitStatistics.get(computation)).orElse(0L);
+        return Result.ofNullable(hitStatistics.get(computation)).orElse(0L);
     }
 
     public List<IComputation<?>> getCachedComputations() {
@@ -263,7 +262,7 @@ public class Cache implements IInitializer, IBrowsable<GraphVizTreeFormat<ICompu
     }
 
     public IComputation<List<?>> getCacheComputation() {
-        return IComputation.allOf(getCachedComputations());
+        return Computations.allOf(getCachedComputations());
     }
 
     @Override

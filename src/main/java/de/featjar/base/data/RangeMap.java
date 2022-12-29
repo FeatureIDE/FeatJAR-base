@@ -85,17 +85,17 @@ public class RangeMap<T> {
     /**
      * {@return the range of valid indices in this range map}
      */
-    public Optional<Range> getValidIndexRange() {
+    public Result<Range> getValidIndexRange() {
         return indexToObject.size() == 1
-                ? Optional.empty()
-                : Optional.of(Range.of(1, indexToObject.size() - 1));
+                ? Result.empty()
+                : Result.of(Range.of(1, indexToObject.size() - 1));
     }
 
-    protected Optional<Integer> getMinimumIndex() {
+    protected Result<Integer> getMinimumIndex() {
         return getValidIndexRange().flatMap(Range::getLowerBound);
     }
 
-    protected Optional<Integer> getMaximumIndex() {
+    protected Result<Integer> getMaximumIndex() {
         return getValidIndexRange().flatMap(Range::getUpperBound);
     }
 
@@ -283,8 +283,8 @@ public class RangeMap<T> {
      *
      * @param index the index
      */
-    public Optional<T> get(int index) {
-        return isValidIndex(index) ? Optional.ofNullable(indexToObject.get(index)) : Optional.empty();
+    public Result<T> get(int index) {
+        return isValidIndex(index) ? Result.ofNullable(indexToObject.get(index)) : Result.empty();
     }
 
     /**
@@ -292,8 +292,8 @@ public class RangeMap<T> {
      *
      * @param object the object
      */
-    public Optional<Integer> get(T object) {
-        return Optional.ofNullable(objectToIndex.get(object));
+    public Result<Integer> get(T object) {
+        return Result.ofNullable(objectToIndex.get(object));
     }
 
     /**

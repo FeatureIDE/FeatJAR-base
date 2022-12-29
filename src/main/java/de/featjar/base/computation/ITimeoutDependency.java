@@ -10,6 +10,12 @@ import de.featjar.base.data.Result;
  */
 public interface ITimeoutDependency { // todo: how to handle partial results (i.e., to return a lower bound for counting)?
     /**
+     * The default timeout returned by {@link #getTimeout()}, if not specified otherwise.
+     * Specifies that no timeout should be set; that is, the analysis runs until it completes.
+     */
+    long DEFAULT_TIMEOUT = -1;
+
+    /**
      * {@return the timeout dependency of this computation}
      */
     Dependency<Long> getTimeoutDependency();

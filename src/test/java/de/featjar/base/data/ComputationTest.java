@@ -1,6 +1,7 @@
 package de.featjar.base.data;
 
 import de.featjar.base.Feat;
+import de.featjar.base.computation.Computations;
 import de.featjar.base.computation.IComputation;
 import de.featjar.base.computation.FutureResult;
 import org.junit.jupiter.api.Test;
@@ -14,14 +15,14 @@ class ComputationTest {
     @Test
     void simpleComputation() {
         {
-            IComputation<Integer> computation = IComputation.of(42);
+            IComputation<Integer> computation = Computations.of(42);
             assertEquals(42, computation.getResult().get());
             assertFalse(Feat.cache().has(computation));
         }
         assertTrue(Feat.cache().computationMap.isEmpty());
 
         Feat.run(fj -> {
-            IComputation<Integer> computation = IComputation.of(42);
+            IComputation<Integer> computation = Computations.of(42);
             assertEquals(42, computation.getResult().get());
             assertTrue(Feat.cache().has(computation));
             assertFalse(Feat.cache().computationMap.isEmpty());
@@ -29,7 +30,7 @@ class ComputationTest {
 
         assertTrue(Feat.cache().computationMap.isEmpty());
         {
-            IComputation<Integer> computation = IComputation.of(42);
+            IComputation<Integer> computation = Computations.of(42);
             assertEquals(42, computation.getResult().get());
             assertFalse(Feat.cache().has(computation));
         }
@@ -44,14 +45,14 @@ class ComputationTest {
         }
 
         @Override
-        public FutureResult<Boolean> compute() {
+        public FutureResult<Boolean> computeFutureResult() {
             return input.get().thenCompute((integer, monitor) -> integer % 2 == 0);
         }
     }
 
     @Test
     void chainedComputation() {
-        IComputation<Integer> computation = IComputation.of(42);
+        IComputation<Integer> computation = Computations.of(42);
         IComputation<Boolean> isEvenComputation = () -> computation.get().thenCompute((integer, monitor) -> integer % 2 == 0);
         assertTrue(isEvenComputation.getResult().get());
         assertTrue(computation.map(ComputeIsEven::new).getResult().get());
@@ -69,7 +70,7 @@ class ComputationTest {
         }
 
         @Override
-        public FutureResult<Boolean> compute() {
+        public FutureResult<Boolean> computeFutureResult() {
             return input.get().thenCompute(
                     (integer, monitor) -> parity == Parity.EVEN ? integer % 2 == 0 : integer % 2 == 1);
         }
@@ -77,7 +78,7 @@ class ComputationTest {
 
     @Test
     void computationWithArguments() {
-        IComputation<Integer> computation = IComputation.of(42);
+        IComputation<Integer> computation = Computations.of(42);
         assertTrue(new ComputeIsParity(computation, ComputeIsParity.Parity.EVEN).getResult().get());
         assertFalse(new ComputeIsParity(computation, ComputeIsParity.Parity.ODD).getResult().get());
         assertTrue(computation.map(c -> new ComputeIsParity(c, ComputeIsParity.Parity.EVEN)).getResult().get());
@@ -85,16 +86,16 @@ class ComputationTest {
 
     @Test
     void allOfSimple() {
-        Pair<Integer, Integer> r = IComputation.of(IComputation.of(1), IComputation.of(2)).getResult().get();
+        Pair<Integer, Integer> r = Computations.of(Computations.of(1), Computations.of(2)).getResult().get();
         assertEquals(1, r.getKey());
         assertEquals(2, r.getValue());
     }
 
     @Test
     void allOfComplex() {
-        IComputation<Integer> c1 = IComputation.of(42);
+        IComputation<Integer> c1 = Computations.of(42);
         IComputation<Boolean> c2 = c1.map(ComputeIsEven::new);
-        Pair<Integer, Boolean> r = IComputation.of(c1, c2).getResult().get();
+        Pair<Integer, Boolean> r = Computations.of(c1, c2).getResult().get();
         assertEquals(42, r.getKey());
         assertEquals(true, r.getValue());
     }
@@ -110,7 +111,7 @@ class ComputationTest {
             return 42;
         }));
         IComputation<Boolean> c2 = c1.map(ComputeIsEven::new);
-        Pair<Integer, Boolean> r = IComputation.of(c1, c2).getResult().get();
+        Pair<Integer, Boolean> r = Computations.of(c1, c2).getResult().get();
         assertEquals(42, r.getKey());
         assertEquals(true, r.getValue());
     }

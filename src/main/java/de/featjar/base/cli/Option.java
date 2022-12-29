@@ -2,7 +2,6 @@ package de.featjar.base.cli;
 
 import de.featjar.base.data.Result;
 
-import java.util.Optional;
 import java.util.function.Function;
 import java.util.function.Predicate;
 
@@ -68,8 +67,8 @@ public class Option<T> {
     /**
      * {@return this option's description}
      */
-    public Optional<String> getDescription() {
-        return Optional.ofNullable(description);
+    public Result<String> getDescription() {
+        return Result.ofNullable(description);
     }
 
     /**
@@ -86,8 +85,8 @@ public class Option<T> {
     /**
      * {@return this option's default value}
      */
-    public Optional<T> getDefaultValue() {
-        return Optional.ofNullable(defaultValue);
+    public Result<T> getDefaultValue() {
+        return Result.ofNullable(defaultValue);
     }
 
     /**
@@ -127,10 +126,10 @@ public class Option<T> {
      * @throws AArgumentParser.ArgumentParseException when the value cannot be parsed
      */
     public T parseFrom(AArgumentParser argumentParser) throws AArgumentParser.ArgumentParseException {
-        Optional<String> valueString = isRequired
-                ? Optional.of(argumentParser.parseRequiredOption(name))
+        Result<String> valueString = isRequired
+                ? Result.of(argumentParser.parseRequiredOption(name))
                 : argumentParser.parseOption(name);
-        return Result.ofOptional(valueString)
+        return valueString
                 .flatMap(parser)
                 .flatMap(v -> {
                     if (validator.test(v))
@@ -166,44 +165,4 @@ public class Option<T> {
                         : "");
     }
 
-    /**
-     * A string option, which is parsed as itself.
-     */
-    public static class StringOption extends Option<String> {
-        /**
-         * Creates a string option.
-         *
-         * @param name the name of the string option
-         */
-        public StringOption(String name) {
-            super(name, Result.wrapInResult(String::valueOf));
-        }
-    }
-
-    /**
-     * A Boolean flag option, which can either be present or not.
-     */
-    public static class Flag extends Option<Boolean> {
-        /**
-         * Creates a flag option.
-         *
-         * @param name the name of the flag option
-         */
-        public Flag(String name) {
-            super(name, null);
-        }
-
-        @Override
-        public Boolean parseFrom(AArgumentParser argumentParser) throws AArgumentParser.ArgumentParseException {
-            boolean value = argumentParser.parseFlag(name);
-            if (defaultValue != null || isRequired)
-                throw new IllegalArgumentException();
-            return value;
-        }
-
-        @Override
-        public String toString() {
-            return String.format("%s: %s", name, description);
-        }
-    }
 }

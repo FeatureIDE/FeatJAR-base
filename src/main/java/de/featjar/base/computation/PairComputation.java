@@ -2,12 +2,10 @@ package de.featjar.base.computation;
 
 import de.featjar.base.data.Pair;
 import de.featjar.base.data.Result;
+import de.featjar.base.task.IMonitor;
 import de.featjar.base.tree.structure.ITree;
 
 import java.util.List;
-import java.util.Objects;
-import java.util.concurrent.CompletableFuture;
-import java.util.stream.Collectors;
 
 /**
  * A computation that computes two computations.
@@ -16,49 +14,43 @@ import java.util.stream.Collectors;
  * @author Elias Kuiter
  */
 public class PairComputation<T, U> extends AComputation<Pair<T, U>> {
-    protected static Dependency<IComputation<?>> FIRST_COMPUTATION = newDependency();
-    protected static Dependency<IComputation<?>> SECOND_COMPUTATION = newDependency();
+    protected static Dependency<?> KEY_COMPUTATION = newRequiredDependency();
+    protected static Dependency<?> VALUE_COMPUTATION = newRequiredDependency();
 
-    public PairComputation(IComputation<T> firstComputation, IComputation<U> secondComputation) {
-        dependOn(FIRST_COMPUTATION, SECOND_COMPUTATION);
-        setFirstComputation(firstComputation);
-        setSecondComputation(secondComputation);
+    public PairComputation(IComputation<T> key, IComputation<U> value) {
+        dependOn(KEY_COMPUTATION, VALUE_COMPUTATION);
+        setKeyComputation(key);
+        setValueComputation(value);
     }
 
     @SuppressWarnings("unchecked")
-    public IComputation<T> getFirstComputation() {
-        return ((Dependency<T>) FIRST_COMPUTATION).get(this);
+    public IComputation<T> getKeyComputation() {
+        return ((Dependency<T>) KEY_COMPUTATION).get(this);
     }
 
     @SuppressWarnings("unchecked")
-    public void setFirstComputation(IComputation<T> firstComputation) {
-        ((Dependency<T>) FIRST_COMPUTATION).set(this, firstComputation);
+    public void setKeyComputation(IComputation<T> key) {
+        ((Dependency<T>) KEY_COMPUTATION).set(this, key);
     }
 
     @SuppressWarnings("unchecked")
-    public IComputation<U> getSecondComputation() {
-        return ((Dependency<U>) SECOND_COMPUTATION).get(this);
+    public IComputation<U> getValueComputation() {
+        return ((Dependency<U>) VALUE_COMPUTATION).get(this);
     }
 
     @SuppressWarnings("unchecked")
-    public void setSecondComputation(IComputation<U> secondComputation) {
-        ((Dependency<U>) SECOND_COMPUTATION).set(this, secondComputation);
+    public void setValueComputation(IComputation<U> value) {
+        ((Dependency<U>) VALUE_COMPUTATION).set(this, value);
     }
 
+    @SuppressWarnings("unchecked")
     @Override
-    public FutureResult<Pair<T, U>> compute() {
-        FutureResult<T> firstFutureResult = getFirstComputation().get();
-        FutureResult<U> secondFutureResult = getSecondComputation().get();
-        return FutureResult.ofCompletableFuture(
-                FutureResult.allOf(firstFutureResult, secondFutureResult))
-                .thenComputeFromResult((unused, monitor) ->
-                        firstFutureResult.get().isEmpty() || secondFutureResult.get().isEmpty()
-                        ? Result.empty()
-                        : Result.of(new Pair<>(firstFutureResult.get().get(), secondFutureResult.get().get())));
+    public Result<Pair<T, U>> computeResult(List<?> results, IMonitor monitor) {
+        return Result.of(new Pair<>((T) KEY_COMPUTATION.get(results), (U) VALUE_COMPUTATION.get(results)));
     }
 
     @Override
     public ITree<IComputation<?>> cloneNode() {
-        return new PairComputation<>(getFirstComputation(), getSecondComputation());
+        return new PairComputation<>(getKeyComputation(), getValueComputation());
     }
 }

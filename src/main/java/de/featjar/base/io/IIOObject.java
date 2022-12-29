@@ -20,10 +20,11 @@
  */
 package de.featjar.base.io;
 
+import de.featjar.base.data.Result;
+
 import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.Optional;
 
 /**
  * Input or output mapped by a {@link AIOMapper}.
@@ -62,8 +63,8 @@ public interface IIOObject extends AutoCloseable {
      *
      * @param path the path
      */
-    static Optional<String> getFileExtension(Path path) {
-        return Optional.ofNullable(path).flatMap(_path -> getFileExtension(_path.getFileName().toString()));
+    static Result<String> getFileExtension(Path path) {
+        return Result.ofNullable(path).flatMap(_path -> getFileExtension(_path.getFileName().toString()));
     }
 
     /**
@@ -73,11 +74,11 @@ public interface IIOObject extends AutoCloseable {
      *
      * @param fileName the file name
      */
-    static Optional<String> getFileExtension(String fileName) {
+    static Result<String> getFileExtension(String fileName) {
         if (fileName == null)
-            return Optional.empty();
+            return Result.empty();
         final int extensionIndex = fileName.lastIndexOf('.');
-        return Optional.ofNullable(extensionIndex > 0 ? fileName.substring(extensionIndex + 1) : null);
+        return Result.ofNullable(extensionIndex > 0 ? fileName.substring(extensionIndex + 1) : null);
     }
 
     /**

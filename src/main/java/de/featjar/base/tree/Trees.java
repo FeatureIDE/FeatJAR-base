@@ -22,6 +22,7 @@ package de.featjar.base.tree;
 
 import de.featjar.base.data.Problem;
 import de.featjar.base.data.Result;
+import de.featjar.base.data.Void;
 import de.featjar.base.tree.structure.ITree;
 import de.featjar.base.tree.visitor.IInOrderTreeVisitor;
 import de.featjar.base.tree.visitor.ITreeVisitor;
@@ -44,10 +45,14 @@ public class Trees {
      * Thrown when a visitor requests the {@link ITreeVisitor.TraversalAction#FAIL} action.
      */
     public static class VisitorFailException extends Exception {
-        Problem problem;
+        List<Problem> problems;
 
-        public VisitorFailException(Problem problem) {
-            this.problem = problem;
+        public VisitorFailException(Problem... problems) {
+            this(List.of(problems));
+        }
+
+        public VisitorFailException(List<Problem> problems) {
+            this.problems = problems;
         }
     }
 
@@ -66,7 +71,7 @@ public class Trees {
             depthFirstSearch(node, visitor);
             return visitor.getResult();
         } catch (final VisitorFailException e) {
-            return Result.empty(e.problem);
+            return Result.empty(e.problems);
         }
     }
 
@@ -86,7 +91,7 @@ public class Trees {
             depthFirstSearch(node, visitor);
             return visitor.getResult();
         } catch (final VisitorFailException e) {
-            return Result.empty(e.problem);
+            return Result.empty(e.problems);
         }
     }
 
@@ -441,9 +446,9 @@ public class Trees {
             final StackEntry<T> entry = stack.getLast();
             if (entry.remainingChildren == null) {
                 path.add(entry.node);
-                Optional<Problem> problem = visitor.nodeValidator(path);
-                if (problem.isPresent())
-                    throw new VisitorFailException(problem.get());
+                Result<Void> problem = visitor.nodeValidator(path);
+                if (problem.hasProblem())
+                    throw new VisitorFailException(problem.getProblem().get());
                 final TraversalAction traversalAction = visitor.firstVisit(path);
                 switch (traversalAction) {
                     case CONTINUE:
@@ -497,9 +502,9 @@ public class Trees {
                 final T curNode = stack.getLast();
                 if (path.isEmpty() || (curNode != path.get(path.size() - 1))) {
                     path.add(curNode);
-                    Optional<Problem> problem = visitor.nodeValidator(path);
-                    if (problem.isPresent())
-                        throw new VisitorFailException(problem.get());
+                    Result<Void> problem = visitor.nodeValidator(path);
+                    if (problem.hasProblem())
+                        throw new VisitorFailException(problem.getProblem().get());
                     final TraversalAction traversalAction = visitor.firstVisit(path);
                     switch (traversalAction) {
                         case CONTINUE:

@@ -23,7 +23,7 @@ public class GraphVizComputationTreeFormat extends GraphVizTreeFormat<IComputati
             return options(option("label", shorten(computation.toString())));
         long numberOfHits = FeatJAR.cache().getNumberOfHits(computation);
         Result<?> result = computation.getResult();
-        String resultString = Objects.toString(result.orElse(() -> null));
+        String resultString = Objects.toString(result.orElseGet(() -> null));
         return options(
                 option("label", String.format("{%s|%s|%s}",
                         shorten(computation.toString()),

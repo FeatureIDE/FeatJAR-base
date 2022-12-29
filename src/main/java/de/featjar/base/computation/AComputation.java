@@ -41,29 +41,43 @@ public abstract class AComputation<T> extends ATree<IComputation<?>> implements 
      *
      * @param dependencies the dependencies
      */
-    @SuppressWarnings("unchecked")
     protected void dependOn(Dependency<?>... dependencies) {
-        FeatJAR.dependencyManager().register((Class<? extends IComputation<?>>) getClass(), dependencies);
+        dependOn(List.of(dependencies));
     }
 
     /**
-     * {@return a new dependency for this computation class}
+     * Declares all dependencies of this computation class.
+     * This method must be called once per computation class at the top of its constructor.
+     * Each dependency is then assigned an ascending index into the children of this computation, viewed as a tree.
+     *
+     * @param dependencies the dependencies
+     */
+    @SuppressWarnings("unchecked")
+    protected void dependOn(List<Dependency<?>> dependencies) {
+        FeatJAR.dependencyManager().register((Class<? extends IComputation<?>>) getClass(), dependencies);
+        dependencies.forEach(dependency -> dependency.setToDefaultValue(this));
+    }
+
+    /**
+     * {@return a new required dependency for this computation class}
      * Should only be called in a static context to avoid creating unnecessary objects.
+     * A required dependency must be set in the constructor of the computation class.
      *
      * @param <U> the type of the dependency's computation result
      */
-    protected static <U> Dependency<U> newDependency() {
+    protected static <U> Dependency<U> newRequiredDependency() {
         return new Dependency<>();
     }
 
     /**
-     * {@return a new dependency for this computation class with a given default value}
+     * {@return a new optional dependency for this computation class with a given default value}
      * Should only be called in a static context to avoid creating unnecessary objects.
+     * An optional dependency should not be set in the constructor of the computation class.
      *
      * @param defaultValue the default value
      * @param <U> the type of the dependency's computation result
      */
-    protected static <U> Dependency<U> newDependency(U defaultValue) {
+    protected static <U> Dependency<U> newOptionalDependency(U defaultValue) {
         return new Dependency<>(defaultValue);
     }
 

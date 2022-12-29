@@ -55,10 +55,9 @@ public class DependencyManager implements IInitializer {
      * @param computationClass the computation class
      * @param dependencies the dependencies
      */
-    public void register(Class<? extends IComputation<?>> computationClass, Dependency<?>... dependencies) {
+    public void register(Class<? extends IComputation<?>> computationClass, List<Dependency<?>> dependencies) {
         if (!dependencyMap.containsKey(computationClass))
-            Arrays.stream(dependencies).forEach(dependency ->
-                    register(computationClass, dependency));
+            dependencies.forEach(dependency -> register(computationClass, dependency));
     }
 
     /**

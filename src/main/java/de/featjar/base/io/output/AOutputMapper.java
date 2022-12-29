@@ -20,6 +20,7 @@
  */
 package de.featjar.base.io.output;
 
+import de.featjar.base.data.Result;
 import de.featjar.base.io.AIOMapper;
 import de.featjar.base.io.IIOObject;
 import de.featjar.base.io.IOMapperOptions;
@@ -100,8 +101,8 @@ public abstract class AOutputMapper extends AIOMapper<AOutput> {
      * @throws IOException if an I/O exception occurs
      */
     public AOutput create(Path path) throws IOException {
-        Optional<AOutput> outputOptional = super.get(path);
-        if (outputOptional.isPresent()) return outputOptional.get();
+        Result<AOutput> outputResult = super.get(path);
+        if (outputResult.isPresent()) return outputResult.get();
         AOutput output = newOutput(path);
         ioMap.put(path, output);
         return output;

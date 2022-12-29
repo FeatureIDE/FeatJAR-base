@@ -2,9 +2,12 @@ package de.featjar.base.computation;
 
 import de.featjar.base.data.Pair;
 import de.featjar.base.data.Result;
+import de.featjar.base.task.CancelableMonitor;
+import de.featjar.base.task.IMonitor;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.function.BiFunction;
 import java.util.function.Function;
 
 /**
@@ -25,13 +28,62 @@ import java.util.function.Function;
  */
 public class Computations {
     /**
+     * {@return a trivial computation that computes a given object}
+     *
+     * @param object the object
+     * @param <T>    the type of the object
+     */
+    public static <T> IComputation<T> of(T object) {
+        return of(object, new CancelableMonitor());
+    }
+
+    /**
+     * {@return a trivial computation that computes a given object}
+     *
+     * @param object  the object
+     * @param monitor the monitor
+     * @param <T>     the type of the object
+     */
+    public static <T> IComputation<T> of(T object, IMonitor monitor) {
+        return new ConstantComputation<>(object, monitor);
+    }
+
+    /**
+     * {@return a computation that computes both given computations, summarizing their results in a pair}
+     *
+     * @param computation1 the first computation
+     * @param computation2 the second computation
+     */
+    public static <T, U> IComputation<Pair<T, U>> of(IComputation<T> computation1, IComputation<U> computation2) {
+        return new PairComputation<>(computation1, computation2);
+    }
+
+    /**
+     * {@return a computation that computes all of the given computations, summarizing their results in a list}
+     *
+     * @param computations the computations
+     */
+    public static IComputation<List<?>> allOf(List<? extends IComputation<?>> computations) {
+        return allOf(computations.toArray(IComputation[]::new));
+    }
+
+    /**
+     * {@return a computation that computes all its computations, summarizing their results in a list}
+     *
+     * @param computations the computations
+     */
+    public static IComputation<List<?>> allOf(IComputation<?>... computations) {
+        return new AllOfComputation(computations);
+    }
+
+    /**
      * {@return a constant computation of the given object}
      *
      * @param t the object
      * @param <T> the type of the object
      */
     public static <T> IComputation<T> async(T t) {
-        return IComputation.of(t);
+        return of(t);
     }
 
     /**
@@ -41,7 +93,7 @@ public class Computations {
      * @param <T> the type of the result
      */
     public static <T> IComputation<T> async(Result<T> tResult) {
-        return tResult.map(IComputation::of).orElseThrow(); // todo: better error handling?
+        return tResult.map(Computations::of).orElseThrow(); // todo: better error handling?
     }
 
     /**
@@ -64,7 +116,7 @@ public class Computations {
      * @param <U> the type of the second object
      */
     public static <T, U> IComputation<Pair<T, U>> async(T t, U u) {
-        return IComputation.of(async(t), async(u));
+        return of(async(t), async(u));
     }
 
     /**
@@ -76,7 +128,7 @@ public class Computations {
      * @param <U> the type of the second computation result
      */
     public static <T, U> IComputation<Pair<T, U>> async(IComputation<T> tComputation, IComputation<U> uComputation) {
-        return IComputation.of(tComputation, uComputation);
+        return of(tComputation, uComputation);
     }
 
     /**
@@ -94,7 +146,7 @@ public class Computations {
      * @param computations the computations
      */
     public static IComputation<List<?>> async(IComputation<?>... computations) {
-        return IComputation.allOf(computations);
+        return allOf(computations);
     }
 
     /**
@@ -162,7 +214,7 @@ public class Computations {
      * @param <U> the type of the mapped result
      */
     public static <T, U> Function<T, U> awaitMap(Function<IComputation<T>, IComputation<U>> fn) {
-        return t -> await(fn.apply(IComputation.of(t)));
+        return t -> await(fn.apply(of(t)));
     }
 
     /**
@@ -209,5 +261,15 @@ public class Computations {
      */
     public static <T, U> IComputation<U> getValue(IComputation<Pair<T, U>> pair) {
         return pair.mapResult(Computations.class, "getValue", Pair::getValue);
+    }
+
+    /**
+     * {@return the value returned by a given function applied to this computation}
+     * Typically, this returns a new computation composed with this computation.
+     *
+     * @param fn the function
+     */
+    public static <T, U, V> V mapPair(IComputation<Pair<T, U>> computation, BiFunction<IComputation<T>, IComputation<U>, V> fn) {
+        return fn.apply(getKey(computation), getValue(computation));
     }
 }

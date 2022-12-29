@@ -23,6 +23,7 @@ package de.featjar.base.log;
 import de.featjar.base.Feat;
 import de.featjar.base.FeatJAR;
 import de.featjar.base.data.Problem;
+import de.featjar.base.data.Result;
 import de.featjar.base.extension.IInitializer;
 import de.featjar.base.io.MultiStream;
 import de.featjar.base.task.IMonitor;
@@ -70,11 +71,11 @@ public class Log implements IInitializer {
          */
         PROGRESS;
 
-        public static Optional<Verbosity> of(String verbosityString) {
+        public static Result<Verbosity> of(String verbosityString) {
             String[] verbosities = new String[]{"none", "error", "info", "debug", "progress"};
             if (!Arrays.asList(verbosities).contains(verbosityString))
-                return Optional.empty();
-            return Optional.ofNullable(verbosityString.equals("none") ? null : Verbosity.valueOf(verbosityString.toUpperCase()));
+                return Result.empty();
+            return Result.ofNullable(verbosityString.equals("none") ? null : Verbosity.valueOf(verbosityString.toUpperCase()));
         }
     }
 
@@ -177,7 +178,7 @@ public class Log implements IInitializer {
         }
 
         public Configuration logAtMost(String verbosityString) {
-            Optional<Verbosity> verbosity = Verbosity.of(verbosityString);
+            Result<Verbosity> verbosity = Verbosity.of(verbosityString);
             if (verbosity.isEmpty())
                 throw new IllegalArgumentException("invalid verbosity " + verbosityString);
             logAtMost(verbosity.get());
@@ -260,14 +261,13 @@ public class Log implements IInitializer {
     }
 
     /**
-     * Logs a list of problems as errors.
+     * Logs a problem.
      *
-     * @param problems the problems
+     * @param problem the problem
      */
-    public void problems(List<Problem> problems) {
-        for (Problem problem : problems) {
-            error(problem.toString());
-        }
+    public void problem(Problem problem) {
+        //todo: log entire problem tree
+        error(problem.toString());
     }
 
     /**

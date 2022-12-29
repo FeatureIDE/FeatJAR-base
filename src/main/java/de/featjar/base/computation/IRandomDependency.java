@@ -10,7 +10,7 @@ public interface IRandomDependency {
     /**
      * The default seed for the pseudorandom number generator returned by {@link #getRandom()}, if not specified otherwise.
      */
-    long DEFAULT_RANDOM_SEED = 0;// todo: needed?
+    long DEFAULT_RANDOM_SEED = 0;
 
     /**
      * {@return the random dependency of this computation}

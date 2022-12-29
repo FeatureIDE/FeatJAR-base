@@ -20,15 +20,19 @@
  */
 package de.featjar.base.data;
 
-import java.util.Optional;
+import de.featjar.base.tree.structure.ATree;
+import de.featjar.base.tree.structure.ITree;
+
+import java.util.Objects;
 
 /**
- * A problem that occurs in the creation or transformation of an object.
+ * A problem that wraps a {@link Throwable}.
  * Can be stored in a {@link Result}.
+ * Can be caused by other problems, thus forming an {@link ITree}.
  *
  * @author Sebastian Krieter
  */
-public class Problem {
+public class Problem extends ATree<Problem> {
     /**
      * Severity of a problem.
      */
@@ -43,40 +47,72 @@ public class Problem {
         ERROR
     }
 
+    protected final Exception exception;
     protected final Severity severity;
 
-    protected final String message;
-
-    protected final Exception exception;
+    /**
+     * Creates an error problem.
+     */
+    public Problem() {
+        this("an unspecified problem occurred");
+    }
 
     /**
-     * Wraps an exception as an error problem.
+     * Creates an error problem with a message.
+     *
+     * @param message the message
+     */
+    public Problem(String message) {
+        this(new Exception(message));
+    }
+
+    /**
+     * Creates an error problem with an exception.
      *
      * @param exception the exception
      */
     public Problem(Exception exception) {
-        this(exception.getMessage(), Severity.ERROR, exception);
+        this(exception, Severity.ERROR);
     }
 
     /**
-     * Wraps a message as a problem.
+     * Creates an error problem with a message.
      *
      * @param message the message
      * @param severity the severity
      */
     public Problem(String message, Severity severity) {
-        this(message, severity, null);
+        this(new Exception(message), severity);
     }
 
-    protected Problem(String message, Severity severity, Exception exception) {
-        this.message = message;
-        this.severity = severity;
-        this.exception = exception;
+    /**
+     * Creates an error problem with an exception.
+     *
+     * @param exception the exception
+     * @param severity the severity
+     */
+    public Problem(Exception exception, Severity severity) {
+        this.exception = Objects.requireNonNull(exception);
+        this.severity = Objects.requireNonNull(severity);
     }
 
     @Override
     public String toString() {
-        return severity + ": " + message;
+        return severity + ": " + exception.getMessage();
+    }
+
+    /**
+     * {@return the exception of this problem}
+     */
+    public Exception getException() {
+        return exception;
+    }
+
+    /**
+     * {@return the message of this problem}
+     */
+    public String getMessage() {
+        return exception.getMessage();
     }
 
     /**
@@ -87,31 +123,25 @@ public class Problem {
     }
 
     /**
-     * {@return the message of this problem, if any}
+     * {@return an unchecked exception describing this problem}
      */
-    public Optional<String> getMessage() {
-        return Optional.ofNullable(message);
+    public RuntimeException getUncheckedException() {
+        return new RuntimeException(exception);
     }
 
-    /**
-     * {@return the exception of this problem, if any}
-     */
-    public Optional<Exception> getException() {
-        return Optional.ofNullable(exception);
+    @Override
+    public ITree<Problem> cloneNode() {
+        return new Problem(exception, severity);
     }
 
-    /**
-     * {@return whether this problem has an exception}
-     */
-    public boolean hasException() {
-        return exception != null;
+    @Override
+    public boolean equalsNode(Problem other) {
+        return Objects.equals(exception, other.exception)
+                && Objects.equals(severity, other.severity);
     }
 
-    /**
-     * {@return an exception describing this problem}
-     */
-    public Exception toException() {
-        return getException()
-                .orElseGet(() -> getMessage().map(RuntimeException::new).orElseGet(RuntimeException::new));
+    @Override
+    public int hashCodeNode() {
+        return Objects.hash(exception, severity);
     }
 }

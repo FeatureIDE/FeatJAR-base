@@ -4,9 +4,11 @@ import de.featjar.base.data.Result;
 import de.featjar.base.task.CancelableMonitor;
 import de.featjar.base.task.IMonitor;
 
+import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 import java.util.function.BiFunction;
+import java.util.stream.Collectors;
 
 /**
  * A result that will become available in the future.
@@ -30,9 +32,9 @@ public class FutureResult<T> extends CompletableFuture<Result<T>> {
     /**
      * {@return a completed future result of the given result}
      *
-     * @param result the result
+     * @param result  the result
      * @param monitor the monitor
-     * @param <T> the type of the future result
+     * @param <T>     the type of the future result
      */
     public static <T> FutureResult<T> ofResult(Result<T> result, IMonitor monitor) {
         FutureResult<T> futureResult = new FutureResult<>(monitor);
@@ -43,76 +45,86 @@ public class FutureResult<T> extends CompletableFuture<Result<T>> {
     /**
      * {@return a completed future result of the given object}
      *
-     * @param object the object
+     * @param object  the object
      * @param monitor the monitor
-     * @param <T> the type of the future result
+     * @param <T>     the type of the future result
      */
     public static <T> FutureResult<T> of(T object, IMonitor monitor) {
         return ofResult(Result.of(object), monitor);
     }
 
     /**
-     * {@return an empty completed future result}
-     *
-     * @param monitor the monitor
-     */
-    public static FutureResult<Void> empty(IMonitor monitor) {
-        return of(null, monitor); // careful, is considered erroneous
-    }
-
-    /**
      * {@return a future result of the given completable future}
+     * If the given completable future completes with {@code null}, returns a {@link de.featjar.base.data.Void} result.
      *
      * @param completableFuture the completable future
-     * @param <T> the type of the future result
+     * @param <T>               the type of the future result
      */
     public static <T> FutureResult<T> ofCompletableFuture(CompletableFuture<T> completableFuture) {
-        return empty(new CancelableMonitor()).thenComputeFromResult(((o, monitor1) -> {
-            try {
-                return Result.of(completableFuture.get());
-            } catch (InterruptedException | ExecutionException e) {
-                return Result.empty(e);
-            }
-        }));
+        return ofResult(Result.ofVoid(), new CancelableMonitor())
+                .thenComputeFromResult(((o, _monitor) -> {
+                    try {
+                        return Result.ofNullable(completableFuture.get());
+                    } catch (InterruptedException | ExecutionException e) {
+                        return Result.empty(e);
+                    }
+                }));
+    }
+
+    public static FutureResult<List<?>> allOf(List<FutureResult<?>> futureResults) {
+            return ofCompletableFuture(allOf(futureResults.toArray(CompletableFuture[]::new)))
+                    .thenComputeFromResult((_void, monitor) -> Result.mergeAll(futureResults.stream()
+                            .map(FutureResult::get)
+                            .collect(Collectors.toList())));
     }
 
     /**
      * {@return a future result that composes this future result with the given function}
      *
-     * @param fn the function
+     * @param fn  the function
      * @param <U> the type of the future result
      */
     public <U> FutureResult<U> thenCompute(BiFunction<T, IMonitor, U> fn) {
-        return thenComputeFromResult(liftArgumentAndReturnValue(fn));
+        return thenComputeFromResult(mapArgumentAndReturnValue(fn));
     }
 
     /**
      * {@return a future result that composes this future result with the given function that returns a result}
      *
-     * @param fn the function
+     * @param fn  the function
      * @param <U> the type of the future result
      */
     public <U> FutureResult<U> thenComputeResult(BiFunction<T, IMonitor, Result<U>> fn) {
-        return thenComputeFromResult(liftArgument(fn));
+        return thenComputeFromResult(mapArgument(fn));
     }
 
     /**
      * {@return a future result that composes this future result with the given function that operates on results}
      *
-     * @param fn the function
+     * @param fn  the function
      * @param <U> the type of the future result
      */
     @SuppressWarnings({"unchecked", "rawtypes"})
     public <U> FutureResult<U> thenComputeFromResult(BiFunction<Result<T>, IMonitor, Result<U>> fn) {
-        return (FutureResult) super.thenApply(tResult -> fn.apply(tResult, monitor));
+        return (FutureResult) super.thenApply(tResult -> {
+            try {
+                return fn.apply(tResult, monitor);
+            } catch (Exception e) {
+                return Result.empty(e);
+            }
+        });
     }
 
-    protected static <T, U> BiFunction<Result<T>, IMonitor, Result<U>> liftArgument(BiFunction<T, IMonitor, Result<U>> fn) {
-        return (tResult, monitor) -> tResult.isPresent() ? fn.apply(tResult.get(), monitor) : Result.empty(tResult);
+    protected static <T, U> BiFunction<Result<T>, IMonitor, Result<U>> mapArgument(BiFunction<T, IMonitor, Result<U>> fn) {
+        return (tResult, monitor) -> tResult.isPresent()
+                ? tResult.merge(fn.apply(tResult.get(), monitor))
+                : tResult.merge(Result.empty());
     }
 
-    protected static <T, U> BiFunction<Result<T>, IMonitor, Result<U>> liftArgumentAndReturnValue(BiFunction<T, IMonitor, U> fn) {
-        return (tResult, monitor) -> tResult.isPresent() ? Result.of(fn.apply(tResult.get(), monitor)) : Result.empty(tResult);
+    protected static <T, U> BiFunction<Result<T>, IMonitor, Result<U>> mapArgumentAndReturnValue(BiFunction<T, IMonitor, U> fn) {
+        return (tResult, monitor) -> tResult.isPresent()
+                ? tResult.merge(Result.ofNullable(fn.apply(tResult.get(), monitor)))
+                : tResult.merge(Result.empty());
     }
 
     @SuppressWarnings({"unchecked", "rawtypes"})
@@ -125,10 +137,7 @@ public class FutureResult<T> extends CompletableFuture<Result<T>> {
     public Result<T> get() {
         try {
             return super.get();
-        } catch (InterruptedException e) {
-            return Result.empty(e);
-        } catch (ExecutionException e) {
-            e.printStackTrace();
+        } catch (InterruptedException | ExecutionException e) {
             return Result.empty(e);
         }
     }

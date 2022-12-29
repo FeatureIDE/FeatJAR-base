@@ -1,7 +1,6 @@
 package de.featjar.base.data;
 
 import java.util.Objects;
-import java.util.Optional;
 import java.util.function.Function;
 import java.util.stream.IntStream;
 
@@ -46,8 +45,8 @@ public class Range implements Function<Integer, Boolean> {
         return new Range(bound, bound);
     }
 
-    public Optional<Integer> getLowerBound() {
-        return Optional.ofNullable(lowerBound);
+    public Result<Integer> getLowerBound() {
+        return Result.ofNullable(lowerBound);
     }
 
     public boolean isLowerBoundOpen() {
@@ -58,8 +57,8 @@ public class Range implements Function<Integer, Boolean> {
         this.lowerBound = lowerBound;
     }
 
-    public Optional<Integer> getUpperBound() {
-        return Optional.ofNullable(upperBound);
+    public Result<Integer> getUpperBound() {
+        return Result.ofNullable(upperBound);
     }
 
     public boolean isUpperBoundOpen() {
@@ -74,12 +73,12 @@ public class Range implements Function<Integer, Boolean> {
         return isLowerBoundOpen() && isUpperBoundOpen();
     }
 
-    public Optional<Integer> getSmallerBound() {
-        return Optional.ofNullable(getLowerBound().orElseGet(() -> getUpperBound().orElse(null)));
+    public Result<Integer> getSmallerBound() {
+        return Result.ofNullable(getLowerBound().orElseGet(() -> getUpperBound().orElse(null)));
     }
 
-    public Optional<Integer> getLargerBound() {
-        return Optional.ofNullable(getUpperBound().orElseGet(() -> getLowerBound().orElse(null)));
+    public Result<Integer> getLargerBound() {
+        return Result.ofNullable(getUpperBound().orElseGet(() -> getLowerBound().orElse(null)));
     }
 
     public boolean testLowerBound(int integer) {
@@ -97,10 +96,10 @@ public class Range implements Function<Integer, Boolean> {
     /**
      * {@return a finite integer stream for this range}
      */
-    public Optional<IntStream> stream() {
+    public Result<IntStream> stream() {
         return lowerBound != null && upperBound != null
-                ? Optional.of(IntStream.rangeClosed(lowerBound, upperBound))
-                : Optional.empty();
+                ? Result.of(IntStream.rangeClosed(lowerBound, upperBound))
+                : Result.empty();
     }
 
     @Override

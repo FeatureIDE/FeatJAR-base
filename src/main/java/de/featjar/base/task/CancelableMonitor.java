@@ -20,7 +20,7 @@
  */
 package de.featjar.base.task;
 
-import java.util.Optional;
+import de.featjar.base.data.Result;
 
 /**
  * Monitor that only allows to cancel a task and ignores progress information.
@@ -48,8 +48,8 @@ public class CancelableMonitor implements IMonitor {
     }
 
     @Override
-    public Optional<String> getTaskName() {
-        return Optional.of(taskName);
+    public Result<String> getTaskName() {
+        return Result.of(taskName);
     }
 
     @Override

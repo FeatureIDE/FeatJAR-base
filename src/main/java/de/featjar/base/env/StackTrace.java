@@ -1,9 +1,10 @@
 package de.featjar.base.env;
 
+import de.featjar.base.data.Result;
+
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Optional;
 import java.util.stream.Collectors;
 
 /**
@@ -58,12 +59,12 @@ public class StackTrace {
      * @param klass             the class
      * @param methodName        the method name
      */
-    public static Optional<Boolean> isMethodCall(StackTraceElement stackTraceElement, Class<?> klass, String methodName) {
+    public static Result<Boolean> isMethodCall(StackTraceElement stackTraceElement, Class<?> klass, String methodName) {
         try {
-            return Optional.of(klass.isAssignableFrom(Class.forName(stackTraceElement.getClassName())) &&
+            return Result.of(klass.isAssignableFrom(Class.forName(stackTraceElement.getClassName())) &&
                     stackTraceElement.getMethodName().equals(methodName));
         } catch (ClassNotFoundException e) {
-            return Optional.empty();
+            return Result.empty();
         }
     }
 
@@ -85,8 +86,10 @@ public class StackTrace {
     /**
      * {@return the top stack trace element of this stack trace, if any}
      */
-    public Optional<StackTraceElement> getTop() {
-        return stackTraceElements.isEmpty() ? Optional.empty() : Optional.of(stackTraceElements.get(0));
+    public Result<StackTraceElement> getTop() {
+        return stackTraceElements.isEmpty()
+                ? Result.empty()
+                : Result.of(stackTraceElements.get(0));
     }
 
     @Override

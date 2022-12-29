@@ -20,8 +20,9 @@
  */
 package de.featjar.base.tree.structure;
 
+import de.featjar.base.data.Result;
+
 import java.util.List;
-import java.util.Optional;
 
 /**
  * A tree of nodes, each of which has an optional parent.
@@ -40,8 +41,8 @@ public abstract class ARootedTree<T extends ARootedTree<T>> extends ATree<T> {
     /**
      * {@return the parent node of this node, if any}
      */
-    public Optional<T> getParent() {
-        return Optional.ofNullable(parent);
+    public Result<T> getParent() {
+        return Result.ofNullable(parent);
     }
 
     /**
@@ -142,7 +143,7 @@ public abstract class ARootedTree<T extends ARootedTree<T>> extends ATree<T> {
      * @param node the node
      */
     public boolean isAncestor(ARootedTree<T> node) {
-        Optional<T> currentParent = getParent();
+        Result<T> currentParent = getParent();
         while (currentParent.isPresent()) {
             if (node == currentParent.get()) {
                 return true;
@@ -168,7 +169,7 @@ public abstract class ARootedTree<T extends ARootedTree<T>> extends ATree<T> {
      * {@return the index of this node in its parent's list of children, if any}
      */
     @SuppressWarnings("unchecked")
-    public Optional<Integer> getIndex() {
+    public Result<Integer> getIndex() {
         return getParent().flatMap(parent -> parent.getChildIndex((T) this));
     }
 }

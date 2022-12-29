@@ -1,9 +1,11 @@
 package de.featjar.base.computation;
 
+import de.featjar.base.data.Result;
 import de.featjar.base.task.IMonitor;
 import de.featjar.base.tree.structure.ALeafNode;
 import de.featjar.base.tree.structure.ITree;
 
+import java.util.List;
 import java.util.Objects;
 
 /**
@@ -24,13 +26,13 @@ public class ConstantComputation<T> extends ALeafNode<IComputation<?>> implement
      * @param monitor the monitor
      */
     public ConstantComputation(T value, IMonitor monitor) {
-        this.value = value;
+        this.value = Objects.requireNonNull(value, "constant computation of null not allowed");
         this.monitor = monitor;
     }
 
     @Override
-    public FutureResult<T> compute() {
-        return FutureResult.of(value, monitor);
+    public Result<T> computeResult(List<?> results, IMonitor monitor) {
+        return Result.of(value);
     }
 
     @Override

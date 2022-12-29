@@ -22,10 +22,10 @@ package de.featjar.base.tree.visitor;
 
 import de.featjar.base.data.Problem;
 import de.featjar.base.data.Result;
+import de.featjar.base.data.Void;
 import de.featjar.base.tree.Trees;
 import de.featjar.base.tree.structure.ITree;
 import java.util.List;
-import java.util.Optional;
 import java.util.function.Function;
 
 /**
@@ -69,8 +69,8 @@ public interface ITreeVisitor<T extends ITree<?>, U> {
      * @param path the path to the visited node
      */
     @SuppressWarnings("BooleanMethodIsAlwaysInverted")
-    default Optional<Problem> nodeValidator(List<T> path) {
-        return Optional.empty();
+    default Result<Void> nodeValidator(List<T> path) {
+        return Result.ofVoid();
     }
 
     /**
@@ -79,10 +79,10 @@ public interface ITreeVisitor<T extends ITree<?>, U> {
      * @param path the path to the visited node
      * @param predicate the predicate
      */
-    default Optional<Problem> rootValidator(List<T> path, Function<T, Boolean> predicate, String message) {
+    default Result<Void> rootValidator(List<T> path, Function<T, Boolean> predicate, String message) {
         return path.size() != 1 || predicate.apply(path.get(0))
-                ? Optional.empty()
-                : Optional.of(new Problem(message, Problem.Severity.ERROR));
+                ? Result.ofVoid()
+                : Result.ofVoid(new Problem(message, Problem.Severity.ERROR));
     }
 
     /**
@@ -134,7 +134,7 @@ public interface ITreeVisitor<T extends ITree<?>, U> {
      *
      * @param path the current traversal path, guaranteed to contain at least one node
      */
-    default Optional<T> getParentNode(List<T> path) {
-        return (path.size() > 1) ? Optional.of(path.get(path.size() - 2)) : Optional.empty();
+    default Result<T> getParentNode(List<T> path) {
+        return (path.size() > 1) ? Result.of(path.get(path.size() - 2)) : Result.empty();
     }
 }

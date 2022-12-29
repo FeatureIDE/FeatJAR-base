@@ -2,6 +2,9 @@ package de.featjar.base.computation;
 
 import de.featjar.base.tree.structure.ATree;
 
+import java.util.List;
+import java.util.Objects;
+
 import static de.featjar.base.computation.Computations.async;
 
 /**
@@ -11,18 +14,25 @@ import static de.featjar.base.computation.Computations.async;
  */
 public class Dependency<U> extends ATree.Entry<IComputation<?>, IComputation<U>> {
     /**
-     * Creates a new dependency.
+     * Creates a new required dependency.
      */
     public Dependency() {
-        this(null);
+        super(null);
     }
 
     /**
-     * Creates a new dependency with a given default value.
+     * Creates a new optional dependency with a given default value.
      *
      * @param defaultValue the default value
      */
     public Dependency(U defaultValue) {
-        super(async(defaultValue));
+        super(async(Objects.requireNonNull(defaultValue, "default value must not be null")));
+    }
+
+    @SuppressWarnings("unchecked")
+    public U get(List<?> list) {
+        if (index < 0 || index >= list.size())
+            throw new IllegalArgumentException();
+        return (U) list.get(index);
     }
 }

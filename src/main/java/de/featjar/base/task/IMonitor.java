@@ -20,7 +20,7 @@
  */
 package de.featjar.base.task;
 
-import java.util.Optional;
+import de.featjar.base.data.Result;
 
 /**
  * Monitors the execution of a long-running task.
@@ -51,8 +51,8 @@ public interface IMonitor {
     /**
      * {@return the monitored task's name, if any}
      */
-    default Optional<String> getTaskName() {
-        return Optional.empty();
+    default Result<String> getTaskName() {
+        return Result.empty();
     }
 
     /**

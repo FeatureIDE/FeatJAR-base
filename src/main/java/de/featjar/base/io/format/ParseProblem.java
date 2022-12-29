@@ -44,22 +44,23 @@ public class ParseProblem extends Problem {
      * @param lineNumber the line number
      */
     public ParseProblem(Exception exception, int lineNumber) {
-        this(exception.getMessage(), lineNumber, Severity.ERROR, exception);
+        this(exception, Severity.ERROR, lineNumber);
     }
 
     /**
      * Create a new parse problem.
      *
-     * @param message the message
+     * @param message    the message
+     * @param severity   the severity
      * @param lineNumber the line number
-     * @param severity the severity
      */
-    public ParseProblem(String message, int lineNumber, Severity severity) {
-        this(message, lineNumber, severity, null);
+    public ParseProblem(String message, Severity severity, int lineNumber) {
+        super(message, severity);
+        this.lineNumber = lineNumber;
     }
 
-    protected ParseProblem(String message, int lineNumber, Severity severity, Exception exception) {
-        super(message, severity, exception);
+    protected ParseProblem(Exception exception, Severity severity, int lineNumber) {
+        super(exception, severity);
         this.lineNumber = lineNumber;
     }
 

@@ -24,21 +24,21 @@ public class ArgumentParser extends AArgumentParser {
      * Option for printing usage information.
      */
     public static final Option<Boolean> HELP_OPTION =
-            new Option.Flag("--help")
+            new Flag("--help")
                     .setDescription("Print usage information");
 
     /**
      * Option for printing version information.
      */
     public static final Option<Boolean> VERSION_OPTION =
-            new Option.Flag("--version")
+            new Flag("--version")
                     .setDescription("Print version information");
 
     /**
      * Option for setting the logger verbosity.
      */
     public static final Option<Log.Verbosity> VERBOSITY_OPTION =
-            new Option<>("--verbosity", s -> Result.ofOptional(Log.Verbosity.of(s)))
+            new Option<>("--verbosity", Log.Verbosity::of)
                     .setDescription("The logger verbosity, one of none, " + // todo: make none an explicit value
                             Arrays.stream(Log.Verbosity.values())
                                     .map(Objects::toString)
@@ -98,7 +98,7 @@ public class ArgumentParser extends AArgumentParser {
         }
         sb.append("The following commands are available:\n").addIndent();
         for (final ICommand command : commands) {
-            sb.appendLine(String.format("%s: %s", command.getIdentifier(), Optional.ofNullable(command.getDescription()).orElse("")));
+            sb.appendLine(String.format("%s: %s", command.getIdentifier(), Result.ofNullable(command.getDescription()).orElse("")));
         }
         sb.removeIndent();
         sb.appendLine();
@@ -211,12 +211,12 @@ public class ArgumentParser extends AArgumentParser {
     }
 
     @Override
-    public Optional<String> parseOption(String option) {
+    public Result<String> parseOption(String option) {
         try {
             return super.parseOption(option);
         } catch (ArgumentParseException e) {
             handleException(e);
-            return Optional.empty();
+            return Result.empty();
         }
     }
 

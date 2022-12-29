@@ -124,23 +124,23 @@ public interface ITree<T extends ITree<T>> extends IBrowsable<GraphVizTreeFormat
      *
      * @param idx the index
      */
-    default Optional<T> getChild(int idx) {
+    default Result<T> getChild(int idx) {
         if (idx < 0 || idx >= getChildren().size())
-            return Optional.empty();
-        return Optional.ofNullable(getChildren().get(idx));
+            return Result.empty();
+        return Result.ofNullable(getChildren().get(idx));
     }
 
     /**
      * {@return the first child of this node, if any}
      */
-    default Optional<T> getFirstChild() {
+    default Result<T> getFirstChild() {
         return getChild(0);
     }
 
     /**
      * {@return the last child of this node, if any}
      */
-    default Optional<T> getLastChild() {
+    default Result<T> getLastChild() {
         return getChild(getChildrenCount() - 1);
     }
 
@@ -149,8 +149,8 @@ public interface ITree<T extends ITree<T>> extends IBrowsable<GraphVizTreeFormat
      *
      * @param node the node
      */
-    default Optional<Integer> getChildIndex(T node) {
-        return Result.indexToOptional(getChildren().indexOf(node));
+    default Result<Integer> getChildIndex(T node) {
+        return Result.ofIndex(getChildren().indexOf(node));
     }
 
     /**
@@ -499,8 +499,8 @@ public interface ITree<T extends ITree<T>> extends IBrowsable<GraphVizTreeFormat
             this.defaultValue = defaultValue;
         }
 
-        public Optional<U> getDefaultValue() {
-            return Optional.ofNullable(defaultValue);
+        public Result<U> getDefaultValue() {
+            return Result.ofNullable(defaultValue);
         }
 
         public int getIndex() {
@@ -511,26 +511,34 @@ public interface ITree<T extends ITree<T>> extends IBrowsable<GraphVizTreeFormat
             this.index = index;
         }
 
-        public <V> V get(List<V> list) {
-            if (index < 0 || index >= list.size())
-                throw new IllegalArgumentException();
-            return list.get(index);
-        }
-
         @SuppressWarnings("unchecked")
         public U get(T tree) {
-            return (U) tree.getChild(index).orElse(defaultValue);
+            U u = (U) tree.getChild(index).orElse(defaultValue);
+            if (u == null)
+                throw new IllegalStateException("cannot get value, no default value supplied for tree entry");
+            return u;
         }
 
         public U apply(T tree) {
             return get(tree);
         }
 
-        public void set(T tree, U child) {
-            Objects.requireNonNull(child);
+        protected void setOptional(T tree, U child) {
+            if (index < 0)
+                throw new IllegalStateException("entry index was not initialized");
             while (tree.getChildrenCount() <= index)
                 tree.addChild(null);
             tree.replaceChild(index, child);
+        }
+
+        public void set(T tree, U child) {
+            Objects.requireNonNull(child, "cannot set value of tree entry to null");
+            setOptional(tree, child);
+        }
+
+        public void setToDefaultValue(T tree) {
+            if (tree.getChild(index).isEmpty())
+                setOptional(tree, defaultValue);
         }
     }
 
@@ -538,7 +546,7 @@ public interface ITree<T extends ITree<T>> extends IBrowsable<GraphVizTreeFormat
     default Result<URI> getBrowseURI(GraphVizTreeFormat<T> argument) {
         Result<String> dot = argument.serialize((T) this);
         if (dot.isEmpty())
-            return Result.empty(dot);
+            return dot.merge(Result.empty());
         try {
             return Result.of(new URI("https", "edotor.net", "", "engine=dot", dot.get()));
         } catch (URISyntaxException e) {

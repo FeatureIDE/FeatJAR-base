@@ -22,7 +22,6 @@ package de.featjar.base.data;
 
 import java.util.LinkedHashMap;
 import java.util.Objects;
-import java.util.Optional;
 import java.util.function.BiPredicate;
 import java.util.function.Function;
 
@@ -34,7 +33,7 @@ import java.util.function.Function;
  * @deprecated planned to be used for formula and feature-model analysis
  */
 @Deprecated
-public class Attribute implements Function<LinkedHashMap<Attribute, Object>, Optional<Object>> {
+public class Attribute implements Function<LinkedHashMap<Attribute, Object>, Result<Object>> {
     public static final String DEFAULT_NAMESPACE = Attribute.class.getCanonicalName();
 
     protected final String namespace;
@@ -75,8 +74,8 @@ public class Attribute implements Function<LinkedHashMap<Attribute, Object>, Opt
     }
 
     @Override
-    public Optional<Object> apply(LinkedHashMap<Attribute, Object> attributeToValueMap) {
-        return Optional.ofNullable(attributeToValueMap.get(this));
+    public Result<Object> apply(LinkedHashMap<Attribute, Object> attributeToValueMap) {
+        return Result.ofNullable(attributeToValueMap.get(this));
     }
 
     @Override

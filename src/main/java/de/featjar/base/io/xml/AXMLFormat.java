@@ -35,7 +35,6 @@ import java.io.StringReader;
 import java.io.StringWriter;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import javax.xml.parsers.DocumentBuilder;
@@ -108,7 +107,7 @@ public abstract class AXMLFormat<T> implements IFormat<T> {
         return elements.get(0);
     }
 
-    protected Optional<Element> getOptionalElement(final Element element, final String nodeName) {
+    protected Result<Element> getElementResult(final Element element, final String nodeName) {
         final List<Element> elements = getElements(element, nodeName);
         if (elements.size() > 1) {
             try {
@@ -116,9 +115,9 @@ public abstract class AXMLFormat<T> implements IFormat<T> {
             } catch (ParseException ignored) {
             }
         } else if (elements.isEmpty()) {
-            return Optional.empty();
+            return Result.empty();
         }
-        return Optional.of(elements.get(0));
+        return Result.of(elements.get(0));
     }
 
     protected Element getDocumentElement(final Document document, final String nodeName) throws ParseException {
@@ -138,7 +137,7 @@ public abstract class AXMLFormat<T> implements IFormat<T> {
         if (severity.equals(Problem.Severity.ERROR)) {
             throw new ParseException(message, lineNumber);
         } else {
-            parseProblems.add(new ParseProblem(message, lineNumber, severity));
+            parseProblems.add(new ParseProblem(message, severity, lineNumber));
         }
     }
 
@@ -154,7 +153,7 @@ public abstract class AXMLFormat<T> implements IFormat<T> {
             document.getDocumentElement().normalize();
             return Result.of(parseDocument(document), parseProblems);
         } catch (final ParseException e) {
-            return Result.empty(new ParseProblem(e.getMessage(), e.getLineNumber(), Problem.Severity.ERROR));
+            return Result.empty(new ParseProblem(e.getMessage(), Problem.Severity.ERROR, e.getLineNumber()));
         } catch (final Exception e) {
             return Result.empty(new Problem(e));
         }

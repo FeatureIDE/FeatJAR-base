@@ -1,10 +1,10 @@
 package de.featjar.base.computation;
 
 import de.featjar.base.data.Result;
+import de.featjar.base.task.IMonitor;
 import de.featjar.base.tree.structure.ITree;
 
 import java.util.List;
-import java.util.Objects;
 import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
 
@@ -18,17 +18,8 @@ public class AllOfComputation extends AComputation<List<?>> {
     }
 
     @Override
-    public FutureResult<List<?>> compute() {
-        List<FutureResult<?>> futureResults =
-                getChildren().stream().map(IComputation::get).collect(Collectors.toList());
-        return FutureResult.ofCompletableFuture(FutureResult.allOf(futureResults.toArray(CompletableFuture[]::new)))
-                .thenComputeFromResult((unused, monitor) -> {
-                    List<?> results = futureResults.stream()
-                            .map(FutureResult::get)
-                            .map(Result::get)
-                            .collect(Collectors.toList());
-                    return results.stream().noneMatch(Objects::isNull) ? Result.of(results) : Result.empty();
-                });
+    public Result<List<?>> computeResult(List<?> results, IMonitor monitor) {
+        return Result.of(results);
     }
 
     @Override
