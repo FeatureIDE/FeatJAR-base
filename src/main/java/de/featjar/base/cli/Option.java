@@ -1,5 +1,6 @@
 package de.featjar.base.cli;
 
+import de.featjar.base.Feat;
 import de.featjar.base.data.Result;
 
 import java.util.function.Function;
@@ -129,14 +130,16 @@ public class Option<T> {
         Result<String> valueString = isRequired
                 ? Result.of(argumentParser.parseRequiredOption(name))
                 : argumentParser.parseOption(name);
-        return valueString
-                .flatMap(parser)
-                .flatMap(v -> {
-                    if (validator.test(v))
-                        return Result.of(v);
-                    throw new IllegalArgumentException("value " + v + " for option " + name + " is invalid");
-                })
-                .orElse(defaultValue);
+        if (valueString.isEmpty())
+            return defaultValue;
+        Result<T> parseResult = parser.apply(valueString.get());
+        if (parseResult.isEmpty()) {
+            Feat.log().warning("could not parse option " + name + ", using default value");
+            return defaultValue;
+        }
+        if (validator.test(parseResult.get()))
+            return parseResult.get();
+        throw new IllegalArgumentException("value " + parseResult.get() + " for option " + name + " is invalid");
     }
 
     /**

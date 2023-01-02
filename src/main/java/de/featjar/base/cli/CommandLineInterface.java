@@ -51,7 +51,7 @@ public class CommandLineInterface {
     /**
      * The default verbosity on startup, if not specified elsewhere.
      */
-    public static final Log.Verbosity DEFAULT_MAXIMUM_VERBOSITY = Log.Verbosity.INFO;
+    public static final Log.Verbosity DEFAULT_VERBOSITY = Log.Verbosity.INFO;
 
     /**
      * A magic string that identifies the standard input stream.

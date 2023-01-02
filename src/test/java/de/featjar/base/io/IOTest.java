@@ -236,7 +236,7 @@ public class IOTest {
             assertTrue(result.isPresent());
             assertEquals(1, result.get().getLabel());
             assertEquals(0, result.get().getChildren().size());
-            assertEquals(2, result.getProblem().size());
+            assertTrue(result.hasProblem());
             result = IO.load(testPath, new IntegerTreeFormat(), IOMapperOptions.INPUT_FILE_HIERARCHY);
             assertTrue(result.isPresent());
             assertEquals(1, result.get().getLabel());

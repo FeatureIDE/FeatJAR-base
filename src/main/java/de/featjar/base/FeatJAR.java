@@ -2,7 +2,6 @@ package de.featjar.base;
 
 import de.featjar.base.cli.ArgumentParser;
 import de.featjar.base.cli.CommandLineInterface;
-import de.featjar.base.computation.DependencyManager;
 import de.featjar.base.data.Result;
 import de.featjar.base.computation.Cache;
 import de.featjar.base.extension.IExtension;
@@ -94,7 +93,7 @@ public class FeatJAR extends IO implements AutoCloseable {
      * The default verbosity of FeatJAR, if not adjusted otherwise.
      * Can be set at startup to allow showing log output even before this value is adjusted.
      */
-    public static Log.Verbosity defaultVerbosity;
+    public static Log.Verbosity defaultVerbosity = Log.Verbosity.INFO;
 
     /**
      * Configures the default log configuration, if not adjusted otherwise.
@@ -109,8 +108,7 @@ public class FeatJAR extends IO implements AutoCloseable {
      * Configures the default cache configuration, if not adjusted otherwise.
      */
     public static final Function<Cache.Configuration, Cache.Configuration> defaultCacheConfiguration =
-            cfg -> cfg
-                    .setCachePolicy(Cache.CachePolicy.CACHE_TOP_LEVEL);
+            cfg -> cfg.setCachePolicy(Cache.CachePolicy.CACHE_TOP_LEVEL);
 
     /**
      * {@return the current FeatJAR instance}
@@ -197,14 +195,6 @@ public class FeatJAR extends IO implements AutoCloseable {
     }
 
     /**
-     * {@return this FeatJAR instance's dependency manager}
-     */
-    public DependencyManager getDependencyManager() {
-        if (initialized) return getExtension(DependencyManager.class).orElseThrow();
-        throw new IllegalStateException();
-    }
-
-    /**
      * Runs some function in a temporary FeatJAR instance.
      *
      * @param configuration the FeatJAR configuration
@@ -264,7 +254,7 @@ public class FeatJAR extends IO implements AutoCloseable {
      */
     public static <T extends AExtensionPoint<?>> T extensionPoint(Class<T> klass) {
         if (instance == null)
-            throw new RuntimeException("FeatJAR not initialized yet");
+            throw new IllegalStateException("FeatJAR not initialized yet");
         Result<T> extensionPoint = instance.getExtensionPoint(klass);
         if (extensionPoint.isEmpty())
             throw new RuntimeException("extension point " + klass + " not currently installed in FeatJAR");
@@ -279,7 +269,7 @@ public class FeatJAR extends IO implements AutoCloseable {
      */
     public static <T extends IExtension> T extension(Class<T> klass) {
         if (instance == null)
-            throw new RuntimeException("FeatJAR not initialized yet");
+            throw new IllegalStateException("FeatJAR not initialized yet");
         Result<T> extension = instance.getExtension(klass);
         if (extension.isEmpty())
             throw new RuntimeException("extension " + klass + " not currently installed in FeatJAR");
@@ -298,14 +288,6 @@ public class FeatJAR extends IO implements AutoCloseable {
      */
     public static Cache cache() {
         return instance == null ? new Cache.Fallback() : instance.getCache();
-    }
-
-    /**
-     * {@return the current FeatJAR instance's dependency manager}
-     */
-    public static DependencyManager dependencyManager() {
-        if (instance == null) throw new IllegalStateException();
-        return instance.getDependencyManager();
     }
 
     /**

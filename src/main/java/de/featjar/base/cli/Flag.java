@@ -2,6 +2,8 @@ package de.featjar.base.cli;
 
 /**
  * A Boolean flag option, which can either be present or not.
+ *
+ * @author Elias Kuiter
  */
 public class Flag extends Option<Boolean> {
     /**

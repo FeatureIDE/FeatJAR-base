@@ -46,15 +46,25 @@ import java.util.*;
  */
 public class Log implements IInitializer {
     /**
-     * Verbosity of the log.
+     * Logging verbosity.
+     * Each verbosity (save for {@link Verbosity#NONE}) defines a type of message that can be logged.
+     * In addition, defines a log level that includes all log messages of the message type and all types above.
      */
     public enum Verbosity {
-        // todo: none level?
+        /**
+         * Indicates that no messages should be logged.
+         */
+        NONE,
         /**
          * Error message.
-         * Typically used to log exceptions and warnings.
+         * Typically used to log critical exceptions and errors.
          */
-        ERROR, // todo: warning level?
+        ERROR,
+        /**
+         * Warning message.
+         * Typically used to log non-critical warnings.
+         */
+        WARNING,
         /**
          * Info message.
          * Typically used to log high-level information.
@@ -71,11 +81,15 @@ public class Log implements IInitializer {
          */
         PROGRESS;
 
+        public static boolean isValid(String verbosityString) {
+            String[] verbosities = new String[]{"none", "error", "warning", "info", "debug", "progress"};
+            return Arrays.asList(verbosities).contains(verbosityString);
+        }
+
         public static Result<Verbosity> of(String verbosityString) {
-            String[] verbosities = new String[]{"none", "error", "info", "debug", "progress"};
-            if (!Arrays.asList(verbosities).contains(verbosityString))
+            if (!isValid(verbosityString))
                 return Result.empty();
-            return Result.ofNullable(verbosityString.equals("none") ? null : Verbosity.valueOf(verbosityString.toUpperCase()));
+            return Result.of(Verbosity.valueOf(verbosityString.toUpperCase()));
         }
     }
 
@@ -159,18 +173,25 @@ public class Log implements IInitializer {
         }
 
         public Configuration logAtMost(Verbosity verbosity) {
-            if (verbosity == null) {
-                return this;
-            }
-            logToSystemErr(Log.Verbosity.ERROR);
             switch (verbosity) {
+                case NONE:
+                    break;
+                case ERROR:
+                    logToSystemErr(Verbosity.ERROR);
+                    break;
+                case WARNING:
+                    logToSystemErr(Verbosity.ERROR, Verbosity.WARNING);
+                    break;
                 case INFO:
+                    logToSystemErr(Verbosity.ERROR, Verbosity.WARNING);
                     logToSystemOut(Log.Verbosity.INFO);
                     break;
                 case DEBUG:
+                    logToSystemErr(Verbosity.ERROR, Verbosity.WARNING);
                     logToSystemOut(Log.Verbosity.INFO, Log.Verbosity.DEBUG);
                     break;
                 case PROGRESS:
+                    logToSystemErr(Verbosity.ERROR, Verbosity.WARNING);
                     logToSystemOut(Log.Verbosity.INFO, Log.Verbosity.DEBUG, Log.Verbosity.PROGRESS);
                     break;
             }
@@ -266,17 +287,14 @@ public class Log implements IInitializer {
      * @param problem the problem
      */
     public void problem(Problem problem) {
-        //todo: log entire problem tree
-        error(problem.toString());
-    }
-
-    /**
-     * Logs an error message.
-     *
-     * @param error the error object
-     */
-    public void error(Throwable error) {
-        println(error);
+        switch (problem.getSeverity()) {
+            case ERROR:
+                error(problem.print());
+                break;
+            case WARNING:
+                warning(problem.print());
+                break;
+        }
     }
 
     /**
@@ -289,12 +307,30 @@ public class Log implements IInitializer {
     }
 
     /**
-     * Logs an info message.
+     * Logs an error message.
+     *
+     * @param error the error object
+     */
+    public void error(Throwable error) {
+        println(error);
+    }
+
+    /**
+     * Logs a warning message.
+     *
+     * @param message the warning message
+     */
+    public void warning(String message) {
+        println(message, Verbosity.WARNING);
+    }
+
+    /**
+     * Logs a warning message.
      *
      * @param messageObject the message object
      */
-    public void info(Object messageObject) {
-        println(String.valueOf(messageObject), Verbosity.INFO);
+    public void warning(Object messageObject) {
+        warning(String.valueOf(messageObject));
     }
 
     /**
@@ -307,12 +343,12 @@ public class Log implements IInitializer {
     }
 
     /**
-     * Logs a debug message.
+     * Logs an info message.
      *
      * @param messageObject the message object
      */
-    public void debug(Object messageObject) {
-        println(String.valueOf(messageObject), Verbosity.DEBUG);
+    public void info(Object messageObject) {
+        info(String.valueOf(messageObject));
     }
 
     /**
@@ -325,12 +361,12 @@ public class Log implements IInitializer {
     }
 
     /**
-     * Logs a progress message.
+     * Logs a debug message.
      *
      * @param messageObject the message object
      */
-    public void progress(Object messageObject) {
-        println(String.valueOf(messageObject), Verbosity.DEBUG);
+    public void debug(Object messageObject) {
+        debug(String.valueOf(messageObject));
     }
 
     /**
@@ -340,6 +376,15 @@ public class Log implements IInitializer {
      */
     public void progress(String message) {
         println(message, Verbosity.PROGRESS);
+    }
+
+    /**
+     * Logs a progress message.
+     *
+     * @param messageObject the message object
+     */
+    public void progress(Object messageObject) {
+        progress(String.valueOf(messageObject));
     }
 
     /**
@@ -358,7 +403,7 @@ public class Log implements IInitializer {
             if (configuration != null) {
                 configuration.logStreams.get(verbosity).println(formattedMessage);
             } else {
-                if (verbosity == Verbosity.ERROR) {
+                if (verbosity == Verbosity.WARNING || verbosity == Verbosity.ERROR) {
                     System.err.println(formattedMessage);
                 } else {
                     System.out.println(formattedMessage);
@@ -422,8 +467,7 @@ public class Log implements IInitializer {
 
         @Override
         protected String formatMessage(String message) {
-            // TODO: this is a little hacky right now, it would be better to use compareTo and introduce a real NONE verbosity to avoid null.
-            return Objects.equals(FeatJAR.defaultVerbosity, Verbosity.DEBUG) || Objects.equals(FeatJAR.defaultVerbosity, Verbosity.PROGRESS)
+            return FeatJAR.defaultVerbosity.compareTo(Verbosity.DEBUG) >= 0
                     ? timeStampFormatter.getPrefix() + callerFormatter.getPrefix() + message
                     : null;
         }

@@ -42,7 +42,7 @@ public class Problem extends ATree<Problem> {
          */
         WARNING,
         /**
-         * A severe error, which prevents processing of an object.
+         * A severe error, which usually prevents processing of an object.
          */
         ERROR
     }

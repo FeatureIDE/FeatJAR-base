@@ -4,6 +4,8 @@ import de.featjar.base.data.Result;
 
 /**
  * A string option, which is parsed as itself.
+ *
+ * @author Elias Kuiter
  */
 public class StringOption extends Option<String> {
     /**

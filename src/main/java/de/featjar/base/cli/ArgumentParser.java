@@ -39,12 +39,12 @@ public class ArgumentParser extends AArgumentParser {
      */
     public static final Option<Log.Verbosity> VERBOSITY_OPTION =
             new Option<>("--verbosity", Log.Verbosity::of)
-                    .setDescription("The logger verbosity, one of none, " + // todo: make none an explicit value
+                    .setDescription("The logger verbosity, one of " +
                             Arrays.stream(Log.Verbosity.values())
                                     .map(Objects::toString)
                                     .map(String::toLowerCase)
                                     .collect(Collectors.joining(", ")))
-                    .setDefaultValue(CommandLineInterface.DEFAULT_MAXIMUM_VERBOSITY);
+                    .setDefaultValue(CommandLineInterface.DEFAULT_VERBOSITY);
 
     protected static final int COMMAND_NAME_POSITION = 0;
     protected final String commandNameRegex;

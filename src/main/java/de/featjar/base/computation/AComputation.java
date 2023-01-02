@@ -1,6 +1,5 @@
 package de.featjar.base.computation;
 
-import de.featjar.base.FeatJAR;
 import de.featjar.base.tree.structure.ATree;
 
 import java.util.Arrays;
@@ -52,9 +51,12 @@ public abstract class AComputation<T> extends ATree<IComputation<?>> implements 
      *
      * @param dependencies the dependencies
      */
-    @SuppressWarnings("unchecked")
     protected void dependOn(List<Dependency<?>> dependencies) {
-        FeatJAR.dependencyManager().register((Class<? extends IComputation<?>>) getClass(), dependencies);
+        if (!dependencies.isEmpty() && dependencies.get(0).getIndex() == -1) {
+            for (int i = 0; i < dependencies.size(); i++) {
+                dependencies.get(i).setIndex(i);
+            }
+        }
         dependencies.forEach(dependency -> dependency.setToDefaultValue(this));
     }
 

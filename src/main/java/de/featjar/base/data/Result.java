@@ -61,7 +61,7 @@ public class Result<T> implements Supplier<T> {
         else if (problems.size() == 1)
             this.problem = problems.iterator().next();
         else {
-            this.problem = new Problem(problems.size() + " problems occurred", Problem.Severity.ERROR);
+            this.problem = new Problem(problems.size() + " problems occurred", Problem.Severity.ERROR); // todo: error or warning?
             this.problem.setChildren(problems);
         }
     }
