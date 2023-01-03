@@ -1,6 +1,6 @@
 package de.featjar.base.env;
 
-import de.featjar.base.Feat;
+import de.featjar.base.FeatJAR;
 import de.featjar.base.data.Result;
 
 import java.awt.*;
@@ -26,16 +26,16 @@ public interface IBrowsable<T> {
     default void browse(T argument) {
         Result<URI> browseURI = getBrowseURI(argument);
         if (browseURI.isEmpty()) {
-            Feat.log().error("cannot display " + this + " in browser");
+            FeatJAR.log().error("cannot display " + this + " in browser");
             return;
         }
-        Feat.log().info("displaying " + this + " in browser");
+        FeatJAR.log().info("displaying " + this + " in browser");
         browse(browseURI.get());
     }
 
     default void debugBrowse(T argument) {
         browse(argument);
-        Feat.log().info("press return to continue");
+        FeatJAR.log().info("press return to continue");
         new Scanner(System.in).nextLine();
     }
 }

@@ -20,6 +20,7 @@
  */
 package de.featjar.base.io;
 
+import de.featjar.base.data.Maps;
 import de.featjar.base.data.Result;
 import de.featjar.base.io.input.FileInput;
 import de.featjar.base.io.output.AOutputMapper;
@@ -46,7 +47,7 @@ import java.util.stream.Stream;
 public abstract class AIOMapper<T extends IIOObject> implements AutoCloseable, Supplier<T> {
 
     protected static final Path DEFAULT_MAIN_PATH = Paths.get("__main__");
-    protected final LinkedHashMap<Path, T> ioMap = new LinkedHashMap<>();
+    protected final LinkedHashMap<Path, T> ioMap = Maps.empty();
     protected Path mainPath;
 
     protected AIOMapper(Path mainPath) {

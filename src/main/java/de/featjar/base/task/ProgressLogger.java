@@ -20,7 +20,7 @@
  */
 package de.featjar.base.task;
 
-import de.featjar.base.Feat;
+import de.featjar.base.FeatJAR;
 
 import java.util.function.Supplier;
 
@@ -41,7 +41,7 @@ public class ProgressLogger implements Supplier<Boolean> {
         if (monitor.isCanceled() || monitor.isDone()) {
             return false;
         } else {
-            Feat.log().progress(((Math.floor(monitor.getProgress() * 1000)) / 10.0) + "%");
+            FeatJAR.log().progress(((Math.floor(monitor.getProgress() * 1000)) / 10.0) + "%");
             return true;
         }
     }

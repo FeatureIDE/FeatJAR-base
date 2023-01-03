@@ -20,8 +20,8 @@
  */
 package de.featjar.base.log;
 
-import de.featjar.base.Feat;
 import de.featjar.base.FeatJAR;
+import de.featjar.base.data.Maps;
 import de.featjar.base.data.Problem;
 import de.featjar.base.data.Result;
 import de.featjar.base.extension.IInitializer;
@@ -99,7 +99,7 @@ public class Log implements IInitializer {
     public static class Configuration {
         // TODO: to make this more general, we could use an OutputMapper here to
         //  log to anything supported by an OutputMapper (even a ZIP file).
-        protected final LinkedHashMap<Verbosity, de.featjar.base.io.PrintStream> logStreams = new LinkedHashMap<>();
+        protected final LinkedHashMap<Verbosity, de.featjar.base.io.PrintStream> logStreams = Maps.empty();
         protected final LinkedList<IFormatter> formatters = new LinkedList<>();
 
         {
@@ -218,7 +218,7 @@ public class Log implements IInitializer {
      * @param defaultConfiguration the default configuration
      */
     public static void setDefaultConfiguration(Configuration defaultConfiguration) {
-        Feat.log().debug("setting new default log configuration");
+        FeatJAR.log().debug("setting new default log configuration");
         Log.defaultConfiguration = defaultConfiguration;
     }
 
@@ -249,7 +249,7 @@ public class Log implements IInitializer {
     @Override
     public void close() {
         if (configuration != null) {
-            Feat.log().debug("de-initializing log");
+            FeatJAR.log().debug("de-initializing log");
             System.setOut(originalSystemOut);
             System.setErr(originalSystemErr);
         }
@@ -257,7 +257,7 @@ public class Log implements IInitializer {
 
     protected static void redirectSystemStreams(Configuration configuration) {
         if (configuration != null) {
-            Feat.log().debug("initializing log");
+            FeatJAR.log().debug("initializing log");
             System.setOut(configuration.logStreams.get(Verbosity.INFO));
             System.setErr(configuration.logStreams.get(Verbosity.ERROR));
         }
@@ -276,7 +276,7 @@ public class Log implements IInitializer {
      * @param configuration the configuration
      */
     public void setConfiguration(Configuration configuration) {
-        Feat.log().debug("setting new log configuration");
+        FeatJAR.log().debug("setting new log configuration");
         this.configuration = configuration;
         redirectSystemStreams(configuration);
     }

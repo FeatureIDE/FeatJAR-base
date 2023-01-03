@@ -20,8 +20,6 @@
  */
 package de.featjar.base.extension;
 
-import de.featjar.base.Feat;
-
 import java.io.IOException;
 import java.net.URL;
 import java.nio.file.Files;
@@ -35,7 +33,10 @@ import java.util.zip.ZipFile;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 
+import de.featjar.base.FeatJAR;
+import de.featjar.base.data.Maps;
 import de.featjar.base.data.Result;
+import de.featjar.base.data.Sets;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
@@ -50,9 +51,9 @@ import org.w3c.dom.NodeList;
  * @author Elias Kuiter
  */
 public class ExtensionManager implements AutoCloseable {
-    private final LinkedHashMap<String, List<String>> extensionMap = new LinkedHashMap<>();
-    private final LinkedHashMap<String, AExtensionPoint<?>> extensionPoints = new LinkedHashMap<>();
-    private final LinkedHashMap<String, IExtension> extensions = new LinkedHashMap<>();
+    private final LinkedHashMap<String, List<String>> extensionMap = Maps.empty();
+    private final LinkedHashMap<String, AExtensionPoint<?>> extensionPoints = Maps.empty();
+    private final LinkedHashMap<String, IExtension> extensions = Maps.empty();
 
     /**
      * Installs all extensions and extension points that can be found on the classpath.
@@ -60,7 +61,7 @@ public class ExtensionManager implements AutoCloseable {
      */
     @SuppressWarnings({"unchecked", "rawtypes"})
     public ExtensionManager() {
-        Feat.log().debug("initializing extension manager");
+        FeatJAR.log().debug("initializing extension manager");
         getResources().stream()
                 .filter(ExtensionManager::filterByFileName)
                 .forEach(this::loadExtensionDefinitionFile);
@@ -70,23 +71,23 @@ public class ExtensionManager implements AutoCloseable {
             try {
                 final Class<AExtensionPoint<?>> extensionPointClass =
                         (Class<AExtensionPoint<?>>) systemClassLoader.loadClass(extensionPointId);
-                Feat.log().debug("installing extension point " + extensionPointClass.getName());
+                FeatJAR.log().debug("installing extension point " + extensionPointClass.getName());
                 final AExtensionPoint ep = extensionPointClass.getConstructor().newInstance();
                 extensionPoints.put(ep.getIdentifier(), ep);
                 for (final String extensionId : entry.getValue()) {
                     try {
                         final Class<IExtension> extensionClass =
                                 (Class<IExtension>) systemClassLoader.loadClass(extensionId);
-                        Feat.log().debug("installing extension " + extensionClass.getName());
+                        FeatJAR.log().debug("installing extension " + extensionClass.getName());
                         IExtension e = extensionClass.getConstructor().newInstance();
                         ep.installExtension(e);
                         extensions.put(e.getIdentifier(), e);
                     } catch (final Exception e) {
-                        Feat.log().error(e);
+                        FeatJAR.log().error(e);
                     }
                 }
             } catch (final Exception e) {
-                Feat.log().error(e);
+                FeatJAR.log().error(e);
             }
         }
     }
@@ -111,7 +112,7 @@ public class ExtensionManager implements AutoCloseable {
             }
             return false;
         } catch (final Exception e) {
-            Feat.log().error(e);
+            FeatJAR.log().error(e);
             return false;
         }
     }
@@ -122,7 +123,7 @@ public class ExtensionManager implements AutoCloseable {
      * @param file the extension definition file
      */
     protected void loadExtensionDefinitionFile(String file) {
-        Feat.log().debug("loading extension definition file " + file);
+        FeatJAR.log().debug("loading extension definition file " + file);
         try {
             final Enumeration<URL> systemResources =
                     ClassLoader.getSystemClassLoader().getResources(file);
@@ -154,11 +155,11 @@ public class ExtensionManager implements AutoCloseable {
                         }
                     }
                 } catch (final Exception e) {
-                    Feat.log().error(e);
+                    FeatJAR.log().error(e);
                 }
             }
         } catch (final Exception e) {
-            Feat.log().error(e);
+            FeatJAR.log().error(e);
         }
     }
 
@@ -166,7 +167,7 @@ public class ExtensionManager implements AutoCloseable {
      * {@return all names of files on the classpath}
      */
     private static LinkedHashSet<String> getResources() {
-        final LinkedHashSet<String> resources = new LinkedHashSet<>();
+        final LinkedHashSet<String> resources = Sets.empty();
         final String classPathProperty = System.getProperty("java.class.path", ".");
         final String pathSeparatorProperty = System.getProperty("path.separator");
         for (final String element : classPathProperty.split(pathSeparatorProperty)) {
@@ -182,7 +183,7 @@ public class ExtensionManager implements AutoCloseable {
                     }
                 }
             } catch (final IOException e) {
-                Feat.log().error(e);
+                FeatJAR.log().error(e);
             }
         }
         return resources;

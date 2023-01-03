@@ -75,7 +75,7 @@ public class ArgumentParser extends AArgumentParser {
      * {@return the verbosity supplied in the given arguments}
      */
     public Log.Verbosity getVerbosity() {
-        return VERBOSITY_OPTION.parseFrom(this);
+        return VERBOSITY_OPTION.parseFrom(this).get();
     }
 
     /**

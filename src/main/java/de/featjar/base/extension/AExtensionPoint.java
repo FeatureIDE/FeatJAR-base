@@ -20,7 +20,8 @@
  */
 package de.featjar.base.extension;
 
-import de.featjar.base.Feat;
+import de.featjar.base.FeatJAR;
+import de.featjar.base.data.Maps;
 import de.featjar.base.data.Problem;
 import de.featjar.base.data.Result;
 import de.featjar.base.data.Sets;
@@ -44,7 +45,7 @@ import java.util.concurrent.CopyOnWriteArrayList;
  * @author Elias Kuiter
  */
 public abstract class AExtensionPoint<T extends IExtension> {
-    private final LinkedHashMap<String, Integer> indexMap = new LinkedHashMap<>();
+    private final LinkedHashMap<String, Integer> indexMap = Maps.empty();
     private final List<T> extensions = new CopyOnWriteArrayList<>();
 
     /**
@@ -76,7 +77,7 @@ public abstract class AExtensionPoint<T extends IExtension> {
      * @return whether this extension was installed before
      */
     public synchronized boolean uninstallExtension(T extension) {
-        Feat.log().debug("uninstalling extension " + extension.getClass().getName());
+        FeatJAR.log().debug("uninstalling extension " + extension.getClass().getName());
         if (indexMap.containsKey(extension.getIdentifier())) {
             indexMap.remove(extension.getIdentifier());
             extensions.remove(extension);
@@ -98,7 +99,7 @@ public abstract class AExtensionPoint<T extends IExtension> {
      * Similar to {@link AutoCloseable#close()}, but called explicitly instead of implicitly in a try...with block.
      */
     public void close() {
-        Feat.log().debug("uninstalling extension point " + getClass().getName());
+        FeatJAR.log().debug("uninstalling extension point " + getClass().getName());
         uninstallExtensions();
     }
 
@@ -137,7 +138,7 @@ public abstract class AExtensionPoint<T extends IExtension> {
 
     public LinkedHashSet<T> getMatchingExtensions(String regex) {
         LinkedHashSet<String> matchingIdentifiers = indexMap.keySet().stream()
-                .filter(identifier -> identifier.toLowerCase().matches(String.format(".*%s.*", regex)))
+                .filter(identifier -> identifier.toLowerCase().matches(String.format(".*%s.*", regex.toLowerCase())))
                 .collect(Sets.toSet());
         return matchingIdentifiers.stream()
                 .map(this::getExtension)

@@ -20,7 +20,6 @@
  */
 package de.featjar.base.data;
 
-import java.util.LinkedHashMap;
 import java.util.Objects;
 import java.util.function.BiPredicate;
 import java.util.function.Function;
@@ -30,52 +29,93 @@ import java.util.function.Function;
  * This class does not store any attribute values, it acts as a key or descriptor.
  *
  * @author Elias Kuiter
- * @deprecated planned to be used for formula and feature-model analysis
  */
-@Deprecated
-public class Attribute implements Function<LinkedHashMap<Attribute, Object>, Result<Object>> {
-    public static final String DEFAULT_NAMESPACE = Attribute.class.getCanonicalName();
+public class Attribute implements IAttribute {
+    public static final String DEFAULT_NAMESPACE = Attribute.class.getPackageName();
 
     protected final String namespace;
     protected final String name;
     protected final Class<?> type;
-
-    protected final BiPredicate<IAttributable, Object> valueValidator;
+    protected BiPredicate<IAttributable, Object> validator;
+    protected Function<IAttributable, Object> defaultValueFunction;
 
     public Attribute(String namespace, String name, Class<?> type) {
-        this(namespace, name, type, (a, o) -> true);
-    }
-
-    public Attribute(String namespace, String name, Class<?> type, BiPredicate<IAttributable, Object> valueValidator) {
         Objects.requireNonNull(namespace);
         Objects.requireNonNull(name);
         Objects.requireNonNull(type);
-        Objects.requireNonNull(valueValidator);
         this.namespace = namespace;
         this.name = name;
         this.type = type;
-        this.valueValidator = valueValidator;
     }
 
+    @Override
     public String getNamespace() {
         return namespace;
     }
 
+    @Override
     public String getName() {
         return name;
     }
 
+    @Override
     public Class<?> getType() {
         return type;
     }
 
-    public BiPredicate<IAttributable, Object> getValueValidator() {
-        return valueValidator;
+    /**
+     * {@return this attribute's default value function}
+     */
+    public Result<Function<IAttributable, Object>> getDefaultValueFunction() {
+        return Result.ofNullable(defaultValueFunction);
     }
 
+    /**
+     * Sets this attribute's default value function.
+     *
+     * @param defaultValueFunction the function
+     * @return this attribute
+     */
+    public Attribute setDefaultValueFunction(Function<IAttributable, Object> defaultValueFunction) {
+        this.defaultValueFunction = defaultValueFunction;
+        return this;
+    }
+
+    /**
+     * {@return this attribute's default value for a given object}
+     */
     @Override
-    public Result<Object> apply(LinkedHashMap<Attribute, Object> attributeToValueMap) {
-        return Result.ofNullable(attributeToValueMap.get(this));
+    public Result<Object> getDefaultValue(IAttributable attributable) {
+        return getDefaultValueFunction().flatMap(f -> Result.ofNullable(f.apply(attributable)));
+    }
+
+    /**
+     * Sets this attribute's default value.
+     *
+     * @param defaultValue the default value
+     * @return this attribute
+     */
+    public Attribute setDefaultValue(Object defaultValue) {
+        return setDefaultValueFunction(o -> defaultValue);
+    }
+
+    /**
+     * {@return this attribute's validator}
+     */
+    @Override
+    public BiPredicate<IAttributable, Object> getValidator() {
+        return Result.ofNullable(validator).orElse(IAttribute.super.getValidator());
+    }
+
+    /**
+     * Sets this attribute's validator.
+     *
+     * @param validator the validator
+     * @return this attribute
+     */
+    public Attribute setValidator(BiPredicate<IAttributable, Object> validator) {
+        this.validator = validator;
+        return this;
     }
 
     @Override
@@ -94,40 +134,5 @@ public class Attribute implements Function<LinkedHashMap<Attribute, Object>, Res
     @Override
     public int hashCode() {
         return Objects.hash(namespace, name);
-    }
-
-    public static class WithDefaultValue extends Attribute {
-        protected final Function<IAttributable, Object> defaultValueFunction;
-
-        public WithDefaultValue(
-                String namespace, String name, Class<?> type, BiPredicate<IAttributable, Object> valueValidator, Function<IAttributable, Object> defaultValueFunction) {
-            super(namespace, name, type, valueValidator);
-            Objects.requireNonNull(defaultValueFunction);
-            this.defaultValueFunction = defaultValueFunction;
-        }
-
-        public WithDefaultValue(
-                String namespace, String name, Class<?> type, Function<IAttributable, Object> defaultValueFunction) {
-            super(namespace, name, type);
-            Objects.requireNonNull(defaultValueFunction);
-            this.defaultValueFunction = defaultValueFunction;
-        }
-
-        public WithDefaultValue(String namespace, String name, Class<?> type, Object defaultValue) {
-            this(namespace, name, type, attributable -> defaultValue);
-            Objects.requireNonNull(defaultValue);
-        }
-
-        public Function<IAttributable, Object> getDefaultValueFunction() {
-            return defaultValueFunction;
-        }
-
-        public Object getDefaultValue(IAttributable attributable) {
-            return defaultValueFunction.apply(attributable);
-        }
-
-        public Object applyWithDefaultValue(LinkedHashMap<Attribute, Object> attributeToValueMap, IAttributable attributable) {
-            return attributeToValueMap.getOrDefault(this, defaultValueFunction.apply(attributable));
-        }
     }
 }

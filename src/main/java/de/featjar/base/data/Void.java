@@ -6,6 +6,8 @@ package de.featjar.base.data;
  * from an intended empty result (i.e., {@link Result#ofVoid(Problem...)}).
  * This is useful to return a {@link Result} from a method that should return {@code void}.
  * This is necessary because Java only has the null unit value {@link java.lang.Void}.
+ *
+ * @author Elias Kuiter
  */
 public class Void extends Result<java.lang.Void> {
     protected static final de.featjar.base.data.Void VOID = new de.featjar.base.data.Void();

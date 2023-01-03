@@ -27,6 +27,12 @@ import de.featjar.base.tree.structure.ITree;
 import java.util.List;
 import java.util.function.Function;
 
+/**
+ * Computes whether the supplied input is present.
+ *
+ * @param <T> the type of the input
+ * @author Elias Kuiter
+ */
 public class ComputePresence<T> extends AComputation<Boolean> implements IInputDependency<T> {
     protected static Dependency<?> INPUT = newRequiredDependency();
 

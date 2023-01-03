@@ -1,5 +1,6 @@
 package de.featjar.base.cli;
 
+import de.featjar.base.data.Maps;
 import de.featjar.base.data.Result;
 
 import java.util.*;
@@ -55,7 +56,7 @@ public abstract class AArgumentParser {
      * @throws ArgumentParseException when a parsing error occurs
      */
     public LinkedHashMap<Integer, String> parsePositionalArguments(List<Integer> positions) throws ArgumentParseException {
-        LinkedHashMap<Integer, String> positionalArguments = new LinkedHashMap<>();
+        LinkedHashMap<Integer, String> positionalArguments = Maps.empty();
         for (Integer position : positions) {
             int actualPosition = position;
             int expected = position;

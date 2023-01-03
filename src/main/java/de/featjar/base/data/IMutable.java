@@ -32,13 +32,11 @@ import java.util.function.Consumer;
  * @param <T> the type of the mutable object
  * @param <U> the type of the mutator object
  * @author Elias Kuiter
- * @deprecated planned to be used for formula and feature-model analysis
  */
-@Deprecated
-public interface IMutable<T, U extends IMutator<T>> {
-    U getMutator();
+public interface IMutable<T extends IMutable<T, U>, U extends IMutator<T>> {
+    U getMutator(); // todo: default is to create a null mutator, which does nothing
 
-    void setMutator(U mutator);
+    void setMutator(U mutator); // is this even necessary? should getMutable() be changeable afterwards? do we only need one global mutator instance?
 
     default void finishInternalMutation() {}
 

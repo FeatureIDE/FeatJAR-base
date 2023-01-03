@@ -11,13 +11,13 @@ import static de.featjar.base.computation.Computations.async;
  * A dependency of a computation.
  *
  * @param <U> the type of the dependency's computation result
+ * @author Elias Kuiter
  */
-public class Dependency<U> extends ATree.Entry<IComputation<?>, IComputation<U>> {
+public class Dependency<U> extends ATree.Entry<IComputation<?>, IComputation<U>> { // todo: U extends Serializable?
     /**
      * Creates a new required dependency.
      */
     public Dependency() {
-        super(null);
     }
 
     /**

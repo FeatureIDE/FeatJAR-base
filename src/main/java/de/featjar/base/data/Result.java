@@ -20,7 +20,6 @@
  */
 package de.featjar.base.data;
 
-import de.featjar.base.Feat;
 import de.featjar.base.computation.IComputation;
 import de.featjar.base.io.format.IFormat;
 
@@ -247,17 +246,6 @@ public class Result<T> implements Supplier<T> {
      * @param resultHandler the object consumer
      */
     public void ifPresent(Consumer<T> resultHandler) {
-        if (object != null) {
-            resultHandler.accept(object);
-        }
-    }
-
-    /**
-     * Consumes this result's object, if any.
-     *
-     * @param resultHandler the object consumer
-     */
-    public void ifPresentOrElse(Consumer<T> resultHandler) {
         if (object != null) {
             resultHandler.accept(object);
         }

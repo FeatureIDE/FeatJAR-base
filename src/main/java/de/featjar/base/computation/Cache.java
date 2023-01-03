@@ -20,7 +20,7 @@
  */
 package de.featjar.base.computation;
 
-import de.featjar.base.Feat;
+import de.featjar.base.FeatJAR;
 import de.featjar.base.data.Result;
 import de.featjar.base.env.IBrowsable;
 import de.featjar.base.extension.IInitializer;
@@ -114,7 +114,7 @@ public class Cache implements IInitializer, IBrowsable<GraphVizTreeFormat<ICompu
      * @param defaultConfiguration the default configuration
      */
     public static void setDefaultConfiguration(Configuration defaultConfiguration) {
-        Feat.log().debug("setting new default cache configuration");
+        FeatJAR.log().debug("setting new default cache configuration");
         Cache.defaultConfiguration = defaultConfiguration;
     }
 
@@ -131,7 +131,7 @@ public class Cache implements IInitializer, IBrowsable<GraphVizTreeFormat<ICompu
      * @param configuration the configuration
      */
     public Cache(Cache.Configuration configuration) {
-        Feat.log().debug("initializing cache");
+        FeatJAR.log().debug("initializing cache");
         this.configuration = configuration;
     }
 
@@ -141,7 +141,7 @@ public class Cache implements IInitializer, IBrowsable<GraphVizTreeFormat<ICompu
      */
     @Override
     public void close() {
-        Feat.log().debug("de-initializing cache");
+        FeatJAR.log().debug("de-initializing cache");
         clear();
     }
 
@@ -158,7 +158,7 @@ public class Cache implements IInitializer, IBrowsable<GraphVizTreeFormat<ICompu
      * @param configuration the configuration
      */
     public void setConfiguration(Configuration configuration) {
-        Feat.log().debug("setting new cache configuration");
+        FeatJAR.log().debug("setting new cache configuration");
         this.configuration = configuration;
     }
 
@@ -173,15 +173,15 @@ public class Cache implements IInitializer, IBrowsable<GraphVizTreeFormat<ICompu
      */
     public <T> FutureResult<T> computeFutureResult(IComputation<T> computation) {
         if (has(computation)) {
-            Feat.log().debug("cache hit for " + computation);
+            FeatJAR.log().debug("cache hit for " + computation);
             hitStatistics.putIfAbsent(computation, 0L);
             hitStatistics.put(computation, hitStatistics.get(computation) + 1);
             return get(computation).get();
         }
-        Feat.log().debug("cache miss for " + computation);
+        FeatJAR.log().debug("cache miss for " + computation);
         FutureResult<T> futureResult = computation.computeFutureResult();
         if (configuration.cachePolicy.shouldCache(computation, new StackTrace())) {
-            Feat.log().debug("cache write for " + computation);
+            FeatJAR.log().debug("cache write for " + computation);
             put(computation, futureResult);
         }
         return futureResult;
@@ -237,7 +237,7 @@ public class Cache implements IInitializer, IBrowsable<GraphVizTreeFormat<ICompu
     public <T> boolean remove(IComputation<T> computation) {
         if (!has(computation))
             return false;
-        Feat.log().debug("cache remove for " + computation);
+        FeatJAR.log().debug("cache remove for " + computation);
         computationMap.remove(computation);
         return true;
     }
@@ -246,7 +246,7 @@ public class Cache implements IInitializer, IBrowsable<GraphVizTreeFormat<ICompu
      * Removes all cached computation results.
      */
     public void clear() {
-        Feat.log().debug("clearing cache");
+        FeatJAR.log().debug("clearing cache");
         computationMap.clear();
     }
 

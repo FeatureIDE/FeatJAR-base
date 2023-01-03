@@ -9,6 +9,8 @@ import java.util.stream.Collectors;
 /**
  * Utilities for handing linked hash maps.
  * Prefer to use {@link LinkedHashMap} over {@link java.util.HashMap}, as it guarantees determinism.
+ *
+ * @author Elias Kuiter
  */
 public class Maps {
     public static <T, U> LinkedHashMap<T, U> empty() {

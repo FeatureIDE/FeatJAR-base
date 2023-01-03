@@ -34,10 +34,9 @@ import java.util.stream.Stream;
  * @author Sebastian Krieter
  * @author Elias Kuiter
  */
-@SuppressWarnings("OptionalGetWithoutIsPresent")
 public class RangeMap<T> {
     protected final ArrayList<T> indexToObject = new ArrayList<>();
-    protected final LinkedHashMap<T, Integer> objectToIndex = new LinkedHashMap<>();
+    protected final LinkedHashMap<T, Integer> objectToIndex = Maps.empty();
 
     /**
      * Creates an empty range map.

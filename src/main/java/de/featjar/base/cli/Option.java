@@ -1,6 +1,6 @@
 package de.featjar.base.cli;
 
-import de.featjar.base.Feat;
+import de.featjar.base.FeatJAR;
 import de.featjar.base.data.Result;
 
 import java.util.function.Function;
@@ -126,19 +126,19 @@ public class Option<T> {
      * @return the parsed value
      * @throws AArgumentParser.ArgumentParseException when the value cannot be parsed
      */
-    public T parseFrom(AArgumentParser argumentParser) throws AArgumentParser.ArgumentParseException {
+    public Result<T> parseFrom(AArgumentParser argumentParser) throws AArgumentParser.ArgumentParseException {
         Result<String> valueString = isRequired
                 ? Result.of(argumentParser.parseRequiredOption(name))
                 : argumentParser.parseOption(name);
         if (valueString.isEmpty())
-            return defaultValue;
+            return Result.ofNullable(defaultValue);
         Result<T> parseResult = parser.apply(valueString.get());
         if (parseResult.isEmpty()) {
-            Feat.log().warning("could not parse option " + name + ", using default value");
-            return defaultValue;
+            FeatJAR.log().warning("could not parse option " + name + ", using default value");
+            return Result.ofNullable(defaultValue);
         }
         if (validator.test(parseResult.get()))
-            return parseResult.get();
+            return parseResult;
         throw new IllegalArgumentException("value " + parseResult.get() + " for option " + name + " is invalid");
     }
 
@@ -149,12 +149,12 @@ public class Option<T> {
      * @param argumentParser the argument parser
      * @return the parsed value
      */
-    public T parseFrom(ArgumentParser argumentParser) {
+    public Result<T> parseFrom(ArgumentParser argumentParser) {
         try {
             return parseFrom((AArgumentParser) argumentParser);
         } catch (AArgumentParser.ArgumentParseException e) {
             argumentParser.handleException(e);
-            return null;
+            return Result.empty(e);
         }
     }
 

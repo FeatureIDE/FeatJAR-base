@@ -26,25 +26,30 @@ import java.util.LinkedHashMap;
  * An object that can be annotated with {@link Attribute} values to store additional metadata.
  *
  * @author Elias Kuiter
- * @deprecated planned to be used for formula and feature-model analysis
  */
-@Deprecated
 public interface IAttributable {
-    LinkedHashMap<Attribute, Object> getAttributeToValueMap();
+    LinkedHashMap<IAttribute, Object> getAttributeValues();
 
     default Result<Object> getAttributeValue(Attribute attribute) {
-        return attribute.apply(getAttributeToValueMap());
-    }
-
-    default Object getAttributeValue(Attribute.WithDefaultValue attribute) {
-        return attribute.applyWithDefaultValue(getAttributeToValueMap(), this);
+        return attribute.apply(this, getAttributeValues());
     }
 
     default boolean hasAttributeValue(Attribute attribute) {
         return getAttributeValue(attribute).isPresent();
     }
 
-    interface Mutator<T extends IAttributable> extends IMutator<T> {
+    // todo: this is weird
+    static <T extends IAttributable & IMutable<T, ?>> Mutator<T> createMutator(IAttributable attributable) {
+        return new Mutator<T>() {
+            @SuppressWarnings("unchecked")
+            @Override
+            public T getMutable() {
+                return (T) attributable;
+            }
+        };
+    }
+
+    interface Mutator<T extends IAttributable & IMutable<T, ?>> extends IMutator<T> {
         default void setAttributeValue(Attribute attribute, Object value) {
             if (value == null) {
                 removeAttributeValue(attribute);
@@ -54,18 +59,18 @@ public interface IAttributable {
                 throw new IllegalArgumentException("cannot set attribute of type " + attribute.getType()
                         + " to value of type " + value.getClass());
             }
-            if (!attribute.getValueValidator().test(getMutable(), value)) {
+            if (!attribute.getValidator().test(getMutable(), value)) {
                 throw new IllegalArgumentException("failed to validate attribute " + attribute + " for value "+ value);
             }
-            getMutable().getAttributeToValueMap().put(attribute, value);
+            getMutable().getAttributeValues().put(attribute, value);
         }
 
         default <U> Object removeAttributeValue(Attribute attribute) {
-            return getMutable().getAttributeToValueMap().remove(attribute);
+            return getMutable().getAttributeValues().remove(attribute);
         }
 
-        default boolean toggleAttributeValue(Attribute.WithDefaultValue attribute) {
-            boolean value = (boolean) getMutable().getAttributeValue(attribute);
+        default boolean toggleAttributeValue(Attribute attribute) {
+            boolean value = (boolean) getMutable().getAttributeValue(attribute).get();
             setAttributeValue(attribute, !value);
             return !value;
         }

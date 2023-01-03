@@ -20,7 +20,7 @@
  */
 package de.featjar.base.computation;
 
-import de.featjar.base.Feat;
+import de.featjar.base.FeatJAR;
 import de.featjar.base.data.Result;
 import de.featjar.base.extension.IExtension;
 import de.featjar.base.task.IMonitor;
@@ -61,7 +61,7 @@ public interface IComputation<T> extends Supplier<FutureResult<T>>, IExtension, 
     //must be deterministic and only depend on results
     // Do not rename this method, as the {@link Cache.CachePolicy} performs
     // reflection that depends on its name to detect nested computations.
-    Result<T> computeResult(List<?> results, IMonitor monitor);
+    Result<T> computeResult(List<?> results, IMonitor monitor); // todo: only allow indexing into results via Dependency (e.g., create a DependencyList/InputList)
 
     /**
      * {@return the (newly computed) asynchronous result of this computation}
@@ -88,7 +88,7 @@ public interface IComputation<T> extends Supplier<FutureResult<T>>, IExtension, 
      */
     @Override
     default FutureResult<T> get() {
-        return Feat.cache().computeFutureResult(this);
+        return FeatJAR.cache().computeFutureResult(this);
     }
 
     /**

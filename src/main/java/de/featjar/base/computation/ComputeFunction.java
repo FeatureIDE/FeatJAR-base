@@ -15,6 +15,7 @@ import java.util.function.Function;
  *
  * @param <T> the type of the mapped value
  * @param <U> the type of the mapped result
+ * @author Elias Kuiter
  */
 public class ComputeFunction<T, U> extends AComputation<U> implements IAnalysis<T, U> {
     protected static final Dependency<?> INPUT = newRequiredDependency();

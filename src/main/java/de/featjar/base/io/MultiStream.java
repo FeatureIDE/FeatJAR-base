@@ -34,7 +34,7 @@ import java.util.*;
  */
 public class MultiStream extends OutputStream {
 
-    protected final LinkedHashSet<OutputStream> streams = new LinkedHashSet<>();
+    protected final LinkedHashSet<OutputStream> streams = Sets.empty();
 
     public MultiStream(OutputStream... streams) {
         this(Sets.of(streams));

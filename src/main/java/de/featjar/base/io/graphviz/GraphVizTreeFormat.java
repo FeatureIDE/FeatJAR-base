@@ -20,14 +20,10 @@
  */
 package de.featjar.base.io.graphviz;
 
-import de.featjar.base.Feat;
 import de.featjar.base.data.Result;
-import de.featjar.base.env.IBrowsable;
 import de.featjar.base.io.format.IFormat;
 import de.featjar.base.tree.structure.ITree;
 
-import java.net.URI;
-import java.net.URISyntaxException;
 import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;

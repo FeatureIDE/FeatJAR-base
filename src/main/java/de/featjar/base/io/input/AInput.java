@@ -20,7 +20,7 @@
  */
 package de.featjar.base.io.input;
 
-import de.featjar.base.Feat;
+import de.featjar.base.FeatJAR;
 import de.featjar.base.data.Result;
 import de.featjar.base.io.IIOObject;
 import de.featjar.base.io.NonEmptyLineIterator;
@@ -71,7 +71,7 @@ public abstract class AInput implements IIOObject {
         try {
             return Result.of(new java.lang.String(inputStream.readAllBytes(), charset));
         } catch (final IOException e) {
-            Feat.log().error(e);
+            FeatJAR.log().error(e);
             return Result.empty(e);
         }
     }

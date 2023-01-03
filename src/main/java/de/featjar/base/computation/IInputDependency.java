@@ -5,6 +5,7 @@ package de.featjar.base.computation;
  * Assumes that the implementing class can be cast to {@link IComputation}.
  *
  * @param <T> the type of the input
+ * @author Elias Kuiter
  */
 public interface IInputDependency<T> {
     /**

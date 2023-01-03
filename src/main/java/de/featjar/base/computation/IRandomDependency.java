@@ -5,6 +5,8 @@ import java.util.Random;
 /**
  * An analysis that may need to generate pseudorandom numbers.
  * Assumes that the implementing class can be cast to {@link IComputation}.
+ *
+ * @author Elias Kuiter
  */
 public interface IRandomDependency {
     /**

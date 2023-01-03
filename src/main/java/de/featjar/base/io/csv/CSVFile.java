@@ -20,7 +20,7 @@
  */
 package de.featjar.base.io.csv;
 
-import de.featjar.base.Feat;
+import de.featjar.base.FeatJAR;
 import de.featjar.base.io.IO;
 import de.featjar.base.io.output.AOutput;
 import de.featjar.base.io.output.FileOutput;
@@ -278,7 +278,7 @@ public class CSVFile {
                 }
                 values.clear();
             } catch (final IOException e) {
-                Feat.log().error(e);
+                FeatJAR.log().error(e);
             }
         }
         return this;

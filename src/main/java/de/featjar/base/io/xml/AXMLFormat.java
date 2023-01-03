@@ -20,7 +20,7 @@
  */
 package de.featjar.base.io.xml;
 
-import de.featjar.base.Feat;
+import de.featjar.base.FeatJAR;
 import de.featjar.base.data.Problem;
 import de.featjar.base.data.Result;
 import de.featjar.base.io.input.InputHeader;
@@ -220,7 +220,7 @@ public abstract class AXMLFormat<T> implements IFormat<T> {
                 }
             }
         } catch (final IOException e) {
-            Feat.log().error(e);
+            FeatJAR.log().error(e);
         }
         return result.toString();
     }

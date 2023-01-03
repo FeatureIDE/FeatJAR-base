@@ -20,7 +20,7 @@
  */
 package de.featjar.base.io.binary;
 
-import de.featjar.base.Feat;
+import de.featjar.base.FeatJAR;
 import de.featjar.base.data.Result;
 import de.featjar.base.io.input.AInputMapper;
 import de.featjar.base.io.output.AOutputMapper;
@@ -57,7 +57,7 @@ public class SerializableObjectFormat<T extends Serializable> implements IFormat
             final T readObject = (T) in.readObject();
             return Result.of(readObject);
         } catch (final Exception e) {
-            Feat.log().error(e);
+            FeatJAR.log().error(e);
             return Result.empty(e);
         }
     }
@@ -69,7 +69,7 @@ public class SerializableObjectFormat<T extends Serializable> implements IFormat
             oos.writeObject(object);
             oos.flush();
         } catch (final Exception e) {
-            Feat.log().error(e);
+            FeatJAR.log().error(e);
         }
     }
 }

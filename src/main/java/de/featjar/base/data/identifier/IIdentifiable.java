@@ -18,32 +18,23 @@
  *
  * See <https://github.com/FeatureIDE/FeatJAR-model> for further information.
  */
-package de.featjar.base.data;
-
-import java.util.function.Consumer;
+package de.featjar.base.data.identifier;
 
 /**
- * An object that can be analyzed with an {@link IAnalyzer}.
- * Analysis results are cached when o.analyze() is used.
- * Mutation may invalidate analysis results.
+ * An object that is uniquely identified by an {@link IIdentifier}.
  *
- * @param <T> the type of the analyzable object
- * @param <U> the type of the analyzer object
  * @author Elias Kuiter
- * @deprecated planned to be used for formula and feature-model analysis
  */
-@Deprecated
-public interface IAnalyzable<T, U extends IAnalyzer<T>> {
-    U getAnalyzer();
+public interface IIdentifiable {
+    /**
+     * {@return the identifier of this identifiable}
+     */
+    IIdentifier getIdentifier();
 
-    void setAnalyzer(U analyzer);
-
-    default U analyze() {
-        return getAnalyzer();
-    }
-
-    default T analyze(Consumer<U> analyzerConsumer) {
-        analyzerConsumer.accept(getAnalyzer());
-        return getAnalyzer().getAnalyzable();
+    /**
+     * {@return a new identifier generated with the {@link IIdentifierFactory } of {@link #getIdentifier()}}
+     */
+    default IIdentifier getNewIdentifier() {
+        return getIdentifier().getFactory().get();
     }
 }

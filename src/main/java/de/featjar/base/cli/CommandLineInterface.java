@@ -20,7 +20,6 @@
  */
 package de.featjar.base.cli;
 
-import de.featjar.base.Feat;
 import de.featjar.base.FeatJAR;
 import de.featjar.base.data.Result;
 import de.featjar.base.extension.IExtension;
@@ -79,15 +78,15 @@ public class CommandLineInterface {
      * @param argumentParser the argument parser
      */
     public static void run(ArgumentParser argumentParser) {
-        Feat.log().debug("running command-line interface");
+        FeatJAR.log().debug("running command-line interface");
         LinkedHashSet<ICommand> matchingCommands = argumentParser.getCommands();
-        if (ArgumentParser.HELP_OPTION.parseFrom(argumentParser) || matchingCommands.isEmpty()) {
+        if (ArgumentParser.HELP_OPTION.parseFrom(argumentParser).get() || matchingCommands.isEmpty()) {
             System.out.println(argumentParser.getHelp());
         }
-        else if (ArgumentParser.VERSION_OPTION.parseFrom(argumentParser)) {
+        else if (ArgumentParser.VERSION_OPTION.parseFrom(argumentParser).get()) {
             System.out.println(FeatJAR.LIBRARY_NAME + ", unreleased version");
         } else {
-            Feat.log().info("running matching commands: " +
+            FeatJAR.log().info("running matching commands: " +
                     matchingCommands.stream().map(IExtension::getIdentifier).collect(Collectors.joining(", ")));
             matchingCommands.forEach(command -> command.run(argumentParser));
         }
@@ -158,7 +157,7 @@ public class CommandLineInterface {
                 IO.save(object, Paths.get(pathOrStdout), format);
             }
         } catch (final IOException e) {
-            Feat.log().error(e);
+            FeatJAR.log().error(e);
         }
     }
 }

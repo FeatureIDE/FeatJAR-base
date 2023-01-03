@@ -32,36 +32,23 @@ import java.util.List;
  * @param <T> the type of children, the implementing type must be castable to T
  * @author Elias Kuiter
  */
-public abstract class ARootedTree<T extends ARootedTree<T>> extends ATree<T> {
+public abstract class ARootedTree<T extends IRootedTree<T>> extends ATree<T> implements IRootedTree<T> {
     /**
      * the parent node of this node
      */
     protected T parent = null;
 
-    /**
-     * {@return the parent node of this node, if any}
-     */
+    @Override
     public Result<T> getParent() {
         return Result.ofNullable(parent);
     }
 
-    /**
-     * Sets the parent node of this node.
-     *
-     * @param newParent the new parent node
-     */
-    protected void setParent(T newParent) {
+    @Override
+    public void setParent(T newParent) {
         if (newParent == parent) {
             return;
         }
         parent = newParent;
-    }
-
-    /**
-     * {@return whether this node has a parent node}
-     */
-    public boolean hasParent() {
-        return parent != null;
     }
 
     /**
@@ -135,41 +122,5 @@ public abstract class ARootedTree<T extends ARootedTree<T>> extends ATree<T> {
         super.replaceChild(oldChild, newChild);
         oldChild.setParent(null);
         newChild.setParent((T) this);
-    }
-
-    /**
-     * {@return whether the given node is an ancestor of this node}
-     *
-     * @param node the node
-     */
-    public boolean isAncestor(ARootedTree<T> node) {
-        Result<T> currentParent = getParent();
-        while (currentParent.isPresent()) {
-            if (node == currentParent.get()) {
-                return true;
-            }
-            currentParent = currentParent.get().getParent();
-        }
-        return false;
-    }
-
-    /**
-     * {@return the root node of this tree}
-     */
-    @SuppressWarnings("unchecked")
-    public T getRoot() {
-        T currentTree = (T) this;
-        while (currentTree.getParent().isPresent()) {
-            currentTree = currentTree.getParent().get();
-        }
-        return currentTree;
-    }
-
-    /**
-     * {@return the index of this node in its parent's list of children, if any}
-     */
-    @SuppressWarnings("unchecked")
-    public Result<Integer> getIndex() {
-        return getParent().flatMap(parent -> parent.getChildIndex((T) this));
     }
 }

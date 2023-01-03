@@ -53,7 +53,7 @@ public abstract class ATree<T extends ITree<T>> implements ITree<T> {
     public void setChildren(List<? extends T> children) {
         Objects.requireNonNull(children);
         assertChildrenCountInRange(children.size());
-        assertChildrenValidator(children);
+        assertChildValidator(children);
         this.children.clear();
         this.children.addAll(children);
     }
@@ -68,7 +68,7 @@ public abstract class ATree<T extends ITree<T>> implements ITree<T> {
     @Override
     public void addChild(int index, T newChild) {
         assertChildrenCountInRange(children.size() + 1);
-        assertChildrenValidator(newChild);
+        assertChildValidator(newChild);
         if (index > getChildrenCount()) {
             children.add(newChild);
         } else {
@@ -84,7 +84,7 @@ public abstract class ATree<T extends ITree<T>> implements ITree<T> {
     @Override
     public void addChild(T newChild) {
         assertChildrenCountInRange(children.size() + 1);
-        assertChildrenValidator(newChild);
+        assertChildValidator(newChild);
         children.add(newChild);
     }
 
@@ -127,7 +127,7 @@ public abstract class ATree<T extends ITree<T>> implements ITree<T> {
             final T child = it.next();
             final T replacement = mapper.apply(idx, child);
             if (replacement != null && replacement != child) {
-                assertChildrenValidator(replacement);
+                assertChildValidator(replacement);
                 it.set(replacement);
             }
         }
@@ -145,7 +145,7 @@ public abstract class ATree<T extends ITree<T>> implements ITree<T> {
         final int index = children.indexOf(oldChild);
         if (index == -1)
             throw new NoSuchElementException();
-        assertChildrenValidator(newChild);
+        assertChildValidator(newChild);
         children.set(index, newChild);
     }
 
@@ -160,7 +160,7 @@ public abstract class ATree<T extends ITree<T>> implements ITree<T> {
     public void replaceChild(int idx, T newChild) {
         if (idx < 0 || idx > getChildrenCount())
             throw new NoSuchElementException();
-        assertChildrenValidator(newChild);
+        assertChildValidator(newChild);
         children.set(idx, newChild);
     }
 

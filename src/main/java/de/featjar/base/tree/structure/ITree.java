@@ -94,7 +94,7 @@ public interface ITree<T extends ITree<T>> extends IBrowsable<GraphVizTreeFormat
     /**
      * {@return a function that validates this node's children}
      */
-    default Predicate<T> getChildrenValidator() {
+    default Predicate<T> getChildValidator() {
         return t -> true;
     }
 
@@ -108,14 +108,14 @@ public interface ITree<T extends ITree<T>> extends IBrowsable<GraphVizTreeFormat
         assertChildrenCountInRange(newChildrenCount, getChildrenCountRange());
     }
 
-    default void assertChildrenValidator(List<? extends T> children) {
-        if (!children.stream().allMatch(getChildrenValidator()))
+    default void assertChildValidator(List<? extends T> children) {
+        if (!children.stream().allMatch(getChildValidator()))
             throw new IllegalArgumentException(String.format("child %s is invalid",
-                    children.stream().filter(c -> !getChildrenValidator().test(c)).findFirst().orElse(null)));
+                    children.stream().filter(c -> !getChildValidator().test(c)).findFirst().orElse(null)));
     }
 
-    default void assertChildrenValidator(T child) {
-        if (!getChildrenValidator().test(child))
+    default void assertChildValidator(T child) {
+        if (!getChildValidator().test(child))
             throw new IllegalArgumentException("child did not pass validation");
     }
 
@@ -171,7 +171,7 @@ public interface ITree<T extends ITree<T>> extends IBrowsable<GraphVizTreeFormat
      */
     default void addChild(int index, T newChild) {
         assertChildrenCountInRange(getChildren().size() + 1);
-        assertChildrenValidator(newChild);
+        assertChildValidator(newChild);
         List<T> newChildren = new ArrayList<>(getChildren());
         if (index > getChildrenCount()) {
             newChildren.add(newChild);
@@ -188,7 +188,7 @@ public interface ITree<T extends ITree<T>> extends IBrowsable<GraphVizTreeFormat
      */
     default void addChild(T newChild) {
         assertChildrenCountInRange(getChildren().size() + 1);
-        assertChildrenValidator(newChild);
+        assertChildValidator(newChild);
         List<T> newChildren = new ArrayList<>(getChildren());
         newChildren.add(newChild);
         setChildren(newChildren);

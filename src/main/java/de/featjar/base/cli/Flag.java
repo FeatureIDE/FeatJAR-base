@@ -1,5 +1,7 @@
 package de.featjar.base.cli;
 
+import de.featjar.base.data.Result;
+
 /**
  * A Boolean flag option, which can either be present or not.
  *
@@ -16,11 +18,11 @@ public class Flag extends Option<Boolean> {
     }
 
     @Override
-    public Boolean parseFrom(AArgumentParser argumentParser) throws AArgumentParser.ArgumentParseException {
+    public Result<Boolean> parseFrom(AArgumentParser argumentParser) throws AArgumentParser.ArgumentParseException {
         boolean value = argumentParser.parseFlag(name);
         if (defaultValue != null || isRequired)
             throw new IllegalArgumentException();
-        return value;
+        return Result.of(value);
     }
 
     @Override

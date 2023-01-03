@@ -1,15 +1,12 @@
 package de.featjar.base.data;
 
-import de.featjar.base.Feat;
 import de.featjar.base.FeatJAR;
 import de.featjar.base.computation.*;
 import de.featjar.base.task.IMonitor;
 import de.featjar.base.tree.structure.ITree;
-import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
 import java.util.List;
-import java.util.concurrent.CompletableFuture;
 
 import static de.featjar.base.computation.Computations.async;
 import static org.junit.jupiter.api.Assertions.*;
@@ -21,24 +18,24 @@ class ComputationTest {
         {
             IComputation<Integer> computation = Computations.of(42);
             assertEquals(42, computation.getResult().get());
-            assertFalse(Feat.cache().has(computation));
+            assertFalse(FeatJAR.cache().has(computation));
         }
-        assertTrue(Feat.cache().getCachedComputations().isEmpty());
+        assertTrue(FeatJAR.cache().getCachedComputations().isEmpty());
 
-        Feat.run(fj -> {
+        FeatJAR.run(fj -> {
             IComputation<Integer> computation = Computations.of(42);
             assertEquals(42, computation.getResult().get());
-            assertTrue(Feat.cache().has(computation));
-            assertFalse(Feat.cache().getCachedComputations().isEmpty());
+            assertTrue(FeatJAR.cache().has(computation));
+            assertFalse(FeatJAR.cache().getCachedComputations().isEmpty());
         });
 
-        assertTrue(Feat.cache().getCachedComputations().isEmpty());
+        assertTrue(FeatJAR.cache().getCachedComputations().isEmpty());
         {
             IComputation<Integer> computation = Computations.of(42);
             assertEquals(42, computation.getResult().get());
-            assertFalse(Feat.cache().has(computation));
+            assertFalse(FeatJAR.cache().has(computation));
         }
-        assertTrue(Feat.cache().getCachedComputations().isEmpty());
+        assertTrue(FeatJAR.cache().getCachedComputations().isEmpty());
     }
 
     static class ComputeIsEven extends AComputation<Boolean> implements IInputDependency<Integer> {

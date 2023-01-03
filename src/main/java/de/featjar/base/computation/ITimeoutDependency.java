@@ -7,6 +7,8 @@ import de.featjar.base.data.Result;
  * This computation terminates with an empty {@link Result} when it has
  * not terminated until the timeout passes.
  * Assumes that the implementing class can be cast to {@link IComputation}.
+ *
+ * @author Elias Kuiter
  */
 public interface ITimeoutDependency { // todo: how to handle partial results (i.e., to return a lower bound for counting)?
     /**
