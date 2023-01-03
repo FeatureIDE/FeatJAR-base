@@ -127,6 +127,14 @@ public class ArgumentParser extends AArgumentParser {
         return sb.toString();
     }
 
+    public boolean hasHelpOption() {
+        return HELP_OPTION.parseFrom(this).get();
+    }
+
+    public boolean hasVersionOption() {
+        return VERSION_OPTION.parseFrom(this).get();
+    }
+
     /**
      * Handles argument parse exceptions by printing them and exiting.
      *

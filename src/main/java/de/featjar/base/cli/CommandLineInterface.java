@@ -80,10 +80,10 @@ public class CommandLineInterface {
     public static void run(ArgumentParser argumentParser) {
         FeatJAR.log().debug("running command-line interface");
         LinkedHashSet<ICommand> matchingCommands = argumentParser.getCommands();
-        if (ArgumentParser.HELP_OPTION.parseFrom(argumentParser).get() || matchingCommands.isEmpty()) {
+        if (argumentParser.hasHelpOption() || matchingCommands.isEmpty()) {
             System.out.println(argumentParser.getHelp());
         }
-        else if (ArgumentParser.VERSION_OPTION.parseFrom(argumentParser).get()) {
+        else if (argumentParser.hasVersionOption()) {
             System.out.println(FeatJAR.LIBRARY_NAME + ", unreleased version");
         } else {
             FeatJAR.log().info("running matching commands: " +

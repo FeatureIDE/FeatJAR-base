@@ -5,6 +5,7 @@ import de.featjar.base.data.Result;
 
 import java.util.function.Function;
 import java.util.function.Predicate;
+import java.util.function.Supplier;
 
 /**
  * An option on the command-line interface.
@@ -17,7 +18,7 @@ import java.util.function.Predicate;
 public class Option<T> {
     protected final String name;
     protected final Function<String, Result<T>> parser;
-    protected String description;
+    protected Supplier<String> descriptionSupplier = () -> null;
     protected boolean isRequired = false;
     protected T defaultValue;
     protected Predicate<T> validator = t -> true;
@@ -69,7 +70,7 @@ public class Option<T> {
      * {@return this option's description}
      */
     public Result<String> getDescription() {
-        return Result.ofNullable(description);
+        return Result.ofNullable(descriptionSupplier.get());
     }
 
     /**
@@ -79,7 +80,18 @@ public class Option<T> {
      * @return this option
      */
     public Option<T> setDescription(String description) {
-        this.description = description;
+        return setDescription(() -> description);
+    }
+
+    /**
+     * Sets this option's description supplier.
+     * Should be used when the description is complicated or only known after initialization.
+     *
+     * @param descriptionSupplier the description supplier
+     * @return this option
+     */
+    public Option<T> setDescription(Supplier<String> descriptionSupplier) {
+        this.descriptionSupplier = descriptionSupplier;
         return this;
     }
 
@@ -162,7 +174,7 @@ public class Option<T> {
 
     @Override
     public String toString() {
-        return String.format("%s <value>: %s%s", name, description,
+        return String.format("%s <value>%s%s", name, getDescription().map(d -> ": " + d).orElse(""),
                 defaultValue != null
                         ? String.format(" (default: %s)", defaultValue)
                         : "");

@@ -43,7 +43,7 @@ public interface ICommand extends IExtension {
      * {@return this command's options}
      */
     default List<Option<?>> getOptions() {
-        return new ArrayList<>();
+        return new ArrayList<>(); // todo: automatically try to parse these options (and no other), which makes ArgumentParser#close obsolete
     }
 
     static List<Option<?>> addOptions(List<Option<?>> options, Option<?>... newOptions) {

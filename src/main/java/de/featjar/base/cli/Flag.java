@@ -27,6 +27,6 @@ public class Flag extends Option<Boolean> {
 
     @Override
     public String toString() {
-        return String.format("%s: %s", name, description);
+        return String.format("%s%s", name, getDescription().map(d -> ": " + d).orElse(""));
     }
 }

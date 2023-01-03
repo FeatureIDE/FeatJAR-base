@@ -12,7 +12,7 @@ import static de.featjar.base.computation.Computations.async;
 import static org.junit.jupiter.api.Assertions.*;
 
 
-class ComputationTest {
+class IComputationTest {
     @Test
     void simpleComputation() {
         {
