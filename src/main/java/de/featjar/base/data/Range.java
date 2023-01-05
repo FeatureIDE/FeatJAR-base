@@ -5,7 +5,7 @@ import java.util.function.Function;
 import java.util.stream.IntStream;
 
 /**
- * A range of integers limited by a lower and upper bound.
+ * A range of positive integers limited by a lower and upper bound.
  * Both bounds may be open, in which case they are not checked.
  * TODO: javadoc is missing
  *
@@ -16,13 +16,17 @@ public class Range implements Function<Integer, Boolean> {
     protected Integer upperBound;
 
     protected Range(Integer lowerBound, Integer upperBound) {
+        checkBounds(lowerBound, upperBound);
+        this.lowerBound = lowerBound;
+        this.upperBound = upperBound;
+    }
+
+    protected static void checkBounds(Integer lowerBound, Integer upperBound) {
         if ((lowerBound != null && lowerBound < 0) ||
                 (upperBound != null && upperBound < 0) ||
                 (lowerBound != null && upperBound != null && lowerBound > upperBound)) {
             throw new IllegalArgumentException(String.format("invalid bounds %d, %d", lowerBound, upperBound));
         }
-        this.lowerBound = lowerBound;
-        this.upperBound = upperBound;
     }
 
     public static Range of(Integer lowerBound, Integer upperBound) {
@@ -54,6 +58,7 @@ public class Range implements Function<Integer, Boolean> {
     }
 
     public void setLowerBound(Integer lowerBound) {
+        checkBounds(lowerBound, this.upperBound);
         this.lowerBound = lowerBound;
     }
 
@@ -66,6 +71,7 @@ public class Range implements Function<Integer, Boolean> {
     }
 
     public void setUpperBound(Integer upperBound) {
+        checkBounds(this.lowerBound, upperBound);
         this.upperBound = upperBound;
     }
 

@@ -26,15 +26,14 @@ import de.featjar.base.data.Problem;
 import de.featjar.base.data.Result;
 import de.featjar.base.extension.IInitializer;
 import de.featjar.base.io.MultiStream;
-import de.featjar.base.task.IMonitor;
-import de.featjar.base.task.ProgressLogger;
-import de.featjar.base.task.IntervalThread;
 
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.PrintStream;
 import java.nio.file.Path;
-import java.util.*;
+import java.util.Arrays;
+import java.util.LinkedHashMap;
+import java.util.LinkedList;
 
 /**
  * Logs messages to standard output and files.
@@ -439,19 +438,6 @@ public class Log implements IInitializer {
             }
             return sb.toString();
         }
-    }
-
-    /**
-     * Starts a thread that regularly logs the progress of a monitor.
-     *
-     * @param monitor  the monitor
-     * @param interval the interval
-     * @return the interval thread
-     */
-    public IntervalThread startProgressLogger(IMonitor monitor, long interval) {
-        final IntervalThread intervalThread = new IntervalThread(new ProgressLogger(monitor), interval);
-        intervalThread.start();
-        return intervalThread;
     }
 
     /**

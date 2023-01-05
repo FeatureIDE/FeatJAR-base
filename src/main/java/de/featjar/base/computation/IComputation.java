@@ -23,7 +23,6 @@ package de.featjar.base.computation;
 import de.featjar.base.FeatJAR;
 import de.featjar.base.data.Result;
 import de.featjar.base.extension.IExtension;
-import de.featjar.base.task.IMonitor;
 import de.featjar.base.tree.structure.ITree;
 
 import java.util.*;
@@ -41,7 +40,7 @@ import java.util.function.Supplier;
  * When computed with {@link #get()}, results are possibly cached in a {@link Cache}; {@link #computeFutureResult()} does not cache.
  * Computation progress can optionally be reported with a {@link IMonitor}.
  * Computations can depend on other computations by declaring a {@link Dependency} on such a computation
- * and calling {@link Computations#allOf(IComputation[])} or {@link FutureResult#thenCompute(BiFunction)} in {@link #computeFutureResult()}.
+ * and calling {@link Computations#allOf(IComputation[])} or {@link FutureResult#thenFromResult(BiFunction)} in {@link #computeFutureResult()}.
  * To ensure the determinism required by caching, all parameters of a computation must be depended on.
  * Implementors should pass mandatory parameters in the constructor and optional parameters using dedicated setters.
  * This can be facilitated by using specializations of {@link IComputation} (e.g., {@link IInputDependency}).
@@ -61,7 +60,9 @@ public interface IComputation<T> extends Supplier<FutureResult<T>>, IExtension, 
     //must be deterministic and only depend on results
     // Do not rename this method, as the {@link Cache.CachePolicy} performs
     // reflection that depends on its name to detect nested computations.
-    Result<T> computeResult(List<?> results, IMonitor monitor); // todo: only allow indexing into results via Dependency (e.g., create a DependencyList/InputList)
+    Result<T> computeResult(List<?> results, Progress progress); // todo: only allow indexing into results via Dependency (e.g., create a DependencyList/InputList)
+
+    // todo: API for shutting down gracefully (ie., return partial result on timeout)
 
     /**
      * {@return the (newly computed) asynchronous result of this computation}
@@ -75,10 +76,10 @@ public interface IComputation<T> extends Supplier<FutureResult<T>>, IExtension, 
             futureResults.add(child.get());
         }
         return FutureResult.allOf(futureResults, getResultMerger())
-                .thenComputeResult(this::computeResult);
+                .thenResult(this::computeResult);
     }
 
-    default Function<List<Result<?>>, Result<List<?>>> getResultMerger() {
+    default Function<List<? extends Result<?>>, Result<List<?>>> getResultMerger() {
         return Result::mergeAll;
     }
 

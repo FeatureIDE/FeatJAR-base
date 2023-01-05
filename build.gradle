@@ -8,3 +8,7 @@ license {
         url = 'https://github.com/FeatureIDE/FeatJAR-base'
     }
 }
+
+dependencies {
+    api 'net.tascalate:net.tascalate.concurrent:0.9.6'
+}

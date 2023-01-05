@@ -1,7 +1,6 @@
 package de.featjar.base.computation;
 
 import de.featjar.base.data.Result;
-import de.featjar.base.task.IMonitor;
 import de.featjar.base.tree.structure.ITree;
 
 import java.util.List;
@@ -47,7 +46,7 @@ public class ComputeFunction<T, U> extends AComputation<U> implements IAnalysis<
 
     @SuppressWarnings("unchecked")
     @Override
-    public Result<U> computeResult(List<?> results, IMonitor monitor) {
+    public Result<U> computeResult(List<?> results, Progress progress) {
         T input = (T) INPUT.get(results);
         return function.apply(input);
     }

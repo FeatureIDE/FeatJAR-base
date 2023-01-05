@@ -21,7 +21,6 @@
 package de.featjar.base.computation;
 
 import de.featjar.base.data.Result;
-import de.featjar.base.task.IMonitor;
 import de.featjar.base.tree.structure.ITree;
 
 import java.util.List;
@@ -48,12 +47,12 @@ public class ComputePresence<T> extends AComputation<Boolean> implements IInputD
     }
 
     @Override
-    public Function<List<Result<?>>, Result<List<?>>> getResultMerger() {
+    public Function<List<? extends Result<?>>, Result<List<?>>> getResultMerger() {
         return Result::mergeAllNullable;
     }
 
     @Override
-    public Result<Boolean> computeResult(List<?> results, IMonitor monitor) {
+    public Result<Boolean> computeResult(List<?> results, Progress progress) {
         return Result.of(INPUT.get(results) != null);
     }
 

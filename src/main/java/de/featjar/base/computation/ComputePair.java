@@ -2,7 +2,6 @@ package de.featjar.base.computation;
 
 import de.featjar.base.data.Pair;
 import de.featjar.base.data.Result;
-import de.featjar.base.task.IMonitor;
 import de.featjar.base.tree.structure.ITree;
 
 import java.util.List;
@@ -45,7 +44,7 @@ public class ComputePair<T, U> extends AComputation<Pair<T, U>> {
 
     @SuppressWarnings("unchecked")
     @Override
-    public Result<Pair<T, U>> computeResult(List<?> results, IMonitor monitor) {
+    public Result<Pair<T, U>> computeResult(List<?> results, Progress progress) {
         return Result.of(new Pair<>((T) KEY_COMPUTATION.get(results), (U) VALUE_COMPUTATION.get(results)));
     }
 

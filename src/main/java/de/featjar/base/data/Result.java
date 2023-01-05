@@ -181,27 +181,33 @@ public class Result<T> implements Supplier<T> {
         return getProblems(Arrays.asList(results));
     }
 
-    public static List<Problem> getProblems(List<Result<?>> results) {
+    public static List<Problem> getProblems(List<? extends Result<?>> results) {
         return results.stream()
+                .filter(Objects::nonNull)
                 .map(Result::getProblem)
                 .filter(Result::isPresent)
                 .map(Result::get)
                 .collect(Collectors.toList());
     }
 
-    public static Result<List<?>> mergeAll(List<Result<?>> results) {
+    protected static List<Result<?>> replaceNull(List<? extends Result<?>> results) {
+        return results.stream().map(result -> result == null ? Result.empty() : result).collect(Collectors.toList());
+    }
+
+    public static Result<List<?>> mergeAll(List<? extends Result<?>> results) {
         List<Problem> problems = getProblems(results);
-        return results.stream().noneMatch(Result::isEmpty)
+        return replaceNull(results).stream().noneMatch(Result::isEmpty)
                 ? Result.of(results.stream().map(Result::get).collect(Collectors.toList()), problems)
                 : Result.empty(problems);
     }
 
-    public static Result<List<?>> mergeAllNullable(List<Result<?>> results) {
+    public static Result<List<?>> mergeAllNullable(List<? extends Result<?>> results) {
         List<Problem> problems = getProblems(results);
-        return Result.of(results.stream().map(r -> r.orElse(null)).collect(Collectors.toList()), problems);
+        return Result.of(replaceNull(results).stream().map(r -> r.orElse(null)).collect(Collectors.toList()), problems);
     }
 
     public static Result<?> mergeLast(List<Result<?>> results) {
+        results = results.stream().filter(Objects::nonNull).collect(Collectors.toList());
         if (results.isEmpty())
             return of(new ArrayList<>());
         List<Problem> problems = getProblems(results);

@@ -2,8 +2,6 @@ package de.featjar.base.computation;
 
 import de.featjar.base.data.Pair;
 import de.featjar.base.data.Result;
-import de.featjar.base.task.CancelableMonitor;
-import de.featjar.base.task.IMonitor;
 
 import java.util.Arrays;
 import java.util.List;
@@ -30,22 +28,11 @@ public class Computations {
     /**
      * {@return a trivial computation that computes a given object}
      *
-     * @param object the object
-     * @param <T>    the type of the object
-     */
-    public static <T> IComputation<T> of(T object) {
-        return of(object, new CancelableMonitor());
-    }
-
-    /**
-     * {@return a trivial computation that computes a given object}
-     *
      * @param object  the object
-     * @param monitor the monitor
      * @param <T>     the type of the object
      */
-    public static <T> IComputation<T> of(T object, IMonitor monitor) {
-        return new ComputeConstant<>(object, monitor);
+    public static <T> IComputation<T> of(T object) {
+        return new ComputeConstant<>(object);
     }
 
     /**

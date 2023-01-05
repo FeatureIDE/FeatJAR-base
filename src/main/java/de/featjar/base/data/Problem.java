@@ -24,6 +24,7 @@ import de.featjar.base.tree.structure.ATree;
 import de.featjar.base.tree.structure.ITree;
 
 import java.util.Objects;
+import java.util.Optional;
 
 /**
  * A problem that wraps a {@link Throwable}.
@@ -98,7 +99,7 @@ public class Problem extends ATree<Problem> {
 
     @Override
     public String toString() {
-        return severity + ": " + exception.getMessage();
+        return severity + ": " + getMessage();
     }
 
     /**
@@ -112,7 +113,7 @@ public class Problem extends ATree<Problem> {
      * {@return the message of this problem}
      */
     public String getMessage() {
-        return exception.getMessage();
+        return Optional.ofNullable(exception.getMessage()).orElse(exception.getClass().getSimpleName());
     }
 
     /**

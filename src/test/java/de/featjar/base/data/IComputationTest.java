@@ -2,7 +2,6 @@ package de.featjar.base.data;
 
 import de.featjar.base.FeatJAR;
 import de.featjar.base.computation.*;
-import de.featjar.base.task.IMonitor;
 import de.featjar.base.tree.structure.ITree;
 import org.junit.jupiter.api.Test;
 
@@ -52,7 +51,7 @@ class IComputationTest {
         }
 
         @Override
-        public Result<Boolean> computeResult(List<?> results, IMonitor monitor) {
+        public Result<Boolean> computeResult(List<?> results, Progress progress) {
             return Result.of(INPUT.get(results) % 2 == 0);
         }
 
@@ -93,7 +92,7 @@ class IComputationTest {
         }
 
         @Override
-        public Result<Boolean> computeResult(List<?> results, IMonitor monitor) {
+        public Result<Boolean> computeResult(List<?> results, Progress progress) {
             return Result.of(PARITY.get(results) == Parity.EVEN ? INPUT.get(results) % 2 == 0 : INPUT.get(results) % 2 == 1);
         }
     }
@@ -126,7 +125,7 @@ class IComputationTest {
     void allOfSleep() {
         IComputation<Integer> c1 = new AComputation<>() {
             @Override
-            public Result<Integer> computeResult(List<?> results, IMonitor monitor) {
+            public Result<Integer> computeResult(List<?> results, Progress progress) {
                 try {
                     Thread.sleep(10);
                 } catch (InterruptedException e) {

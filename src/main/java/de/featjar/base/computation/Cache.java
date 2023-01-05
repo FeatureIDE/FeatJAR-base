@@ -26,7 +26,6 @@ import de.featjar.base.env.IBrowsable;
 import de.featjar.base.extension.IInitializer;
 import de.featjar.base.env.StackTrace;
 import de.featjar.base.io.graphviz.GraphVizTreeFormat;
-import de.featjar.base.task.IMonitor;
 import de.featjar.base.tree.structure.ITree;
 
 import java.net.URI;

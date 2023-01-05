@@ -1,7 +1,6 @@
 package de.featjar.base.computation;
 
 import de.featjar.base.data.Result;
-import de.featjar.base.task.IMonitor;
 import de.featjar.base.tree.structure.ITree;
 
 import java.util.List;
@@ -18,7 +17,7 @@ public class ComputeAllOf extends AComputation<List<?>> {
     }
 
     @Override
-    public Result<List<?>> computeResult(List<?> results, IMonitor monitor) {
+    public Result<List<?>> computeResult(List<?> results, Progress progress) {
         return Result.of(results);
     }
 

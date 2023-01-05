@@ -1,14 +1,15 @@
 package de.featjar.base.computation;
 
+import de.featjar.base.data.Problem;
 import de.featjar.base.data.Result;
-import de.featjar.base.task.CancelableMonitor;
-import de.featjar.base.task.IMonitor;
+import net.tascalate.concurrent.*;
 
+import java.time.Duration;
 import java.util.List;
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ExecutionException;
+import java.util.concurrent.*;
 import java.util.function.BiFunction;
 import java.util.function.Function;
+import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
 /**
@@ -17,71 +18,64 @@ import java.util.stream.Collectors;
  * calculations) with a {@link Result} (which tracks errors).
  * It wraps a {@link Result} that is not available yet, but will become available in the future.
  * It can be converted into a {@link Result} by calling {@link #get()}, which blocks until the result is available.
- * It can be chained with other calculations by calling {@link #thenCompute(BiFunction)} (and similar methods).
+ * It can be chained with other calculations by calling {@link #thenFromResult(BiFunction)}}.
  * Once the result is available, it is cached indefinitely and can be retrieved with {@link #get()}.
  *
  * @param <T> the type of the result
  * @author Elias Kuiter
  */
-public class FutureResult<T> extends CompletableFuture<Result<T>> {
-    protected IMonitor monitor;
+public class FutureResult<T> implements Supplier<Result<T>> {
+    protected final static ExecutorService executor = ForkJoinPool.commonPool();
 
-    protected FutureResult(IMonitor monitor) {
-        this.monitor = monitor;
+    protected final Promise<Result<T>> promise;
+    protected final Progress progress = new Progress();
+
+    /**
+     * Creates a future result completed with a given result.
+     *
+     * @param result the result
+     */
+    public FutureResult(Result<T> result) {
+        this(CompletableTask.completed(result, executor));
     }
 
     /**
-     * {@return a completed future result of the given result}
+     * Creates a future result from a given promise.
      *
-     * @param result  the result
-     * @param monitor the monitor
-     * @param <T>     the type of the future result
+     * @param promise the promise
      */
-    public static <T> FutureResult<T> ofResult(Result<T> result, IMonitor monitor) {
-        FutureResult<T> futureResult = new FutureResult<>(monitor);
-        futureResult.complete(result);
-        return futureResult;
+    public FutureResult(Promise<Result<T>> promise) {
+        this.promise = promise;
     }
 
     /**
-     * {@return a completed future result of the given object}
+     * {@return a future result from given future results that resolves when all given future results are resolved}
      *
-     * @param object  the object
-     * @param monitor the monitor
-     * @param <T>     the type of the future result
+     * @param futureResults the future results
+     * @param resultMerger the result merger
      */
-    public static <T> FutureResult<T> of(T object, IMonitor monitor) {
-        return ofResult(Result.of(object), monitor);
+    public static FutureResult<List<?>> allOf(List<FutureResult<?>> futureResults, Function<List<? extends Result<?>>, Result<List<?>>> resultMerger) {
+        List<Promise<? extends Result<?>>> promises = futureResults.stream().map(FutureResult::getPromise).collect(Collectors.toList());
+        Promise<Result<List<?>>> promise = Promises.all(promises).thenApplyAsync(list ->
+                resultMerger.apply(futureResults.stream().map(FutureResult::get).collect(Collectors.toList())), executor);
+        return new FutureResult<>(promise);
     }
 
     /**
-     * {@return a future result of the given completable future}
-     * If the given completable future completes with {@code null}, returns a {@link de.featjar.base.data.Void} result.
+     * {@return a future result from given future results that resolves when all given future results are resolved}
+     * Resolves to a non-empty result only when all future results resolve to non-empty results.
      *
-     * @param completableFuture the completable future
-     * @param <T>               the type of the future result
+     * @param futureResults the future results
      */
-    public static <T> FutureResult<T> ofCompletableFuture(CompletableFuture<T> completableFuture) {
-        return ofResult(Result.ofVoid(), new CancelableMonitor())
-                .thenComputeFromResult(((o, _monitor) -> {
-                    try {
-                        return Result.ofNullable(completableFuture.get());
-                    } catch (InterruptedException | ExecutionException e) {
-                        return Result.empty(e);
-                    }
-                }));
-    }
-
-    public static FutureResult<List<?>> allOf(List<FutureResult<?>> futureResults, Function<List<Result<?>>, Result<List<?>>> resultMerger) {
-        return ofCompletableFuture(allOf(futureResults.toArray(CompletableFuture[]::new)))
-                .thenComputeFromResult((_void, monitor) ->
-                        resultMerger.apply(futureResults.stream()
-                                .map(FutureResult::get)
-                                .collect(Collectors.toList())));
-    }
-
     public static FutureResult<List<?>> allOf(List<FutureResult<?>> futureResults) {
         return allOf(futureResults, Result::mergeAll);
+    }
+
+    /**
+     * {@return this future result's promise}
+     */
+    public Promise<Result<T>> getPromise() {
+        return promise;
     }
 
     /**
@@ -90,8 +84,8 @@ public class FutureResult<T> extends CompletableFuture<Result<T>> {
      * @param fn  the function
      * @param <U> the type of the future result
      */
-    public <U> FutureResult<U> thenCompute(BiFunction<T, IMonitor, U> fn) {
-        return thenComputeFromResult(mapArgumentAndReturnValue(fn));
+    public <U> FutureResult<U> then(BiFunction<T, Progress, U> fn) {
+        return thenFromResult(mapArgumentAndReturnValue(fn));
     }
 
     /**
@@ -100,8 +94,8 @@ public class FutureResult<T> extends CompletableFuture<Result<T>> {
      * @param fn  the function
      * @param <U> the type of the future result
      */
-    public <U> FutureResult<U> thenComputeResult(BiFunction<T, IMonitor, Result<U>> fn) {
-        return thenComputeFromResult(mapArgument(fn));
+    public <U> FutureResult<U> thenResult(BiFunction<T, Progress, Result<U>> fn) {
+        return thenFromResult(mapArgument(fn));
     }
 
     /**
@@ -110,41 +104,84 @@ public class FutureResult<T> extends CompletableFuture<Result<T>> {
      * @param fn  the function
      * @param <U> the type of the future result
      */
-    @SuppressWarnings({"unchecked", "rawtypes"})
-    public <U> FutureResult<U> thenComputeFromResult(BiFunction<Result<T>, IMonitor, Result<U>> fn) {
-        return (FutureResult) super.thenApply(tResult -> {
+    public <U> FutureResult<U> thenFromResult(BiFunction<Result<T>, Progress, Result<U>> fn) {
+        return new FutureResult<>(promise.thenApplyAsync(tResult -> {
             try {
-                return tResult.merge(fn.apply(tResult, monitor));
+                return tResult.merge(fn.apply(tResult, progress));
             } catch (Exception e) {
                 return Result.empty(e);
             }
+        }, executor));
+    }
+
+    protected static <T, U> BiFunction<Result<T>, Progress, Result<U>> mapArgument(BiFunction<T, Progress, Result<U>> fn) {
+        return (tResult, progress) -> tResult.isPresent()
+                ? fn.apply(tResult.get(), progress)
+                : Result.empty();
+    }
+
+    protected static <T, U> BiFunction<Result<T>, Progress, Result<U>> mapArgumentAndReturnValue(BiFunction<T, Progress, U> fn) {
+        return (tResult, progress) -> tResult.isPresent()
+                ? Result.ofNullable(fn.apply(tResult.get(), progress))
+                : Result.empty();
+    }
+
+    /**
+     * {@return this future result's result}
+     * Blocks synchronously until the result is available.
+     */
+    public Result<T> get() {
+        try {
+            return promise.get();
+        } catch (InterruptedException | ExecutionException | CancellationException e) {
+            return Result.empty(e);
+        }
+    }
+
+    /**
+     * Cancels the execution of this future result's promise when a given duration has passed.
+     * Discards any partially computed result.
+     *
+     * @param duration the duration
+     */
+    public void cancelAfter(Duration duration) {
+        promise.orTimeout(duration); // todo: get partial result?
+    }
+
+    /**
+     * Cancels the execution of this future result's promise.
+     * Discards any partially computed result.
+     */
+    public void cancel() {
+        promise.cancel(true);
+    }
+
+    /**
+     * Runs a function when a given duration has passed and the promise is not resolved yet.
+     *
+     * @param duration the duration
+     * @param fn the function
+     */
+    public void peekAfter(Duration duration, Runnable fn) {
+        Result<T> result = Result.empty(new Problem("timeout occurred"));
+        promise.onTimeout(result, duration, false).thenApplyAsync(r -> {
+            if (result.equals(r)) {
+                fn.run();
+            }
+            return null;
         });
     }
 
-    protected static <T, U> BiFunction<Result<T>, IMonitor, Result<U>> mapArgument(BiFunction<T, IMonitor, Result<U>> fn) {
-        return (tResult, monitor) -> tResult.isPresent()
-                ? fn.apply(tResult.get(), monitor)
-                : Result.empty();
-    }
-
-    protected static <T, U> BiFunction<Result<T>, IMonitor, Result<U>> mapArgumentAndReturnValue(BiFunction<T, IMonitor, U> fn) {
-        return (tResult, monitor) -> tResult.isPresent()
-                ? Result.ofNullable(fn.apply(tResult.get(), monitor))
-                : Result.empty();
-    }
-
-    @SuppressWarnings({"unchecked", "rawtypes"})
-    @Override
-    public <U> CompletableFuture<U> newIncompleteFuture() {
-        return (CompletableFuture) new FutureResult<>(monitor);
-    }
-
-    @Override
-    public Result<T> get() {
-        try {
-            return super.get();
-        } catch (InterruptedException | ExecutionException e) {
-            return Result.empty(e);
-        }
+    /**
+     * Runs a function regularly at a given interval until the promise is resolved.
+     *
+     * @param interval the interval
+     * @param fn the function
+     */
+    public void peekEvery(Duration interval, Runnable fn) {
+        peekAfter(interval, () -> {
+            fn.run();
+            peekAfter(interval, fn);
+        });
     }
 }

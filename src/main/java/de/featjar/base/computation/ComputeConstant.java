@@ -1,7 +1,6 @@
 package de.featjar.base.computation;
 
 import de.featjar.base.data.Result;
-import de.featjar.base.task.IMonitor;
 import de.featjar.base.tree.structure.ALeafNode;
 import de.featjar.base.tree.structure.ITree;
 
@@ -18,21 +17,18 @@ import java.util.Objects;
  */
 public class ComputeConstant<T> extends ALeafNode<IComputation<?>> implements IComputation<T> {
     protected final T value;
-    protected final IMonitor monitor;
 
     /**
      * Creates a constant computation.
      *
      * @param value   the value
-     * @param monitor the monitor
      */
-    public ComputeConstant(T value, IMonitor monitor) {
+    public ComputeConstant(T value) {
         this.value = Objects.requireNonNull(value, "constant computation of null not allowed");
-        this.monitor = monitor;
     }
 
     @Override
-    public Result<T> computeResult(List<?> results, IMonitor monitor) {
+    public Result<T> computeResult(List<?> results, Progress progress) {
         return Result.of(value);
     }
 
@@ -48,7 +44,7 @@ public class ComputeConstant<T> extends ALeafNode<IComputation<?>> implements IC
 
     @Override
     public ITree<IComputation<?>> cloneNode() {
-        return new ComputeConstant<>(value, monitor);
+        return new ComputeConstant<>(value);
     }
 
     @Override
