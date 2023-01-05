@@ -31,11 +31,10 @@ import de.featjar.base.tree.structure.ITree;
 import java.net.URI;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.stream.Collectors;
 
 /**
  * Caches computation results by storing a map of computations to their future results.
- * TODO: Currently, this is implemented as a single large store (a Singleton inside {@link de.featjar.base.FeatJAR}).
- *  See the notes in {@link IMonitor} how this might be improved.
  *
  * @author Sebastian Krieter
  * @author Elias Kuiter
@@ -251,6 +250,22 @@ public class Cache implements IInitializer, IBrowsable<GraphVizTreeFormat<ICompu
 
     public Long getNumberOfHits(IComputation<?> computation) {
         return Result.ofNullable(hitStatistics.get(computation)).orElse(0L);
+    }
+
+    public Result<Double> getProgress(IComputation<?> computation) {
+        List<Double> progresses = new ArrayList<>();
+        get(computation)
+                .map(FutureResult::getProgress)
+                .map(Progress::get)
+                .ifPresent(progresses::add);
+        progresses.addAll(computation.getChildren().stream()
+                .map(this::getProgress)
+                .filter(Result::isPresent)
+                .map(Result::get)
+                .collect(Collectors.toList()));
+        if (progresses.isEmpty())
+            return Result.empty();
+        return Result.of(progresses.stream().reduce(Double::sum).get() / progresses.size());
     }
 
     public List<IComputation<?>> getCachedComputations() {

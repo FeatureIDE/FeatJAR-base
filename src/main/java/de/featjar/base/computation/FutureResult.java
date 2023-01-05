@@ -28,7 +28,8 @@ public class FutureResult<T> implements Supplier<Result<T>> {
     protected final static ExecutorService executor = ForkJoinPool.commonPool();
 
     protected final Promise<Result<T>> promise;
-    protected final Progress progress = new Progress();
+
+    protected final Progress progress;
 
     /**
      * Creates a future result completed with a given result.
@@ -36,7 +37,7 @@ public class FutureResult<T> implements Supplier<Result<T>> {
      * @param result the result
      */
     public FutureResult(Result<T> result) {
-        this(CompletableTask.completed(result, executor));
+        this(CompletableTask.completed(result, executor), null);
     }
 
     /**
@@ -44,8 +45,9 @@ public class FutureResult<T> implements Supplier<Result<T>> {
      *
      * @param promise the promise
      */
-    public FutureResult(Promise<Result<T>> promise) {
+    public FutureResult(Promise<Result<T>> promise, Progress progress) {
         this.promise = promise;
+        this.progress = progress;
     }
 
     /**
@@ -58,7 +60,7 @@ public class FutureResult<T> implements Supplier<Result<T>> {
         List<Promise<? extends Result<?>>> promises = futureResults.stream().map(FutureResult::getPromise).collect(Collectors.toList());
         Promise<Result<List<?>>> promise = Promises.all(promises).thenApplyAsync(list ->
                 resultMerger.apply(futureResults.stream().map(FutureResult::get).collect(Collectors.toList())), executor);
-        return new FutureResult<>(promise);
+        return new FutureResult<>(promise, null);
     }
 
     /**
@@ -76,6 +78,16 @@ public class FutureResult<T> implements Supplier<Result<T>> {
      */
     public Promise<Result<T>> getPromise() {
         return promise;
+    }
+
+    /**
+     * {@return this future result's progress}
+     */
+    public Progress getProgress() {
+        Result<Progress> progressResult = Result.ofNullable(progress);
+        if (getPromise().isDone())
+            progressResult = progressResult.map(p -> Progress.completed(p.getCurrentStep()));
+        return progressResult.orElse(new Progress());
     }
 
     /**
@@ -105,13 +117,14 @@ public class FutureResult<T> implements Supplier<Result<T>> {
      * @param <U> the type of the future result
      */
     public <U> FutureResult<U> thenFromResult(BiFunction<Result<T>, Progress, Result<U>> fn) {
+        Progress progress = new Progress();
         return new FutureResult<>(promise.thenApplyAsync(tResult -> {
             try {
                 return tResult.merge(fn.apply(tResult, progress));
             } catch (Exception e) {
                 return Result.empty(e);
             }
-        }, executor));
+        }, executor), progress);
     }
 
     protected static <T, U> BiFunction<Result<T>, Progress, Result<U>> mapArgument(BiFunction<T, Progress, Result<U>> fn) {
@@ -181,7 +194,7 @@ public class FutureResult<T> implements Supplier<Result<T>> {
     public void peekEvery(Duration interval, Runnable fn) {
         peekAfter(interval, () -> {
             fn.run();
-            peekAfter(interval, fn);
+            peekEvery(interval, fn);
         });
     }
 }

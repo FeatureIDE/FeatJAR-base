@@ -38,7 +38,6 @@ import java.util.function.Supplier;
  * If computed with {@link #get()} or {@link #computeFutureResult()}, the result is returned as an
  * asynchronous {@link FutureResult}, which can be shared, cached, and waited for.
  * When computed with {@link #get()}, results are possibly cached in a {@link Cache}; {@link #computeFutureResult()} does not cache.
- * Computation progress can optionally be reported with a {@link IMonitor}.
  * Computations can depend on other computations by declaring a {@link Dependency} on such a computation
  * and calling {@link Computations#allOf(IComputation[])} or {@link FutureResult#thenFromResult(BiFunction)} in {@link #computeFutureResult()}.
  * To ensure the determinism required by caching, all parameters of a computation must be depended on.
@@ -47,8 +46,6 @@ import java.util.function.Supplier;
  * Every computation is a tree of computations, where the dependencies of the computation are its children.
  * TODO: A validation scheme (e.g., against a simple feature model) and serialization scheme
  *  (e.g., to sensibly compare and cache computations based on their parameters and hash code) are missing for now.
- * TODO: Monitor and store should be injected once (see notes in {@link IMonitor}), and then not worried about any further.
- * TODO: A hash code computation is completely missing, so caching does not work well at all right now.
  * an empty child result signals an unrecoverable error
  * for recoverable errors, return a non-empty child result with warnings/errors
  *
@@ -62,7 +59,7 @@ public interface IComputation<T> extends Supplier<FutureResult<T>>, IExtension, 
     // reflection that depends on its name to detect nested computations.
     Result<T> computeResult(List<?> results, Progress progress); // todo: only allow indexing into results via Dependency (e.g., create a DependencyList/InputList)
 
-    // todo: API for shutting down gracefully (ie., return partial result on timeout)
+    // todo: computeresult that circumvents creation of future result objects (for quick'n'dirty computations)
 
     /**
      * {@return the (newly computed) asynchronous result of this computation}
