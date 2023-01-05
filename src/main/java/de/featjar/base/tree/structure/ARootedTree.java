@@ -118,9 +118,12 @@ public abstract class ARootedTree<T extends IRootedTree<T>> extends ATree<T> imp
      */
     @SuppressWarnings("unchecked")
     @Override
-    public void replaceChild(T oldChild, T newChild) {
-        super.replaceChild(oldChild, newChild);
-        oldChild.setParent(null);
-        newChild.setParent((T) this);
+    public boolean replaceChild(T oldChild, T newChild) {
+        boolean modified = super.replaceChild(oldChild, newChild);
+        if (modified) {
+            oldChild.setParent(null);
+            newChild.setParent((T) this);
+        }
+        return modified;
     }
 }

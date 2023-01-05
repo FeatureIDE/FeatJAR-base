@@ -208,7 +208,7 @@ public class Trees {
             if (!entry.remainingChildren.isEmpty()) {
                 stack.push(new StackEntry<>(entry.remainingChildren.remove(0)));
             } else {
-                final int childrenCount = node.getChildren().size();
+                final int childrenCount = node.getChildrenCount();
                 if (childrenCount > 0) {
                     final List<T> subList = path.subList(path.size() - childrenCount, path.size());
                     path.get(path.size() - (childrenCount + 1)).setChildren(subList);

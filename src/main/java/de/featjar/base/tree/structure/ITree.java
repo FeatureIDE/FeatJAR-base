@@ -125,7 +125,7 @@ public interface ITree<T extends ITree<T>> extends IBrowsable<GraphVizTreeFormat
      * @param idx the index
      */
     default Result<T> getChild(int idx) {
-        if (idx < 0 || idx >= getChildren().size())
+        if (idx < 0 || idx >= getChildrenCount())
             return Result.empty();
         return Result.ofNullable(getChildren().get(idx));
     }
@@ -170,7 +170,7 @@ public interface ITree<T extends ITree<T>> extends IBrowsable<GraphVizTreeFormat
      * @param newChild the new child
      */
     default void addChild(int index, T newChild) {
-        assertChildrenCountInRange(getChildren().size() + 1);
+        assertChildrenCountInRange(getChildrenCount() + 1);
         assertChildValidator(newChild);
         List<T> newChildren = new ArrayList<>(getChildren());
         if (index > getChildrenCount()) {
@@ -187,7 +187,7 @@ public interface ITree<T extends ITree<T>> extends IBrowsable<GraphVizTreeFormat
      * @param newChild the new child
      */
     default void addChild(T newChild) {
-        assertChildrenCountInRange(getChildren().size() + 1);
+        assertChildrenCountInRange(getChildrenCount() + 1);
         assertChildValidator(newChild);
         List<T> newChildren = new ArrayList<>(getChildren());
         newChildren.add(newChild);
@@ -201,7 +201,7 @@ public interface ITree<T extends ITree<T>> extends IBrowsable<GraphVizTreeFormat
      * @throws NoSuchElementException if the given old node is not a child
      */
     default void removeChild(T child) {
-        assertChildrenCountInRange(getChildren().size() - 1);
+        assertChildrenCountInRange(getChildrenCount() - 1);
         List<T> newChildren = new ArrayList<>(getChildren());
         if (!newChildren.remove(child)) {
             throw new NoSuchElementException();
@@ -217,11 +217,21 @@ public interface ITree<T extends ITree<T>> extends IBrowsable<GraphVizTreeFormat
      * @throws IndexOutOfBoundsException if the given index is out of bounds
      */
     default T removeChild(int index) {
-        assertChildrenCountInRange(getChildren().size() - 1);
+        assertChildrenCountInRange(getChildrenCount() - 1);
         List<T> newChildren = new ArrayList<>(getChildren());
         T t = newChildren.remove(index);
         setChildren(newChildren);
         return t;
+    }
+
+    /**
+     * Removes all children.
+     */
+    default void clearChildren() {
+        if (getChildrenCount() > 0) {
+            assertChildrenCountInRange(0);
+            setChildren(new ArrayList<>());
+        }
     }
 
     /**
@@ -230,13 +240,14 @@ public interface ITree<T extends ITree<T>> extends IBrowsable<GraphVizTreeFormat
      * If no child is changed, the list of children is kept unchanged.
      *
      * @param mapper maps an old child with its index onto a new child
+     * @return whether any child was modified
      */
-    default void replaceChildren(BiFunction<Integer, T, ? extends T> mapper) {
+    default boolean replaceChildren(BiFunction<Integer, T, ? extends T> mapper) {
         Objects.requireNonNull(mapper);
+        boolean modified = false;
         final List<? extends T> oldChildren = getChildren();
         if (!oldChildren.isEmpty()) {
             final List<T> newChildren = new ArrayList<>(oldChildren.size());
-            boolean modified = false;
             for (int i = 0; i < oldChildren.size(); i++) {
                 T child = oldChildren.get(i);
                 final T replacement = mapper.apply(i, child);
@@ -251,6 +262,7 @@ public interface ITree<T extends ITree<T>> extends IBrowsable<GraphVizTreeFormat
                 setChildren(newChildren);
             }
         }
+        return modified;
     }
 
     /**
@@ -259,9 +271,10 @@ public interface ITree<T extends ITree<T>> extends IBrowsable<GraphVizTreeFormat
      * If no child is changed, the list of children is kept unchanged.
      *
      * @param mapper maps an old child onto a new child
+     * @return whether any child was modified
      */
-    default void replaceChildren(Function<T, ? extends T> mapper) {
-        replaceChildren((index, child) -> mapper.apply(child));
+    default boolean replaceChildren(Function<T, ? extends T> mapper) {
+        return replaceChildren((index, child) -> mapper.apply(child));
     }
 
     /**
@@ -270,9 +283,10 @@ public interface ITree<T extends ITree<T>> extends IBrowsable<GraphVizTreeFormat
      *
      * @param oldChild the old child
      * @param newChild the new child
+     * @return whether any child was modified
      */
-    default void replaceChild(T oldChild, T newChild) {
-        replaceChildren(child -> child == oldChild ? newChild : null);
+    default boolean replaceChild(T oldChild, T newChild) {
+        return replaceChildren(child -> child == oldChild ? newChild : null);
     }
 
     /**
@@ -281,9 +295,10 @@ public interface ITree<T extends ITree<T>> extends IBrowsable<GraphVizTreeFormat
      *
      * @param idx      the index
      * @param newChild the new child
+     * @return whether any child was modified
      */
-    default void replaceChild(int idx, T newChild) {
-        replaceChildren((index, child) -> index == idx ? newChild : null);
+    default boolean replaceChild(int idx, T newChild) {
+        return replaceChildren((index, child) -> index == idx ? newChild : null);
     }
 
     /**
@@ -292,13 +307,14 @@ public interface ITree<T extends ITree<T>> extends IBrowsable<GraphVizTreeFormat
      * If no child is changed, the list of children is kept unchanged.
      *
      * @param mapper maps an old child with its index onto a list of new children
+     * @return whether any child was modified
      */
-    default void flatReplaceChildren(BiFunction<Integer, T, List<? extends T>> mapper) {
+    default boolean flatReplaceChildren(BiFunction<Integer, T, List<? extends T>> mapper) {
         Objects.requireNonNull(mapper);
+        boolean modified = false;
         final List<? extends T> oldChildren = getChildren();
         if (!oldChildren.isEmpty()) {
             final ArrayList<T> newChildren = new ArrayList<>(oldChildren.size());
-            boolean modified = false;
             for (int i = 0; i < oldChildren.size(); i++) {
                 T child = oldChildren.get(i);
                 final List<? extends T> replacement = mapper.apply(i, child);
@@ -313,6 +329,7 @@ public interface ITree<T extends ITree<T>> extends IBrowsable<GraphVizTreeFormat
                 setChildren(newChildren);
             }
         }
+        return modified;
     }
 
     /**
@@ -321,9 +338,10 @@ public interface ITree<T extends ITree<T>> extends IBrowsable<GraphVizTreeFormat
      * If no child is changed, the list of children is kept unchanged.
      *
      * @param mapper maps an old child onto a new child
+     * @return whether any child was modified
      */
-    default void flatReplaceChildren(Function<T, List<? extends T>> mapper) {
-        flatReplaceChildren((index, child) -> mapper.apply(child));
+    default boolean flatReplaceChildren(Function<T, List<? extends T>> mapper) {
+        return flatReplaceChildren((index, child) -> mapper.apply(child));
     }
 
     /**

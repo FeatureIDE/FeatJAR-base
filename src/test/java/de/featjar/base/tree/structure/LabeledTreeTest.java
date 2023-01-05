@@ -146,8 +146,8 @@ public class LabeledTreeTest {
         final LabeledTree<String> clonedRoot = Trees.clone(emptyRoot);
 
         assertEquals(emptyRoot.getClass(), clonedRoot.getClass());
-        assertEquals(0, emptyRoot.getChildren().size());
-        assertEquals(0, clonedRoot.getChildren().size());
+        assertEquals(0, emptyRoot.getChildrenCount());
+        assertEquals(0, clonedRoot.getChildrenCount());
     }
 
     @Test
@@ -155,8 +155,8 @@ public class LabeledTreeTest {
         final LabeledTree<String> clonedRoot = Trees.clone(root);
 
         assertEquals(root.getLabel(), clonedRoot.getLabel());
-        assertEquals(thirdChildren.size(), root.getChildren().size());
-        assertEquals(thirdChildren.size(), clonedRoot.getChildren().size());
+        assertEquals(thirdChildren.size(), root.getChildrenCount());
+        assertEquals(thirdChildren.size(), clonedRoot.getChildrenCount());
         final Iterator<? extends LabeledTree<String>> iterator =
                 root.getChildren().iterator();
         final Iterator<? extends LabeledTree<String>> clonedIterator =
@@ -188,7 +188,7 @@ public class LabeledTreeTest {
             failFastIterator.next();
         });
         final Iterator<?> iterator = root.getChildren().iterator();
-        assertEquals(thirdChildren.size(), root.getChildren().size());
+        assertEquals(thirdChildren.size(), root.getChildrenCount());
         assertEquals(childA, iterator.next());
         assertEquals(childB, iterator.next());
         assertEquals(childC, iterator.next());
@@ -207,7 +207,7 @@ public class LabeledTreeTest {
             failFastIterator.next();
         });
         final Iterator<?> iterator = root.getChildren().iterator();
-        assertEquals(thirdChildren.size(), root.getChildren().size());
+        assertEquals(thirdChildren.size(), root.getChildrenCount());
         assertEquals(childA, iterator.next());
         assertEquals(childB, iterator.next());
         assertEquals(childC, iterator.next());
@@ -224,7 +224,7 @@ public class LabeledTreeTest {
             failFastIterator.next();
         });
         final Iterator<?> iterator = root.getChildren().iterator();
-        assertEquals(thirdChildren.size(), root.getChildren().size());
+        assertEquals(thirdChildren.size(), root.getChildrenCount());
         assertEquals(childD, iterator.next());
         assertEquals(childD, iterator.next());
         assertEquals(childD, iterator.next());
@@ -241,7 +241,7 @@ public class LabeledTreeTest {
             failFastIterator.next();
         });
         final Iterator<?> iterator = root.getChildren().iterator();
-        assertEquals(thirdChildren.size(), root.getChildren().size());
+        assertEquals(thirdChildren.size(), root.getChildrenCount());
         assertEquals(childA, iterator.next());
         assertEquals(childD, iterator.next());
         assertEquals(childC, iterator.next());
@@ -270,7 +270,7 @@ public class LabeledTreeTest {
             failFastIterator.next();
         });
         final Iterator<?> iterator = root.getChildren().iterator();
-        assertEquals(thirdChildren.size(), root.getChildren().size());
+        assertEquals(thirdChildren.size(), root.getChildrenCount());
         assertEquals(childA, iterator.next());
         assertEquals(childB, iterator.next());
         assertEquals(childC, iterator.next());
@@ -299,7 +299,7 @@ public class LabeledTreeTest {
         final Iterator<?> iterator = root.getChildren().iterator();
         assertEquals(
                 (2 * fourthChildren.size()) + fifthChildren.size(),
-                root.getChildren().size());
+                root.getChildrenCount());
         assertEquals(childD, iterator.next());
         assertEquals(childE, iterator.next());
         assertEquals(childF, iterator.next());

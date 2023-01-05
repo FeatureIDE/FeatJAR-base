@@ -235,12 +235,12 @@ public class IOTest {
             Result<LabeledTree<Integer>> result = IO.load(testPath, new IntegerTreeFormat());
             assertTrue(result.isPresent());
             assertEquals(1, result.get().getLabel());
-            assertEquals(0, result.get().getChildren().size());
+            assertEquals(0, result.get().getChildrenCount());
             assertTrue(result.hasProblem());
             result = IO.load(testPath, new IntegerTreeFormat(), IOMapperOptions.INPUT_FILE_HIERARCHY);
             assertTrue(result.isPresent());
             assertEquals(1, result.get().getLabel());
-            assertEquals(2, result.get().getChildren().size());
+            assertEquals(2, result.get().getChildrenCount());
             assertEquals(2, result.get().getFirstChild().get().getLabel());
             assertEquals(3, result.get().getLastChild().get().getLabel());
             assertEquals(
