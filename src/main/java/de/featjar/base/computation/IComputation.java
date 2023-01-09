@@ -30,6 +30,7 @@ import java.util.function.BiFunction;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Supplier;
+import java.util.stream.Collectors;
 
 /**
  * Describes a deterministic (potentially complex or long-running) computation.
@@ -53,13 +54,28 @@ import java.util.function.Supplier;
  * @author Sebastian Krieter
  * @author Elias Kuiter
  */
-public interface IComputation<T> extends Supplier<FutureResult<T>>, IExtension, ITree<IComputation<?>> {
+public interface IComputation<T> extends Supplier<Result<T>>, IExtension, ITree<IComputation<?>> {
     //must be deterministic and only depend on results
     // Do not rename this method, as the {@link Cache.CachePolicy} performs
     // reflection that depends on its name to detect nested computations.
-    Result<T> computeResult(List<?> results, Progress progress); // todo: only allow indexing into results via Dependency (e.g., create a DependencyList/InputList)
+    Result<T> compute(DependencyList dependencyList, Progress progress); // todo: only allow indexing into results via Dependency (e.g., create a DependencyList/InputList)
 
-    // todo: computeresult that circumvents creation of future result objects (for quick'n'dirty computations)
+    default FutureResult<T> computeFutureResult(boolean tryHitCache, boolean tryWriteCache) {
+        if (tryHitCache) {
+            Result<FutureResult<T>> cacheHit = FeatJAR.cache().tryHit(this);
+            if (cacheHit.isPresent())
+                return cacheHit.get();
+        }
+        List<FutureResult<?>> futureResults = getChildren().stream()
+                .map(computation -> computation.computeFutureResult(tryHitCache, tryWriteCache))
+                .collect(Collectors.toList());
+        FutureResult<T> futureResult = FutureResult.allOf(futureResults, this::mergeResults)
+                .thenResult(this::compute);
+        if (tryWriteCache)
+            FeatJAR.cache().tryWrite(this, futureResult);
+        return futureResult;
+    }
+
 
     /**
      * {@return the (newly computed) asynchronous result of this computation}
@@ -68,35 +84,47 @@ public interface IComputation<T> extends Supplier<FutureResult<T>>, IExtension, 
      * Usually, you should call {@link #get()} instead to leverage cached results.
      */
     default FutureResult<T> computeFutureResult() {
-        List<FutureResult<?>> futureResults = new ArrayList<>();
-        for (IComputation<?> child : getChildren()) {
-            futureResults.add(child.get());
+        return computeFutureResult(true, true);
+    }
+
+    default FutureResult<T> computeUncachedFutureResult() {
+        return computeFutureResult(false, false);
+    }
+
+    default Result<T> computeResult(boolean tryHitCache, boolean tryWriteCache, Supplier<Progress> progressSupplier) {
+        if (tryHitCache) {
+            Result<FutureResult<T>> cacheHit = FeatJAR.cache().tryHit(this);
+            if (cacheHit.isPresent())
+                return cacheHit.get().get();
         }
-        return FutureResult.allOf(futureResults, getResultMerger())
-                .thenResult(this::computeResult);
+        List<Result<?>> results = getChildren().stream()
+                .map(computation -> computation.computeResult(tryHitCache, tryWriteCache, progressSupplier))
+                .collect(Collectors.toList());
+        Progress progress = progressSupplier.get();
+        Result<T> result = mergeResults(results)
+                .flatMap(r -> compute(r, progress));
+        if (tryWriteCache)
+            FeatJAR.cache().tryWrite(this, new FutureResult<>(result, progress));
+        return result;
     }
 
-    default Function<List<? extends Result<?>>, Result<List<?>>> getResultMerger() {
-        return Result::mergeAll;
-    }
-
-    /**
-     * {@return the (possibly cached) asynchronous result of this computation}
-     * Behaves just like {@link #computeFutureResult()}, but tries to hit the {@link Cache} first.
-     */
-    @Override
-    default FutureResult<T> get() {
-        return FeatJAR.cache().computeFutureResult(this);
+    default Result<T> computeResult(boolean tryHitCache, boolean tryWriteCache) {
+        return computeResult(tryHitCache, tryWriteCache, tryWriteCache ? Progress::new : () -> Progress.Null.NULL);
     }
 
     /**
      * {@return the (newly computed) synchronous result of this computation}
      * The result is returned synchronously; that is, as a {@link Result}.
-     * Calling this function directly is discouraged, as the result is forced to be re-computed.
-     * Usually, you should call {@link #getResult()} instead to leverage cached results.
+     * todo Calling this function directly is discouraged, as the result is forced to be re-computed.
+     * Usually, you should call {@link #computeResult()} instead to leverage cached results.
      */
+    // used for performance (low overhead), no caching, debugging, nested computations, rename to computeSync?Async?, no progress tracking
     default Result<T> computeResult() {
-        return computeFutureResult().get();
+        return computeResult(true, true);
+    }
+
+    default Result<T> computeUncachedResult() {
+        return computeResult(false, false);
     }
 
     /**
@@ -104,8 +132,26 @@ public interface IComputation<T> extends Supplier<FutureResult<T>>, IExtension, 
      * The result is returned synchronously; that is, as a {@link Result}.
      * Like {@link #get()}, tries to hit the {@link Cache} before calling {@link #computeFutureResult()}.
      */
-    default Result<T> getResult() {
-        return get().get();
+
+    default Result<T> parallelComputeResult() {
+        return computeFutureResult().get();
+    }
+
+    default Result<T> parallelComputeUncachedResult() {
+        return computeUncachedFutureResult().get();
+    }
+
+    /**
+     * {@return the (possibly cached) asynchronous result of this computation}
+     * Behaves just like {@link #computeFutureResult()}, but tries to hit the {@link Cache} first.
+     */
+    @Override
+    default Result<T> get() {
+        return parallelComputeResult();
+    }
+
+    default Result<DependencyList> mergeResults(List<? extends Result<?>> results) {
+        return Result.mergeAll(results, DependencyList::new);
     }
 
     /**

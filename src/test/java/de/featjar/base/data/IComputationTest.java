@@ -5,8 +5,6 @@ import de.featjar.base.computation.*;
 import de.featjar.base.tree.structure.ITree;
 import org.junit.jupiter.api.Test;
 
-import java.util.List;
-
 import static de.featjar.base.computation.Computations.async;
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -51,8 +49,8 @@ class IComputationTest {
         }
 
         @Override
-        public Result<Boolean> computeResult(List<?> results, Progress progress) {
-            return Result.of(INPUT.get(results) % 2 == 0);
+        public Result<Boolean> compute(DependencyList dependencyList, Progress progress) {
+            return Result.of(dependencyList.get(INPUT) % 2 == 0);
         }
 
         @Override
@@ -92,8 +90,8 @@ class IComputationTest {
         }
 
         @Override
-        public Result<Boolean> computeResult(List<?> results, Progress progress) {
-            return Result.of(PARITY.get(results) == Parity.EVEN ? INPUT.get(results) % 2 == 0 : INPUT.get(results) % 2 == 1);
+        public Result<Boolean> compute(DependencyList dependencyList, Progress progress) {
+            return Result.of(dependencyList.get(PARITY) == Parity.EVEN ? INPUT.get(dependencyList) % 2 == 0 : INPUT.get(dependencyList) % 2 == 1);
         }
     }
 
@@ -125,7 +123,7 @@ class IComputationTest {
     void allOfSleep() {
         IComputation<Integer> c1 = new AComputation<>() {
             @Override
-            public Result<Integer> computeResult(List<?> results, Progress progress) {
+            public Result<Integer> compute(DependencyList dependencyList, Progress progress) {
                 try {
                     Thread.sleep(10);
                 } catch (InterruptedException e) {

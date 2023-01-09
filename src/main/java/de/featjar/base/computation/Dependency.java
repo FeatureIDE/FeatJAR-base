@@ -9,6 +9,7 @@ import static de.featjar.base.computation.Computations.async;
 
 /**
  * A dependency of a computation.
+ * Describes the dependency without storing its actual value, which is only passed in a {@link DependencyList}.
  *
  * @param <U> the type of the dependency's computation result
  * @author Elias Kuiter

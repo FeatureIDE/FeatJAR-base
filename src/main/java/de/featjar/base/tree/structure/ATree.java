@@ -38,7 +38,7 @@ public abstract class ATree<T extends ITree<T>> implements ITree<T> {
      */
     protected final List<T> children = new ArrayList<>();
     protected boolean hashCodeValid;
-    protected int hashCode;
+    protected int hashCode; // todo: cache hash code
 
     @Override
     public List<? extends T> getChildren() {

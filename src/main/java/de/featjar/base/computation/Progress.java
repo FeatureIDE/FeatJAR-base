@@ -1,7 +1,6 @@
 package de.featjar.base.computation;
 
 
-import de.featjar.base.FeatJAR;
 import de.featjar.base.data.Range;
 import de.featjar.base.data.Result;
 
@@ -93,4 +92,25 @@ public class Progress implements Supplier<Double> {
     public String toString() {
         return range.toString();
     }
+
+    public static class Null extends Progress {
+        public static final Null NULL = new Null();
+
+        @Override
+        public void setCurrentStep(int currentStep) {
+        }
+
+        @Override
+        public void incrementCurrentStep() {
+        }
+
+        @Override
+        public void addCurrentSteps(int steps) {
+        }
+
+        @Override
+        public void setTotalSteps(Integer totalSteps) {
+        }
+    }
+
 }

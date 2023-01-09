@@ -184,13 +184,23 @@ public class Computations {
     }
 
     /**
+     * {@return the value of the given future result}
+     *
+     * @param futureResult the future result
+     * @param <T> the type of the future result
+     */
+    public static <T> T await(FutureResult<T> futureResult) {
+        return await(futureResult.get());
+    }
+
+    /**
      * {@return the result of the given computation}
      *
      * @param tComputation the computation
      * @param <T> the type of the computation result
      */
     public static <T> T await(IComputation<T> tComputation) {
-        return await(tComputation.getResult());
+        return await(tComputation.computeResult());
     }
 
     /**

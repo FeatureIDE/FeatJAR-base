@@ -56,10 +56,10 @@ public class Cache implements IInitializer, IBrowsable<GraphVizTreeFormat<ICompu
 
         /**
          * Caches top-level computation results; that is, those not nested in other computations.
-         * Nested computations are detected by checking if {@link IComputation#computeResult()} is already on the stack.
+         * Nested computations are detected by checking if {@link IComputation#compute(DependencyList, Progress)} is already on the stack.
          */
         CachePolicy CACHE_TOP_LEVEL = (computation, stackTrace) ->
-                !stackTrace.containsMethodCall(IComputation.class, "computeResult");
+                !stackTrace.containsMethodCall(IComputation.class, "compute");
 
         /**
          * {@return whether the calling cache should store the given computation}
@@ -160,7 +160,8 @@ public class Cache implements IInitializer, IBrowsable<GraphVizTreeFormat<ICompu
         this.configuration = configuration;
     }
 
-    /**
+    /*
+     * todo: rewrite
      * {@return the result of a given computation}
      * Returns the {@link FutureResult} for the {@link IComputation} from the cache if it has already been stored.
      * Otherwise, computes the {@link FutureResult} and returns it.
@@ -169,20 +170,23 @@ public class Cache implements IInitializer, IBrowsable<GraphVizTreeFormat<ICompu
      * @param computation the computation
      * @param <T>         the type of the computation result
      */
-    public <T> FutureResult<T> computeFutureResult(IComputation<T> computation) {
+
+    public <T> Result<FutureResult<T>> tryHit(IComputation<T> computation) {
         if (has(computation)) {
             FeatJAR.log().debug("cache hit for " + computation);
             hitStatistics.putIfAbsent(computation, 0L);
             hitStatistics.put(computation, hitStatistics.get(computation) + 1);
-            return get(computation).get();
+            return Result.of(get(computation).get());
         }
         FeatJAR.log().debug("cache miss for " + computation);
-        FutureResult<T> futureResult = computation.computeFutureResult();
+        return Result.empty();
+    }
+
+    public <T> void tryWrite(IComputation<T> computation, FutureResult<T> futureResult) {
         if (configuration.cachePolicy.shouldCache(computation, new StackTrace())) {
             FeatJAR.log().debug("cache write for " + computation);
             put(computation, futureResult);
         }
-        return futureResult;
     }
 
     /**

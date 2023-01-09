@@ -4,8 +4,6 @@ import de.featjar.base.data.Pair;
 import de.featjar.base.data.Result;
 import de.featjar.base.tree.structure.ITree;
 
-import java.util.List;
-
 /**
  * A computation that computes two computations.
  * If any dependency fails to compute, the entire computation fails.
@@ -44,8 +42,8 @@ public class ComputePair<T, U> extends AComputation<Pair<T, U>> {
 
     @SuppressWarnings("unchecked")
     @Override
-    public Result<Pair<T, U>> computeResult(List<?> results, Progress progress) {
-        return Result.of(new Pair<>((T) KEY_COMPUTATION.get(results), (U) VALUE_COMPUTATION.get(results)));
+    public Result<Pair<T, U>> compute(DependencyList dependencyList, Progress progress) {
+        return Result.of(new Pair<>((T) dependencyList.get(KEY_COMPUTATION), (U) dependencyList.get(VALUE_COMPUTATION)));
     }
 
     @Override

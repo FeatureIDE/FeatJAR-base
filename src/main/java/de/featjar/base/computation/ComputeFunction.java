@@ -3,7 +3,6 @@ package de.featjar.base.computation;
 import de.featjar.base.data.Result;
 import de.featjar.base.tree.structure.ITree;
 
-import java.util.List;
 import java.util.Objects;
 import java.util.function.Function;
 
@@ -46,8 +45,8 @@ public class ComputeFunction<T, U> extends AComputation<U> implements IAnalysis<
 
     @SuppressWarnings("unchecked")
     @Override
-    public Result<U> computeResult(List<?> results, Progress progress) {
-        T input = (T) INPUT.get(results);
+    public Result<U> compute(DependencyList dependencyList, Progress progress) {
+        T input = (T) dependencyList.get(INPUT);
         return function.apply(input);
     }
 

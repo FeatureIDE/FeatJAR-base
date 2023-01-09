@@ -47,13 +47,13 @@ public class ComputePresence<T> extends AComputation<Boolean> implements IInputD
     }
 
     @Override
-    public Function<List<? extends Result<?>>, Result<List<?>>> getResultMerger() {
-        return Result::mergeAllNullable;
+    public Result<DependencyList> mergeResults(List<? extends Result<?>> results) {
+        return Result.mergeAllNullable(results, DependencyList::new);
     }
 
     @Override
-    public Result<Boolean> computeResult(List<?> results, Progress progress) {
-        return Result.of(INPUT.get(results) != null);
+    public Result<Boolean> compute(DependencyList dependencyList, Progress progress) {
+        return Result.of(dependencyList.get(INPUT) != null);
     }
 
     @Override

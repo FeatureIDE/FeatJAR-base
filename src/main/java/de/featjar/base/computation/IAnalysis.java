@@ -20,6 +20,8 @@
  */
 package de.featjar.base.computation;
 
+import de.featjar.base.data.Result;
+
 import java.util.function.Function;
 
 /**
@@ -30,9 +32,9 @@ import java.util.function.Function;
  * @param <U> the type of the result
  * @author Elias Kuiter
  */
-public interface IAnalysis<T, U> extends IComputation<U>, IInputDependency<T>, Function<IComputation<T>, FutureResult<U>> {
+public interface IAnalysis<T, U> extends IComputation<U>, IInputDependency<T>, Function<IComputation<T>, Result<U>> {
     @Override
-    default FutureResult<U> apply(IComputation<T> tComputation) {
+    default Result<U> apply(IComputation<T> tComputation) {
         setInput(tComputation);
         return get();
     }

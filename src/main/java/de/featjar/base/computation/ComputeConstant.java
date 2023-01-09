@@ -4,7 +4,6 @@ import de.featjar.base.data.Result;
 import de.featjar.base.tree.structure.ALeafNode;
 import de.featjar.base.tree.structure.ITree;
 
-import java.util.List;
 import java.util.Objects;
 
 /**
@@ -28,7 +27,7 @@ public class ComputeConstant<T> extends ALeafNode<IComputation<?>> implements IC
     }
 
     @Override
-    public Result<T> computeResult(List<?> results, Progress progress) {
+    public Result<T> compute(DependencyList dependencyList, Progress progress) {
         return Result.of(value);
     }
 

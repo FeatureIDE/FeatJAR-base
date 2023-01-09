@@ -5,6 +5,7 @@ import de.featjar.base.data.Result;
 import net.tascalate.concurrent.*;
 
 import java.time.Duration;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.*;
 import java.util.function.BiFunction;
@@ -36,8 +37,8 @@ public class FutureResult<T> implements Supplier<Result<T>> {
      *
      * @param result the result
      */
-    public FutureResult(Result<T> result) {
-        this(CompletableTask.completed(result, executor), null);
+    public FutureResult(Result<T> result, Progress progress) {
+        this(CompletableTask.completed(result, executor), progress);
     }
 
     /**
@@ -56,11 +57,11 @@ public class FutureResult<T> implements Supplier<Result<T>> {
      * @param futureResults the future results
      * @param resultMerger the result merger
      */
-    public static FutureResult<List<?>> allOf(List<FutureResult<?>> futureResults, Function<List<? extends Result<?>>, Result<List<?>>> resultMerger) {
+    public static <T extends List<Object>> FutureResult<T> allOf(List<FutureResult<?>> futureResults, Function<List<? extends Result<?>>, Result<T>> resultMerger) {
         List<Promise<? extends Result<?>>> promises = futureResults.stream().map(FutureResult::getPromise).collect(Collectors.toList());
-        Promise<Result<List<?>>> promise = Promises.all(promises).thenApplyAsync(list ->
+        Promise<Result<T>> promise = Promises.all(promises).thenApplyAsync(list ->
                 resultMerger.apply(futureResults.stream().map(FutureResult::get).collect(Collectors.toList())), executor);
-        return new FutureResult<>(promise, null);
+        return new FutureResult<>(promise, Progress.Null.NULL);
     }
 
     /**
@@ -69,7 +70,7 @@ public class FutureResult<T> implements Supplier<Result<T>> {
      *
      * @param futureResults the future results
      */
-    public static FutureResult<List<?>> allOf(List<FutureResult<?>> futureResults) {
+    public static FutureResult<ArrayList<Object>> allOf(List<FutureResult<?>> futureResults) {
         return allOf(futureResults, Result::mergeAll);
     }
 
@@ -84,10 +85,9 @@ public class FutureResult<T> implements Supplier<Result<T>> {
      * {@return this future result's progress}
      */
     public Progress getProgress() {
-        Result<Progress> progressResult = Result.ofNullable(progress);
         if (getPromise().isDone())
-            progressResult = progressResult.map(p -> Progress.completed(p.getCurrentStep()));
-        return progressResult.orElse(new Progress());
+            return Progress.completed(progress.getCurrentStep());
+        return progress;
     }
 
     /**
