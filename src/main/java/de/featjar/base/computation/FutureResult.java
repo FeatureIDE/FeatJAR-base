@@ -26,7 +26,7 @@ import java.util.stream.Collectors;
  * @author Elias Kuiter
  */
 public class FutureResult<T> implements Supplier<Result<T>> {
-    protected final static ExecutorService executor = ForkJoinPool.commonPool();
+    protected final static Executor executor = ForkJoinPool.commonPool(); // todo: allow overriding
 
     protected final Promise<Result<T>> promise;
 

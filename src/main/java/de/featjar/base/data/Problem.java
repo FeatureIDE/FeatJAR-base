@@ -33,7 +33,7 @@ import java.util.Optional;
  *
  * @author Sebastian Krieter
  */
-public class Problem extends ATree<Problem> {
+public class Problem extends ATree<Problem> { // todo: remove tree again, doesn't work well
     /**
      * Severity of a problem.
      */

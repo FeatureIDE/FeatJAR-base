@@ -22,22 +22,22 @@ public class ComputePair<T, U> extends AComputation<Pair<T, U>> {
 
     @SuppressWarnings("unchecked")
     public IComputation<T> getKeyComputation() {
-        return ((Dependency<T>) KEY_COMPUTATION).get(this);
+        return getDependency((Dependency<T>) KEY_COMPUTATION);
     }
 
     @SuppressWarnings("unchecked")
     public void setKeyComputation(IComputation<T> key) {
-        ((Dependency<T>) KEY_COMPUTATION).set(this, key);
+        setDependency((Dependency<T>) KEY_COMPUTATION, key);
     }
 
     @SuppressWarnings("unchecked")
     public IComputation<U> getValueComputation() {
-        return ((Dependency<U>) VALUE_COMPUTATION).get(this);
+        return getDependency((Dependency<U>) VALUE_COMPUTATION);
     }
 
     @SuppressWarnings("unchecked")
     public void setValueComputation(IComputation<U> value) {
-        ((Dependency<U>) VALUE_COMPUTATION).set(this, value);
+        setDependency((Dependency<U>) VALUE_COMPUTATION, value);
     }
 
     @SuppressWarnings("unchecked")

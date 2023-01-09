@@ -2,6 +2,8 @@ package de.featjar.base.computation;
 
 import de.featjar.base.data.Result;
 
+import java.time.Duration;
+
 /**
  * A potentially long-running computation that can be canceled if a given time has passed.
  * This computation terminates with an empty {@link Result} when it has
@@ -15,6 +17,7 @@ public interface ITimeoutDependency { // todo: how to handle partial results (i.
      * The default timeout returned by {@link #getTimeout()}, if not specified otherwise.
      * Specifies that no timeout should be set; that is, the analysis runs until it completes.
      */
+    // todo: refactor to Duration (where Duration.ZERO is no timeout)
     long DEFAULT_TIMEOUT = -1;
 
     /**

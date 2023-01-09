@@ -21,48 +21,79 @@
 package de.featjar.base.computation;
 
 import de.featjar.base.FeatJAR;
+import de.featjar.base.data.Problem;
 import de.featjar.base.data.Result;
-import de.featjar.base.extension.IExtension;
 import de.featjar.base.tree.structure.ITree;
 
-import java.util.*;
-import java.util.function.BiFunction;
+import java.time.Duration;
+import java.util.List;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 /**
  * Describes a deterministic (potentially complex or long-running) computation.
- * An {@link IComputation} does not contain the computation result itself, it only computes it on demand.
- * Thus, it can be considered an asynchronous {@link Supplier}.
- * If computed with {@link #get()} or {@link #computeFutureResult()}, the result is returned as an
- * asynchronous {@link FutureResult}, which can be shared, cached, and waited for.
- * When computed with {@link #get()}, results are possibly cached in a {@link Cache}; {@link #computeFutureResult()} does not cache.
- * Computations can depend on other computations by declaring a {@link Dependency} on such a computation
- * and calling {@link Computations#allOf(IComputation[])} or {@link FutureResult#thenFromResult(BiFunction)} in {@link #computeFutureResult()}.
- * To ensure the determinism required by caching, all parameters of a computation must be depended on.
+ * An {@link IComputation} does not contain the computation result itself, it only computes it on demand as a {@link Supplier}.
+ * There are several modes for computing the result of an {@link IComputation}:
+ * The computation mode can be either synchronous (e.g., {@link #computeResult()}) or asynchronous,
+ * returning a {@link Result} or {@link FutureResult}, respectively.
+ * An asynchronous {@link FutureResult} can be shared between different threads.
+ * It can be waited for, it can be cancelled, and its progress can be tracked, so it is well-suited for a graphical user interface.
+ * A synchronous {@link Result} is computed on the current thread in a blocking fashion.
+ * Synchronous computation modes are well-suited for a command-line interface.
+ * In addition, the computation mode can either leverage results stored in a {@link Cache} (e.g., the global cache in {@link FeatJAR#cache()}).
+ * Caching computation modes are well-suited for implementing knowledge compilation, incremental analyses, and evolution operators.
+ * Computations can depend on other computations by declaring a {@link Dependency} of type {@code T}
+ * with {@link AComputation#dependOn(Dependency[])}, which is stored as an {@link IComputation} child of type {@code T}.
+ * Thus, every computation is a tree of computations, where the dependencies of the computation are its children.
+ * When a child is {@link Result#empty(Problem...)}, this signals an unrecoverable error by default, this behavior can be overridden with {@link #mergeResults(List)}.
+ * Thus, every required dependency must be set to a non-null value in the constructor, and every optional dependency must have a non-null default value.
+ * To ensure the determinism required by caching, all parameters of a computation must be depended on (including sources of randomness).
+ * Also, all used data structures must be deterministic (e.g., by using {@link de.featjar.base.data.Maps} and {@link de.featjar.base.data.Sets}).
  * Implementors should pass mandatory parameters in the constructor and optional parameters using dedicated setters.
  * This can be facilitated by using specializations of {@link IComputation} (e.g., {@link IInputDependency}).
- * Every computation is a tree of computations, where the dependencies of the computation are its children.
+ * Though not necessary, it is recommended to implement this interface by subclassing {@link AComputation}, which provides a mechanism for declaring dependencies.
  * TODO: A validation scheme (e.g., against a simple feature model) and serialization scheme
  *  (e.g., to sensibly compare and cache computations based on their parameters and hash code) are missing for now.
- * an empty child result signals an unrecoverable error
- * for recoverable errors, return a non-empty child result with warnings/errors
  *
  * @param <T> the type of the computation result
- * @author Sebastian Krieter
  * @author Elias Kuiter
+ * @author Sebastian Krieter
  */
-public interface IComputation<T> extends Supplier<Result<T>>, IExtension, ITree<IComputation<?>> {
-    //must be deterministic and only depend on results
-    // Do not rename this method, as the {@link Cache.CachePolicy} performs
-    // reflection that depends on its name to detect nested computations.
-    Result<T> compute(DependencyList dependencyList, Progress progress); // todo: only allow indexing into results via Dependency (e.g., create a DependencyList/InputList)
+public interface IComputation<T> extends Supplier<Result<T>>, ITree<IComputation<?>> {
+    /**
+     * {@return the result of this computation for the given list of dependencies}
+     * Implementations must be deterministic to guarantee proper caching:
+     * That is, they may only depend on the given {@link DependencyList} and must not use data structures with
+     * nondeterministic access (e.g., prefer {@link java.util.LinkedHashMap} over {@link java.util.HashMap}).
+     * The {@link DependencyList} is guaranteed to contain a non-null object for each declared {@link Dependency},
+     * provided that {@link #mergeResults(List)} is not overridden.
+     * Consequently, when {@link Result#empty(Problem...)} is returned, any dependent computations return {@link Result#empty(Problem...)} as well.
+     * The given {@link Progress} can be used to report progress tracking information to the backing {@link FutureResult}.
+     * This progress can be inspected using {@link FutureResult#peekEvery(Duration, Runnable)} and {@link Cache#getProgress(IComputation)}.
+     * This method must not be renamed, as {@link de.featjar.base.computation.Cache.CachePolicy#CACHE_TOP_LEVEL}
+     * uses reflection based on its name to detect nested computations.
+     *
+     * @param dependencyList the dependency list
+     * @param progress the progress
+     */
+    Result<T> compute(DependencyList dependencyList, Progress progress);
 
+    /**
+     * {@return the (asynchronous) future result of this computation}
+     * Implements an asynchronous mode of computation that does or does not use the {@link Cache}.
+     * Leverages parallelism as permitted by the {@link java.util.concurrent.Executor} of {@link FutureResult}.
+     * Allows for cancellation and {@link Progress} tracking.
+     * Generally recommended over {@link #computeResult(boolean, boolean)} for complex computations.
+     *
+     * @param tryHitCache whether the cache should be queried for the result
+     * @param tryWriteCache whether the result should be stored in the cache
+     */
     default FutureResult<T> computeFutureResult(boolean tryHitCache, boolean tryWriteCache) {
         if (tryHitCache) {
-            Result<FutureResult<T>> cacheHit = FeatJAR.cache().tryHit(this);
+            Result<FutureResult<T>> cacheHit = getCache().tryHit(this);
             if (cacheHit.isPresent())
                 return cacheHit.get();
         }
@@ -72,28 +103,43 @@ public interface IComputation<T> extends Supplier<Result<T>>, IExtension, ITree<
         FutureResult<T> futureResult = FutureResult.allOf(futureResults, this::mergeResults)
                 .thenResult(this::compute);
         if (tryWriteCache)
-            FeatJAR.cache().tryWrite(this, futureResult);
+            getCache().tryWrite(this, futureResult);
         return futureResult;
     }
 
-
     /**
-     * {@return the (newly computed) asynchronous result of this computation}
-     * The result is returned asynchronously; that is, as a {@link FutureResult}.
-     * Calling this function directly is discouraged, as the result is forced to be re-computed.
-     * Usually, you should call {@link #get()} instead to leverage cached results.
+     * {@return the (asynchronous and cached) future result of this computation}
+     *
+     * @see #computeFutureResult(boolean, boolean)
      */
     default FutureResult<T> computeFutureResult() {
         return computeFutureResult(true, true);
     }
 
+    /**
+     * {@return the (asynchronous and uncached) future result of this computation}
+     *
+     * @see #computeFutureResult(boolean, boolean)
+     */
     default FutureResult<T> computeUncachedFutureResult() {
         return computeFutureResult(false, false);
     }
 
+    /**
+     * {@return the (synchronous) result of this computation}
+     * Implements a synchronous mode of computation that does or does not use the {@link Cache}.
+     * Does not leverage parallelism and does not allow for cancellation.
+     * Allows for {@link Progress} tracking when a suitable progress supplier is passed.
+     * Recommended for debugging and when no parallelism overhead is desired (e.g., for simpler computations).
+     *
+     * @param tryHitCache whether the cache should be queried for the result
+     * @param tryWriteCache whether the result should be stored in the cache
+     * @param progressSupplier the progress supplier
+     */
+    // used for performance (low overhead), debugging, nested computations, rename to computeSync?Async?, no progress tracking
     default Result<T> computeResult(boolean tryHitCache, boolean tryWriteCache, Supplier<Progress> progressSupplier) {
         if (tryHitCache) {
-            Result<FutureResult<T>> cacheHit = FeatJAR.cache().tryHit(this);
+            Result<FutureResult<T>> cacheHit = getCache().tryHit(this);
             if (cacheHit.isPresent())
                 return cacheHit.get().get();
         }
@@ -104,54 +150,119 @@ public interface IComputation<T> extends Supplier<Result<T>>, IExtension, ITree<
         Result<T> result = mergeResults(results)
                 .flatMap(r -> compute(r, progress));
         if (tryWriteCache)
-            FeatJAR.cache().tryWrite(this, new FutureResult<>(result, progress));
+            getCache().tryWrite(this, new FutureResult<>(result, progress));
         return result;
     }
 
+    /**
+     * {@return the (synchronous) result of this computation}
+     * Progress tracking is enabled only when the cache is written to, which is the only way to access the progress.
+     *
+     * @param tryHitCache whether the cache should be queried for the result
+     * @param tryWriteCache whether the result should be stored in the cache
+     * @see #computeResult(boolean, boolean, Supplier)
+     */
     default Result<T> computeResult(boolean tryHitCache, boolean tryWriteCache) {
         return computeResult(tryHitCache, tryWriteCache, tryWriteCache ? Progress::new : () -> Progress.Null.NULL);
     }
 
     /**
-     * {@return the (newly computed) synchronous result of this computation}
-     * The result is returned synchronously; that is, as a {@link Result}.
-     * todo Calling this function directly is discouraged, as the result is forced to be re-computed.
-     * Usually, you should call {@link #computeResult()} instead to leverage cached results.
+     * {@return the (synchronous and cached) result of this computation}
+     *
+     * @see #computeResult(boolean, boolean, Supplier)
      */
-    // used for performance (low overhead), no caching, debugging, nested computations, rename to computeSync?Async?, no progress tracking
     default Result<T> computeResult() {
         return computeResult(true, true);
     }
 
+    /**
+     * {@return the (synchronous and uncached) result of this computation}
+     *
+     * @see #computeResult(boolean, boolean, Supplier)
+     */
     default Result<T> computeUncachedResult() {
         return computeResult(false, false);
     }
 
     /**
-     * {@return the (possibly cached) synchronous result of this computation}
-     * The result is returned synchronously; that is, as a {@link Result}.
-     * Like {@link #get()}, tries to hit the {@link Cache} before calling {@link #computeFutureResult()}.
+     * {@return the (synchronous and cached) result of this computation}
+     * Emulates a synchronous mode of computation by internally awaiting the {@link FutureResult} of this computation.
+     * In contrast to {@link #computeResult()}, this method leverages parallelism where possible (possibly with overhead).
+     *
+     * @see #computeFutureResult(boolean, boolean)
      */
-
     default Result<T> parallelComputeResult() {
         return computeFutureResult().get();
     }
 
+    /**
+     * {@return the (synchronous and uncached) result of this computation}
+     * Emulates a synchronous mode of computation by internally awaiting the {@link FutureResult} of this computation.
+     * In contrast to {@link #computeUncachedResult()}, this method leverages parallelism where possible (possibly with overhead).
+     *
+     * @see #computeFutureResult(boolean, boolean)
+     */
     default Result<T> parallelComputeUncachedResult() {
         return computeUncachedFutureResult().get();
     }
 
     /**
-     * {@return the (possibly cached) asynchronous result of this computation}
-     * Behaves just like {@link #computeFutureResult()}, but tries to hit the {@link Cache} first.
+     * {@return the cache this computation should be stored and looked up in}
+     */
+    default Cache getCache() {
+        return FeatJAR.cache();
+    }
+
+    /**
+     * {@return for a given list of results, a result of a dependency list}
+     * If not overridden, merges a list of n non-empty results into a non-empty result of a dependency list of length n.
+     * If any result in the given list is empty, returns an empty result.
+     * To allow for (and detect) empty results, this can be overridden (e.g., in {@link ComputePresence}).
+     *
+     * @param results the results
+     */
+    default Result<DependencyList> mergeResults(List<? extends Result<?>> results) {
+        return Result.mergeAll(results, DependencyList::new);
+    }
+
+    /**
+     * {@return the computation for a given dependency of this computation}
+     *
+     * @param dependency the dependency
+     * @param <U>        the type of the computation result
+     */
+    default <U> IComputation<U> getDependency(Dependency<U> dependency) {
+        return dependency.get(this);
+    }
+
+    /**
+     * Sets the computation for a given dependency of this computation.
+     *
+     * @param dependency  the dependency
+     * @param computation the computation
+     * @param <U>         the type of the computation result
+     */
+    default <U> void setDependency(Dependency<U> dependency, IComputation<U> computation) {
+        dependency.set(this, computation);
+    }
+
+    /**
+     * {@return the (synchronous and cached) result of this computation}
      */
     @Override
     default Result<T> get() {
         return parallelComputeResult();
     }
 
-    default Result<DependencyList> mergeResults(List<? extends Result<?>> results) {
-        return Result.mergeAll(results, DependencyList::new);
+    /**
+     * {@return a stream containing the (synchronous and cached) result of this computation}
+     * If the result is empty, the stream is empty as well.
+     */
+    default Stream<T> stream() {
+        return Stream.generate(this)
+                .limit(1)
+                .filter(Result::isPresent)
+                .map(Result::get);
     }
 
     /**
@@ -215,8 +326,6 @@ public interface IComputation<T> extends Supplier<Result<T>>, IExtension, ITree<
         });
     }
 
-    // future ideas
-
     // TODO: the hashcode should depend on all inputs. can we create a default hashcode implementation?
     //  serialize should be used in equals + hashcode.
     //  requires that c1.serialize() == c2.serialize yield the same computation result.
@@ -232,25 +341,4 @@ public interface IComputation<T> extends Supplier<Result<T>>, IExtension, ITree<
     //  maybe this can also be done with alternative constructors or something?
     //  maybe this is also something to be implemented in its own module?
 //    <S> Optional<Computation<S, T>> getPreferredInputComputation();
-
-    /**
-     * {@return the computation for a given dependency of this computation}
-     *
-     * @param dependency the dependency
-     * @param <U>        the type of the computation result
-     */
-    default <U> IComputation<U> getDependency(Dependency<U> dependency) {
-        return dependency.get(this);
-    }
-
-    /**
-     * Sets the computation for a given dependency of this computation.
-     *
-     * @param dependency  the dependency
-     * @param computation the computation
-     * @param <U>         the type of the computation result
-     */
-    default <U> void setDependency(Dependency<U> dependency, IComputation<U> computation) {
-        dependency.set(this, computation);
-    }
 }

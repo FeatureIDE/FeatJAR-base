@@ -26,7 +26,7 @@ import java.util.function.Function;
 
 /**
  * A computation that analyzes its input.
- * Can be considered an asynchronous {@link java.util.function.Function}.
+ * Can be used to compute a long-running {@link java.util.function.Function}.
  *
  * @param <T> the type of the input
  * @param <U> the type of the result

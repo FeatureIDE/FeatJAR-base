@@ -1,5 +1,6 @@
 package de.featjar.base.computation;
 
+import de.featjar.base.FeatJAR;
 import de.featjar.base.tree.structure.ATree;
 
 import java.util.Arrays;
@@ -14,6 +15,8 @@ import java.util.Objects;
  * @author Elias Kuiter
  */
 public abstract class AComputation<T> extends ATree<IComputation<?>> implements IComputation<T> {
+    protected Cache cache = FeatJAR.cache();
+
     protected AComputation(IComputation<?>... computations) {
         if (computations.length > 0)
             super.setChildren(Arrays.asList(computations));
@@ -33,9 +36,19 @@ public abstract class AComputation<T> extends ATree<IComputation<?>> implements 
         return Objects.hash(getClass());
     }
 
+    @Override
+    public Cache getCache() {
+        return cache;
+    }
+
+    public void setCache(Cache cache) {
+        this.cache = Objects.requireNonNull(cache);
+    }
+
     /**
      * Declares all dependencies of this computation class.
      * This method must be called once per computation class at the top of its constructor.
+     * Each passed dependency must be a static member of this computation class.
      * Each dependency is then assigned an ascending index into the children of this computation, viewed as a tree.
      *
      * @param dependencies the dependencies
@@ -47,6 +60,7 @@ public abstract class AComputation<T> extends ATree<IComputation<?>> implements 
     /**
      * Declares all dependencies of this computation class.
      * This method must be called once per computation class at the top of its constructor.
+     * Each passed dependency must be a static member of this computation class.
      * Each dependency is then assigned an ascending index into the children of this computation, viewed as a tree.
      *
      * @param dependencies the dependencies
