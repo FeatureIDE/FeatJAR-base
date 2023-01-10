@@ -23,12 +23,11 @@ package de.featjar.base.io.xml;
 import de.featjar.base.FeatJAR;
 import de.featjar.base.data.Problem;
 import de.featjar.base.data.Result;
-import de.featjar.base.io.input.InputHeader;
-import de.featjar.base.io.input.AInputMapper;
 import de.featjar.base.io.format.IFormat;
 import de.featjar.base.io.format.ParseException;
 import de.featjar.base.io.format.ParseProblem;
-
+import de.featjar.base.io.input.AInputMapper;
+import de.featjar.base.io.input.InputHeader;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.StringReader;
@@ -78,7 +77,8 @@ public abstract class AXMLFormat<T> implements IFormat<T> {
 
     @Override
     public boolean supportsContent(InputHeader inputHeader) {
-        return supportsParse() && getInputHeaderPattern().matcher(inputHeader.get()).find();
+        return supportsParse()
+                && getInputHeaderPattern().matcher(inputHeader.get()).find();
     }
 
     protected List<Element> getElements(NodeList nodeList) {

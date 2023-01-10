@@ -42,6 +42,5 @@ public interface IExtension {
      * De-initializes this extension, called by {@link ExtensionManager}.
      * Similar to {@link AutoCloseable#close()}, but called explicitly instead of implicitly in a try...with block.
      */
-    default void close() {
-    }
+    default void close() {}
 }

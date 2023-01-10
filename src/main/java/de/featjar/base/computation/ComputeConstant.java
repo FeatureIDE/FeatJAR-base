@@ -3,7 +3,6 @@ package de.featjar.base.computation;
 import de.featjar.base.data.Result;
 import de.featjar.base.tree.structure.ALeafNode;
 import de.featjar.base.tree.structure.ITree;
-
 import java.util.Objects;
 
 /**
@@ -33,12 +32,13 @@ public class ComputeConstant<T> extends ALeafNode<IComputation<?>> implements IC
 
     @Override
     public boolean equalsNode(IComputation<?> other) {
-        return getClass() == other.getClass() && Objects.equals(value, ((ComputeConstant<?>) other).value); //todo:monitor?
+        return getClass() == other.getClass()
+                && Objects.equals(value, ((ComputeConstant<?>) other).value); // todo:monitor?
     }
 
     @Override
     public int hashCodeNode() {
-        return Objects.hash(getClass(), value); //todo: monitor?
+        return Objects.hash(getClass(), value); // todo: monitor?
     }
 
     @Override
@@ -48,6 +48,7 @@ public class ComputeConstant<T> extends ALeafNode<IComputation<?>> implements IC
 
     @Override
     public String toString() {
-        return String.format("%s(%s, %s)", getClass().getSimpleName(), value.getClass().getSimpleName(), value);
+        return String.format(
+                "%s(%s, %s)", getClass().getSimpleName(), value.getClass().getSimpleName(), value);
     }
 }

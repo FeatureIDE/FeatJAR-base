@@ -20,8 +20,7 @@ public class Flag extends Option<Boolean> {
     @Override
     public Result<Boolean> parseFrom(AArgumentParser argumentParser) throws AArgumentParser.ArgumentParseException {
         boolean value = argumentParser.parseFlag(name);
-        if (defaultValue != null || isRequired)
-            throw new IllegalArgumentException();
+        if (defaultValue != null || isRequired) throw new IllegalArgumentException();
         return Result.of(value);
     }
 

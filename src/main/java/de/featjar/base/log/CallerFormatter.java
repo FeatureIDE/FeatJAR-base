@@ -33,13 +33,15 @@ import de.featjar.base.env.StackTrace;
 public class CallerFormatter implements IFormatter {
     @Override
     public String getPrefix() {
-        return String.format("[%s] ", new StackTrace()
-                .removeTop()
-                .removeClassNamePrefix(getClass().getPackageName()).getTop()
-                .map(stackTraceElement -> shorten(String.format("%s.%s",
-                        stackTraceElement.getClassName(),
-                        stackTraceElement.getMethodName())))
-                .orElse(""));
+        return String.format(
+                "[%s] ",
+                new StackTrace()
+                        .removeTop()
+                        .removeClassNamePrefix(getClass().getPackageName())
+                        .getTop()
+                        .map(stackTraceElement -> shorten(String.format(
+                                "%s.%s", stackTraceElement.getClassName(), stackTraceElement.getMethodName())))
+                        .orElse(""));
     }
 
     private static String shorten(String s) {

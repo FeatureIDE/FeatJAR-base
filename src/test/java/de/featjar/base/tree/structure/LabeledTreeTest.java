@@ -20,17 +20,16 @@
  */
 package de.featjar.base.tree.structure;
 
+import static org.junit.jupiter.api.Assertions.*;
+
 import de.featjar.base.tree.Trees;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.ConcurrentModificationException;
 import java.util.Iterator;
 import java.util.List;
-
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-
-import static org.junit.jupiter.api.Assertions.*;
 
 public class LabeledTreeTest {
 
@@ -297,9 +296,7 @@ public class LabeledTreeTest {
 
         assertThrows(ConcurrentModificationException.class, failFastIterator::next);
         final Iterator<?> iterator = root.getChildren().iterator();
-        assertEquals(
-                (2 * fourthChildren.size()) + fifthChildren.size(),
-                root.getChildrenCount());
+        assertEquals((2 * fourthChildren.size()) + fifthChildren.size(), root.getChildrenCount());
         assertEquals(childD, iterator.next());
         assertEquals(childE, iterator.next());
         assertEquals(childF, iterator.next());

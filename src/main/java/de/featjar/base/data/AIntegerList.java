@@ -44,7 +44,6 @@ public abstract class AIntegerList<T extends AIntegerList<?>> implements Compara
         hashCode = Arrays.hashCode(this.integers);
     }
 
-
     public AIntegerList(Collection<Integer> integers) {
         this(integers.stream().mapToInt(Integer::intValue).toArray());
     }
@@ -61,9 +60,7 @@ public abstract class AIntegerList<T extends AIntegerList<?>> implements Compara
     }
 
     public int[] getAbsoluteValuesOfIntegers() {
-        return Arrays.stream(integers)
-                .map(Math::abs)
-                .toArray();
+        return Arrays.stream(integers).map(Math::abs).toArray();
     }
 
     public int get(int index) {
@@ -99,23 +96,19 @@ public abstract class AIntegerList<T extends AIntegerList<?>> implements Compara
     }
 
     public boolean containsAny(int... integers) {
-        return Arrays.stream(integers)
-                .anyMatch(integer -> indexOf(integer) >= 0);
+        return Arrays.stream(integers).anyMatch(integer -> indexOf(integer) >= 0);
     }
 
     public boolean containsAll(int... integers) {
-        return Arrays.stream(integers)
-                .noneMatch(integer -> indexOf(integer) < 0);
+        return Arrays.stream(integers).noneMatch(integer -> indexOf(integer) < 0);
     }
 
     public boolean containsAny(T sortedIntegerList) {
-        return Arrays.stream(sortedIntegerList.getIntegers())
-                .anyMatch(integer -> indexOf(integer) >= 0);
+        return Arrays.stream(sortedIntegerList.getIntegers()).anyMatch(integer -> indexOf(integer) >= 0);
     }
 
     public boolean containsAll(T sortedIntegerList) {
-        return Arrays.stream(sortedIntegerList.getIntegers())
-                .noneMatch(integer -> indexOf(integer) < 0);
+        return Arrays.stream(sortedIntegerList.getIntegers()).noneMatch(integer -> indexOf(integer) < 0);
     }
 
     public int indexOf(int integer) {
@@ -126,15 +119,11 @@ public abstract class AIntegerList<T extends AIntegerList<?>> implements Compara
     }
 
     public int countNegatives() {
-        return (int) Arrays.stream(integers)
-                .filter(integer -> integer < 0)
-                .count();
+        return (int) Arrays.stream(integers).filter(integer -> integer < 0).count();
     }
 
     public int countPositives() {
-        return (int) Arrays.stream(integers)
-                .filter(integer -> integer > 0)
-                .count();
+        return (int) Arrays.stream(integers).filter(integer -> integer > 0).count();
     }
 
     public int size() {

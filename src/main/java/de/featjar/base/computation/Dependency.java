@@ -1,11 +1,10 @@
 package de.featjar.base.computation;
 
-import de.featjar.base.tree.structure.ATree;
+import static de.featjar.base.computation.Computations.async;
 
+import de.featjar.base.tree.structure.ATree;
 import java.util.List;
 import java.util.Objects;
-
-import static de.featjar.base.computation.Computations.async;
 
 /**
  * A dependency of a computation.
@@ -18,8 +17,7 @@ public class Dependency<U> extends ATree.Entry<IComputation<?>, IComputation<U>>
     /**
      * Creates a new required dependency.
      */
-    public Dependency() {
-    }
+    public Dependency() {}
 
     /**
      * Creates a new optional dependency with a given default value.
@@ -32,8 +30,7 @@ public class Dependency<U> extends ATree.Entry<IComputation<?>, IComputation<U>>
 
     @SuppressWarnings("unchecked")
     public U get(List<?> list) {
-        if (index < 0 || index >= list.size())
-            throw new IllegalArgumentException();
+        if (index < 0 || index >= list.size()) throw new IllegalArgumentException();
         return (U) list.get(index);
     }
 }

@@ -43,7 +43,8 @@ public class ComputePair<T, U> extends AComputation<Pair<T, U>> {
     @SuppressWarnings("unchecked")
     @Override
     public Result<Pair<T, U>> compute(DependencyList dependencyList, Progress progress) {
-        return Result.of(new Pair<>((T) dependencyList.get(KEY_COMPUTATION), (U) dependencyList.get(VALUE_COMPUTATION)));
+        return Result.of(
+                new Pair<>((T) dependencyList.get(KEY_COMPUTATION), (U) dependencyList.get(VALUE_COMPUTATION)));
     }
 
     @Override

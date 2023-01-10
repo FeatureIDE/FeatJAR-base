@@ -27,5 +27,4 @@ import de.featjar.base.extension.AExtensionPoint;
  *
  * @author Elias Kuiter
  */
-public class Binaries extends AExtensionPoint<ABinary> {
-}
+public class Binaries extends AExtensionPoint<ABinary> {}

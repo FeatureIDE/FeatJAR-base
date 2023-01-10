@@ -25,7 +25,6 @@ import de.featjar.base.data.Result;
 import de.featjar.base.io.IIOObject;
 import de.featjar.base.io.NonEmptyLineIterator;
 import de.featjar.base.io.format.IFormat;
-
 import java.io.BufferedInputStream;
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -120,8 +119,7 @@ public abstract class AInput implements IIOObject {
             try {
                 inputStream.mark(InputHeader.MAX_HEADER_SIZE);
                 final int byteCount = inputStream.read(bytes, 0, InputHeader.MAX_HEADER_SIZE);
-                if (byteCount == -1)
-                    return Result.empty();
+                if (byteCount == -1) return Result.empty();
                 return Result.of(new InputHeader(
                         fileExtension, //
                         byteCount == InputHeader.MAX_HEADER_SIZE ? bytes : Arrays.copyOf(bytes, byteCount), //

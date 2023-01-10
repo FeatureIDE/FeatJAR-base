@@ -2,7 +2,6 @@ package de.featjar.base.env;
 
 import de.featjar.base.FeatJAR;
 import de.featjar.base.data.Result;
-
 import java.awt.*;
 import java.io.IOException;
 import java.net.URI;

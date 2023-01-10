@@ -22,18 +22,10 @@ package de.featjar.base.io.output;
 
 import de.featjar.base.io.IIOObject;
 import de.featjar.base.io.format.IFormat;
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.nio.charset.Charset;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.StandardOpenOption;
 import java.util.Objects;
-import java.util.jar.JarEntry;
-import java.util.jar.JarOutputStream;
-import java.util.zip.ZipEntry;
-import java.util.zip.ZipOutputStream;
 
 /**
  * Writable output target of a {@link IFormat}.

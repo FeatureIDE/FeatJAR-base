@@ -2,7 +2,6 @@ package de.featjar.base.computation;
 
 import de.featjar.base.data.Pair;
 import de.featjar.base.data.Result;
-
 import java.util.Arrays;
 import java.util.List;
 import java.util.function.BiFunction;
@@ -145,7 +144,8 @@ public class Computations {
      * @param <T> the type of the mapped value
      * @param <U> the type of the mapped result
      */
-    public static <T, U> Function<IComputation<T>, IComputation<U>> asyncMap(Class<?> klass, String scope, Function<T, U> fn) {
+    public static <T, U> Function<IComputation<T>, IComputation<U>> asyncMap(
+            Class<?> klass, String scope, Function<T, U> fn) {
         return tComputation -> tComputation.mapResult(klass, scope, fn);
     }
 
@@ -158,7 +158,8 @@ public class Computations {
      * @param <T> the type of the mapped value
      * @param <U> the type of the mapped result
      */
-    public static <T, U> Function<IComputation<T>, IComputation<U>> asyncFlatMap(Class<?> klass, String scope, Function<T, Result<U>> fn) {
+    public static <T, U> Function<IComputation<T>, IComputation<U>> asyncFlatMap(
+            Class<?> klass, String scope, Function<T, Result<U>> fn) {
         return tComputation -> tComputation.flatMapResult(klass, scope, fn);
     }
 
@@ -266,7 +267,8 @@ public class Computations {
      *
      * @param fn the function
      */
-    public static <T, U, V> V mapPair(IComputation<Pair<T, U>> computation, BiFunction<IComputation<T>, IComputation<U>, V> fn) {
+    public static <T, U, V> V mapPair(
+            IComputation<Pair<T, U>> computation, BiFunction<IComputation<T>, IComputation<U>, V> fn) {
         return fn.apply(getKey(computation), getValue(computation));
     }
 }

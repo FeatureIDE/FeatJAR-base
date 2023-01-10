@@ -23,11 +23,10 @@ package de.featjar.base.computation;
 import de.featjar.base.FeatJAR;
 import de.featjar.base.data.Result;
 import de.featjar.base.env.IBrowsable;
-import de.featjar.base.extension.IInitializer;
 import de.featjar.base.env.StackTrace;
+import de.featjar.base.extension.IInitializer;
 import de.featjar.base.io.graphviz.GraphVizTreeFormat;
 import de.featjar.base.tree.structure.ITree;
-
 import java.net.URI;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
@@ -58,8 +57,8 @@ public class Cache implements IInitializer, IBrowsable<GraphVizTreeFormat<ICompu
          * Caches top-level computation results; that is, those not nested in other computations.
          * Nested computations are detected by checking if {@link IComputation#compute(DependencyList, Progress)} is already on the stack.
          */
-        CachePolicy CACHE_TOP_LEVEL = (computation, stackTrace) ->
-                !stackTrace.containsMethodCall(IComputation.class, "compute");
+        CachePolicy CACHE_TOP_LEVEL =
+                (computation, stackTrace) -> !stackTrace.containsMethodCall(IComputation.class, "compute");
 
         /**
          * {@return whether the calling cache should store the given computation}
@@ -207,9 +206,7 @@ public class Cache implements IInitializer, IBrowsable<GraphVizTreeFormat<ICompu
      */
     @SuppressWarnings("unchecked")
     public <T> Result<FutureResult<T>> get(IComputation<T> computation) {
-        return has(computation)
-                ? Result.of((FutureResult<T>) computationMap.get(computation))
-                : Result.empty();
+        return has(computation) ? Result.of((FutureResult<T>) computationMap.get(computation)) : Result.empty();
     }
 
     /**
@@ -223,7 +220,7 @@ public class Cache implements IInitializer, IBrowsable<GraphVizTreeFormat<ICompu
      */
     public <T> boolean put(IComputation<T> computation, FutureResult<T> futureResult) {
         if (has(computation)) // once set, immutable
-            return false;
+        return false;
         computationMap.put(computation, futureResult);
         return true;
     }
@@ -237,8 +234,7 @@ public class Cache implements IInitializer, IBrowsable<GraphVizTreeFormat<ICompu
      * @return whether the operation affected this cache
      */
     public <T> boolean remove(IComputation<T> computation) {
-        if (!has(computation))
-            return false;
+        if (!has(computation)) return false;
         FeatJAR.log().debug("cache remove for " + computation);
         computationMap.remove(computation);
         return true;
@@ -258,17 +254,13 @@ public class Cache implements IInitializer, IBrowsable<GraphVizTreeFormat<ICompu
 
     public Result<Double> getProgress(IComputation<?> computation) {
         List<Double> progresses = new ArrayList<>();
-        get(computation)
-                .map(FutureResult::getProgress)
-                .map(Progress::get)
-                .ifPresent(progresses::add);
+        get(computation).map(FutureResult::getProgress).map(Progress::get).ifPresent(progresses::add);
         progresses.addAll(computation.getChildren().stream()
                 .map(this::getProgress)
                 .filter(Result::isPresent)
                 .map(Result::get)
                 .collect(Collectors.toList()));
-        if (progresses.isEmpty())
-            return Result.empty();
+        if (progresses.isEmpty()) return Result.empty();
         return Result.of(progresses.stream().reduce(Double::sum).get() / progresses.size());
     }
 

@@ -4,7 +4,6 @@ import de.featjar.base.FeatJAR;
 import de.featjar.base.computation.IComputation;
 import de.featjar.base.data.Problem;
 import de.featjar.base.data.Result;
-
 import java.util.Objects;
 import java.util.stream.Collectors;
 
@@ -21,19 +20,23 @@ public class GraphVizComputationTreeFormat extends GraphVizTreeFormat<IComputati
 
     @Override
     protected String getNodeOptions(IComputation<?> computation) {
-        if (!includeResults)
-            return options(option("label", shorten(computation.toString())));
+        if (!includeResults) return options(option("label", shorten(computation.toString())));
         long numberOfHits = FeatJAR.cache().getNumberOfHits(computation);
         Result<?> result = computation.get();
         String resultString = Objects.toString(result.orElse(null));
         return options(
-                option("label", String.format("{%s|%s|%s|%s}",
-                        shorten(computation.toString()),
-                        result.map(Object::getClass)
-                                .map(Class::getSimpleName)
-                                .orElse(""),
-                        shorten(resultString),
-                        result.getProblems().stream().map(Problem::toString).collect(Collectors.joining(", ")))),
+                option(
+                        "label",
+                        String.format(
+                                "{%s|%s|%s|%s}",
+                                shorten(computation.toString()),
+                                result.map(Object::getClass)
+                                        .map(Class::getSimpleName)
+                                        .orElse(""),
+                                shorten(resultString),
+                                result.getProblems().stream()
+                                        .map(Problem::toString)
+                                        .collect(Collectors.joining(", ")))),
                 option("xlabel", String.valueOf(numberOfHits)));
     }
 

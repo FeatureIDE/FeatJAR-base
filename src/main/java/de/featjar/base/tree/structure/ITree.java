@@ -27,9 +27,8 @@ import de.featjar.base.env.IBrowsable;
 import de.featjar.base.io.graphviz.GraphVizTreeFormat;
 import de.featjar.base.tree.Trees;
 import de.featjar.base.tree.visitor.IInOrderTreeVisitor;
-import de.featjar.base.tree.visitor.TreePrinter;
 import de.featjar.base.tree.visitor.ITreeVisitor;
-
+import de.featjar.base.tree.visitor.TreePrinter;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.*;
@@ -110,13 +109,16 @@ public interface ITree<T extends ITree<T>> extends IBrowsable<GraphVizTreeFormat
 
     default void assertChildValidator(List<? extends T> children) {
         if (!children.stream().allMatch(getChildValidator()))
-            throw new IllegalArgumentException(String.format("child %s is invalid",
-                    children.stream().filter(c -> !getChildValidator().test(c)).findFirst().orElse(null)));
+            throw new IllegalArgumentException(String.format(
+                    "child %s is invalid",
+                    children.stream()
+                            .filter(c -> !getChildValidator().test(c))
+                            .findFirst()
+                            .orElse(null)));
     }
 
     default void assertChildValidator(T child) {
-        if (!getChildValidator().test(child))
-            throw new IllegalArgumentException("child did not pass validation");
+        if (!getChildValidator().test(child)) throw new IllegalArgumentException("child did not pass validation");
     }
 
     /**
@@ -125,8 +127,7 @@ public interface ITree<T extends ITree<T>> extends IBrowsable<GraphVizTreeFormat
      * @param idx the index
      */
     default Result<T> getChild(int idx) {
-        if (idx < 0 || idx >= getChildrenCount())
-            return Result.empty();
+        if (idx < 0 || idx >= getChildrenCount()) return Result.empty();
         return Result.ofNullable(getChildren().get(idx));
     }
 
@@ -542,10 +543,8 @@ public interface ITree<T extends ITree<T>> extends IBrowsable<GraphVizTreeFormat
         }
 
         protected void setOptional(T tree, U child) {
-            if (index < 0)
-                throw new IllegalStateException("entry index was not initialized");
-            while (tree.getChildrenCount() <= index)
-                tree.addChild(null);
+            if (index < 0) throw new IllegalStateException("entry index was not initialized");
+            while (tree.getChildrenCount() <= index) tree.addChild(null);
             tree.replaceChild(index, child);
         }
 
@@ -555,16 +554,14 @@ public interface ITree<T extends ITree<T>> extends IBrowsable<GraphVizTreeFormat
         }
 
         public void setToDefaultValue(T tree) {
-            if (tree.getChild(index).isEmpty())
-                setOptional(tree, defaultValue);
+            if (tree.getChild(index).isEmpty()) setOptional(tree, defaultValue);
         }
     }
 
     @Override
     default Result<URI> getBrowseURI(GraphVizTreeFormat<T> argument) {
         Result<String> dot = argument.serialize((T) this);
-        if (dot.isEmpty())
-            return dot.merge(Result.empty());
+        if (dot.isEmpty()) return dot.merge(Result.empty());
         try {
             return Result.of(new URI("https", "edotor.net", "", "engine=dot", dot.get()));
         } catch (URISyntaxException e) {

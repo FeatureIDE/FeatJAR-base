@@ -22,7 +22,6 @@ package de.featjar.base.env;
 
 import de.featjar.base.data.Result;
 
-
 /**
  * Utilities for host-specific operations and information.
  *
@@ -33,7 +32,10 @@ public class HostEnvironment {
      * Operating systems distinguished by FeatJAR.
      */
     public enum OperatingSystem {
-        WINDOWS, MAC_OS, LINUX, UNKNOWN
+        WINDOWS,
+        MAC_OS,
+        LINUX,
+        UNKNOWN
     }
 
     /**
@@ -43,14 +45,10 @@ public class HostEnvironment {
 
     static {
         final String osName = System.getProperty("os.name").toLowerCase();
-        if (osName.matches(".*(win).*"))
-            OPERATING_SYSTEM = OperatingSystem.WINDOWS;
-        else if (osName.matches(".*(mac).*"))
-            OPERATING_SYSTEM = OperatingSystem.MAC_OS;
-        else if (osName.matches(".*(nix|nux|aix).*"))
-            OPERATING_SYSTEM = OperatingSystem.LINUX;
-        else
-            OPERATING_SYSTEM = OperatingSystem.UNKNOWN;
+        if (osName.matches(".*(win).*")) OPERATING_SYSTEM = OperatingSystem.WINDOWS;
+        else if (osName.matches(".*(mac).*")) OPERATING_SYSTEM = OperatingSystem.MAC_OS;
+        else if (osName.matches(".*(nix|nux|aix).*")) OPERATING_SYSTEM = OperatingSystem.LINUX;
+        else OPERATING_SYSTEM = OperatingSystem.UNKNOWN;
     }
 
     /**

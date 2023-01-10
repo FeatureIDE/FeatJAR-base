@@ -22,9 +22,9 @@ public class Range implements Function<Integer, Boolean> {
     }
 
     protected static void checkBounds(Integer lowerBound, Integer upperBound) {
-        if ((lowerBound != null && lowerBound < 0) ||
-                (upperBound != null && upperBound < 0) ||
-                (lowerBound != null && upperBound != null && lowerBound > upperBound)) {
+        if ((lowerBound != null && lowerBound < 0)
+                || (upperBound != null && upperBound < 0)
+                || (lowerBound != null && upperBound != null && lowerBound > upperBound)) {
             throw new IllegalArgumentException(String.format("invalid bounds %d, %d", lowerBound, upperBound));
         }
     }

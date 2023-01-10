@@ -22,9 +22,7 @@ package de.featjar.base.computation;
 
 import de.featjar.base.data.Result;
 import de.featjar.base.tree.structure.ITree;
-
 import java.util.List;
-import java.util.function.Function;
 
 /**
  * Computes whether the supplied input is present.

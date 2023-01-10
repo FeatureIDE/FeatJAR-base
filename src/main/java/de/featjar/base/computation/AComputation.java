@@ -2,7 +2,6 @@ package de.featjar.base.computation;
 
 import de.featjar.base.FeatJAR;
 import de.featjar.base.tree.structure.ATree;
-
 import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
@@ -18,8 +17,7 @@ public abstract class AComputation<T> extends ATree<IComputation<?>> implements 
     protected Cache cache = FeatJAR.cache();
 
     protected AComputation(IComputation<?>... computations) {
-        if (computations.length > 0)
-            super.setChildren(Arrays.asList(computations));
+        if (computations.length > 0) super.setChildren(Arrays.asList(computations));
     }
 
     protected AComputation(List<? extends IComputation<?>> computations) {

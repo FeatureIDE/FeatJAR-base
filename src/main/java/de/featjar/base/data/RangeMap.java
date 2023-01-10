@@ -21,7 +21,6 @@
 package de.featjar.base.data;
 
 import de.featjar.base.log.IndentFormatter;
-
 import java.util.*;
 import java.util.stream.Stream;
 
@@ -85,9 +84,7 @@ public class RangeMap<T> {
      * {@return the range of valid indices in this range map}
      */
     public Result<Range> getValidIndexRange() {
-        return indexToObject.size() == 1
-                ? Result.empty()
-                : Result.of(Range.of(1, indexToObject.size() - 1));
+        return indexToObject.size() == 1 ? Result.empty() : Result.of(Range.of(1, indexToObject.size() - 1));
     }
 
     protected Result<Integer> getMinimumIndex() {
@@ -263,8 +260,7 @@ public class RangeMap<T> {
     public List<T> getObjects() {
         return !isEmpty()
                 ? indexToObject.subList(
-                getMinimumIndex().get(),
-                getMaximumIndex().get() + 1)
+                        getMinimumIndex().get(), getMaximumIndex().get() + 1)
                 : new ArrayList<>();
     }
 
@@ -272,9 +268,7 @@ public class RangeMap<T> {
      * {@return all objects mapped by this range map}
      */
     public Stream<Pair<Integer, T>> stream() {
-        return objectToIndex.entrySet().stream()
-                .map(Pair::of)
-                .map(Pair::flip);
+        return objectToIndex.entrySet().stream().map(Pair::of).map(Pair::flip);
     }
 
     /**
@@ -321,7 +315,10 @@ public class RangeMap<T> {
      */
     public void randomize(Random random) {
         if (!isEmpty()) {
-            Collections.shuffle(indexToObject.subList(getMinimumIndex().get(), getMaximumIndex().get()), random);
+            Collections.shuffle(
+                    indexToObject.subList(
+                            getMinimumIndex().get(), getMaximumIndex().get()),
+                    random);
             updateObjectToIndex();
         }
     }

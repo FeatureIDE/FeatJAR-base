@@ -21,7 +21,6 @@
 package de.featjar.base.io;
 
 import de.featjar.base.data.Sets;
-
 import java.io.IOException;
 import java.io.OutputStream;
 import java.util.*;

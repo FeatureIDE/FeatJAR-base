@@ -22,7 +22,6 @@ package de.featjar.base.io.input;
 
 import de.featjar.base.data.Result;
 import de.featjar.base.io.format.IFormat;
-
 import java.nio.charset.Charset;
 import java.util.function.Supplier;
 import java.util.stream.Stream;

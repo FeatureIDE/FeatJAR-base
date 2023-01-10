@@ -7,5 +7,4 @@ package de.featjar.base.computation;
  * @param <T> the type of the input and output
  * @author Elias Kuiter
  */
-public interface ITransformation<T> extends IAnalysis<T, T> {
-}
+public interface ITransformation<T> extends IAnalysis<T, T> {}

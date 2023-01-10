@@ -21,7 +21,6 @@
 package de.featjar.base.io;
 
 import de.featjar.base.data.Result;
-
 import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -64,7 +63,8 @@ public interface IIOObject extends AutoCloseable {
      * @param path the path
      */
     static Result<String> getFileExtension(Path path) {
-        return Result.ofNullable(path).flatMap(_path -> getFileExtension(_path.getFileName().toString()));
+        return Result.ofNullable(path)
+                .flatMap(_path -> getFileExtension(_path.getFileName().toString()));
     }
 
     /**
@@ -75,8 +75,7 @@ public interface IIOObject extends AutoCloseable {
      * @param fileName the file name
      */
     static Result<String> getFileExtension(String fileName) {
-        if (fileName == null)
-            return Result.empty();
+        if (fileName == null) return Result.empty();
         final int extensionIndex = fileName.lastIndexOf('.');
         return Result.ofNullable(extensionIndex > 0 ? fileName.substring(extensionIndex + 1) : null);
     }
@@ -88,8 +87,7 @@ public interface IIOObject extends AutoCloseable {
      * @param fileExtension the new file extension
      */
     static String getFileNameWithExtension(String fileName, String fileExtension) {
-        if (fileExtension == null)
-            return IIOObject.getFileNameWithoutExtension(fileName);
+        if (fileExtension == null) return IIOObject.getFileNameWithoutExtension(fileName);
         return String.format("%s.%s", IIOObject.getFileNameWithoutExtension(fileName), fileExtension);
     }
 

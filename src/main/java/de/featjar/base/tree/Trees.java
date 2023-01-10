@@ -27,7 +27,6 @@ import de.featjar.base.tree.structure.ITree;
 import de.featjar.base.tree.visitor.IInOrderTreeVisitor;
 import de.featjar.base.tree.visitor.ITreeVisitor;
 import de.featjar.base.tree.visitor.ITreeVisitor.TraversalAction;
-
 import java.util.*;
 import java.util.function.Consumer;
 import java.util.stream.Stream;
@@ -169,8 +168,8 @@ public class Trees {
                 if ((currentNode1 == null) || (currentNode2 == null)) {
                     return false;
                 } else {
-                    if (currentNode1.getChildrenCount() != currentNode2.getChildrenCount() ||
-                            !currentNode1.equalsNode(currentNode2)) {
+                    if (currentNode1.getChildrenCount() != currentNode2.getChildrenCount()
+                            || !currentNode1.equalsNode(currentNode2)) {
                         return false;
                     }
                     stack1.addAll(0, currentNode1.getChildren());
@@ -268,7 +267,6 @@ public class Trees {
     }
 
     private static class PreOrderSpliterator<T extends ITree<T>> implements Spliterator<T> {
-
 
         final LinkedList<T> stack = new LinkedList<>();
 
@@ -447,13 +445,11 @@ public class Trees {
             if (entry.remainingChildren == null) {
                 path.add(entry.node);
                 Result<Void> problem = visitor.nodeValidator(path);
-                if (problem.hasProblems())
-                    throw new VisitorFailException(problem.getProblems());
+                if (problem.hasProblems()) throw new VisitorFailException(problem.getProblems());
                 final TraversalAction traversalAction = visitor.firstVisit(path);
                 switch (traversalAction) {
                     case CONTINUE:
-                        entry.remainingChildren =
-                                new LinkedList<>((Collection<? extends T>) entry.node.getChildren());
+                        entry.remainingChildren = new LinkedList<>((Collection<? extends T>) entry.node.getChildren());
                         break;
                     case SKIP_CHILDREN:
                         entry.remainingChildren = Collections.emptyList();
@@ -492,7 +488,8 @@ public class Trees {
     }
 
     @SuppressWarnings("unchecked")
-    private static <T extends ITree<?>> void depthFirstSearch(T node, ITreeVisitor<T, ?> visitor) throws VisitorFailException {
+    private static <T extends ITree<?>> void depthFirstSearch(T node, ITreeVisitor<T, ?> visitor)
+            throws VisitorFailException {
         if (node != null) {
             final ArrayList<T> path = new ArrayList<>();
 
@@ -503,8 +500,7 @@ public class Trees {
                 if (path.isEmpty() || (curNode != path.get(path.size() - 1))) {
                     path.add(curNode);
                     Result<Void> problem = visitor.nodeValidator(path);
-                    if (problem.hasProblems())
-                        throw new VisitorFailException(problem.getProblems());
+                    if (problem.hasProblems()) throw new VisitorFailException(problem.getProblems());
                     final TraversalAction traversalAction = visitor.firstVisit(path);
                     switch (traversalAction) {
                         case CONTINUE:
@@ -528,7 +524,8 @@ public class Trees {
         }
     }
 
-    private static <T extends ITree<?>> boolean lastVisit(ITreeVisitor<T, ?> visitor, ArrayList<T> path, ArrayDeque<?> stack) throws VisitorFailException {
+    private static <T extends ITree<?>> boolean lastVisit(
+            ITreeVisitor<T, ?> visitor, ArrayList<T> path, ArrayDeque<?> stack) throws VisitorFailException {
         final TraversalAction traversalAction = visitor.lastVisit(path);
         switch (traversalAction) {
             case CONTINUE:

@@ -21,9 +21,8 @@ public class Maps {
         return new LinkedHashMap<>(Map.of(key, value));
     }
 
-    public static <T, K, U>
-    Collector<T, ?, LinkedHashMap<K, U>> toMap(Function<? super T, ? extends K> keyMapper,
-                             Function<? super T, ? extends U> valueMapper) {
+    public static <T, K, U> Collector<T, ?, LinkedHashMap<K, U>> toMap(
+            Function<? super T, ? extends K> keyMapper, Function<? super T, ? extends U> valueMapper) {
         return Collectors.toMap(
                 keyMapper,
                 valueMapper,

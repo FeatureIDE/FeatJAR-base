@@ -22,7 +22,6 @@ package de.featjar.base.io.format;
 
 import de.featjar.base.data.Problem;
 import de.featjar.base.io.input.AInput;
-
 import java.nio.file.Path;
 
 /**

@@ -1,7 +1,6 @@
 package de.featjar.base.io.output;
 
 import de.featjar.base.data.Maps;
-
 import java.nio.charset.Charset;
 import java.nio.file.Path;
 import java.util.LinkedHashMap;
@@ -32,7 +31,8 @@ public class StringOutputMapper extends AOutputMapper {
      * {@return the collection of strings}
      */
     public LinkedHashMap<Path, java.lang.String> getOutputStrings() {
-        return ioMap.entrySet().stream().collect(
-                Maps.toMap(Map.Entry::getKey, e -> e.getValue().getOutputStream().toString()));
+        return ioMap.entrySet().stream()
+                .collect(Maps.toMap(
+                        Map.Entry::getKey, e -> e.getValue().getOutputStream().toString()));
     }
 }

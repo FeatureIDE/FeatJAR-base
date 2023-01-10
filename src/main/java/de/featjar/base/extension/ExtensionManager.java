@@ -20,6 +20,10 @@
  */
 package de.featjar.base.extension;
 
+import de.featjar.base.FeatJAR;
+import de.featjar.base.data.Maps;
+import de.featjar.base.data.Result;
+import de.featjar.base.data.Sets;
 import java.io.IOException;
 import java.net.URL;
 import java.nio.file.Files;
@@ -32,11 +36,6 @@ import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
-
-import de.featjar.base.FeatJAR;
-import de.featjar.base.data.Maps;
-import de.featjar.base.data.Result;
-import de.featjar.base.data.Sets;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
@@ -62,9 +61,7 @@ public class ExtensionManager implements AutoCloseable {
     @SuppressWarnings({"unchecked", "rawtypes"})
     public ExtensionManager() {
         FeatJAR.log().debug("initializing extension manager");
-        getResources().stream()
-                .filter(ExtensionManager::filterByFileName)
-                .forEach(this::loadExtensionDefinitionFile);
+        getResources().stream().filter(ExtensionManager::filterByFileName).forEach(this::loadExtensionDefinitionFile);
         final ClassLoader systemClassLoader = ClassLoader.getSystemClassLoader();
         for (final Entry<String, List<String>> entry : extensionMap.entrySet()) {
             final String extensionPointId = entry.getKey();
@@ -211,9 +208,7 @@ public class ExtensionManager implements AutoCloseable {
     public Result<AExtensionPoint<?>> getExtensionPoint(String identifier) {
         Objects.requireNonNull(identifier, "identifier must not be null!");
         final AExtensionPoint<?> extensionPoint = extensionPoints.get(identifier);
-        return extensionPoint != null
-                ? Result.of(extensionPoint)
-                : Result.empty();
+        return extensionPoint != null ? Result.of(extensionPoint) : Result.empty();
     }
 
     /**
@@ -234,9 +229,7 @@ public class ExtensionManager implements AutoCloseable {
     public Result<IExtension> getExtension(String identifier) {
         Objects.requireNonNull(identifier, "identifier must not be null!");
         final IExtension extension = extensions.get(identifier);
-        return extension != null
-                ? Result.of(extension)
-                : Result.empty();
+        return extension != null ? Result.of(extension) : Result.empty();
     }
 
     // todo: guess best-fitting extension based on suffix/regex

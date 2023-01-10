@@ -2,8 +2,6 @@ package de.featjar.base.computation;
 
 import de.featjar.base.data.Problem;
 import de.featjar.base.data.Result;
-import net.tascalate.concurrent.*;
-
 import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
@@ -12,6 +10,7 @@ import java.util.function.BiFunction;
 import java.util.function.Function;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
+import net.tascalate.concurrent.*;
 
 /**
  * A result that will become available in the future.
@@ -26,7 +25,7 @@ import java.util.stream.Collectors;
  * @author Elias Kuiter
  */
 public class FutureResult<T> implements Supplier<Result<T>> {
-    protected final static Executor executor = ForkJoinPool.commonPool(); // todo: allow overriding
+    protected static final Executor executor = ForkJoinPool.commonPool(); // todo: allow overriding
 
     protected final Promise<Result<T>> promise;
 
@@ -57,10 +56,15 @@ public class FutureResult<T> implements Supplier<Result<T>> {
      * @param futureResults the future results
      * @param resultMerger the result merger
      */
-    public static <T extends List<Object>> FutureResult<T> allOf(List<FutureResult<?>> futureResults, Function<List<? extends Result<?>>, Result<T>> resultMerger) {
-        List<Promise<? extends Result<?>>> promises = futureResults.stream().map(FutureResult::getPromise).collect(Collectors.toList());
-        Promise<Result<T>> promise = Promises.all(promises).thenApplyAsync(list ->
-                resultMerger.apply(futureResults.stream().map(FutureResult::get).collect(Collectors.toList())), executor);
+    public static <T extends List<Object>> FutureResult<T> allOf(
+            List<FutureResult<?>> futureResults, Function<List<? extends Result<?>>, Result<T>> resultMerger) {
+        List<Promise<? extends Result<?>>> promises =
+                futureResults.stream().map(FutureResult::getPromise).collect(Collectors.toList());
+        Promise<Result<T>> promise = Promises.all(promises)
+                .thenApplyAsync(
+                        list -> resultMerger.apply(
+                                futureResults.stream().map(FutureResult::get).collect(Collectors.toList())),
+                        executor);
         return new FutureResult<>(promise, Progress.Null.NULL);
     }
 
@@ -85,8 +89,7 @@ public class FutureResult<T> implements Supplier<Result<T>> {
      * {@return this future result's progress}
      */
     public Progress getProgress() {
-        if (getPromise().isDone())
-            return Progress.completed(progress.getCurrentStep());
+        if (getPromise().isDone()) return Progress.completed(progress.getCurrentStep());
         return progress;
     }
 
@@ -118,25 +121,28 @@ public class FutureResult<T> implements Supplier<Result<T>> {
      */
     public <U> FutureResult<U> thenFromResult(BiFunction<Result<T>, Progress, Result<U>> fn) {
         Progress progress = new Progress();
-        return new FutureResult<>(promise.thenApplyAsync(tResult -> {
-            try {
-                return tResult.merge(fn.apply(tResult, progress));
-            } catch (Exception e) {
-                return Result.empty(e);
-            }
-        }, executor), progress);
+        return new FutureResult<>(
+                promise.thenApplyAsync(
+                        tResult -> {
+                            try {
+                                return tResult.merge(fn.apply(tResult, progress));
+                            } catch (Exception e) {
+                                return Result.empty(e);
+                            }
+                        },
+                        executor),
+                progress);
     }
 
-    protected static <T, U> BiFunction<Result<T>, Progress, Result<U>> mapArgument(BiFunction<T, Progress, Result<U>> fn) {
-        return (tResult, progress) -> tResult.isPresent()
-                ? fn.apply(tResult.get(), progress)
-                : Result.empty();
+    protected static <T, U> BiFunction<Result<T>, Progress, Result<U>> mapArgument(
+            BiFunction<T, Progress, Result<U>> fn) {
+        return (tResult, progress) -> tResult.isPresent() ? fn.apply(tResult.get(), progress) : Result.empty();
     }
 
-    protected static <T, U> BiFunction<Result<T>, Progress, Result<U>> mapArgumentAndReturnValue(BiFunction<T, Progress, U> fn) {
-        return (tResult, progress) -> tResult.isPresent()
-                ? Result.ofNullable(fn.apply(tResult.get(), progress))
-                : Result.empty();
+    protected static <T, U> BiFunction<Result<T>, Progress, Result<U>> mapArgumentAndReturnValue(
+            BiFunction<T, Progress, U> fn) {
+        return (tResult, progress) ->
+                tResult.isPresent() ? Result.ofNullable(fn.apply(tResult.get(), progress)) : Result.empty();
     }
 
     /**

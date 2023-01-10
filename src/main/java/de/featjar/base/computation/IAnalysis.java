@@ -21,7 +21,6 @@
 package de.featjar.base.computation;
 
 import de.featjar.base.data.Result;
-
 import java.util.function.Function;
 
 /**

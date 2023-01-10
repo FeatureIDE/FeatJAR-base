@@ -2,19 +2,17 @@ package de.featjar.base;
 
 import de.featjar.base.cli.ArgumentParser;
 import de.featjar.base.cli.CommandLineInterface;
-import de.featjar.base.data.Result;
 import de.featjar.base.computation.Cache;
-import de.featjar.base.extension.IExtension;
-import de.featjar.base.extension.ExtensionManager;
+import de.featjar.base.data.Result;
 import de.featjar.base.extension.AExtensionPoint;
+import de.featjar.base.extension.ExtensionManager;
+import de.featjar.base.extension.IExtension;
 import de.featjar.base.io.IO;
 import de.featjar.base.log.CallerFormatter;
 import de.featjar.base.log.Log;
 import de.featjar.base.log.TimeStampFormatter;
-
 import java.util.function.Consumer;
 import java.util.function.Function;
-
 
 /**
  * Configures, initializes, and runs FeatJAR.
@@ -99,8 +97,7 @@ public class FeatJAR extends IO implements AutoCloseable {
      * Configures the default log configuration, if not adjusted otherwise.
      */
     public static final Function<Log.Configuration, Log.Configuration> defaultLogConfiguration =
-            cfg -> cfg
-                    .logAtMost(defaultVerbosity)
+            cfg -> cfg.logAtMost(defaultVerbosity)
                     .addFormatter(new TimeStampFormatter())
                     .addFormatter(new CallerFormatter());
 
@@ -123,8 +120,7 @@ public class FeatJAR extends IO implements AutoCloseable {
      * @param configuration the FeatJAR configuration
      */
     public FeatJAR(Configuration configuration) {
-        if (instance != null)
-            throw new RuntimeException("FeatJAR already initialized");
+        if (instance != null) throw new RuntimeException("FeatJAR already initialized");
         log().debug("initializing FeatJAR");
         instance = this;
         Log.setDefaultConfiguration(configuration.log);
@@ -138,9 +134,7 @@ public class FeatJAR extends IO implements AutoCloseable {
      * The log reports only error and info messages.
      */
     public FeatJAR() {
-        this(new Configuration()
-                .log(defaultLogConfiguration::apply)
-                .cache(defaultCacheConfiguration::apply));
+        this(new Configuration().log(defaultLogConfiguration::apply).cache(defaultCacheConfiguration::apply));
     }
 
     /**
@@ -253,8 +247,7 @@ public class FeatJAR extends IO implements AutoCloseable {
      * @param klass the extension point's class
      */
     public static <T extends AExtensionPoint<?>> T extensionPoint(Class<T> klass) {
-        if (instance == null)
-            throw new IllegalStateException("FeatJAR not initialized yet");
+        if (instance == null) throw new IllegalStateException("FeatJAR not initialized yet");
         Result<T> extensionPoint = instance.getExtensionPoint(klass);
         if (extensionPoint.isEmpty())
             throw new RuntimeException("extension point " + klass + " not currently installed in FeatJAR");
@@ -268,8 +261,7 @@ public class FeatJAR extends IO implements AutoCloseable {
      * @param klass the extension point's class
      */
     public static <T extends IExtension> T extension(Class<T> klass) {
-        if (instance == null)
-            throw new IllegalStateException("FeatJAR not initialized yet");
+        if (instance == null) throw new IllegalStateException("FeatJAR not initialized yet");
         Result<T> extension = instance.getExtension(klass);
         if (extension.isEmpty())
             throw new RuntimeException("extension " + klass + " not currently installed in FeatJAR");

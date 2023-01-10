@@ -27,5 +27,4 @@ import de.featjar.base.extension.AExtensionPoint;
  *
  * @author Sebastian Krieter
  */
-public class Commands extends AExtensionPoint<ICommand> {
-}
+public class Commands extends AExtensionPoint<ICommand> {}

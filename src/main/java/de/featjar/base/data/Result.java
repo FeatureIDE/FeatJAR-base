@@ -22,7 +22,6 @@ package de.featjar.base.data;
 
 import de.featjar.base.computation.IComputation;
 import de.featjar.base.io.format.IFormat;
-
 import java.util.*;
 import java.util.function.Consumer;
 import java.util.function.Function;
@@ -109,7 +108,8 @@ public class Result<T> implements Supplier<T> {
      * @param optional the optional
      * @param <T>      the type of the result's object
      */
-    public static <T> Result<T> ofOptional(@SuppressWarnings("OptionalUsedAsFieldOrParameterType") Optional<T> optional) {
+    public static <T> Result<T> ofOptional(
+            @SuppressWarnings("OptionalUsedAsFieldOrParameterType") Optional<T> optional) {
         return ofNullable(optional.orElse(null));
     }
 
@@ -182,10 +182,13 @@ public class Result<T> implements Supplier<T> {
     }
 
     protected static List<Result<?>> replaceNull(List<? extends Result<?>> results) {
-        return results.stream().map(result -> result == null ? Result.empty() : result).collect(Collectors.toList());
+        return results.stream()
+                .map(result -> result == null ? Result.empty() : result)
+                .collect(Collectors.toList());
     }
 
-    public static <T extends List<Object>> Result<T> mergeAll(List<? extends Result<?>> results, Supplier<T> listFactory) {
+    public static <T extends List<Object>> Result<T> mergeAll(
+            List<? extends Result<?>> results, Supplier<T> listFactory) {
         List<Problem> problems = getProblems(results);
         return replaceNull(results).stream().noneMatch(Result::isEmpty)
                 ? Result.of(results.stream().map(Result::get).collect(Collectors.toCollection(listFactory)), problems)
@@ -196,12 +199,11 @@ public class Result<T> implements Supplier<T> {
         return mergeAll(results, ArrayList::new);
     }
 
-    public static <T extends List<Object>> Result<T> mergeAllNullable(List<? extends Result<?>> results, Supplier<T> listFactory) {
+    public static <T extends List<Object>> Result<T> mergeAllNullable(
+            List<? extends Result<?>> results, Supplier<T> listFactory) {
         List<Problem> problems = getProblems(results);
         return Result.of(
-                replaceNull(results).stream()
-                        .map(r -> r.orElse(null))
-                        .collect(Collectors.toCollection(listFactory)),
+                replaceNull(results).stream().map(r -> r.orElse(null)).collect(Collectors.toCollection(listFactory)),
                 problems);
     }
 
@@ -211,8 +213,7 @@ public class Result<T> implements Supplier<T> {
 
     public static Result<?> mergeLast(List<Result<?>> results) {
         results = results.stream().filter(Objects::nonNull).collect(Collectors.toList());
-        if (results.isEmpty())
-            return of(new ArrayList<>());
+        if (results.isEmpty()) return of(new ArrayList<>());
         List<Problem> problems = getProblems(results);
         return Result.ofNullable(results.get(results.size() - 1).orElse(null), problems);
     }
@@ -338,7 +339,8 @@ public class Result<T> implements Supplier<T> {
      * {@return this result's object or throws this result's problems}
      */
     public T orElseThrow() {
-        return orElseThrow(problems -> new RuntimeException(problems.stream().map(Problem::toString).collect(Collectors.joining(", "))));
+        return orElseThrow(problems ->
+                new RuntimeException(problems.stream().map(Problem::toString).collect(Collectors.joining(", "))));
     }
 
     /**

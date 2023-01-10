@@ -21,7 +21,6 @@
 package de.featjar.base.tree.structure;
 
 import java.util.Arrays;
-import java.util.List;
 import java.util.Objects;
 
 /**
@@ -34,8 +33,7 @@ import java.util.Objects;
 public class LabeledTree<T> extends ATree<LabeledTree<T>> {
     protected T label;
 
-    public LabeledTree() {
-    }
+    public LabeledTree() {}
 
     public LabeledTree(T label) {
         this.label = label;

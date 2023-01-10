@@ -1,7 +1,6 @@
 package de.featjar.base.io.input;
 
 import de.featjar.base.data.Maps;
-
 import java.nio.charset.Charset;
 import java.nio.file.Path;
 import java.util.LinkedHashMap;

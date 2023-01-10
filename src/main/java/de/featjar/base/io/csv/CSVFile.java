@@ -24,7 +24,6 @@ import de.featjar.base.FeatJAR;
 import de.featjar.base.io.IO;
 import de.featjar.base.io.output.AOutput;
 import de.featjar.base.io.output.FileOutput;
-
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.math.BigInteger;

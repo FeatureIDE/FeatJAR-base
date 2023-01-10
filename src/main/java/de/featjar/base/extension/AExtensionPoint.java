@@ -26,7 +26,6 @@ import de.featjar.base.data.Problem;
 import de.featjar.base.data.Result;
 import de.featjar.base.data.Sets;
 import de.featjar.base.log.IndentFormatter;
-
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -129,10 +128,13 @@ public abstract class AExtensionPoint<T extends IExtension> {
                 .filter(identifier -> identifier.toLowerCase().contains(partOfIdentifier.toLowerCase()))
                 .collect(Sets.toSet());
         if (matchingIdentifiers.isEmpty())
-            return Result.empty(new Problem("found no extensions matching " + partOfIdentifier, Problem.Severity.ERROR));
+            return Result.empty(
+                    new Problem("found no extensions matching " + partOfIdentifier, Problem.Severity.ERROR));
         if (matchingIdentifiers.size() > 1)
-            return Result.empty(new Problem("found more than one extensions matching " + partOfIdentifier + ": \n" +
-                    IndentFormatter.formatList(matchingIdentifiers), Problem.Severity.ERROR));
+            return Result.empty(new Problem(
+                    "found more than one extensions matching " + partOfIdentifier + ": \n"
+                            + IndentFormatter.formatList(matchingIdentifiers),
+                    Problem.Severity.ERROR));
         return getExtension(matchingIdentifiers.iterator().next());
     }
 

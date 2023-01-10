@@ -1,9 +1,7 @@
 package de.featjar.base.computation;
 
-
 import de.featjar.base.data.Range;
 import de.featjar.base.data.Result;
-
 import java.util.function.Supplier;
 
 public class Progress implements Supplier<Double> {
@@ -34,8 +32,7 @@ public class Progress implements Supplier<Double> {
      * @param currentStep the current step
      */
     public void setCurrentStep(int currentStep) {
-        if (getTotalSteps().isPresent() && getTotalSteps().get() < currentStep)
-            range.setUpperBound(currentStep);
+        if (getTotalSteps().isPresent() && getTotalSteps().get() < currentStep) range.setUpperBound(currentStep);
         range.setLowerBound(currentStep);
     }
 
@@ -69,22 +66,17 @@ public class Progress implements Supplier<Double> {
      * @param totalSteps the total steps
      */
     public void setTotalSteps(Integer totalSteps) {
-        if (totalSteps != null && totalSteps == 0)
-            throw new IllegalArgumentException();
-        if (totalSteps == null)
-            range.setUpperBound(null);
-        else
-            range.setUpperBound(Math.max(getCurrentStep(), totalSteps));
+        if (totalSteps != null && totalSteps == 0) throw new IllegalArgumentException();
+        if (totalSteps == null) range.setUpperBound(null);
+        else range.setUpperBound(Math.max(getCurrentStep(), totalSteps));
     }
 
     /**
      * {@return this progress' percentage (i.e., the current step divided by the total number of steps)}
      */
     public Double get() {
-        if (getCurrentStep() == 0)
-            return 0.0;
-        if (getTotalSteps().isEmpty())
-            return 0.5;
+        if (getCurrentStep() == 0) return 0.0;
+        if (getTotalSteps().isEmpty()) return 0.5;
         return (double) getCurrentStep() / getTotalSteps().get();
     }
 
@@ -97,20 +89,15 @@ public class Progress implements Supplier<Double> {
         public static final Null NULL = new Null();
 
         @Override
-        public void setCurrentStep(int currentStep) {
-        }
+        public void setCurrentStep(int currentStep) {}
 
         @Override
-        public void incrementCurrentStep() {
-        }
+        public void incrementCurrentStep() {}
 
         @Override
-        public void addCurrentSteps(int steps) {
-        }
+        public void addCurrentSteps(int steps) {}
 
         @Override
-        public void setTotalSteps(Integer totalSteps) {
-        }
+        public void setTotalSteps(Integer totalSteps) {}
     }
-
 }

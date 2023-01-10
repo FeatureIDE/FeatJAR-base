@@ -39,8 +39,7 @@ public class IndentFormatter implements IFormatter {
     }
 
     public void removeIndent() {
-        if (level > 0)
-            level--;
+        if (level > 0) level--;
     }
 
     public int getLevel() {
@@ -65,14 +64,10 @@ public class IndentFormatter implements IFormatter {
     }
 
     public static String formatList(Collection<?> collection) {
-        return collection.stream()
-                .map(o -> "\t" + o + "\n")
-                .collect(Collectors.joining());
+        return collection.stream().map(o -> "\t" + o + "\n").collect(Collectors.joining());
     }
 
     public static String formatList(String prefix, Collection<?> collection) {
-        return String.format("%s[\n%s]",
-                prefix,
-                formatList(collection));
+        return String.format("%s[\n%s]", prefix, formatList(collection));
     }
 }

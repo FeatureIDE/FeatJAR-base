@@ -36,7 +36,8 @@ import java.util.function.Consumer;
 public interface IMutable<T extends IMutable<T, U>, U extends IMutator<T>> {
     U getMutator(); // todo: default is to create a null mutator, which does nothing
 
-    void setMutator(U mutator); // is this even necessary? should getMutable() be changeable afterwards? do we only need one global mutator instance?
+    void setMutator(U mutator); // is this even necessary? should getMutable() be changeable afterwards? do we only need
+    // one global mutator instance?
 
     default void finishInternalMutation() {}
 

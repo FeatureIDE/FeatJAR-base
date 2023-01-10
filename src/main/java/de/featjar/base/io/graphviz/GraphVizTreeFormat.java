@@ -23,7 +23,6 @@ package de.featjar.base.io.graphviz;
 import de.featjar.base.data.Result;
 import de.featjar.base.io.format.IFormat;
 import de.featjar.base.tree.structure.ITree;
-
 import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -65,14 +64,13 @@ public class GraphVizTreeFormat<T extends ITree<T>> implements IFormat<T> {
         return Result.of(String.format(
                 "digraph {\n%s%s%s\n%s\n%s\n}",
                 globalOptions("graph"),
-                globalOptions("node",
+                globalOptions(
+                        "node",
                         option("fontname", "Helvetica"),
                         option("style", "filled"),
                         option("fillcolor", "beige"),
                         option("shape", "record")),
-                globalOptions("edge",
-                        option("fontname", "Helvetica"),
-                        option("fontsize", "10")),
+                globalOptions("edge", option("fontname", "Helvetica"), option("fontsize", "10")),
                 descendants.stream()
                         .skip(includeRoot ? 0 : 1)
                         .distinct()
@@ -87,7 +85,8 @@ public class GraphVizTreeFormat<T extends ITree<T>> implements IFormat<T> {
     }
 
     protected String getNodeIdentifier(T tree) {
-        return String.valueOf(tree.hashCode()); // todo: technically, two objects can be different but have the same hash code
+        return String.valueOf(
+                tree.hashCode()); // todo: technically, two objects can be different but have the same hash code
         // so node identifiers should also take .equals into account
     }
 
@@ -100,10 +99,7 @@ public class GraphVizTreeFormat<T extends ITree<T>> implements IFormat<T> {
     }
 
     protected String getNode(T tree) {
-        return String.format(
-                "  %s%s;",
-                quote(getNodeIdentifier(tree)),
-                getNodeOptions(tree));
+        return String.format("  %s%s;", quote(getNodeIdentifier(tree)), getNodeOptions(tree));
     }
 
     protected String getEdge(T parent) {
@@ -119,22 +115,16 @@ public class GraphVizTreeFormat<T extends ITree<T>> implements IFormat<T> {
 
     protected String getEdge(T parent, T child, String option) {
         return String.format(
-                "  %s -> %s%s;\n",
-                quote(getNodeIdentifier(parent)),
-                quote(getNodeIdentifier(child)),
-                option);
+                "  %s -> %s%s;\n", quote(getNodeIdentifier(parent)), quote(getNodeIdentifier(child)), option);
     }
 
     protected String quote(String str) {
-        return String.format("\"%s\"",
-                str.replace("\"", "\\\"")
-                        .replace("<", "&lt;")
-                        .replace(">", "&gt;"));
+        return String.format(
+                "\"%s\"", str.replace("\"", "\\\"").replace("<", "&lt;").replace(">", "&gt;"));
     }
 
     protected String globalOptions(String type, String... options) {
-        if (options.length == 0)
-            return "";
+        if (options.length == 0) return "";
         else return String.format("%s%s;", type, options(options));
     }
 

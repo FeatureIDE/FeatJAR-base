@@ -22,7 +22,6 @@ package de.featjar.base.io.xml;
 
 import java.util.ArrayDeque;
 import java.util.Objects;
-
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.xml.sax.Attributes;
@@ -55,7 +54,8 @@ public class PositionalXMLHandler extends DefaultHandler {
     }
 
     @Override
-    public void startElement(final String uri, final String localName, final String qName, final Attributes attributes) {
+    public void startElement(
+            final String uri, final String localName, final String qName, final Attributes attributes) {
         addTextIfNeeded();
         final Element el = doc.createElement(qName);
         for (int i = 0; i < attributes.getLength(); i++) {

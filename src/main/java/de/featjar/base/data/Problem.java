@@ -20,9 +20,7 @@
  */
 package de.featjar.base.data;
 
-import de.featjar.base.tree.structure.ATree;
 import de.featjar.base.tree.structure.ITree;
-
 import java.util.Objects;
 import java.util.Optional;
 
@@ -107,7 +105,8 @@ public class Problem {
      * {@return the message of this problem}
      */
     public String getMessage() {
-        return Optional.ofNullable(exception.getMessage()).orElse(exception.getClass().getSimpleName());
+        return Optional.ofNullable(exception.getMessage())
+                .orElse(exception.getClass().getSimpleName());
     }
 
     /**

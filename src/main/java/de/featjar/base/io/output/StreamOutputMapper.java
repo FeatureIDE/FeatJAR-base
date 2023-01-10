@@ -1,7 +1,6 @@
 package de.featjar.base.io.output;
 
 import de.featjar.base.data.Maps;
-
 import java.io.OutputStream;
 import java.nio.charset.Charset;
 import java.nio.file.Path;

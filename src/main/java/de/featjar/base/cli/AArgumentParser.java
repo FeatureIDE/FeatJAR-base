@@ -2,7 +2,6 @@ package de.featjar.base.cli;
 
 import de.featjar.base.data.Maps;
 import de.featjar.base.data.Result;
-
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -55,7 +54,8 @@ public abstract class AArgumentParser {
      * @return a map of the positions to their argument values
      * @throws ArgumentParseException when a parsing error occurs
      */
-    public LinkedHashMap<Integer, String> parsePositionalArguments(List<Integer> positions) throws ArgumentParseException {
+    public LinkedHashMap<Integer, String> parsePositionalArguments(List<Integer> positions)
+            throws ArgumentParseException {
         LinkedHashMap<Integer, String> positionalArguments = Maps.empty();
         for (Integer position : positions) {
             int actualPosition = position;
@@ -104,8 +104,7 @@ public abstract class AArgumentParser {
                 found = true;
             } else if (flag.equals(currentArgument))
                 throw new ArgumentParseException(
-                        String.format("Flag %s supplied several times, but may only be supplied once.",
-                                flag));
+                        String.format("Flag %s supplied several times, but may only be supplied once.", flag));
         }
         return found;
     }
@@ -144,8 +143,7 @@ public abstract class AArgumentParser {
         List<String> values = parseOptions(option);
         if (values.size() > 2)
             throw new ArgumentParseException(
-                    String.format("Option %s supplied with several values, but only one value was expected.",
-                            option));
+                    String.format("Option %s supplied with several values, but only one value was expected.", option));
         return values.isEmpty() ? Result.empty() : Result.of(values.get(0));
     }
 
@@ -158,8 +156,7 @@ public abstract class AArgumentParser {
     public String parseRequiredOption(String option) throws ArgumentParseException {
         Result<String> value = parseOption(option);
         if (value.isEmpty())
-            throw new ArgumentParseException(
-                    String.format("Option %s not supplied, but was expected.", option));
+            throw new ArgumentParseException(String.format("Option %s not supplied, but was expected.", option));
         return value.get();
     }
 
@@ -172,12 +169,10 @@ public abstract class AArgumentParser {
      * @throws ArgumentParseException when a parsing error occurs
      */
     public void ensureAllowedValue(String option, String value, String... allowedValues) throws ArgumentParseException {
-        for (String allowedValue : allowedValues)
-            if (value.equals(allowedValue))
-                return;
-        throw new ArgumentParseException(
-                String.format("Value %s supplied for option %s, but one of the following was expected: %s",
-                        value, option, String.join(", ", allowedValues)));
+        for (String allowedValue : allowedValues) if (value.equals(allowedValue)) return;
+        throw new ArgumentParseException(String.format(
+                "Value %s supplied for option %s, but one of the following was expected: %s",
+                value, option, String.join(", ", allowedValues)));
     }
 
     /**
@@ -186,9 +181,7 @@ public abstract class AArgumentParser {
      * @throws ArgumentParseException when a parsing error occurs
      */
     public void ensureAllArgumentsUsed() throws ArgumentParseException {
-        String unusedString = unusedArguments.stream()
-                .filter(Objects::nonNull)
-                .collect(Collectors.joining(" "));
+        String unusedString = unusedArguments.stream().filter(Objects::nonNull).collect(Collectors.joining(" "));
         if (!unusedString.isBlank())
             throw new ArgumentParseException(
                     String.format("Arguments %s supplied, but could not be recognized.", unusedString));
@@ -202,5 +195,4 @@ public abstract class AArgumentParser {
     public void close() throws ArgumentParseException {
         ensureAllArgumentsUsed();
     }
-
 }

@@ -24,7 +24,6 @@ import de.featjar.base.FeatJAR;
 import de.featjar.base.data.Problem;
 import de.featjar.base.data.Result;
 import de.featjar.base.tree.structure.ITree;
-
 import java.time.Duration;
 import java.util.List;
 import java.util.function.Consumer;
@@ -94,16 +93,14 @@ public interface IComputation<T> extends Supplier<Result<T>>, ITree<IComputation
     default FutureResult<T> computeFutureResult(boolean tryHitCache, boolean tryWriteCache) {
         if (tryHitCache) {
             Result<FutureResult<T>> cacheHit = getCache().tryHit(this);
-            if (cacheHit.isPresent())
-                return cacheHit.get();
+            if (cacheHit.isPresent()) return cacheHit.get();
         }
         List<FutureResult<?>> futureResults = getChildren().stream()
                 .map(computation -> computation.computeFutureResult(tryHitCache, tryWriteCache))
                 .collect(Collectors.toList());
-        FutureResult<T> futureResult = FutureResult.allOf(futureResults, this::mergeResults)
-                .thenResult(this::compute);
-        if (tryWriteCache)
-            getCache().tryWrite(this, futureResult);
+        FutureResult<T> futureResult =
+                FutureResult.allOf(futureResults, this::mergeResults).thenResult(this::compute);
+        if (tryWriteCache) getCache().tryWrite(this, futureResult);
         return futureResult;
     }
 
@@ -136,21 +133,19 @@ public interface IComputation<T> extends Supplier<Result<T>>, ITree<IComputation
      * @param tryWriteCache whether the result should be stored in the cache
      * @param progressSupplier the progress supplier
      */
-    // used for performance (low overhead), debugging, nested computations, rename to computeSync?Async?, no progress tracking
+    // used for performance (low overhead), debugging, nested computations, rename to computeSync?Async?, no progress
+    // tracking
     default Result<T> computeResult(boolean tryHitCache, boolean tryWriteCache, Supplier<Progress> progressSupplier) {
         if (tryHitCache) {
             Result<FutureResult<T>> cacheHit = getCache().tryHit(this);
-            if (cacheHit.isPresent())
-                return cacheHit.get().get();
+            if (cacheHit.isPresent()) return cacheHit.get().get();
         }
         List<Result<?>> results = getChildren().stream()
                 .map(computation -> computation.computeResult(tryHitCache, tryWriteCache, progressSupplier))
                 .collect(Collectors.toList());
         Progress progress = progressSupplier.get();
-        Result<T> result = mergeResults(results)
-                .flatMap(r -> compute(r, progress));
-        if (tryWriteCache)
-            getCache().tryWrite(this, new FutureResult<>(result, progress));
+        Result<T> result = mergeResults(results).flatMap(r -> compute(r, progress));
+        if (tryWriteCache) getCache().tryWrite(this, new FutureResult<>(result, progress));
         return result;
     }
 
@@ -259,10 +254,7 @@ public interface IComputation<T> extends Supplier<Result<T>>, ITree<IComputation
      * If the result is empty, the stream is empty as well.
      */
     default Stream<T> stream() {
-        return Stream.generate(this)
-                .limit(1)
-                .filter(Result::isPresent)
-                .map(Result::get);
+        return Stream.generate(this).limit(1).filter(Result::isPresent).map(Result::get);
     }
 
     /**
@@ -340,5 +332,5 @@ public interface IComputation<T> extends Supplier<Result<T>>, ITree<IComputation
     //  it may be nice to denote THE canonical best input for a computation.
     //  maybe this can also be done with alternative constructors or something?
     //  maybe this is also something to be implemented in its own module?
-//    <S> Optional<Computation<S, T>> getPreferredInputComputation();
+    //    <S> Optional<Computation<S, T>> getPreferredInputComputation();
 }

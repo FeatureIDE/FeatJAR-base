@@ -1,7 +1,6 @@
 package de.featjar.base.io.input;
 
 import de.featjar.base.io.IIOObject;
-
 import java.io.IOException;
 import java.nio.charset.Charset;
 import java.nio.file.Files;
@@ -20,7 +19,9 @@ public class FileInput extends AInput {
      * @throws IOException if an I/O error occurs
      */
     public FileInput(Path path, Charset charset) throws IOException {
-        super(Files.newInputStream(path, StandardOpenOption.READ), charset,
+        super(
+                Files.newInputStream(path, StandardOpenOption.READ),
+                charset,
                 IIOObject.getFileExtension(path).orElse(null));
     }
 }

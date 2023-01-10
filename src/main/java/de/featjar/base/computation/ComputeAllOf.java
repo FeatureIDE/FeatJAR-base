@@ -2,7 +2,6 @@ package de.featjar.base.computation;
 
 import de.featjar.base.data.Result;
 import de.featjar.base.tree.structure.ITree;
-
 import java.util.List;
 
 /**

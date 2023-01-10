@@ -33,11 +33,9 @@ import java.util.Locale;
  * @author Elias Kuiter
  */
 public class TimeStampFormatter implements IFormatter {
-    private DateTimeFormatter formatter =
-            DateTimeFormatter
-                    .ofLocalizedDateTime(FormatStyle.SHORT)
-                    .withLocale(Locale.UK)
-                    .withZone(ZoneId.systemDefault());
+    private DateTimeFormatter formatter = DateTimeFormatter.ofLocalizedDateTime(FormatStyle.SHORT)
+            .withLocale(Locale.UK)
+            .withZone(ZoneId.systemDefault());
 
     public DateTimeFormatter getFormatter() {
         return formatter;

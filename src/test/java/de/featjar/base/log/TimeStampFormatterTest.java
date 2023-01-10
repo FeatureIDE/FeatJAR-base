@@ -1,15 +1,14 @@
 package de.featjar.base.log;
 
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-import org.mockito.Mockito;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.mockito.Mockito.doReturn;
 
 import java.time.Instant;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
-
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.mockito.Mockito.doReturn;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.mockito.Mockito;
 
 class TimeStampFormatterTest {
     TimeStampFormatter timeStampFormatter;
@@ -32,9 +31,8 @@ class TimeStampFormatterTest {
 
     @Test
     void getCustomPrefix() {
-        timeStampFormatter.setFormatter(DateTimeFormatter
-                .ofPattern("yyyy/MM/dd-HH:mm:ss")
-                .withZone(ZoneId.systemDefault()));
+        timeStampFormatter.setFormatter(
+                DateTimeFormatter.ofPattern("yyyy/MM/dd-HH:mm:ss").withZone(ZoneId.systemDefault()));
         assertEquals("[2022/08/01-11:00:00] ", timeStampFormatter.getPrefix());
     }
 }

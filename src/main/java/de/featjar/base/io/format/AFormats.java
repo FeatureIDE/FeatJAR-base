@@ -63,13 +63,14 @@ public abstract class AFormats<T> extends AExtensionPoint<IFormat<T>> implements
     @Override
     public Result<IFormat<T>> getFormat(InputHeader inputHeader) {
         return getExtensions().stream()
-                .filter(format -> Objects.equals(inputHeader.getFileExtension().orElse(null), format.getFileExtension()))
+                .filter(format ->
+                        Objects.equals(inputHeader.getFileExtension().orElse(null), format.getFileExtension()))
                 .filter(format -> format.supportsContent(inputHeader))
                 .findFirst()
                 .map(Result::of)
-                .orElseGet(() ->
-                        Result.empty(new Problem("No suitable format found for file extension \"."
-                                + inputHeader.getFileExtension() + "\". Possible formats: " + getExtensions(),
-                                Problem.Severity.ERROR)));
+                .orElseGet(() -> Result.empty(new Problem(
+                        "No suitable format found for file extension \"." + inputHeader.getFileExtension()
+                                + "\". Possible formats: " + getExtensions(),
+                        Problem.Severity.ERROR)));
     }
 }

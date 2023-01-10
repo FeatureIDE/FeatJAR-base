@@ -60,7 +60,7 @@ public interface IAttributable {
                         + " to value of type " + value.getClass());
             }
             if (!attribute.getValidator().test(getMutable(), value)) {
-                throw new IllegalArgumentException("failed to validate attribute " + attribute + " for value "+ value);
+                throw new IllegalArgumentException("failed to validate attribute " + attribute + " for value " + value);
             }
             getMutable().getAttributeValues().put(attribute, value);
         }

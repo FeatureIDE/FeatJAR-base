@@ -2,7 +2,6 @@ package de.featjar.base.io.input;
 
 import de.featjar.base.io.AIOMapper;
 import de.featjar.base.io.IOMapperOptions;
-
 import java.io.IOException;
 import java.nio.charset.Charset;
 import java.nio.file.Path;

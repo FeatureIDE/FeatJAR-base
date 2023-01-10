@@ -1,10 +1,10 @@
 package de.featjar.base.cli;
 
+import static org.junit.jupiter.api.Assertions.*;
+
 import de.featjar.base.data.Result;
 import de.featjar.base.log.Log;
 import org.junit.jupiter.api.Test;
-
-import static org.junit.jupiter.api.Assertions.*;
 
 class ArgumentParserTest {
 

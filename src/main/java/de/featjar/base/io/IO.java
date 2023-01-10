@@ -31,7 +31,6 @@ import de.featjar.base.io.output.AOutput;
 import de.featjar.base.io.output.AOutputMapper;
 import de.featjar.base.io.output.StreamOutputMapper;
 import de.featjar.base.io.output.StringOutputMapper;
-
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -147,8 +146,10 @@ public class IO {
      * @return the parsed result
      */
     public static <T> Result<T> load(URL url, IFormat<T> format, Charset charset) {
-        try (AInputMapper inputMapper =
-                     new StreamInputMapper(url.openStream(), charset, IIOObject.getFileExtension(url.getFile()).orElse(null))) {
+        try (AInputMapper inputMapper = new StreamInputMapper(
+                url.openStream(),
+                charset,
+                IIOObject.getFileExtension(url.getFile()).orElse(null))) {
             return parse(inputMapper, format);
         } catch (final IOException e) {
             return Result.empty(e);
@@ -166,8 +167,10 @@ public class IO {
      * @return the parsed result
      */
     public static <T> Result<T> load(URL url, IFormat<T> format, Supplier<T> factory, Charset charset) {
-        try (AInputMapper inputMapper =
-                     new StreamInputMapper(url.openStream(), charset, IIOObject.getFileExtension(url.getFile()).orElse(null))) {
+        try (AInputMapper inputMapper = new StreamInputMapper(
+                url.openStream(),
+                charset,
+                IIOObject.getFileExtension(url.getFile()).orElse(null))) {
             return parse(inputMapper, format, factory);
         } catch (final IOException e) {
             return Result.empty(e);
@@ -185,8 +188,10 @@ public class IO {
      * @return the parsed result
      */
     public static <T> Result<T> load(URL url, IFormatSupplier<T> formatSupplier, Supplier<T> factory, Charset charset) {
-        try (AInputMapper inputMapper =
-                     new StreamInputMapper(url.openStream(), charset, IIOObject.getFileExtension(url.getFile()).orElse(null))) {
+        try (AInputMapper inputMapper = new StreamInputMapper(
+                url.openStream(),
+                charset,
+                IIOObject.getFileExtension(url.getFile()).orElse(null))) {
             return parse(inputMapper, formatSupplier, factory);
         } catch (final IOException e) {
             return Result.empty(e);
@@ -203,8 +208,10 @@ public class IO {
      * @return the parsed result
      */
     public static <T> Result<T> load(URL url, IFormatSupplier<T> formatSupplier, Charset charset) {
-        try (AInputMapper inputMapper =
-                     new StreamInputMapper(url.openStream(), charset, IIOObject.getFileExtension(url.getFile()).orElse(null))) {
+        try (AInputMapper inputMapper = new StreamInputMapper(
+                url.openStream(),
+                charset,
+                IIOObject.getFileExtension(url.getFile()).orElse(null))) {
             return parse(inputMapper, formatSupplier);
         } catch (final IOException e) {
             return Result.empty(e);
@@ -234,7 +241,8 @@ public class IO {
      * @param <T>             the type of the parsed result
      * @return the parsed result
      */
-    public static <T> Result<T> load(Path path, IFormat<T> format, Supplier<T> factory, IOMapperOptions... ioMapperOptions) {
+    public static <T> Result<T> load(
+            Path path, IFormat<T> format, Supplier<T> factory, IOMapperOptions... ioMapperOptions) {
         return load(path, format, factory, DEFAULT_CHARSET, ioMapperOptions);
     }
 
@@ -261,7 +269,8 @@ public class IO {
      * @param <T>             the type of the parsed result
      * @return the parsed result
      */
-    public static <T> Result<T> load(Path path, IFormatSupplier<T> formatSupplier, Supplier<T> factory, IOMapperOptions... ioMapperOptions) {
+    public static <T> Result<T> load(
+            Path path, IFormatSupplier<T> formatSupplier, Supplier<T> factory, IOMapperOptions... ioMapperOptions) {
         return load(path, formatSupplier, factory, DEFAULT_CHARSET, ioMapperOptions);
     }
 
@@ -275,7 +284,11 @@ public class IO {
      * @param <T>             the type of the parsed result
      * @return the parsed result
      */
-    public static <T> Result<T> load(Path path, IFormatSupplier<T> formatSupplier, IFactorySupplier<T> factorySupplier, IOMapperOptions... ioMapperOptions) {
+    public static <T> Result<T> load(
+            Path path,
+            IFormatSupplier<T> formatSupplier,
+            IFactorySupplier<T> factorySupplier,
+            IOMapperOptions... ioMapperOptions) {
         return load(path, formatSupplier, factorySupplier, DEFAULT_CHARSET, ioMapperOptions);
     }
 
@@ -289,7 +302,8 @@ public class IO {
      * @param <T>             the type of the parsed result
      * @return the parsed result
      */
-    public static <T> Result<T> load(Path path, IFormat<T> format, Charset charset, IOMapperOptions... ioMapperOptions) {
+    public static <T> Result<T> load(
+            Path path, IFormat<T> format, Charset charset, IOMapperOptions... ioMapperOptions) {
         try (AInputMapper inputMapper = new FileInputMapper(path, charset, ioMapperOptions)) {
             return parse(inputMapper, format);
         } catch (final IOException e) {
@@ -308,7 +322,8 @@ public class IO {
      * @param <T>             the type of the parsed result
      * @return the parsed result
      */
-    public static <T> Result<T> load(Path path, IFormat<T> format, Supplier<T> factory, Charset charset, IOMapperOptions... ioMapperOptions) {
+    public static <T> Result<T> load(
+            Path path, IFormat<T> format, Supplier<T> factory, Charset charset, IOMapperOptions... ioMapperOptions) {
         try (AInputMapper inputMapper = new FileInputMapper(path, charset, ioMapperOptions)) {
             return parse(inputMapper, format, factory);
         } catch (final IOException e) {
@@ -327,7 +342,12 @@ public class IO {
      * @param <T>             the type of the parsed result
      * @return the parsed result
      */
-    public static <T> Result<T> load(Path path, IFormatSupplier<T> formatSupplier, Supplier<T> factory, Charset charset, IOMapperOptions... ioMapperOptions) {
+    public static <T> Result<T> load(
+            Path path,
+            IFormatSupplier<T> formatSupplier,
+            Supplier<T> factory,
+            Charset charset,
+            IOMapperOptions... ioMapperOptions) {
         try (AInputMapper inputMapper = new FileInputMapper(path, charset, ioMapperOptions)) {
             return parse(inputMapper, formatSupplier, factory);
         } catch (final IOException e) {
@@ -345,7 +365,8 @@ public class IO {
      * @param <T>             the type of the parsed result
      * @return the parsed result
      */
-    public static <T> Result<T> load(Path path, IFormatSupplier<T> formatSupplier, Charset charset, IOMapperOptions... ioMapperOptions) {
+    public static <T> Result<T> load(
+            Path path, IFormatSupplier<T> formatSupplier, Charset charset, IOMapperOptions... ioMapperOptions) {
         try (AInputMapper inputMapper = new FileInputMapper(path, charset, ioMapperOptions)) {
             return parse(inputMapper, formatSupplier);
         } catch (final IOException e) {
@@ -364,7 +385,12 @@ public class IO {
      * @param <T>             the type of the parsed result
      * @return the parsed result
      */
-    public static <T> Result<T> load(Path path, IFormatSupplier<T> formatSupplier, IFactorySupplier<T> factorySupplier, Charset charset, IOMapperOptions... ioMapperOptions) {
+    public static <T> Result<T> load(
+            Path path,
+            IFormatSupplier<T> formatSupplier,
+            IFactorySupplier<T> factorySupplier,
+            Charset charset,
+            IOMapperOptions... ioMapperOptions) {
         try (AInputMapper inputMapper = new FileInputMapper(path, charset, ioMapperOptions)) {
             return parse(path, inputMapper, formatSupplier, factorySupplier);
         } catch (final IOException e) {
@@ -381,8 +407,7 @@ public class IO {
      * @return the parsed result
      */
     public static <T> Result<T> load(String string, IFormat<T> format) {
-        try (AInputMapper inputMapper =
-                     new StringInputMapper(string, DEFAULT_CHARSET, null)) {
+        try (AInputMapper inputMapper = new StringInputMapper(string, DEFAULT_CHARSET, null)) {
             return parse(inputMapper, format);
         } catch (final IOException e) {
             return Result.empty(e);
@@ -399,8 +424,7 @@ public class IO {
      * @return the parsed result
      */
     public static <T> Result<T> load(String string, IFormat<T> format, IFactory<T> factory) {
-        try (AInputMapper inputMapper =
-                     new StringInputMapper(string, DEFAULT_CHARSET, null)) {
+        try (AInputMapper inputMapper = new StringInputMapper(string, DEFAULT_CHARSET, null)) {
             return parse(inputMapper, format, factory);
         } catch (final IOException e) {
             return Result.empty(e);
@@ -418,8 +442,8 @@ public class IO {
      * @return the parsed result
      */
     public static <T> Result<T> load(String string, Path path, IFormatSupplier<T> formatSupplier, IFactory<T> factory) {
-        try (AInputMapper inputMapper =
-                     new StringInputMapper(string, DEFAULT_CHARSET, IIOObject.getFileExtension(path).orElse(null))) {
+        try (AInputMapper inputMapper = new StringInputMapper(
+                string, DEFAULT_CHARSET, IIOObject.getFileExtension(path).orElse(null))) {
             return parse(inputMapper, formatSupplier, factory);
         } catch (final IOException e) {
             return Result.empty(e);
@@ -436,8 +460,8 @@ public class IO {
      * @return the parsed result
      */
     public static <T> Result<T> load(String string, Path path, IFormatSupplier<T> formatSupplier) {
-        try (AInputMapper inputMapper =
-                     new StringInputMapper(string, DEFAULT_CHARSET, IIOObject.getFileExtension(path).orElse(null))) {
+        try (AInputMapper inputMapper = new StringInputMapper(
+                string, DEFAULT_CHARSET, IIOObject.getFileExtension(path).orElse(null))) {
             return parse(inputMapper, formatSupplier);
         } catch (final IOException e) {
             return Result.empty(e);
@@ -456,8 +480,8 @@ public class IO {
      */
     public static <T> Result<T> load(
             String string, Path path, IFormatSupplier<T> formatSupplier, IFactorySupplier<T> factorySupplier) {
-        try (AInputMapper inputMapper =
-                     new StringInputMapper(string, DEFAULT_CHARSET, IIOObject.getFileExtension(path).orElse(null))) {
+        try (AInputMapper inputMapper = new StringInputMapper(
+                string, DEFAULT_CHARSET, IIOObject.getFileExtension(path).orElse(null))) {
             return parse(path, inputMapper, formatSupplier, factorySupplier);
         } catch (final IOException e) {
             return Result.empty(e);
@@ -502,7 +526,8 @@ public class IO {
      * @param <T>            the type of the parsed result
      * @return the parsed result
      */
-    private static <T> Result<T> parse(AInputMapper inputMapper, IFormatSupplier<T> formatSupplier, Supplier<T> factory) {
+    private static <T> Result<T> parse(
+            AInputMapper inputMapper, IFormatSupplier<T> formatSupplier, Supplier<T> factory) {
         return inputMapper
                 .get()
                 .getInputHeader()
@@ -536,7 +561,11 @@ public class IO {
      * @param <T>             the type of the parsed result
      * @return the parsed result
      */
-    private static <T> Result<T> parse(Path path, AInputMapper inputMapper, IFormatSupplier<T> formatSupplier, IFactorySupplier<T> factorySupplier) {
+    private static <T> Result<T> parse(
+            Path path,
+            AInputMapper inputMapper,
+            IFormatSupplier<T> formatSupplier,
+            IFactorySupplier<T> factorySupplier) {
         return inputMapper
                 .get()
                 .getInputHeader()

@@ -2,7 +2,6 @@ package de.featjar.base.computation;
 
 import de.featjar.base.data.Result;
 import de.featjar.base.tree.structure.ITree;
-
 import java.util.Objects;
 import java.util.function.Function;
 
@@ -54,12 +53,12 @@ public class ComputeFunction<T, U> extends AComputation<U> implements IAnalysis<
     public boolean equalsNode(IComputation<?> other) {
         return super.equalsNode(other)
                 && Objects.equals(klass, ((ComputeFunction<?, ?>) other).klass)
-                && Objects.equals(scope, ((ComputeFunction<?, ?>) other).scope); //todo:monitor?
+                && Objects.equals(scope, ((ComputeFunction<?, ?>) other).scope); // todo:monitor?
     }
 
     @Override
     public int hashCodeNode() {
-        return Objects.hash(super.hashCodeNode(), klass, scope); //todo: monitor?
+        return Objects.hash(super.hashCodeNode(), klass, scope); // todo: monitor?
     }
 
     @Override

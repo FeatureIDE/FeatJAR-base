@@ -20,19 +20,12 @@
  */
 package de.featjar.base.io.input;
 
-import de.featjar.base.data.Maps;
 import de.featjar.base.data.Problem;
 import de.featjar.base.data.Result;
 import de.featjar.base.io.AIOMapper;
 import de.featjar.base.io.format.IFormat;
-
-import java.io.IOException;
-import java.io.InputStream;
-import java.nio.charset.Charset;
 import java.nio.file.Path;
-import java.util.Arrays;
 import java.util.LinkedHashMap;
-import java.util.List;
 import java.util.function.Supplier;
 
 /**

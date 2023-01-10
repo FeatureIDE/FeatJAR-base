@@ -21,7 +21,6 @@
 package de.featjar.base.tree.structure;
 
 import de.featjar.base.data.Result;
-
 import java.util.List;
 
 /**

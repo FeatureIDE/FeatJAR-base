@@ -27,7 +27,6 @@ import de.featjar.base.io.IO;
 import de.featjar.base.io.format.IFormat;
 import de.featjar.base.io.format.IFormatSupplier;
 import de.featjar.base.log.Log;
-
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -82,12 +81,14 @@ public class CommandLineInterface {
         LinkedHashSet<ICommand> matchingCommands = argumentParser.getCommands();
         if (argumentParser.hasHelpOption() || matchingCommands.isEmpty()) {
             System.out.println(argumentParser.getHelp());
-        }
-        else if (argumentParser.hasVersionOption()) {
+        } else if (argumentParser.hasVersionOption()) {
             System.out.println(FeatJAR.LIBRARY_NAME + ", unreleased version");
         } else {
-            FeatJAR.log().info("running matching commands: " +
-                    matchingCommands.stream().map(IExtension::getIdentifier).collect(Collectors.joining(", ")));
+            FeatJAR.log()
+                    .info("running matching commands: "
+                            + matchingCommands.stream()
+                                    .map(IExtension::getIdentifier)
+                                    .collect(Collectors.joining(", ")));
             matchingCommands.forEach(command -> command.run(argumentParser));
         }
     }
@@ -118,7 +119,8 @@ public class CommandLineInterface {
      * @param pathOrStdin the path or reference to the standard input stream
      */
     public static boolean isValidInput(String pathOrStdin) {
-        return STANDARD_INPUT_PATTERN.matcher(pathOrStdin.toLowerCase()).matches() || Files.exists(Paths.get(pathOrStdin));
+        return STANDARD_INPUT_PATTERN.matcher(pathOrStdin.toLowerCase()).matches()
+                || Files.exists(Paths.get(pathOrStdin));
     }
 
     /**

@@ -1,7 +1,6 @@
 package de.featjar.base.env;
 
 import de.featjar.base.data.Result;
-
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -37,8 +36,7 @@ public class StackTrace {
      * Useful for removing the entry for {@link Thread#getStackTrace()} from a stack trace.
      */
     public StackTrace removeTop() {
-        if (!stackTraceElements.isEmpty())
-            stackTraceElements.remove(0);
+        if (!stackTraceElements.isEmpty()) stackTraceElements.remove(0);
         return this;
     }
 
@@ -48,7 +46,8 @@ public class StackTrace {
      * @param classNamePrefix the class name prefix
      */
     public StackTrace removeClassNamePrefix(String classNamePrefix) {
-        stackTraceElements.removeIf(stackTraceElement -> stackTraceElement.getClassName().startsWith(classNamePrefix));
+        stackTraceElements.removeIf(
+                stackTraceElement -> stackTraceElement.getClassName().startsWith(classNamePrefix));
         return this;
     }
 
@@ -61,8 +60,8 @@ public class StackTrace {
      */
     public static Result<Boolean> isMethodCall(StackTraceElement stackTraceElement, Class<?> klass, String methodName) {
         try {
-            return Result.of(klass.isAssignableFrom(Class.forName(stackTraceElement.getClassName())) &&
-                    stackTraceElement.getMethodName().equals(methodName));
+            return Result.of(klass.isAssignableFrom(Class.forName(stackTraceElement.getClassName()))
+                    && stackTraceElement.getMethodName().equals(methodName));
         } catch (ClassNotFoundException e) {
             return Result.empty();
         }
@@ -72,8 +71,7 @@ public class StackTrace {
         // todo: does this work as indented when the class on the stack trace is an anonymous lambda?
         return stackTraceElements.stream()
                 .anyMatch(stackTraceElement ->
-                        isMethodCall(stackTraceElement, klass, methodName)
-                                .orElse(false));
+                        isMethodCall(stackTraceElement, klass, methodName).orElse(false));
     }
 
     /**
@@ -87,9 +85,7 @@ public class StackTrace {
      * {@return the top stack trace element of this stack trace, if any}
      */
     public Result<StackTraceElement> getTop() {
-        return stackTraceElements.isEmpty()
-                ? Result.empty()
-                : Result.of(stackTraceElements.get(0));
+        return stackTraceElements.isEmpty() ? Result.empty() : Result.of(stackTraceElements.get(0));
     }
 
     @Override

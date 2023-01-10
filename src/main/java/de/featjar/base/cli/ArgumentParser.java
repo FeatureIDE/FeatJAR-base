@@ -3,11 +3,10 @@ package de.featjar.base.cli;
 import de.featjar.base.FeatJAR;
 import de.featjar.base.data.Result;
 import de.featjar.base.data.Sets;
-import de.featjar.base.extension.IExtension;
 import de.featjar.base.extension.AExtensionPoint;
+import de.featjar.base.extension.IExtension;
 import de.featjar.base.log.IndentStringBuilder;
 import de.featjar.base.log.Log;
-
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -23,28 +22,24 @@ public class ArgumentParser extends AArgumentParser {
     /**
      * Option for printing usage information.
      */
-    public static final Option<Boolean> HELP_OPTION =
-            new Flag("--help")
-                    .setDescription("Print usage information");
+    public static final Option<Boolean> HELP_OPTION = new Flag("--help").setDescription("Print usage information");
 
     /**
      * Option for printing version information.
      */
     public static final Option<Boolean> VERSION_OPTION =
-            new Flag("--version")
-                    .setDescription("Print version information");
+            new Flag("--version").setDescription("Print version information");
 
     /**
      * Option for setting the logger verbosity.
      */
-    public static final Option<Log.Verbosity> VERBOSITY_OPTION =
-            new Option<>("--verbosity", Log.Verbosity::of)
-                    .setDescription("The logger verbosity, one of " +
-                            Arrays.stream(Log.Verbosity.values())
-                                    .map(Objects::toString)
-                                    .map(String::toLowerCase)
-                                    .collect(Collectors.joining(", ")))
-                    .setDefaultValue(CommandLineInterface.DEFAULT_VERBOSITY);
+    public static final Option<Log.Verbosity> VERBOSITY_OPTION = new Option<>("--verbosity", Log.Verbosity::of)
+            .setDescription("The logger verbosity, one of "
+                    + Arrays.stream(Log.Verbosity.values())
+                            .map(Objects::toString)
+                            .map(String::toLowerCase)
+                            .collect(Collectors.joining(", ")))
+            .setDefaultValue(CommandLineInterface.DEFAULT_VERBOSITY);
 
     protected static final int COMMAND_NAME_POSITION = 0;
     protected final String commandNameRegex;
@@ -58,17 +53,14 @@ public class ArgumentParser extends AArgumentParser {
         super(args);
         if (args.length > 0)
             commandNameRegex = parsePositionalArguments(COMMAND_NAME_POSITION).get(COMMAND_NAME_POSITION);
-        else
-            commandNameRegex = null;
+        else commandNameRegex = null;
     }
 
     /**
      * {@return the commands supplied in the given arguments}
      */
     public LinkedHashSet<ICommand> getCommands() {
-        return commandNameRegex != null
-                ? getMatchingCommands(commandNameRegex)
-                : Sets.empty();
+        return commandNameRegex != null ? getMatchingCommands(commandNameRegex) : Sets.empty();
     }
 
     /**
@@ -92,13 +84,18 @@ public class ArgumentParser extends AArgumentParser {
      */
     public void appendHelp(IndentStringBuilder sb) {
         List<ICommand> commands = FeatJAR.extensionPoint(Commands.class).getExtensions();
-        sb.appendLine("Usage: java -jar " + FeatJAR.LIBRARY_NAME + " <command> [--<flag> | --<option> <value>]...").appendLine();
+        sb.appendLine("Usage: java -jar " + FeatJAR.LIBRARY_NAME + " <command> [--<flag> | --<option> <value>]...")
+                .appendLine();
         if (commands.size() == 0) {
-            sb.append("No commands are available. You can register commands in an extensions.xml file when building " + FeatJAR.LIBRARY_NAME + ".\n");
+            sb.append("No commands are available. You can register commands in an extensions.xml file when building "
+                    + FeatJAR.LIBRARY_NAME + ".\n");
         }
         sb.append("The following commands are available:\n").addIndent();
         for (final ICommand command : commands) {
-            sb.appendLine(String.format("%s: %s", command.getIdentifier(), Result.ofNullable(command.getDescription()).orElse("")));
+            sb.appendLine(String.format(
+                    "%s: %s",
+                    command.getIdentifier(),
+                    Result.ofNullable(command.getDescription()).orElse("")));
         }
         sb.removeIndent();
         sb.appendLine();
@@ -155,7 +152,8 @@ public class ArgumentParser extends AArgumentParser {
      * @param regex          the regex
      * @param <T>            the type of the extension
      */
-    public <T extends IExtension> LinkedHashSet<T> getMatchingExtensions(AExtensionPoint<T> extensionPoint, String regex) {
+    public <T extends IExtension> LinkedHashSet<T> getMatchingExtensions(
+            AExtensionPoint<T> extensionPoint, String regex) {
         return extensionPoint.getMatchingExtensions(regex);
     }
 

@@ -23,7 +23,6 @@ package de.featjar.base.env;
 import de.featjar.base.data.Problem;
 import de.featjar.base.data.Result;
 import de.featjar.base.extension.IExtension;
-
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -101,8 +100,8 @@ public abstract class ABinary implements IExtension {
                 process = null;
                 return Result.of(reader.lines());
             } else {
-                return Result.empty(new Problem(
-                        getExecutablePath() + " exited with value " + exitValue, Problem.Severity.ERROR));
+                return Result.empty(
+                        new Problem(getExecutablePath() + " exited with value " + exitValue, Problem.Severity.ERROR));
             }
         } catch (IOException | InterruptedException e) {
             return Result.empty(e);
@@ -149,7 +148,6 @@ public abstract class ABinary implements IExtension {
                 }
             }
         }
-
     }
 
     /**

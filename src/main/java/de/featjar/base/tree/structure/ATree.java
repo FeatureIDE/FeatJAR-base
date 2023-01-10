@@ -37,6 +37,7 @@ public abstract class ATree<T extends ITree<T>> implements ITree<T> {
      * The children of this node.
      */
     protected final List<T> children = new ArrayList<>();
+
     protected boolean hashCodeValid;
     protected int hashCode; // todo: cache hash code
 
@@ -138,7 +139,7 @@ public abstract class ATree<T extends ITree<T>> implements ITree<T> {
 
     /**
      * Replaces a child with a new child.
-
+     *
      * @param oldChild the old child
      * @param newChild the new child
      * @throws NoSuchElementException if the given old node is not a child
@@ -147,11 +148,9 @@ public abstract class ATree<T extends ITree<T>> implements ITree<T> {
     @Override
     public boolean replaceChild(T oldChild, T newChild) {
         final int index = children.indexOf(oldChild);
-        if (index == -1)
-            throw new NoSuchElementException();
+        if (index == -1) throw new NoSuchElementException();
         assertChildValidator(newChild);
-        if (oldChild != newChild)
-            children.set(index, newChild);
+        if (oldChild != newChild) children.set(index, newChild);
         return oldChild != newChild;
     }
 
@@ -165,11 +164,9 @@ public abstract class ATree<T extends ITree<T>> implements ITree<T> {
      */
     @Override
     public boolean replaceChild(int idx, T newChild) {
-        if (idx < 0 || idx > getChildrenCount())
-            throw new NoSuchElementException();
+        if (idx < 0 || idx > getChildrenCount()) throw new NoSuchElementException();
         assertChildValidator(newChild);
-        if (children.get(idx) != newChild)
-            children.set(idx, newChild);
+        if (children.get(idx) != newChild) children.set(idx, newChild);
         return children.get(idx) != newChild;
     }
 

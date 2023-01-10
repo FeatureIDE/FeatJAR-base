@@ -22,9 +22,8 @@ package de.featjar.base.io.list;
 
 import de.featjar.base.data.Result;
 import de.featjar.base.data.Sets;
-import de.featjar.base.io.input.AInputMapper;
 import de.featjar.base.io.format.IFormat;
-
+import de.featjar.base.io.input.AInputMapper;
 import java.util.*;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
@@ -38,6 +37,7 @@ import java.util.stream.Collectors;
 public class StringListFormat implements IFormat<List<String>> {
     private static final String MULTILINE_COMMENT = "###";
     private static final LinkedHashSet<String> COMMENTS = Sets.empty();
+
     static {
         COMMENTS.add("#");
         COMMENTS.add("\t");

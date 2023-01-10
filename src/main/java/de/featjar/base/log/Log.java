@@ -26,7 +26,6 @@ import de.featjar.base.data.Problem;
 import de.featjar.base.data.Result;
 import de.featjar.base.extension.IInitializer;
 import de.featjar.base.io.MultiStream;
-
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.PrintStream;
@@ -82,13 +81,12 @@ public class Log implements IInitializer {
         PROGRESS;
 
         public static boolean isValid(String verbosityString) {
-            String[] verbosities = new String[]{"none", "error", "warning", "info", "debug", "progress"};
+            String[] verbosities = new String[] {"none", "error", "warning", "info", "debug", "progress"};
             return Arrays.asList(verbosities).contains(verbosityString);
         }
 
         public static Result<Verbosity> of(String verbosityString) {
-            if (!isValid(verbosityString))
-                return Result.empty();
+            if (!isValid(verbosityString)) return Result.empty();
             return Result.of(Verbosity.valueOf(verbosityString.toUpperCase()));
         }
     }
@@ -108,8 +106,9 @@ public class Log implements IInitializer {
 
         public Configuration resetLogStreams() {
             logStreams.clear();
-            Arrays.asList(Verbosity.values()).forEach(verbosity ->
-                    logStreams.put(verbosity, new de.featjar.base.io.PrintStream(new MultiStream())));
+            Arrays.asList(Verbosity.values())
+                    .forEach(verbosity ->
+                            logStreams.put(verbosity, new de.featjar.base.io.PrintStream(new MultiStream())));
             return this;
         }
 
@@ -122,8 +121,8 @@ public class Log implements IInitializer {
          */
         public Configuration logToStream(PrintStream stream, Verbosity... verbosities) {
             Arrays.asList(verbosities)
-                    .forEach(verbosity -> ((MultiStream) logStreams.get(verbosity).getOutputStream())
-                            .addStream(stream));
+                    .forEach(verbosity ->
+                            ((MultiStream) logStreams.get(verbosity).getOutputStream()).addStream(stream));
             return this;
         }
 
@@ -135,7 +134,10 @@ public class Log implements IInitializer {
          * @return this configuration
          */
         public Configuration logToFile(Path path, Verbosity... verbosities) throws FileNotFoundException {
-            logToStream(new PrintStream(new FileOutputStream(path.toAbsolutePath().normalize().toFile())), verbosities);
+            logToStream(
+                    new PrintStream(new FileOutputStream(
+                            path.toAbsolutePath().normalize().toFile())),
+                    verbosities);
             return this;
         }
 
@@ -200,8 +202,7 @@ public class Log implements IInitializer {
 
         public Configuration logAtMost(String verbosityString) {
             Result<Verbosity> verbosity = Verbosity.of(verbosityString);
-            if (verbosity.isEmpty())
-                throw new IllegalArgumentException("invalid verbosity " + verbosityString);
+            if (verbosity.isEmpty()) throw new IllegalArgumentException("invalid verbosity " + verbosityString);
             logAtMost(verbosity.get());
             return this;
         }

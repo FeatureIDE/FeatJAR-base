@@ -22,11 +22,7 @@ package de.featjar.base.io;
 
 import de.featjar.base.data.Maps;
 import de.featjar.base.data.Result;
-import de.featjar.base.io.input.FileInput;
-import de.featjar.base.io.output.AOutputMapper;
-
 import java.io.IOException;
-import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -110,10 +106,9 @@ public abstract class AIOMapper<T extends IIOObject> implements AutoCloseable, S
      * @param ioObject the IO object
      */
     public Result<Path> getPath(T ioObject) {
-        return Result.ofOptional(
-                        ioMap.entrySet().stream()
-                                .filter(e -> Objects.equals(e.getValue(), ioObject))
-                                .findAny())
+        return Result.ofOptional(ioMap.entrySet().stream()
+                        .filter(e -> Objects.equals(e.getValue(), ioObject))
+                        .findAny())
                 .map(Map.Entry::getKey);
     }
 

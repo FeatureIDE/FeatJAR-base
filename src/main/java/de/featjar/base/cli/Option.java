@@ -2,7 +2,6 @@ package de.featjar.base.cli;
 
 import de.featjar.base.FeatJAR;
 import de.featjar.base.data.Result;
-
 import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
@@ -139,18 +138,15 @@ public class Option<T> {
      * @throws AArgumentParser.ArgumentParseException when the value cannot be parsed
      */
     public Result<T> parseFrom(AArgumentParser argumentParser) throws AArgumentParser.ArgumentParseException {
-        Result<String> valueString = isRequired
-                ? Result.of(argumentParser.parseRequiredOption(name))
-                : argumentParser.parseOption(name);
-        if (valueString.isEmpty())
-            return Result.ofNullable(defaultValue);
+        Result<String> valueString =
+                isRequired ? Result.of(argumentParser.parseRequiredOption(name)) : argumentParser.parseOption(name);
+        if (valueString.isEmpty()) return Result.ofNullable(defaultValue);
         Result<T> parseResult = parser.apply(valueString.get());
         if (parseResult.isEmpty()) {
             FeatJAR.log().warning("could not parse option " + name + ", using default value");
             return Result.ofNullable(defaultValue);
         }
-        if (validator.test(parseResult.get()))
-            return parseResult;
+        if (validator.test(parseResult.get())) return parseResult;
         throw new IllegalArgumentException("value " + parseResult.get() + " for option " + name + " is invalid");
     }
 
@@ -174,10 +170,10 @@ public class Option<T> {
 
     @Override
     public String toString() {
-        return String.format("%s <value>%s%s", name, getDescription().map(d -> ": " + d).orElse(""),
-                defaultValue != null
-                        ? String.format(" (default: %s)", defaultValue)
-                        : "");
+        return String.format(
+                "%s <value>%s%s",
+                name,
+                getDescription().map(d -> ": " + d).orElse(""),
+                defaultValue != null ? String.format(" (default: %s)", defaultValue) : "");
     }
-
 }

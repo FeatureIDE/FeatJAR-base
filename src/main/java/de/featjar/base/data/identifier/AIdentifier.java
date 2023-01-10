@@ -60,5 +60,4 @@ public abstract class AIdentifier implements IIdentifier {
     public int hashCode() {
         return Objects.hash(toString());
     }
-
 }

@@ -1,13 +1,12 @@
 package de.featjar.base.data;
 
+import static de.featjar.base.computation.Computations.async;
+import static org.junit.jupiter.api.Assertions.*;
+
 import de.featjar.base.FeatJAR;
 import de.featjar.base.computation.*;
 import de.featjar.base.tree.structure.ITree;
 import org.junit.jupiter.api.Test;
-
-import static de.featjar.base.computation.Computations.async;
-import static org.junit.jupiter.api.Assertions.*;
-
 
 class IComputationTest {
     @Test
@@ -74,14 +73,18 @@ class IComputationTest {
             return null;
         }
 
-        enum Parity { EVEN, ODD }
+        enum Parity {
+            EVEN,
+            ODD
+        }
+
         protected static Dependency<Integer> INPUT = newRequiredDependency();
         protected static Dependency<Parity> PARITY = newRequiredDependency();
 
         public ComputeIsParity(IComputation<Integer> input, IComputation<Parity> parity) {
-             dependOn(INPUT, PARITY);
-             setInput(input);
-             setDependency(PARITY, parity);
+            dependOn(INPUT, PARITY);
+            setInput(input);
+            setDependency(PARITY, parity);
         }
 
         @Override
@@ -91,21 +94,33 @@ class IComputationTest {
 
         @Override
         public Result<Boolean> compute(DependencyList dependencyList, Progress progress) {
-            return Result.of(dependencyList.get(PARITY) == Parity.EVEN ? INPUT.get(dependencyList) % 2 == 0 : INPUT.get(dependencyList) % 2 == 1);
+            return Result.of(
+                    dependencyList.get(PARITY) == Parity.EVEN
+                            ? INPUT.get(dependencyList) % 2 == 0
+                            : INPUT.get(dependencyList) % 2 == 1);
         }
     }
 
     @Test
     void computationWithArguments() {
         IComputation<Integer> computation = Computations.of(42);
-        assertTrue(new ComputeIsParity(computation, async(ComputeIsParity.Parity.EVEN)).getResult().get());
-        assertFalse(new ComputeIsParity(computation, async(ComputeIsParity.Parity.ODD)).getResult().get());
-        assertTrue(computation.map(c -> new ComputeIsParity(c, async(ComputeIsParity.Parity.EVEN))).getResult().get());
+        assertTrue(new ComputeIsParity(computation, async(ComputeIsParity.Parity.EVEN))
+                .getResult()
+                .get());
+        assertFalse(new ComputeIsParity(computation, async(ComputeIsParity.Parity.ODD))
+                .getResult()
+                .get());
+        assertTrue(computation
+                .map(c -> new ComputeIsParity(c, async(ComputeIsParity.Parity.EVEN)))
+                .getResult()
+                .get());
     }
 
     @Test
     void allOfSimple() {
-        Pair<Integer, Integer> r = Computations.of(Computations.of(1), Computations.of(2)).getResult().get();
+        Pair<Integer, Integer> r = Computations.of(Computations.of(1), Computations.of(2))
+                .getResult()
+                .get();
         assertEquals(1, r.getKey());
         assertEquals(2, r.getValue());
     }
@@ -136,8 +151,6 @@ class IComputationTest {
             public ITree<IComputation<?>> cloneNode() {
                 return null;
             }
-
-
         };
         IComputation<Boolean> c2 = c1.map(ComputeIsEven::new);
         Pair<Integer, Boolean> r = Computations.of(c1, c2).getResult().get();

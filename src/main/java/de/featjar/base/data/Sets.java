@@ -21,8 +21,7 @@ public class Sets {
         return new LinkedHashSet<>(Set.of(objects));
     }
 
-    public static <T>
-    Collector<T, ?, LinkedHashSet<T>> toSet() {
+    public static <T> Collector<T, ?, LinkedHashSet<T>> toSet() {
         return Collectors.toCollection(LinkedHashSet::new);
     }
 }

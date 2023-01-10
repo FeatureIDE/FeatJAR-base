@@ -2,7 +2,6 @@ package de.featjar.base.io;
 
 import de.featjar.base.io.input.FileInput;
 import de.featjar.base.io.output.AOutputMapper;
-
 import java.nio.charset.Charset;
 import java.nio.file.Path;
 
