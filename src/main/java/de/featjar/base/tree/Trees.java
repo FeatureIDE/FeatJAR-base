@@ -447,8 +447,8 @@ public class Trees {
             if (entry.remainingChildren == null) {
                 path.add(entry.node);
                 Result<Void> problem = visitor.nodeValidator(path);
-                if (problem.hasProblem())
-                    throw new VisitorFailException(problem.getProblem().get());
+                if (problem.hasProblems())
+                    throw new VisitorFailException(problem.getProblems());
                 final TraversalAction traversalAction = visitor.firstVisit(path);
                 switch (traversalAction) {
                     case CONTINUE:
@@ -503,8 +503,8 @@ public class Trees {
                 if (path.isEmpty() || (curNode != path.get(path.size() - 1))) {
                     path.add(curNode);
                     Result<Void> problem = visitor.nodeValidator(path);
-                    if (problem.hasProblem())
-                        throw new VisitorFailException(problem.getProblem().get());
+                    if (problem.hasProblems())
+                        throw new VisitorFailException(problem.getProblems());
                     final TraversalAction traversalAction = visitor.firstVisit(path);
                     switch (traversalAction) {
                         case CONTINUE:

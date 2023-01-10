@@ -6,6 +6,7 @@ import de.featjar.base.data.Problem;
 import de.featjar.base.data.Result;
 
 import java.util.Objects;
+import java.util.stream.Collectors;
 
 public class GraphVizComputationTreeFormat extends GraphVizTreeFormat<IComputation<?>> {
     protected boolean includeResults = true;
@@ -32,7 +33,7 @@ public class GraphVizComputationTreeFormat extends GraphVizTreeFormat<IComputati
                                 .map(Class::getSimpleName)
                                 .orElse(""),
                         shorten(resultString),
-                        result.getProblem().map(Problem::toString).orElse(""))),
+                        result.getProblems().stream().map(Problem::toString).collect(Collectors.joining(", ")))),
                 option("xlabel", String.valueOf(numberOfHits)));
     }
 

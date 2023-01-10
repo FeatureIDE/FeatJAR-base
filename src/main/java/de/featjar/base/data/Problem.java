@@ -32,8 +32,9 @@ import java.util.Optional;
  * Can be caused by other problems, thus forming an {@link ITree}.
  *
  * @author Sebastian Krieter
+ * @author Elias Kuiter
  */
-public class Problem extends ATree<Problem> { // todo: remove tree again, doesn't work well
+public class Problem {
     /**
      * Severity of a problem.
      */
@@ -50,13 +51,6 @@ public class Problem extends ATree<Problem> { // todo: remove tree again, doesn'
 
     protected final Exception exception;
     protected final Severity severity;
-
-    /**
-     * Creates an error problem.
-     */
-    public Problem() {
-        this("an unspecified problem occurred");
-    }
 
     /**
      * Creates an error problem with a message.
@@ -128,22 +122,5 @@ public class Problem extends ATree<Problem> { // todo: remove tree again, doesn'
      */
     public RuntimeException getUncheckedException() {
         return new RuntimeException(exception);
-    }
-
-    @Override
-    public ITree<Problem> cloneNode() {
-        return new Problem(exception, severity);
-    }
-
-    @Override
-    public boolean equalsNode(Problem other) {
-        // exceptions cannot be meaningfully compared in Java
-        throw new UnsupportedOperationException();
-    }
-
-    @Override
-    public int hashCodeNode() {
-        // exceptions cannot be meaningfully hashed in Java
-        throw new UnsupportedOperationException();
     }
 }

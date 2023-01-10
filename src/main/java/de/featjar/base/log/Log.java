@@ -34,6 +34,7 @@ import java.nio.file.Path;
 import java.util.Arrays;
 import java.util.LinkedHashMap;
 import java.util.LinkedList;
+import java.util.List;
 
 /**
  * Logs messages to standard output and files.
@@ -288,12 +289,21 @@ public class Log implements IInitializer {
     public void problem(Problem problem) {
         switch (problem.getSeverity()) {
             case ERROR:
-                error(problem.print());
+                error(problem.getException());
                 break;
             case WARNING:
-                warning(problem.print());
+                warning(problem.getException()); // todo: pass as throwable?
                 break;
         }
+    }
+
+    /**
+     * Logs problems.
+     *
+     * @param problems the problems
+     */
+    public void problem(List<Problem> problems) {
+        problems.forEach(this::problem);
     }
 
     /**

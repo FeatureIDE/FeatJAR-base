@@ -48,21 +48,14 @@ public class Result<T> implements Supplier<T> {
 
     private final T object;
 
-    private final Problem problem;
+    private final List<Problem> problems;
 
     protected Result(T object, List<Problem> problems) {
         this.object = object;
         problems = problems == null
                 ? null
                 : problems.stream().filter(Objects::nonNull).collect(Collectors.toList());
-        if (problems == null || problems.isEmpty())
-            this.problem = null;
-        else if (problems.size() == 1)
-            this.problem = problems.iterator().next();
-        else {
-            this.problem = new Problem(problems.size() + " problems occurred", Problem.Severity.ERROR); // todo: error or warning?
-            this.problem.setChildren(problems);
-        }
+        this.problems = problems != null && !problems.isEmpty() ? problems : null;
     }
 
     /**
@@ -184,9 +177,7 @@ public class Result<T> implements Supplier<T> {
     public static List<Problem> getProblems(List<? extends Result<?>> results) {
         return results.stream()
                 .filter(Objects::nonNull)
-                .map(Result::getProblem)
-                .filter(Result::isPresent)
-                .map(Result::get)
+                .flatMap(r -> r.getProblems().stream())
                 .collect(Collectors.toList());
     }
 
@@ -280,12 +271,12 @@ public class Result<T> implements Supplier<T> {
     public <R> Result<R> map(Function<T, R> mapper) {
         if (object != null) {
             try {
-                return Result.of(mapper.apply(object), problem);
+                return Result.of(mapper.apply(object), problems);
             } catch (final Exception e) {
                 return merge(Result.empty(e));
             }
         } else {
-            return Result.empty(problem);
+            return Result.empty(problems);
         }
     }
 
@@ -298,7 +289,7 @@ public class Result<T> implements Supplier<T> {
      * exceptions occur during the mapping or if this result was empty before.
      */
     public <R> Result<R> flatMap(Function<T, Result<R>> mapper) {
-        return object != null ? mapper.apply(object) : Result.empty(problem);
+        return object != null ? mapper.apply(object) : Result.empty(problems);
     }
 
     /**
@@ -331,37 +322,37 @@ public class Result<T> implements Supplier<T> {
     }
 
     /**
-     * {@return this result's object or throws this result's problem}
+     * {@return this result's object or throws this result's problems}
      *
      * @param errorHandler the error handler
      */
-    public <E extends Exception> T orElseThrow(Function<Problem, E> errorHandler) throws E {
+    public <E extends Exception> T orElseThrow(Function<List<Problem>, E> errorHandler) throws E {
         if (object != null) {
             return object;
         } else {
-            throw errorHandler.apply(getProblem().orElse(new Problem()));
+            throw errorHandler.apply(getProblems());
         }
     }
 
     /**
-     * {@return this result's object or throws this result's problem}
+     * {@return this result's object or throws this result's problems}
      */
     public T orElseThrow() {
-        return orElseThrow(Problem::getUncheckedException);
+        return orElseThrow(problems -> new RuntimeException(problems.stream().map(Problem::toString).collect(Collectors.joining(", "))));
     }
 
     /**
-     * {@return this result's problem, if any}
+     * {@return this result's problems}
      */
-    public Result<Problem> getProblem() {
-        return ofNullable(problem);
+    public List<Problem> getProblems() {
+        return problems != null ? problems : List.of();
     }
 
     /**
-     * {@return whether this result has a problem}
+     * {@return whether this result has problems}
      */
-    public boolean hasProblem() {
-        return problem != null;
+    public boolean hasProblems() {
+        return problems != null;
     }
 
     /**
@@ -406,6 +397,6 @@ public class Result<T> implements Supplier<T> {
 
     @Override
     public String toString() {
-        return "Result{" + orElse(null) + ", " + problem + "}";
+        return "Result{" + orElse(null) + ", " + problems + "}";
     }
 }
