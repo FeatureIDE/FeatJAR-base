@@ -28,7 +28,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 /**
- * Writes trees to GraphViz DOT files.
+ * Serializes trees to GraphViz DOT files.
  *
  * @author Elias Kuiter
  */
@@ -85,9 +85,9 @@ public class GraphVizTreeFormat<T extends ITree<T>> implements IFormat<T> {
     }
 
     protected String getNodeIdentifier(T tree) {
-        return String.valueOf(
-                tree.hashCode()); // todo: technically, two objects can be different but have the same hash code
-        // so node identifiers should also take .equals into account
+        return String.valueOf(tree.hashCode());
+        // todo: technically, two objects can be different but have the same hash code.
+        //  so node identifiers should also take .equals into account.
     }
 
     protected String getNodeOptions(T tree) {

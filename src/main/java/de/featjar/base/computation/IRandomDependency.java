@@ -54,15 +54,4 @@ public interface IRandomDependency {
     default void setRandom(IComputation<Random> random) {
         getRandomDependency().set((IComputation<?>) this, random);
     }
-
-    /**
-     * Sets the pseudorandom number generator computation of this computation based on a given seed.
-     * Uses Java's default pseudorandom number generator implementation.
-     * If no seed is given, uses the default seed. (todo: not currently true)
-     *
-     * @param seed the seed
-     */
-    default void setRandomSeed(IComputation<Long> seed) {
-        setRandom(seed.mapResult(IRandomDependency.class, "setRandom", Random::new));
-    }
 }

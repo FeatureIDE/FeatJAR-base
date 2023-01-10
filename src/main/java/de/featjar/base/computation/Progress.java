@@ -24,6 +24,12 @@ import de.featjar.base.data.Range;
 import de.featjar.base.data.Result;
 import java.util.function.Supplier;
 
+/**
+ * Tracks progress of an asynchronous computation.
+ * Attached to a {@link FutureResult}.
+ *
+ * @author Elias Kuiter
+ */
 public class Progress implements Supplier<Double> {
     protected final Range range;
 

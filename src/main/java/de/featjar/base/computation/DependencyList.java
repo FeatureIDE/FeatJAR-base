@@ -22,6 +22,12 @@ package de.featjar.base.computation;
 
 import java.util.ArrayList;
 
+/**
+ * A list of dependencies for a computation.
+ * Contains the computed results of all dependencies.
+ *
+ * @author Elias Kuiter
+ */
 public class DependencyList extends ArrayList<Object> {
     public <T> T get(Dependency<T> dependency) {
         return dependency.get(this);

@@ -27,6 +27,11 @@ import de.featjar.base.data.Result;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
+/**
+ * Serializes computations to GraphViz DOT files.
+ *
+ * @author Elias Kuiter
+ */
 public class GraphVizComputationTreeFormat extends GraphVizTreeFormat<IComputation<?>> {
     protected boolean includeResults = true;
 

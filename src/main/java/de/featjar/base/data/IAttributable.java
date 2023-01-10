@@ -38,15 +38,10 @@ public interface IAttributable {
         return getAttributeValue(attribute).isPresent();
     }
 
-    // todo: this is weird
+    // todo: somehow avoid this weird atrocity
+    @SuppressWarnings("unchecked")
     static <T extends IAttributable & IMutable<T, ?>> Mutator<T> createMutator(IAttributable attributable) {
-        return new Mutator<T>() {
-            @SuppressWarnings("unchecked")
-            @Override
-            public T getMutable() {
-                return (T) attributable;
-            }
-        };
+        return () -> (T) attributable;
     }
 
     interface Mutator<T extends IAttributable & IMutable<T, ?>> extends IMutator<T> {

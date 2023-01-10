@@ -79,7 +79,7 @@ public interface IFormat<T> extends IExtension {
      */
     default void write(T object, AOutputMapper outputMapper) throws IOException {
         String string = serialize(object)
-                // todo: improve exception handling - this should maybe be a Result instead?
+                // todo: improve exception handling - this should maybe be a Result instead
                 .orElseThrow();
         outputMapper.get().write(string);
     }

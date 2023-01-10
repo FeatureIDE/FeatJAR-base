@@ -28,6 +28,8 @@ import java.util.LinkedHashMap;
 
 /**
  * Maps virtual paths to stream outputs.
+ *
+ * @author Elias Kuiter
  */
 public class StreamOutputMapper extends AOutputMapper {
     protected StreamOutputMapper(LinkedHashMap<Path, AOutput> ioMap, Path mainPath) {

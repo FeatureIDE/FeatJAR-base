@@ -30,6 +30,8 @@ import java.util.jar.Manifest;
 
 /**
  * Maps virtual paths to a JAR file output.
+ *
+ * @author Elias Kuiter
  */
 public class JARFileOutputMapper extends AOutputMapper {
     protected final JarOutputStream jarOutputStream;

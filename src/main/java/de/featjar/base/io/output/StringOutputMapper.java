@@ -28,6 +28,8 @@ import java.util.Map;
 
 /**
  * Maps virtual paths to string outputs.
+ *
+ * @author Elias Kuiter
  */
 public class StringOutputMapper extends AOutputMapper {
     protected final Charset charset;

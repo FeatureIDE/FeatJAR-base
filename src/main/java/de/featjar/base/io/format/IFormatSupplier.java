@@ -28,10 +28,9 @@ import de.featjar.base.io.input.InputHeader;
  *
  * @author Sebastian Krieter
  */
-@FunctionalInterface
 public interface IFormatSupplier<T> {
     /**
-     * {@return a Constant format}
+     * {@return a constant format}
      *
      * @param format the format
      * @param <T> the type of the parsed object

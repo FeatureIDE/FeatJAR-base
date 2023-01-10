@@ -24,6 +24,12 @@ import java.util.LinkedHashMap;
 import java.util.function.BiFunction;
 import java.util.function.BiPredicate;
 
+/**
+ * Describes metadata that can be attached to an object.
+ * an {@link IAttribute} does not store any attribute values, it only acts as a key or descriptor.
+ *
+ * @author Elias Kuiter
+ */
 public interface IAttribute extends BiFunction<IAttributable, LinkedHashMap<IAttribute, Object>, Result<Object>> {
     String getNamespace();
 

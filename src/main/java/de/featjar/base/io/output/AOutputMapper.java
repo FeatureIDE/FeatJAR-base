@@ -69,7 +69,6 @@ public abstract class AOutputMapper extends AIOMapper<AOutput> {
     /**
      * A runnable that may throw an {@link IOException}.
      */
-    @FunctionalInterface
     public interface IORunnable {
         void run() throws IOException;
     }
@@ -84,7 +83,7 @@ public abstract class AOutputMapper extends AIOMapper<AOutput> {
      */
     @SuppressWarnings("resource")
     public void withMainPath(Path newMainPath, IORunnable ioRunnable) throws IOException {
-        // TODO: are relative paths and subdirectories handled correctly?
+        // TODO: test whether relative paths and subdirectories are handled correctly
         create(newMainPath);
         Path oldMainPath = mainPath;
         mainPath = newMainPath;

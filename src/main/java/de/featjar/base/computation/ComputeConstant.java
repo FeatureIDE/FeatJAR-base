@@ -53,12 +53,12 @@ public class ComputeConstant<T> extends ALeafNode<IComputation<?>> implements IC
     @Override
     public boolean equalsNode(IComputation<?> other) {
         return getClass() == other.getClass()
-                && Objects.equals(value, ((ComputeConstant<?>) other).value); // todo:monitor?
+                && Objects.equals(value, ((ComputeConstant<?>) other).value);
     }
 
     @Override
     public int hashCodeNode() {
-        return Objects.hash(getClass(), value); // todo: monitor?
+        return Objects.hash(getClass(), value);
     }
 
     @Override

@@ -27,9 +27,12 @@ import de.featjar.base.env.StackTrace;
 import de.featjar.base.extension.IInitializer;
 import de.featjar.base.io.graphviz.GraphVizTreeFormat;
 import de.featjar.base.tree.structure.ITree;
+
 import java.net.URI;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.Executor;
+import java.util.concurrent.ForkJoinPool;
 import java.util.stream.Collectors;
 
 /**
@@ -75,6 +78,8 @@ public class Cache implements IInitializer, IBrowsable<GraphVizTreeFormat<ICompu
     public static class Configuration {
         protected CachePolicy cachePolicy = CachePolicy.CACHE_NONE;
 
+        protected Executor executor = ForkJoinPool.commonPool();
+
         /**
          * Configures the cache policy.
          *
@@ -83,6 +88,17 @@ public class Cache implements IInitializer, IBrowsable<GraphVizTreeFormat<ICompu
          */
         public Configuration setCachePolicy(CachePolicy cachePolicy) {
             this.cachePolicy = cachePolicy;
+            return this;
+        }
+
+        /**
+         * Configures the executor.
+         *
+         * @param executor the executor
+         * @return this configuration
+         */
+        public Configuration setExecutor(Executor executor) {
+            this.executor = executor;
             return this;
         }
     }
@@ -159,17 +175,12 @@ public class Cache implements IInitializer, IBrowsable<GraphVizTreeFormat<ICompu
         this.configuration = configuration;
     }
 
-    /*
-     * todo: rewrite
-     * {@return the result of a given computation}
-     * Returns the {@link FutureResult} for the {@link IComputation} from the cache if it has already been stored.
-     * Otherwise, computes the {@link FutureResult} and returns it.
-     * The computed {@link FutureResult} is cached if the current {@link CachePolicy} agrees.
+    /**
+     * {@return the future result stored in this cache for the given computation, if any}
      *
      * @param computation the computation
      * @param <T>         the type of the computation result
      */
-
     public <T> Result<FutureResult<T>> tryHit(IComputation<T> computation) {
         if (has(computation)) {
             FeatJAR.log().debug("cache hit for " + computation);
@@ -181,6 +192,13 @@ public class Cache implements IInitializer, IBrowsable<GraphVizTreeFormat<ICompu
         return Result.empty();
     }
 
+    /**
+     * Stores the given future result for the given computation if the current {@link CachePolicy} agrees.
+     *
+     * @param computation  the computation
+     * @param futureResult the future result
+     * @param <T>          the type of the computation result
+     */
     public <T> void tryWrite(IComputation<T> computation, FutureResult<T> futureResult) {
         if (configuration.cachePolicy.shouldCache(computation, new StackTrace())) {
             FeatJAR.log().debug("cache write for " + computation);
@@ -220,7 +238,7 @@ public class Cache implements IInitializer, IBrowsable<GraphVizTreeFormat<ICompu
      */
     public <T> boolean put(IComputation<T> computation, FutureResult<T> futureResult) {
         if (has(computation)) // once set, immutable
-        return false;
+            return false;
         computationMap.put(computation, futureResult);
         return true;
     }

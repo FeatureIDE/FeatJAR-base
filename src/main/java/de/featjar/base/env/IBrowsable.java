@@ -27,6 +27,13 @@ import java.io.IOException;
 import java.net.URI;
 import java.util.Scanner;
 
+/**
+ * An object that can be displayed in a web browser.
+ * Can be passed an argument to influence what is displayed.
+ *
+ * @param <T> the type of the argument
+ * @author Elias Kuiter
+ */
 public interface IBrowsable<T> {
     static void browse(String urlString) {
         browse(URI.create(urlString));

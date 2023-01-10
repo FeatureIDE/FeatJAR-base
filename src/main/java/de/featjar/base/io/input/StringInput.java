@@ -25,6 +25,8 @@ import java.nio.charset.Charset;
 
 /**
  * A string input.
+ *
+ * @author Elias Kuiter
  */
 public class StringInput extends AInput {
     /**

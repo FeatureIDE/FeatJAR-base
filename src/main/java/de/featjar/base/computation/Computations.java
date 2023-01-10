@@ -99,7 +99,7 @@ public class Computations {
      * @param <T> the type of the result
      */
     public static <T> IComputation<T> async(Result<T> tResult) {
-        return tResult.map(Computations::of).orElseThrow(); // todo: better error handling?
+        return tResult.map(Computations::of).orElseThrow();
     }
 
     /**
@@ -201,7 +201,7 @@ public class Computations {
      * @param <T> the type of the result
      */
     public static <T> T await(Result<T> tResult) {
-        return tResult.orElseThrow(); // todo: better error handling? logging?
+        return tResult.orElseThrow();
     }
 
     /**

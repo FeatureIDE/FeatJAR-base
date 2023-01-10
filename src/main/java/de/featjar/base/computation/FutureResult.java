@@ -20,6 +20,7 @@
  */
 package de.featjar.base.computation;
 
+import de.featjar.base.FeatJAR;
 import de.featjar.base.data.Problem;
 import de.featjar.base.data.Result;
 import java.time.Duration;
@@ -45,8 +46,6 @@ import net.tascalate.concurrent.*;
  * @author Elias Kuiter
  */
 public class FutureResult<T> implements Supplier<Result<T>> {
-    protected static final Executor executor = ForkJoinPool.commonPool(); // todo: allow overriding
-
     protected final Promise<Result<T>> promise;
 
     protected final Progress progress;
@@ -57,7 +56,7 @@ public class FutureResult<T> implements Supplier<Result<T>> {
      * @param result the result
      */
     public FutureResult(Result<T> result, Progress progress) {
-        this(CompletableTask.completed(result, executor), progress);
+        this(CompletableTask.completed(result, getExecutor()), progress);
     }
 
     /**
@@ -68,6 +67,10 @@ public class FutureResult<T> implements Supplier<Result<T>> {
     public FutureResult(Promise<Result<T>> promise, Progress progress) {
         this.promise = promise;
         this.progress = progress;
+    }
+
+    public static Executor getExecutor() {
+        return FeatJAR.cache().getConfiguration().executor;
     }
 
     /**
@@ -84,7 +87,7 @@ public class FutureResult<T> implements Supplier<Result<T>> {
                 .thenApplyAsync(
                         list -> resultMerger.apply(
                                 futureResults.stream().map(FutureResult::get).collect(Collectors.toList())),
-                        executor);
+                        getExecutor());
         return new FutureResult<>(promise, Progress.Null.NULL);
     }
 
@@ -150,7 +153,7 @@ public class FutureResult<T> implements Supplier<Result<T>> {
                                 return Result.empty(e);
                             }
                         },
-                        executor),
+                        getExecutor()),
                 progress);
     }
 
@@ -184,7 +187,7 @@ public class FutureResult<T> implements Supplier<Result<T>> {
      * @param duration the duration
      */
     public void cancelAfter(Duration duration) {
-        promise.orTimeout(duration); // todo: get partial result?
+        promise.orTimeout(duration);
     }
 
     /**

@@ -28,7 +28,6 @@ import java.nio.file.Path;
  *
  * @author Sebastian Krieter
  */
-@FunctionalInterface
 public interface IFactorySupplier<T> {
 
     /**

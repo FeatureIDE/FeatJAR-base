@@ -27,6 +27,8 @@ import java.util.LinkedHashMap;
 
 /**
  * Maps virtual paths to string inputs.
+ *
+ * @author Elias Kuiter
  */
 public class StringInputMapper extends AInputMapper {
     /**

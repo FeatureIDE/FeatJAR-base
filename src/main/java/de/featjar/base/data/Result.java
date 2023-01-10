@@ -78,7 +78,7 @@ public class Result<T> implements Supplier<T> {
     public static <T> Result<T> of(T object, List<Problem> problems) {
         Objects.requireNonNull(object, "tried to create non-empty result with null");
         return new Result<>(object, problems);
-    } // todo: immediately log warning/error here?
+    }
 
     /**
      * {@return a result of a nullable object}
@@ -339,8 +339,17 @@ public class Result<T> implements Supplier<T> {
      * {@return this result's object or throws this result's problems}
      */
     public T orElseThrow() {
-        return orElseThrow(problems ->
-                new RuntimeException(problems.stream().map(Problem::toString).collect(Collectors.joining(", "))));
+        return orElseThrow(problems -> {
+            problems = problems.stream()
+                    .filter(problem -> problem.getSeverity().equals(Problem.Severity.ERROR))
+                    .collect(Collectors.toList());
+            if (problems.size() == 0)
+                return new RuntimeException("an unknown error occurred");
+            Problem problem = problems.get(0);
+            if (problems.size() == 1)
+                return new RuntimeException(problem.getException());
+            return new RuntimeException(problem.getMessage() + " (and " + (problems.size() - 1) + " other problems)", problem.getException());
+        });
     }
 
     /**

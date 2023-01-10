@@ -25,8 +25,7 @@ import java.util.function.BiPredicate;
 import java.util.function.Function;
 
 /**
- * An attribute describes metadata that can be attached to an object.
- * This class does not store any attribute values, it acts as a key or descriptor.
+ * Primary implementation of {@link IAttribute}.
  *
  * @author Elias Kuiter
  */

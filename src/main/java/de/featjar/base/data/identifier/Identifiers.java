@@ -20,6 +20,11 @@
  */
 package de.featjar.base.data.identifier;
 
+/**
+ * Utilities for handling identifiers.
+ *
+ * @author Elias Kuiter
+ */
 public class Identifiers {
     public static IIdentifier newCounterIdentifier() {
         return new CounterIdentifier.Factory().get();

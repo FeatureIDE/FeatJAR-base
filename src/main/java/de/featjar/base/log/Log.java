@@ -38,7 +38,6 @@ import java.util.List;
 /**
  * Logs messages to standard output and files.
  * Formats log messages with {@link IFormatter formatters}.
- * TODO: add log methods accepting lambdas (Supplier of String) to avoid creating strings when log is disabled
  *
  * @author Sebastian Krieter
  * @author Elias Kuiter
@@ -293,7 +292,7 @@ public class Log implements IInitializer {
                 error(problem.getException());
                 break;
             case WARNING:
-                warning(problem.getException()); // todo: pass as throwable?
+                warning(problem.getException());
                 break;
         }
     }
@@ -322,7 +321,7 @@ public class Log implements IInitializer {
      * @param error the error object
      */
     public void error(Throwable error) {
-        println(error);
+        println(error, false);
     }
 
     /**
@@ -337,10 +336,10 @@ public class Log implements IInitializer {
     /**
      * Logs a warning message.
      *
-     * @param messageObject the message object
+     * @param warning the warning object
      */
-    public void warning(Object messageObject) {
-        warning(String.valueOf(messageObject));
+    public void warning(Throwable warning) {
+        println(warning, true);
     }
 
     /**
@@ -422,12 +421,13 @@ public class Log implements IInitializer {
         }
     }
 
-    protected void println(Throwable error) {
+    protected void println(Throwable error, boolean isWarning) {
         final String formattedMessage = formatMessage(error.getMessage());
+        Verbosity verbosity = isWarning ? Verbosity.WARNING : Verbosity.ERROR;
         if (formattedMessage != null) {
             if (configuration != null) {
-                configuration.logStreams.get(Verbosity.ERROR).println(formattedMessage);
-                error.printStackTrace(configuration.logStreams.get(Verbosity.ERROR));
+                configuration.logStreams.get(verbosity).println(formattedMessage);
+                error.printStackTrace(configuration.logStreams.get(verbosity));
             } else {
                 System.err.println(formattedMessage);
                 error.printStackTrace(System.err);

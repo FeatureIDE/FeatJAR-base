@@ -33,7 +33,7 @@ import java.util.Objects;
  * @param <U> the type of the dependency's computation result
  * @author Elias Kuiter
  */
-public class Dependency<U> extends ATree.Entry<IComputation<?>, IComputation<U>> { // todo: U extends Serializable?
+public class Dependency<U> extends ATree.Entry<IComputation<?>, IComputation<U>> {
     /**
      * Creates a new required dependency.
      */

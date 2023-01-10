@@ -54,7 +54,7 @@ public abstract class AInputMapper extends AIOMapper<AInput> {
      * @param <T> the type of the supplier's result
      */
     public <T> Result<T> withMainPath(Path newMainPath, Supplier<Result<T>> supplier) {
-        // TODO: are relative paths and subdirectories handled correctly?
+        // TODO: test whether relative paths and subdirectories are handled correctly
         if (ioMap.get(newMainPath) == null)
             return Result.empty(new Problem("could not find main path " + mainPath, Problem.Severity.WARNING));
         Path oldMainPath = mainPath;

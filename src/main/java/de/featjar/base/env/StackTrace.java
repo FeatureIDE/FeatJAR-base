@@ -21,6 +21,7 @@
 package de.featjar.base.env;
 
 import de.featjar.base.data.Result;
+
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -73,6 +74,8 @@ public class StackTrace {
 
     /**
      * {@return whether the given stack trace element originates from a given method in a given class}
+     * Returns an empty result if the given stack trace element originates from an anonymous function (e.g., a lambda)
+     * or its class cannot be found for a different reason.
      *
      * @param stackTraceElement the stack trace element
      * @param klass             the class
@@ -87,8 +90,14 @@ public class StackTrace {
         }
     }
 
+    /**
+     * {@return whether this stack trace contains a call to a given method name in a given class or any subclass}
+     * Does not detect calls on anonymous functions (e.g., lambdas).
+     *
+     * @param klass      the class
+     * @param methodName the method name
+     */
     public boolean containsMethodCall(Class<?> klass, String methodName) {
-        // todo: does this work as indented when the class on the stack trace is an anonymous lambda?
         return stackTraceElements.stream()
                 .anyMatch(stackTraceElement ->
                         isMethodCall(stackTraceElement, klass, methodName).orElse(false));

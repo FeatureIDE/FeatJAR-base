@@ -22,6 +22,8 @@ package de.featjar.base.computation;
 
 import de.featjar.base.data.Result;
 
+import java.time.Duration;
+
 /**
  * A potentially long-running computation that can be canceled if a given time has passed.
  * This computation terminates with an empty {@link Result} when it has
@@ -31,32 +33,31 @@ import de.featjar.base.data.Result;
  * @author Elias Kuiter
  */
 public
-interface ITimeoutDependency { // todo: how to handle partial results (i.e., to return a lower bound for counting)?
+interface ITimeoutDependency {
     /**
      * The default timeout returned by {@link #getTimeout()}, if not specified otherwise.
      * Specifies that no timeout should be set; that is, the analysis runs until it completes.
      */
-    // todo: refactor to Duration (where Duration.ZERO is no timeout)
-    long DEFAULT_TIMEOUT = -1;
+    Duration DEFAULT_TIMEOUT = Duration.ZERO;
 
     /**
      * {@return the timeout dependency of this computation}
      */
-    Dependency<Long> getTimeoutDependency();
+    Dependency<Duration> getTimeoutDependency();
 
     /**
-     * {@return the timeout computation in milliseconds of this computation}
+     * {@return the timeout computation of this computation}
      */
-    default IComputation<Long> getTimeout() {
+    default IComputation<Duration> getTimeout() {
         return getTimeoutDependency().get((IComputation<?>) this);
     }
 
     /**
-     * Sets the timeout computation in milliseconds of this computation.
+     * Sets the timeout computation of this computation.
      *
-     * @param timeout the timeout computation in milliseconds, if any
+     * @param timeout the timeout computation, if any
      */
-    default void setTimeout(IComputation<Long> timeout) {
+    default void setTimeout(IComputation<Duration> timeout) {
         getTimeoutDependency().set((IComputation<?>) this, timeout);
     }
 }

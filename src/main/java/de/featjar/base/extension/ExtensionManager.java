@@ -232,8 +232,6 @@ public class ExtensionManager implements AutoCloseable {
         return extension != null ? Result.of(extension) : Result.empty();
     }
 
-    // todo: guess best-fitting extension based on suffix/regex
-
     /**
      * {@return the installed extension point for a given class, if any}
      *

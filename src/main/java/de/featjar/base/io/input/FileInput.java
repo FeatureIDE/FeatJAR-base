@@ -29,6 +29,8 @@ import java.nio.file.StandardOpenOption;
 
 /**
  * A physical file input.
+ *
+ * @author Elias Kuiter
  */
 public class FileInput extends AInput {
     /**

@@ -28,6 +28,8 @@ import java.util.LinkedHashMap;
 
 /**
  * Maps virtual paths to stream inputs.
+ *
+ * @author Elias Kuiter
  */
 public class StreamInputMapper extends AInputMapper {
     /**

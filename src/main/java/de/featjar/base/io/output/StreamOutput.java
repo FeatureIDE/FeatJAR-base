@@ -25,6 +25,8 @@ import java.nio.charset.Charset;
 
 /**
  * A stream output.
+ *
+ * @author Elias Kuiter
  */
 public class StreamOutput extends AOutput {
     /**

@@ -30,6 +30,8 @@ import java.util.List;
 
 /**
  * Maps physical paths to physical file inputs.
+ *
+ * @author Elias Kuiter
  */
 public class FileInputMapper extends AInputMapper {
     /**

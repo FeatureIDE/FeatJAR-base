@@ -27,6 +27,8 @@ import java.nio.file.Path;
 
 /**
  * Options for an {@link AIOMapper}.
+ *
+ * @author Elias Kuiter
  */
 public enum IOMapperOptions {
     /**

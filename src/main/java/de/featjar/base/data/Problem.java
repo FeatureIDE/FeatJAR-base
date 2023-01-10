@@ -20,14 +20,12 @@
  */
 package de.featjar.base.data;
 
-import de.featjar.base.tree.structure.ITree;
 import java.util.Objects;
 import java.util.Optional;
 
 /**
- * A problem that wraps a {@link Throwable}.
+ * A problem that wraps an {@link Exception}.
  * Can be stored in a {@link Result}.
- * Can be caused by other problems, thus forming an {@link ITree}.
  *
  * @author Sebastian Krieter
  * @author Elias Kuiter

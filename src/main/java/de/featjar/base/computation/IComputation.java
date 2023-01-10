@@ -24,6 +24,7 @@ import de.featjar.base.FeatJAR;
 import de.featjar.base.data.Problem;
 import de.featjar.base.data.Result;
 import de.featjar.base.tree.structure.ITree;
+
 import java.time.Duration;
 import java.util.List;
 import java.util.function.Consumer;
@@ -54,8 +55,9 @@ import java.util.stream.Stream;
  * Implementors should pass mandatory parameters in the constructor and optional parameters using dedicated setters.
  * This can be facilitated by using specializations of {@link IComputation} (e.g., {@link IInputDependency}).
  * Though not necessary, it is recommended to implement this interface by subclassing {@link AComputation}, which provides a mechanism for declaring dependencies.
- * TODO: A validation scheme (e.g., against a simple feature model) and serialization scheme
- *  (e.g., to sensibly compare and cache computations based on their parameters and hash code) are missing for now.
+ * It is strongly discouraged to implement this interface anonymously to ensure correct caching
+ * with {@link Cache.CachePolicy#CACHE_TOP_LEVEL} and correct hash code and equality computations.
+ * To compose anonymous computations, consider using {@link ComputeFunction} instead.
  *
  * @param <T> the type of the computation result
  * @author Elias Kuiter
@@ -76,7 +78,7 @@ public interface IComputation<T> extends Supplier<Result<T>>, ITree<IComputation
      * uses reflection based on its name to detect nested computations.
      *
      * @param dependencyList the dependency list
-     * @param progress the progress
+     * @param progress       the progress
      */
     Result<T> compute(DependencyList dependencyList, Progress progress);
 
@@ -87,7 +89,7 @@ public interface IComputation<T> extends Supplier<Result<T>>, ITree<IComputation
      * Allows for cancellation and {@link Progress} tracking.
      * Generally recommended over {@link #computeResult(boolean, boolean)} for complex computations.
      *
-     * @param tryHitCache whether the cache should be queried for the result
+     * @param tryHitCache   whether the cache should be queried for the result
      * @param tryWriteCache whether the result should be stored in the cache
      */
     default FutureResult<T> computeFutureResult(boolean tryHitCache, boolean tryWriteCache) {
@@ -129,12 +131,10 @@ public interface IComputation<T> extends Supplier<Result<T>>, ITree<IComputation
      * Allows for {@link Progress} tracking when a suitable progress supplier is passed.
      * Recommended for debugging and when no parallelism overhead is desired (e.g., for simpler computations).
      *
-     * @param tryHitCache whether the cache should be queried for the result
-     * @param tryWriteCache whether the result should be stored in the cache
+     * @param tryHitCache      whether the cache should be queried for the result
+     * @param tryWriteCache    whether the result should be stored in the cache
      * @param progressSupplier the progress supplier
      */
-    // used for performance (low overhead), debugging, nested computations, rename to computeSync?Async?, no progress
-    // tracking
     default Result<T> computeResult(boolean tryHitCache, boolean tryWriteCache, Supplier<Progress> progressSupplier) {
         if (tryHitCache) {
             Result<FutureResult<T>> cacheHit = getCache().tryHit(this);
@@ -153,7 +153,7 @@ public interface IComputation<T> extends Supplier<Result<T>>, ITree<IComputation
      * {@return the (synchronous) result of this computation}
      * Progress tracking is enabled only when the cache is written to, which is the only way to access the progress.
      *
-     * @param tryHitCache whether the cache should be queried for the result
+     * @param tryHitCache   whether the cache should be queried for the result
      * @param tryWriteCache whether the result should be stored in the cache
      * @see #computeResult(boolean, boolean, Supplier)
      */
@@ -318,19 +318,17 @@ public interface IComputation<T> extends Supplier<Result<T>>, ITree<IComputation
         });
     }
 
-    // TODO: the hashcode should depend on all inputs. can we create a default hashcode implementation?
-    //  serialize should be used in equals + hashcode.
-    //  requires that c1.serialize() == c2.serialize yield the same computation result.
-    //  could abstract away complex identities to improve caching.
-    // ... serialize();
+    // todo: serialization scheme. may require that all inputs (all dependencies) implement Serializable.
+    default byte[] serialize() {
+        return new byte[]{};
+    }
 
     // TODO: validate whether a computation is sensible.
     //  maybe by encoding valid computations in a feature model, or some other way.
-    // boolean validate();
+    default boolean validate() {
+        return true;
+    }
 
-    // TODO: besides using feature modeling to "magically" complete computations (in a separate module),
-    //  it may be nice to denote THE canonical best input for a computation.
-    //  maybe this can also be done with alternative constructors or something?
-    //  maybe this is also something to be implemented in its own module?
-    //    <S> Optional<Computation<S, T>> getPreferredInputComputation();
+    // TODO: "magically" complete incomplete computation specifications with a suitable feature model (in a separate module).
+    //  it may also be nice to denote THE canonical best input for a computation (in a separate module).
 }

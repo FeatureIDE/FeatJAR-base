@@ -28,6 +28,8 @@ import java.util.zip.ZipOutputStream;
 
 /**
  * Maps virtual paths to a ZIP file output.
+ *
+ * @author Elias Kuiter
  */
 public class ZIPFileOutputMapper extends AOutputMapper {
     protected final ZipOutputStream zipOutputStream;

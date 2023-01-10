@@ -59,6 +59,11 @@ public abstract class AComputation<T> extends ATree<IComputation<?>> implements 
         return cache;
     }
 
+    /**
+     * Sets the cache this computation should be stored and looked up in.
+     *
+     * @param cache the cache
+     */
     public void setCache(Cache cache) {
         this.cache = Objects.requireNonNull(cache);
     }

@@ -29,6 +29,8 @@ import java.nio.file.StandardOpenOption;
 
 /**
  * A physical file output.
+ *
+ * @author Elias Kuiter
  */
 public class FileOutput extends AOutput {
     /**
@@ -45,7 +47,7 @@ public class FileOutput extends AOutput {
     @SuppressWarnings("ResultOfMethodCallIgnored")
     private static OutputStream newOutputStream(Path path) throws IOException {
         // TODO: currently, we always allow creating new files. this could be weakened with a flag, if necessary.
-        // TODO: also, we always truncate files. we could consider allowing appending to files as well.
+        //  also, we always truncate files. we could consider allowing appending to files as well.
         if (path.getParent() != null) path.getParent().toFile().mkdirs();
         return Files.newOutputStream(
                 path, StandardOpenOption.TRUNCATE_EXISTING, StandardOpenOption.CREATE, StandardOpenOption.WRITE);

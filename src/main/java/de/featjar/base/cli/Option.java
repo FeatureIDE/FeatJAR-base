@@ -186,7 +186,7 @@ public class Option<T> {
         }
     }
 
-    // todo: parse from configuration file
+    // todo: parse options from configuration files (key=value style)
 
     @Override
     public String toString() {
