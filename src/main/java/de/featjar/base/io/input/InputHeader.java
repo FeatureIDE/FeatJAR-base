@@ -1,22 +1,22 @@
 /*
- * Copyright (C) 2022 Sebastian Krieter, Elias Kuiter
+ * Copyright (C) 2023 Sebastian Krieter, Elias Kuiter
  *
- * This file is part of util.
+ * This file is part of FeatJAR-base.
  *
- * util is free software: you can redistribute it and/or modify it
+ * base is free software: you can redistribute it and/or modify it
  * under the terms of the GNU Lesser General Public License as published by
  * the Free Software Foundation, either version 3.0 of the License,
  * or (at your option) any later version.
  *
- * util is distributed in the hope that it will be useful,
+ * base is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
  * See the GNU Lesser General Public License for more details.
  *
  * You should have received a copy of the GNU Lesser General Public License
- * along with util. If not, see <https://www.gnu.org/licenses/>.
+ * along with base. If not, see <https://www.gnu.org/licenses/>.
  *
- * See <https://github.com/FeatureIDE/FeatJAR-util> for further information.
+ * See <https://github.com/FeatureIDE/FeatJAR-base> for further information.
  */
 package de.featjar.base.io.input;
 
