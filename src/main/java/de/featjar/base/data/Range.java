@@ -95,7 +95,7 @@ public class Range implements Function<Integer, Boolean> {
     }
 
     public boolean isOpen() {
-        return isLowerBoundOpen() && isUpperBoundOpen();
+        return isLowerBoundOpen() || isUpperBoundOpen();
     }
 
     public Result<Integer> getSmallerBound() {

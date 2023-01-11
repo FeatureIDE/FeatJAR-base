@@ -34,6 +34,7 @@ import java.util.Objects;
  * @author Elias Kuiter
  */
 public class ComputeConstant<T> extends ALeafNode<IComputation<?>> implements IComputation<T> {
+    //todo: T should implement Serializable and overload hashCode and equals
     protected final T value;
 
     /**
