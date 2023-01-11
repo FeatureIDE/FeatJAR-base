@@ -35,11 +35,12 @@ import java.util.function.BiFunction;
 public abstract class ATree<T extends ITree<T>> implements ITree<T> {
     /**
      * The children of this node.
+     * Declared private to ensure correct hash code invalidation.
      */
-    protected final List<T> children = new ArrayList<>();
+    private final List<T> children = new ArrayList<>();
 
     protected boolean hashCodeValid;
-    protected int hashCode; // todo: cache hash code
+    protected int hashCode;
 
     @Override
     public List<? extends T> getChildren() {
@@ -55,6 +56,7 @@ public abstract class ATree<T extends ITree<T>> implements ITree<T> {
         Objects.requireNonNull(children);
         assertChildrenCountInRange(children.size());
         assertChildValidator(children);
+        hashCodeValid = false;
         this.children.clear();
         this.children.addAll(children);
     }
@@ -70,6 +72,7 @@ public abstract class ATree<T extends ITree<T>> implements ITree<T> {
     public void addChild(int index, T newChild) {
         assertChildrenCountInRange(children.size() + 1);
         assertChildValidator(newChild);
+        hashCodeValid = false;
         if (index > getChildrenCount()) {
             children.add(newChild);
         } else {
@@ -86,6 +89,7 @@ public abstract class ATree<T extends ITree<T>> implements ITree<T> {
     public void addChild(T newChild) {
         assertChildrenCountInRange(children.size() + 1);
         assertChildValidator(newChild);
+        hashCodeValid = false;
         children.add(newChild);
     }
 
@@ -98,6 +102,7 @@ public abstract class ATree<T extends ITree<T>> implements ITree<T> {
     @Override
     public void removeChild(T child) {
         assertChildrenCountInRange(children.size() - 1);
+        hashCodeValid = false;
         if (!children.remove(child)) {
             throw new NoSuchElementException();
         }
@@ -113,6 +118,7 @@ public abstract class ATree<T extends ITree<T>> implements ITree<T> {
     @Override
     public T removeChild(int index) {
         assertChildrenCountInRange(children.size() - 1);
+        hashCodeValid = false;
         return children.remove(index);
     }
 
@@ -130,6 +136,7 @@ public abstract class ATree<T extends ITree<T>> implements ITree<T> {
             final T replacement = mapper.apply(idx, child);
             if (replacement != null && replacement != child) {
                 assertChildValidator(replacement);
+                hashCodeValid = false;
                 it.set(replacement);
                 modified = true;
             }
@@ -150,7 +157,10 @@ public abstract class ATree<T extends ITree<T>> implements ITree<T> {
         final int index = children.indexOf(oldChild);
         if (index == -1) throw new NoSuchElementException();
         assertChildValidator(newChild);
-        if (oldChild != newChild) children.set(index, newChild);
+        if (oldChild != newChild) {
+            hashCodeValid = false;
+            children.set(index, newChild);
+        }
         return oldChild != newChild;
     }
 
@@ -166,7 +176,10 @@ public abstract class ATree<T extends ITree<T>> implements ITree<T> {
     public boolean replaceChild(int idx, T newChild) {
         if (idx < 0 || idx > getChildrenCount()) throw new NoSuchElementException();
         assertChildValidator(newChild);
-        if (children.get(idx) != newChild) children.set(idx, newChild);
+        if (children.get(idx) != newChild) {
+            hashCodeValid = false;
+            children.set(idx, newChild);
+        }
         return children.get(idx) != newChild;
     }
 
@@ -188,6 +201,15 @@ public abstract class ATree<T extends ITree<T>> implements ITree<T> {
     @Override
     public boolean equals(Object other) {
         return getClass() == other.getClass() && equalsTree((T) other);
+    }
+
+    @Override
+    public int hashCodeTree() {
+        if (hashCodeValid)
+            return hashCode;
+        hashCode = ITree.super.hashCodeTree();
+        hashCodeValid = true;
+        return hashCode;
     }
 
     /**

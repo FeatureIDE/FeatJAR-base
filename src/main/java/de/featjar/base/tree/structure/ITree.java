@@ -57,6 +57,7 @@ import java.util.stream.Stream;
 public interface ITree<T extends ITree<T>> extends IBrowsable<GraphVizTreeFormat<T>> {
     /**
      * {@return the children of this node}
+     * The returned list must not be modified.
      */
     List<? extends T> getChildren();
 

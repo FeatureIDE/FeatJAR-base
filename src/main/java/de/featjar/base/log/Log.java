@@ -38,6 +38,8 @@ import java.util.List;
 /**
  * Logs messages to standard output and files.
  * Formats log messages with {@link IFormatter formatters}.
+ * TODO: instead of logging values directly, only pass suppliers that are called if some log target is configured.
+ *  this saves time for creating log strings
  *
  * @author Sebastian Krieter
  * @author Elias Kuiter
