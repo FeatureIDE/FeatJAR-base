@@ -348,10 +348,4 @@ public class RangeMap<T> {
     public String toString() {
         return IndentFormatter.formatList("RangeMap", indexToObject.subList(1, indexToObject.size()));
     }
-
-    @SuppressWarnings("MethodDoesntCallSuperMethod")
-    @Override
-    public RangeMap<T> clone() {
-        return new RangeMap<>(this);
-    }
 }

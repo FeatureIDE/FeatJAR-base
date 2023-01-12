@@ -53,15 +53,6 @@ public abstract class ALeafNode<T extends ITree<T>> implements ITree<T> {
     }
 
     /**
-     * {@return a deep clone of this node}
-     */
-    @SuppressWarnings("MethodDoesntCallSuperMethod")
-    @Override
-    public Object clone() {
-        return cloneTree();
-    }
-
-    /**
      * {@return whether this node is equal to another}
      *
      * @param other the other node
