@@ -22,10 +22,6 @@ package de.featjar.base.data;
 
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.Comparator;
-import java.util.function.Function;
-import java.util.function.Supplier;
-import java.util.stream.IntStream;
 
 
 
@@ -37,7 +33,7 @@ import java.util.stream.IntStream;
  * @author Sebastian Krieter
  * @author Elias Kuiter
  */
-public class IntegerList implements IIntegerList {
+public class IntegerList implements IIntegerList, IHashable {
     protected final int[] array;
     protected boolean hashCodeValid;
     protected int hashCode;

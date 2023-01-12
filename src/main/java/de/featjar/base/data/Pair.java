@@ -32,7 +32,7 @@ import java.util.Objects;
  * @param <B> the type of the second element
  * @author Sebastian Krieter
  */
-public class Pair<A, B> {
+public class Pair<A, B> implements IHashable {
 
     protected final A key;
     protected final B value;

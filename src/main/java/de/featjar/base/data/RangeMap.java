@@ -33,7 +33,7 @@ import java.util.stream.Stream;
  * @author Sebastian Krieter
  * @author Elias Kuiter
  */
-public class RangeMap<T> {
+public class RangeMap<T> implements IHashable {
     protected final ArrayList<T> indexToObject = new ArrayList<>();
     protected final LinkedHashMap<T, Integer> objectToIndex = Maps.empty();
 

@@ -30,7 +30,7 @@ import java.util.stream.IntStream;
  *
  * @author Elias Kuiter
  */
-public class Range implements Function<Integer, Boolean> {
+public class Range implements Function<Integer, Boolean>, IHashable {
     protected Integer lowerBound;
     protected Integer upperBound;
 
