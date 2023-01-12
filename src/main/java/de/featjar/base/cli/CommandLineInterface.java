@@ -27,6 +27,7 @@ import de.featjar.base.io.IO;
 import de.featjar.base.io.format.IFormat;
 import de.featjar.base.io.format.IFormatSupplier;
 import de.featjar.base.log.Log;
+
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -38,6 +39,7 @@ import java.util.concurrent.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 /**
  * Helpers for running commands in a command-line interface.
@@ -74,32 +76,38 @@ public class CommandLineInterface {
     /**
      * Runs the command supplied in the given argument parser.
      *
-     * @param argumentParser the argument parser
+     * @param optionInput the option input
      */
-    public static void run(ArgumentParser argumentParser) {
+    public static void run(IOptionInput optionInput) {
         FeatJAR.log().debug("running command-line interface");
-        LinkedHashSet<ICommand> matchingCommands = argumentParser.getCommands();
-        if (argumentParser.hasHelpOption() || matchingCommands.isEmpty()) {
-            System.out.println(argumentParser.getHelp());
-        } else if (argumentParser.hasVersionOption()) {
+        LinkedHashSet<ICommand> matchingCommands = optionInput.getCommands();
+        if (optionInput.isHelp() || matchingCommands.isEmpty()) {
+            System.out.println(optionInput.getHelp());
+        } else if (optionInput.isVersion()) {
             System.out.println(FeatJAR.LIBRARY_NAME + ", unreleased version");
         } else {
             FeatJAR.log()
                     .info("running matching commands: "
                             + matchingCommands.stream()
-                                    .map(IExtension::getIdentifier)
-                                    .collect(Collectors.joining(", ")));
-            matchingCommands.forEach(command -> command.run(argumentParser));
+                            .map(IExtension::getIdentifier)
+                            .collect(Collectors.joining(", ")));
+            matchingCommands.forEach(command -> {
+                FeatJAR.log().problem(optionInput.validate(Stream.concat(
+                                optionInput.getOptions().stream(),
+                                command.getOptions().stream())
+                        .collect(Collectors.toList())).getProblems());
+                command.run(optionInput);
+            });
         }
     }
 
     /**
      * Runs a given function in a new thread, aborting it when it is not done after a timeout expires.
      *
-     * @param fn the function
+     * @param fn      the function
      * @param timeout the timeout in milliseconds
+     * @param <T>     the type of the result
      * @return the result of the function, if any
-     * @param <T> the type of the result
      */
     public static <T> Result<T> runInThread(Callable<T> fn, Long timeout) {
         final ExecutorService executor = Executors.newSingleThreadExecutor();
@@ -113,22 +121,13 @@ public class CommandLineInterface {
         }
     }
 
-    /**
-     * {@return whether the given path or reference to the standard input stream is valid}
-     *
-     * @param pathOrStdin the path or reference to the standard input stream
-     */
-    public static boolean isValidInput(String pathOrStdin) {
-        return STANDARD_INPUT_PATTERN.matcher(pathOrStdin.toLowerCase()).matches()
-                || Files.exists(Paths.get(pathOrStdin));
-    }
 
     /**
      * {@return an object loaded from the given path or the standard input stream}
      *
-     * @param pathOrStdin the path or reference to the standard input stream
+     * @param pathOrStdin    the path or reference to the standard input stream
      * @param formatSupplier the format supplier
-     * @param <T> the type of the result
+     * @param <T>            the type of the result
      */
     public static <T> Result<T> loadFile(String pathOrStdin, IFormatSupplier<T> formatSupplier) {
         Matcher matcher = STANDARD_INPUT_PATTERN.matcher(pathOrStdin.toLowerCase());
@@ -144,12 +143,24 @@ public class CommandLineInterface {
     }
 
     /**
+     * {@return whether the given path or reference to the standard input stream is valid}
+     *
+     * @param pathOrStdin the path or reference to the standard input stream
+     */
+    public static boolean isValidInput(String pathOrStdin) {
+        return STANDARD_INPUT_PATTERN.matcher(pathOrStdin.toLowerCase()).matches()
+                || Files.exists(Paths.get(pathOrStdin));
+    }
+
+    //todo: allow to load many files
+
+    /**
      * Saves the given object to the given path or the standard output stream.
      *
-     * @param object the object
+     * @param object       the object
      * @param pathOrStdout the path or reference to the standard output stream
-     * @param format the format
-     * @param <T> the type of the object
+     * @param format       the format
+     * @param <T>          the type of the object
      */
     public static <T> void saveFile(T object, String pathOrStdout, IFormat<T> format) {
         try {

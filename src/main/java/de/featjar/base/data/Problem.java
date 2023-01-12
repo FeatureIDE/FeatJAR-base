@@ -31,6 +31,8 @@ import java.util.Optional;
  * @author Elias Kuiter
  */
 public class Problem {
+    //todo: can also contain general information (e.g., time measurements). maybe rename to Note, Remark, ...
+
     /**
      * Severity of a problem.
      */

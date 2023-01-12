@@ -20,7 +20,12 @@
  */
 package de.featjar.base.cli;
 
+import de.featjar.base.computation.IRandomDependency;
+import de.featjar.base.computation.ITimeoutDependency;
+import de.featjar.base.data.Result;
 import de.featjar.base.extension.IExtension;
+
+import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -31,6 +36,28 @@ import java.util.List;
  * @author Elias Kuiter
  */
 public interface ICommand extends IExtension {
+    Option<String> INPUT_OPTION = new StringOption("input")
+            .setDescription("Path to input file(s)")
+            .setDefaultValue(CommandLineInterface.STANDARD_INPUT);
+
+    Option<String> OUTPUT_OPTION = new StringOption("output")
+            .setDescription("Path to output file(s)")
+            .setDefaultValue(CommandLineInterface.STANDARD_OUTPUT);
+
+    Option<Duration> TIMEOUT_OPTION = new Option<>("timeout",
+            Result.mapReturnValue(s -> Duration.ofMillis(Long.parseLong(s))))
+            .setDescription("Timeout in milliseconds")
+            .setValidator(timeout -> !timeout.isNegative())
+            .setDefaultValue(ITimeoutDependency.DEFAULT_TIMEOUT);
+
+    Option<Long> SEED_OPTION = new Option<>("seed", Result.mapReturnValue(Long::valueOf))
+            .setDescription("Seed for pseudorandom number generator")
+            .setDefaultValue(IRandomDependency.DEFAULT_RANDOM_SEED);
+
+    Option<Integer> ITERATIONS_OPTION = new Option<>("iterations", Result.mapReturnValue(Integer::valueOf))
+            .setDescription("Number of iterations per input file")
+            .setDefaultValue(1);
+
     /**
      * {@return this command's description, if any}
      */
@@ -43,8 +70,6 @@ public interface ICommand extends IExtension {
      */
     default List<Option<?>> getOptions() {
         return new ArrayList<>();
-        // todo: automatically try to parse these options (and no other),
-        //  which would make calling ArgumentParser#close obsolete
     }
 
     static List<Option<?>> addOptions(List<Option<?>> options, Option<?>... newOptions) {
@@ -54,9 +79,9 @@ public interface ICommand extends IExtension {
     }
 
     /**
-     * Runs this command with some given arguments.
+     * Runs this command with some given options.
      *
-     * @param argumentParser the argument parser
+     * @param optionParser the option parser
      */
-    void run(ArgumentParser argumentParser);
+    void run(IOptionInput optionParser);
 }

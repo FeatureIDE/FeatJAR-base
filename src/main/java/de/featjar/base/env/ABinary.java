@@ -20,20 +20,17 @@
  */
 package de.featjar.base.env;
 
-import de.featjar.base.data.Problem;
 import de.featjar.base.data.Result;
 import de.featjar.base.extension.IExtension;
-import java.io.BufferedReader;
+
 import java.io.IOException;
-import java.io.InputStreamReader;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.ArrayList;
+import java.time.Duration;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.function.Function;
-import java.util.stream.Stream;
 
 /**
  * A native binary bundled with FeatJAR.
@@ -83,44 +80,22 @@ public abstract class ABinary implements IExtension {
      * Executes this binary's executable with the given arguments.
      * Creates a process and waits until it exits.
      *
-     * @param args the arguments passed to this binary's executable
-     *             {@return the output of the process as a line stream, if any}
+     * @param arguments the arguments passed to this binary's executable
+     *                  {@return the output of the process as a line stream, if any}
      */
-    public Result<Stream<String>> execute(List<String> args) {
-        List<String> command = new ArrayList<>();
-        command.add(getExecutablePath().toString());
-        command.addAll(args);
-        final ProcessBuilder processBuilder = new ProcessBuilder(command);
-        Process process = null;
-        try {
-            process = processBuilder.start();
-            final BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream()));
-            final int exitValue = process.waitFor();
-            if (exitValue == 0) {
-                process = null;
-                return Result.of(reader.lines());
-            } else {
-                return Result.empty(
-                        new Problem(getExecutablePath() + " exited with value " + exitValue, Problem.Severity.ERROR));
-            }
-        } catch (IOException | InterruptedException e) {
-            return Result.empty(e);
-        } finally {
-            if (process != null) {
-                process.destroyForcibly();
-            }
-        }
+    public Process getProcess(List<String> arguments, Duration timeout) {
+        return new Process(getExecutablePath(), arguments, timeout);
     }
 
     /**
      * Executes this binary's executable with the given arguments.
      * Creates a process and waits until it exits.
      *
-     * @param args the arguments passed to this binary's executable
-     *             {@return the output of the process as a line stream, if any}
+     * @param arguments the arguments passed to this binary's executable
+     *                  {@return the output of the process as a line stream, if any}
      */
-    public Result<Stream<String>> execute(String... args) {
-        return execute(List.of(args));
+    public Process getProcess(String... arguments) {
+        return new Process(getExecutablePath(), arguments);
     }
 
     /**
@@ -129,9 +104,9 @@ public abstract class ABinary implements IExtension {
      *
      * @param prefix the prefix of the temporary file's name
      * @param suffix the suffix of the temporary file's name
-     * @param fn the function
+     * @param fn     the function
+     * @param <T>    the type of the returned result
      * @return the result returned by the function, if any
-     * @param <T> the type of the returned result
      */
     public <T> Result<T> withTemporaryFile(String prefix, String suffix, Function<Path, Result<T>> fn) {
         Path temporaryFilePath = null;

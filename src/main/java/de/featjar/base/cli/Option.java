@@ -22,6 +22,7 @@ package de.featjar.base.cli;
 
 import de.featjar.base.FeatJAR;
 import de.featjar.base.data.Result;
+
 import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
@@ -58,6 +59,10 @@ public class Option<T> {
      */
     public String getName() {
         return name;
+    }
+
+    public String getArgumentName() {
+        return "--" + name;
     }
 
     /**
@@ -153,46 +158,34 @@ public class Option<T> {
     /**
      * Parses the value of this option from a given argument parser.
      *
-     * @param argumentParser the argument parser
+     * @param optionLine the argument parser
      * @return the parsed value
-     * @throws AArgumentParser.ArgumentParseException when the value cannot be parsed
      */
-    public Result<T> parseFrom(AArgumentParser argumentParser) throws AArgumentParser.ArgumentParseException {
+    public Result<T> parseFrom(OptionLine optionLine) {
         Result<String> valueString =
-                isRequired ? Result.of(argumentParser.parseRequiredOption(name)) : argumentParser.parseOption(name);
+                isRequired ? optionLine.parseRequiredOption(getArgumentName()) : optionLine.parseOption(getArgumentName());
         if (valueString.isEmpty()) return Result.ofNullable(defaultValue);
         Result<T> parseResult = parser.apply(valueString.get());
         if (parseResult.isEmpty()) {
-            FeatJAR.log().warning("could not parse option " + name + ", using default value");
+            FeatJAR.log().warning("could not parse option " + getArgumentName() + ", using default value");
             return Result.ofNullable(defaultValue);
         }
         if (validator.test(parseResult.get())) return parseResult;
-        throw new IllegalArgumentException("value " + parseResult.get() + " for option " + name + " is invalid");
+        throw new IllegalArgumentException("value " + parseResult.get() + " for option " + getArgumentName() + " is invalid");
     }
 
-    /**
-     * Parses the value of this option from a given argument parser.
-     * Handles exceptions by printing them and exiting.
-     *
-     * @param argumentParser the argument parser
-     * @return the parsed value
-     */
-    public Result<T> parseFrom(ArgumentParser argumentParser) {
-        try {
-            return parseFrom((AArgumentParser) argumentParser);
-        } catch (AArgumentParser.ArgumentParseException e) {
-            argumentParser.handleException(e);
-            return Result.empty(e);
-        }
+    public Result<T> parseFrom(OptionFile optionFile) {
+        String value = optionFile.getProperties().getProperty(name);
+        if (value == null)
+            return new OptionLine().get(this);
+        return new OptionLine(getArgumentName(), value).get(this);
     }
-
-    // todo: parse options from configuration files (key=value style)
 
     @Override
     public String toString() {
         return String.format(
                 "%s <value>%s%s",
-                name,
+                getArgumentName(),
                 getDescription().map(d -> ": " + d).orElse(""),
                 defaultValue != null ? String.format(" (default: %s)", defaultValue) : "");
     }

@@ -22,37 +22,34 @@ package de.featjar.base.cli;
 
 import de.featjar.base.data.Result;
 
-import java.util.Objects;
+import java.util.Arrays;
+import java.util.List;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 /**
- * A Boolean flag option, which can either be present or not.
+ * A list option, which is parsed as a list of values.
  *
  * @author Elias Kuiter
  */
-public class Flag extends Option<Boolean> {
+public class ListOption<T> extends Option<List<T>> {
     /**
-     * Creates a flag option.
+     * Creates a list option.
      *
-     * @param name the name of the flag option
+     * @param name the name of the list option
      */
-    public Flag(String name) {
-        super(name, null);
-    }
-
-    @Override
-    public Result<Boolean> parseFrom(OptionLine optionLine) {
-        Result<Boolean> value = optionLine.parseFlag(getArgumentName());
-        if (defaultValue != null || isRequired) throw new IllegalArgumentException();
-        return value;
-    }
-
-    @Override
-    public Result<Boolean> parseFrom(OptionFile optionFile) {
-        return Result.of(Objects.nonNull(optionFile.getProperties().getProperty(name)));
+    @SuppressWarnings({"unchecked", "rawtypes"})
+    public ListOption(String name, Function<String, Result<T>> parser) {
+        super(name, s -> (Result) Result.mergeAll(
+                Arrays.stream(String.join(",", s.split("\n")).split(","))
+                        .map(parser).collect(Collectors.toList())));
     }
 
     @Override
     public String toString() {
-        return String.format("%s%s", getArgumentName(), getDescription().map(d -> ": " + d).orElse(""));
+        return String.format(
+                "%s <value,...>%s",
+                name,
+                getDescription().map(d -> ": " + d).orElse(""));
     }
 }

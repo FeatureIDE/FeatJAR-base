@@ -20,8 +20,7 @@
  */
 package de.featjar.base;
 
-import de.featjar.base.cli.ArgumentParser;
-import de.featjar.base.cli.CommandLineInterface;
+import de.featjar.base.cli.*;
 import de.featjar.base.computation.Cache;
 import de.featjar.base.data.Result;
 import de.featjar.base.extension.AExtensionPoint;
@@ -31,6 +30,7 @@ import de.featjar.base.io.IO;
 import de.featjar.base.log.CallerFormatter;
 import de.featjar.base.log.Log;
 import de.featjar.base.log.TimeStampFormatter;
+
 import java.util.function.Consumer;
 import java.util.function.Function;
 
@@ -305,11 +305,11 @@ public class FeatJAR extends IO implements AutoCloseable {
     /**
      * Main entry point of FeatJAR.
      *
-     * @param args command-line arguments
+     * @param arguments command-line arguments
      */
-    public static void main(String[] args) {
-        ArgumentParser argumentParser = new ArgumentParser(args);
-        defaultVerbosity = argumentParser.getVerbosity();
-        FeatJAR.run(featJAR -> CommandLineInterface.run(argumentParser));
+    public static void main(String[] arguments) {
+        IOptionInput optionInput = new OptionLine(arguments);
+        defaultVerbosity = optionInput.getVerbosity();
+        FeatJAR.run(featJAR -> CommandLineInterface.run(optionInput));
     }
 }
