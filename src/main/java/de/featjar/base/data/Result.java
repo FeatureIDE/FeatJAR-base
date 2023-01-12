@@ -42,7 +42,7 @@ import java.util.stream.Stream;
  * @author Sebastian Krieter
  * @author Elias Kuiter
  */
-public class Result<T> implements Supplier<T>, IHashable {
+public class Result<T> implements Supplier<T> {
     protected static final Result<?> EMPTY = new Result<>(null, null);
 
     private final T object;

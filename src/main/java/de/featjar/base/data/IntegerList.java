@@ -33,7 +33,7 @@ import java.util.Collection;
  * @author Sebastian Krieter
  * @author Elias Kuiter
  */
-public class IntegerList implements IIntegerList, IHashable {
+public class IntegerList implements IIntegerList {
     protected final int[] array;
     protected boolean hashCodeValid;
     protected int hashCode;

@@ -20,8 +20,6 @@
  */
 package de.featjar.base.tree.structure;
 
-import de.featjar.base.data.IHashable;
-
 import java.util.*;
 import java.util.function.BiFunction;
 
@@ -34,7 +32,7 @@ import java.util.function.BiFunction;
  * @author Sebastian Krieter
  * @author Elias Kuiter
  */
-public abstract class ATree<T extends ITree<T>> implements ITree<T>, IHashable {
+public abstract class ATree<T extends ITree<T>> implements ITree<T> {
     /**
      * The children of this node.
      * Declared private to ensure correct hash code invalidation.

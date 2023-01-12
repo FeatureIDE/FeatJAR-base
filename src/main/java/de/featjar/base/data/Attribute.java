@@ -29,7 +29,7 @@ import java.util.function.Function;
  *
  * @author Elias Kuiter
  */
-public class Attribute implements IAttribute, IHashable {
+public class Attribute implements IAttribute {
     public static final String DEFAULT_NAMESPACE = Attribute.class.getPackageName();
 
     protected final String namespace;

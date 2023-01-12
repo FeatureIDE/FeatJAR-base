@@ -28,6 +28,8 @@ import de.featjar.base.computation.*;
 import de.featjar.base.tree.structure.ITree;
 import org.junit.jupiter.api.Test;
 
+import java.util.function.Supplier;
+
 class IComputationTest {
     @Test
     void simpleComputation() {
@@ -176,5 +178,12 @@ class IComputationTest {
         Pair<Integer, Boolean> r = Computations.of(c1, c2).getResult().get();
         assertEquals(42, r.getKey());
         assertEquals(true, r.getValue());
+    }
+
+    <T> void testCaching(Supplier<IComputation<T>> computationSupplier) {
+        // computationSupplier.get().get()
+        // cache should have changed
+        // computationSupplier.get().get()
+        // cache should not have changed
     }
 }

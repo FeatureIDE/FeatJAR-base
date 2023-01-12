@@ -20,8 +20,6 @@
  */
 package de.featjar.base.tree.structure;
 
-import de.featjar.base.data.IHashable;
-
 import java.util.Collections;
 import java.util.List;
 
@@ -33,7 +31,7 @@ import java.util.List;
  * @param <T> the type of children, the implementing type must be castable to T
  * @author Sebastian Krieter
  */
-public abstract class ALeafNode<T extends ITree<T>> implements ITree<T>, IHashable {
+public abstract class ALeafNode<T extends ITree<T>> implements ITree<T> {
 
     /**
      * {@return an empty list of children}

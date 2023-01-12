@@ -20,8 +20,6 @@
  */
 package de.featjar.base.data.identifier;
 
-import de.featjar.base.data.IHashable;
-
 import java.util.Objects;
 
 /**
@@ -29,7 +27,7 @@ import java.util.Objects;
  *
  * @author Elias Kuiter
  */
-public abstract class AIdentifier implements IIdentifier, IHashable {
+public abstract class AIdentifier implements IIdentifier {
     protected final IIdentifierFactory factory;
 
     protected AIdentifier(IIdentifierFactory factory) {
