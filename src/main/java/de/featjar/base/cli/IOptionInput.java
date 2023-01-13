@@ -2,7 +2,6 @@ package de.featjar.base.cli;
 
 import de.featjar.base.FeatJAR;
 import de.featjar.base.data.Result;
-import de.featjar.base.data.Sets;
 import de.featjar.base.data.Void;
 import de.featjar.base.log.IndentStringBuilder;
 import de.featjar.base.log.Log;
@@ -13,6 +12,11 @@ import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
+/**
+ * Parses and validates options.
+ *
+ * @author Elias Kuiter
+ */
 public interface IOptionInput {
     /**
      * Option for printing usage information.
@@ -42,21 +46,21 @@ public interface IOptionInput {
                     .map(Objects::toString)
                     .map(String::toLowerCase)
                     .collect(Collectors.joining(", ")))
-            .setDefaultValue(CommandLineInterface.DEFAULT_VERBOSITY);
+            .setDefaultValue(Commands.DEFAULT_VERBOSITY);
 
     Result<Void> validate(List<Option<?>> options);
 
     <T> Result<T> get(Option<T> option);
 
     /**
-     * {@return the commands supplied in the given arguments}
+     * {@return the commands supplied in this option input}
      */
     default LinkedHashSet<ICommand> getCommands() {
         return get(COMMAND_OPTION).get();
     }
 
     /**
-     * {@return the general options of the command-line interface}
+     * {@return the general options of this option input}
      */
     default List<Option<?>> getOptions() {
         return List.of(COMMAND_OPTION, HELP_OPTION, VERSION_OPTION, VERBOSITY_OPTION);
@@ -107,7 +111,7 @@ public interface IOptionInput {
     }
 
     /**
-     * {@return the verbosity supplied in the given arguments}
+     * {@return the verbosity supplied in this option input}
      */
     default Log.Verbosity getVerbosity() {
         return get(VERBOSITY_OPTION).get();

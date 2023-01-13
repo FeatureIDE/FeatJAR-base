@@ -308,8 +308,8 @@ public class FeatJAR extends IO implements AutoCloseable {
      * @param arguments command-line arguments
      */
     public static void main(String[] arguments) {
-        IOptionInput optionInput = new OptionLine(arguments);
+        IOptionInput optionInput = new OptionList(arguments);
         defaultVerbosity = optionInput.getVerbosity();
-        FeatJAR.run(featJAR -> CommandLineInterface.run(optionInput));
+        FeatJAR.run(featJAR -> Commands.run(optionInput));
     }
 }

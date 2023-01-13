@@ -28,8 +28,8 @@ import org.junit.jupiter.api.Test;
 
 class ArgumentParserTest {
 
-    OptionLine parser(String... args) {
-        return new OptionLine(args);
+    OptionList parser(String... args) {
+        return new OptionList(args);
     }
 
     @Test

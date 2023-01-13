@@ -28,8 +28,8 @@ import java.util.function.Predicate;
 import java.util.function.Supplier;
 
 /**
- * An option on the command-line interface.
- * Parses a string value supplied on the command line into an object.
+ * An option for an {@link ICommand}.
+ * Parses a string value into an object.
  * Allows to set a default value.
  *
  * @param <T> the type of the option's value
@@ -156,14 +156,14 @@ public class Option<T> {
     }
 
     /**
-     * Parses the value of this option from a given argument parser.
+     * Parses the value of this option from a given option list.
      *
-     * @param optionLine the argument parser
+     * @param optionList the option list
      * @return the parsed value
      */
-    public Result<T> parseFrom(OptionLine optionLine) {
+    public Result<T> parseFrom(OptionList optionList) {
         Result<String> valueString =
-                isRequired ? optionLine.parseRequiredOption(getArgumentName()) : optionLine.parseOption(getArgumentName());
+                isRequired ? optionList.parseRequiredOption(getArgumentName()) : optionList.parseOption(getArgumentName());
         if (valueString.isEmpty()) return Result.ofNullable(defaultValue);
         Result<T> parseResult = parser.apply(valueString.get());
         if (parseResult.isEmpty()) {
@@ -177,8 +177,8 @@ public class Option<T> {
     public Result<T> parseFrom(OptionFile optionFile) {
         String value = optionFile.getProperties().getProperty(name);
         if (value == null)
-            return new OptionLine().get(this);
-        return new OptionLine(getArgumentName(), value).get(this);
+            return new OptionList().get(this);
+        return new OptionList(getArgumentName(), value).get(this);
     }
 
     @Override

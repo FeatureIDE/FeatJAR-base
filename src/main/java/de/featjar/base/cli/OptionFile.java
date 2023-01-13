@@ -8,6 +8,11 @@ import java.io.InputStream;
 import java.util.List;
 import java.util.Properties;
 
+/**
+ * Parses options from a file.
+ *
+ * @author Elias Kuiter
+ */
 public class OptionFile implements IOptionInput {
     Properties properties;
     Properties unusedProperties;

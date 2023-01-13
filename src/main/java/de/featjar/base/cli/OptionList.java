@@ -28,31 +28,29 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 /**
- * Parses a list of string arguments.
- * Adapted from
- * <a href="https://github.com/ekuiter/PCLocator/blob/master/src/de/ovgu/spldev/pclocator/Arguments.java">PCLocator</a>.
+ * Parses a list of strings.
  *
  * @author Elias Kuiter
  */
-public class OptionLine implements IOptionInput {
+public class OptionList implements IOptionInput {
     protected List<String> arguments;
     protected List<String> unusedArguments;
 
     /**
-     * Creates a new argument parser.
+     * Creates a new option list.
      *
-     * @param arguments the arguments to parse
+     * @param arguments the arguments
      */
-    public OptionLine(String... arguments) {
+    public OptionList(String... arguments) {
         this(List.of(arguments));
     }
 
     /**
-     * Creates a new argument parser.
+     * Creates a new option list.
      *
-     * @param arguments the arguments to parse
+     * @param arguments the arguments
      */
-    public OptionLine(List<String> arguments) {
+    public OptionList(List<String> arguments) {
         this.arguments = new ArrayList<>(arguments);
         this.unusedArguments = new ArrayList<>(arguments);
     }

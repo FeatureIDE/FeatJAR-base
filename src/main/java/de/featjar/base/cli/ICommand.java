@@ -30,7 +30,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * A command run within a {@link CommandLineInterface}.
+ * A command run within a {@link Commands}.
  *
  * @author Sebastian Krieter
  * @author Elias Kuiter
@@ -38,11 +38,11 @@ import java.util.List;
 public interface ICommand extends IExtension {
     Option<String> INPUT_OPTION = new StringOption("input")
             .setDescription("Path to input file(s)")
-            .setDefaultValue(CommandLineInterface.STANDARD_INPUT);
+            .setDefaultValue(Commands.STANDARD_INPUT);
 
     Option<String> OUTPUT_OPTION = new StringOption("output")
             .setDescription("Path to output file(s)")
-            .setDefaultValue(CommandLineInterface.STANDARD_OUTPUT);
+            .setDefaultValue(Commands.STANDARD_OUTPUT);
 
     Option<Duration> TIMEOUT_OPTION = new Option<>("timeout",
             Result.mapReturnValue(s -> Duration.ofMillis(Long.parseLong(s))))
@@ -53,10 +53,6 @@ public interface ICommand extends IExtension {
     Option<Long> SEED_OPTION = new Option<>("seed", Result.mapReturnValue(Long::valueOf))
             .setDescription("Seed for pseudorandom number generator")
             .setDefaultValue(IRandomDependency.DEFAULT_RANDOM_SEED);
-
-    Option<Integer> ITERATIONS_OPTION = new Option<>("iterations", Result.mapReturnValue(Integer::valueOf))
-            .setDescription("Number of iterations per input file")
-            .setDefaultValue(1);
 
     /**
      * {@return this command's description, if any}

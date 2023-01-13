@@ -4,6 +4,11 @@ import de.featjar.base.data.Result;
 import de.featjar.base.io.format.IFormat;
 import de.featjar.base.io.input.AInputMapper;
 
+/**
+ * A format that parses options from a properties file.
+ *
+ * @author Elias Kuiter
+ */
 public class OptionFileFormat implements IFormat<OptionFile> {
     @Override
     public Result<OptionFile> parse(AInputMapper inputMapper) {
