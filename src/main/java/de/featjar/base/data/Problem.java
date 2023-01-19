@@ -91,7 +91,7 @@ public class Problem {
 
     @Override
     public String toString() {
-        return severity + ": " + getMessage();
+        return severity + ": " + getMessage() + "\n";
     }
 
     /**
