@@ -137,6 +137,7 @@ public class Trees {
      * @return the stream
      * @param <T> the type of tree
      */
+    // todo: does not work currently!
     public static <T extends ITree<T>> Stream<T> parallelStream(T node) {
         return StreamSupport.stream(new ParallelSpliterator<>(node), true);
     }

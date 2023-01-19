@@ -20,6 +20,7 @@
  */
 package de.featjar.base.data;
 
+import java.util.Collection;
 import java.util.LinkedHashSet;
 import java.util.Set;
 import java.util.stream.Collector;
@@ -39,6 +40,15 @@ public class Sets {
     @SafeVarargs
     public static <T> LinkedHashSet<T> of(T... objects) {
         return new LinkedHashSet<>(Set.of(objects));
+    }
+
+    @SafeVarargs
+    public static <T> LinkedHashSet<T> union(Collection<T>... sets) {
+        LinkedHashSet<T> newSet = new LinkedHashSet<>();
+        for (Collection<T> set : sets) {
+            newSet.addAll(set);
+        }
+        return newSet;
     }
 
     public static <T> Collector<T, ?, LinkedHashSet<T>> toSet() {
