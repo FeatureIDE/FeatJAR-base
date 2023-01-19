@@ -61,6 +61,9 @@ public class Option<T> {
         return name;
     }
 
+    /**
+     * {@return this option's argument name on the command-line interface}
+     */
     public String getArgumentName() {
         return "--" + name;
     }
@@ -174,6 +177,12 @@ public class Option<T> {
         throw new IllegalArgumentException("value " + parseResult.get() + " for option " + getArgumentName() + " is invalid");
     }
 
+    /**
+     * Parses the value of this option from a given option file.
+     *
+     * @param optionFile the option file
+     * @return the parsed value
+     */
     public Result<T> parseFrom(OptionFile optionFile) {
         String value = optionFile.getProperties().getProperty(name);
         if (value == null)

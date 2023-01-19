@@ -48,8 +48,20 @@ public interface IOptionInput {
                     .collect(Collectors.joining(", ")))
             .setDefaultValue(Commands.DEFAULT_VERBOSITY);
 
+    /**
+     * {@return a void result when the given options are valid in this option input}
+     * In particular, returns an empty result when there are unused options in this option input.
+     *
+     * @param options the options
+     */
     Result<Void> validate(List<Option<?>> options);
 
+    /**
+     * {@return the value of the given option in this option input}
+     *
+     * @param option the option
+     * @param <T> the type of the option value
+     */
     <T> Result<T> get(Option<T> option);
 
     /**
@@ -102,10 +114,16 @@ public interface IOptionInput {
         return sb.toString();
     }
 
+    /**
+     * {@return whether this option input requests help information}
+     */
     default boolean isHelp() {
         return get(HELP_OPTION).get();
     }
 
+    /**
+     * {@return whether this option input requests version information}
+     */
     default boolean isVersion() {
         return get(VERSION_OPTION).get();
     }

@@ -35,10 +35,20 @@ import java.util.Scanner;
  * @author Elias Kuiter
  */
 public interface IBrowsable<T> {
+    /**
+     * Opens a URL given by a string in the default web browser.
+     *
+     * @param urlString the URL string
+     */
     static void browse(String urlString) {
         browse(URI.create(urlString));
     }
 
+    /**
+     * Opens the given URI in the default web browser.
+     *
+     * @param uri the URI
+     */
     static void browse(URI uri) {
         try {
             Desktop.getDesktop().browse(uri);
@@ -47,8 +57,18 @@ public interface IBrowsable<T> {
         }
     }
 
+    /**
+     * {@return the URI to open in a web browser to display this object}
+     *
+     * @param argument the argument
+     */
     Result<URI> getBrowseURI(T argument);
 
+    /**
+     * Displays this object in a web browser.
+     *
+     * @param argument the argument
+     */
     default void browse(T argument) {
         Result<URI> browseURI = getBrowseURI(argument);
         if (browseURI.isEmpty()) {
@@ -59,6 +79,11 @@ public interface IBrowsable<T> {
         browse(browseURI.get());
     }
 
+    /**
+     * Displays this object in a web browser, blocking execution until the user interacts.
+     *
+     * @param argument the argument
+     */
     default void debugBrowse(T argument) {
         browse(argument);
         FeatJAR.log().info("press return to continue");

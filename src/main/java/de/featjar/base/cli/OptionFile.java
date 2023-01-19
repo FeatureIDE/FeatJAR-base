@@ -17,6 +17,11 @@ public class OptionFile implements IOptionInput {
     Properties properties;
     Properties unusedProperties;
 
+    /**
+     * Creates an option file.
+     *
+     * @param inputStream the input stream
+     */
     public OptionFile(InputStream inputStream) {
         this.properties = new Properties();
         try {
@@ -27,6 +32,9 @@ public class OptionFile implements IOptionInput {
         this.unusedProperties = (Properties) properties.clone();
     }
 
+    /**
+     * {@return the properties of this option file}
+     */
     public Properties getProperties() {
         return properties;
     }

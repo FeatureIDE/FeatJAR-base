@@ -31,12 +31,14 @@ import java.util.stream.Collectors;
  * A list option, which is parsed as a list of values.
  *
  * @author Elias Kuiter
+ * @param <T> the type of the option value
  */
 public class ListOption<T> extends Option<List<T>> {
     /**
      * Creates a list option.
      *
-     * @param name the name of the list option
+     * @param name the name
+     * @param parser the parser
      */
     @SuppressWarnings({"unchecked", "rawtypes"})
     public ListOption(String name, Function<String, Result<T>> parser) {

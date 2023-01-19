@@ -266,10 +266,22 @@ public class Cache implements IInitializer, IBrowsable<GraphVizTreeFormat<ICompu
         computationMap.clear();
     }
 
+    /**
+     * {@return the number of cache hits for the given computation}
+     *
+     * @param computation the computation
+     */
     public Long getNumberOfHits(IComputation<?> computation) {
         return Result.ofNullable(hitStatistics.get(computation)).orElse(0L);
     }
 
+    /**
+     * {@return the progress of the given computation}
+     * The progress is equally weighted over all direct dependencies of the computation.
+     * That is, if a computation with two direct dependencies has just started, the progress is 2/3.
+     *
+     * @param computation the computation
+     */
     public Result<Double> getProgress(IComputation<?> computation) {
         List<Double> progresses = new ArrayList<>();
         get(computation).map(FutureResult::getProgress).map(Progress::get).ifPresent(progresses::add);
@@ -282,12 +294,21 @@ public class Cache implements IInitializer, IBrowsable<GraphVizTreeFormat<ICompu
         return Result.of(progresses.stream().reduce(Double::sum).get() / progresses.size());
     }
 
+    /**
+     * {@return all computations in this cache}
+     * Is sorted by hash code to guarantee determinism.
+     */
     public List<IComputation<?>> getCachedComputations() {
         ArrayList<IComputation<?>> computations = new ArrayList<>(computationMap.keySet());
         computations.sort(Comparator.comparingInt(ITree::hashCodeTree));
         return computations;
     }
 
+    /**
+     * {@return a computation that depends on all computations in this cache}
+     * Can be used to inspect the state of the cache.
+     * If computed, guarantees quiescence (i.e., all running computations are done).
+     */
     public IComputation<List<?>> getCacheComputation() {
         return Computations.allOf(getCachedComputations());
     }
@@ -302,6 +323,9 @@ public class Cache implements IInitializer, IBrowsable<GraphVizTreeFormat<ICompu
      * Caches nothing during (de-)initialization of FeatJAR, as there is no {@link Cache} configured then.
      */
     public static class Fallback extends Cache {
+        /**
+         * Creates a fallback cache.
+         */
         public Fallback() {
             super(new Configuration());
         }
