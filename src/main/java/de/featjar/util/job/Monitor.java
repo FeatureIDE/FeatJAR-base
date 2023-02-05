@@ -20,6 +20,8 @@
  */
 package de.featjar.util.job;
 
+import java.util.function.Supplier;
+
 /**
  * Control object for {@link MonitorableSupplier} and
  * {@link MonitorableFunction}. Can be used to cancel a function's execution and
@@ -44,4 +46,8 @@ public interface Monitor {
     boolean isCanceled();
 
     boolean isDone();
+
+    void setStatusReporter(Supplier<String> reporter);
+
+    String reportStatus();
 }

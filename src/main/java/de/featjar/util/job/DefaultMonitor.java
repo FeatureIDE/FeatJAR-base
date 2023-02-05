@@ -22,6 +22,7 @@ package de.featjar.util.job;
 
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.function.Supplier;
 
 /**
  * Default implementation of {@link InternalMonitor} and {@link Monitor}.<br>
@@ -36,6 +37,7 @@ public class DefaultMonitor implements InternalMonitor {
     protected final int parentWork;
 
     protected String taskName;
+    protected Supplier<String> statusReporter;
 
     protected boolean canceled, done;
     protected long currentWork;
@@ -54,12 +56,16 @@ public class DefaultMonitor implements InternalMonitor {
     }
 
     protected void uncertainWorked(long work) {
-        currentWork += work;
-        totalWork += work;
+        synchronized (this) {
+            currentWork += work;
+            totalWork += work;
+        }
     }
 
     protected void worked(long work) {
-        currentWork += work;
+        synchronized (this) {
+            currentWork += work;
+        }
     }
 
     @Override
@@ -169,5 +175,15 @@ public class DefaultMonitor implements InternalMonitor {
         final DefaultMonitor child = new DefaultMonitor(this, size);
         children.add(child);
         return child;
+    }
+
+    @Override
+    public void setStatusReporter(Supplier<String> reporter) {
+        statusReporter = reporter;
+    }
+
+    @Override
+    public String reportStatus() {
+        return statusReporter == null ? "" : statusReporter.get();
     }
 }

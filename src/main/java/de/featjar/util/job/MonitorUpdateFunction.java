@@ -33,15 +33,16 @@ public final class MonitorUpdateFunction implements UpdateFunction {
 
     public MonitorUpdateFunction(Monitor monitor) {
         this.monitor = monitor;
+        Logger.startProgressEstimation();
     }
 
     @Override
     public boolean update() {
         if (monitor.isCanceled() || monitor.isDone()) {
+            Logger.stopProgressEstimation();
             return false;
         } else {
-            Logger.logProgress(((Math.floor(monitor.getRelativeWorkDone() * 1000)) / 10.0) + "% ("
-                    + monitor.getRemainingWork() + ")");
+            Logger.showProgress(monitor);
             return true;
         }
     }

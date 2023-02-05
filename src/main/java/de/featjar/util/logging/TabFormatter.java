@@ -26,7 +26,7 @@ package de.featjar.util.logging;
 public class TabFormatter implements Formatter {
 
     private int tabLevel = 0;
-    private String tabSymbol = "\t";
+    private String tabSymbol = "  ";
 
     public void incTabLevel() {
         tabLevel++;

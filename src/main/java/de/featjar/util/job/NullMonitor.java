@@ -20,6 +20,8 @@
  */
 package de.featjar.util.job;
 
+import java.util.function.Supplier;
+
 /**
  * Rudimentary implementation of {@link InternalMonitor} and
  * {@link Monitor}.<br>
@@ -106,4 +108,12 @@ public final class NullMonitor implements InternalMonitor {
 
     @Override
     public void setTaskName(String name) {}
+
+    @Override
+    public void setStatusReporter(Supplier<String> reporter) {}
+
+    @Override
+    public String reportStatus() {
+        return "";
+    }
 }

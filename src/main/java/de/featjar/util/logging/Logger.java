@@ -85,6 +85,7 @@ public final class Logger {
 
     private static final LinkedHashSet<Log> logs = new LinkedHashSet<>();
     private static final LinkedList<Formatter> formatters = new LinkedList<>();
+    private static Progress progressBar = null;
 
     public static synchronized boolean addFileLog(Path path, LogType... logTypes) {
         if (!installed) {
@@ -187,6 +188,43 @@ public final class Logger {
 
     public static void log(String message, LogType logType) {
         println(message, logType);
+    }
+
+    public static synchronized void startProgressEstimation() {
+        progressBar = new Progress();
+    }
+
+    public static synchronized void stopProgressEstimation() {
+        if (progressBar != null) {
+            final String message = progressBar.toBlankString();
+            if (installed) {
+                for (final Log log : logs) {
+                    if (log.enabledLogTypes.contains(LogType.PROGRESS)) {
+                        log.out.print(message);
+                    }
+                }
+            } else {
+                System.out.println(message);
+            }
+            progressBar = null;
+        }
+    }
+
+    public static synchronized void showProgress(Monitor monitor) {
+        if (progressBar != null) {
+            final String message = progressBar.toString(monitor.getRelativeWorkDone()) //
+                    + ' ' //
+                    + monitor.reportStatus();
+            if (installed) {
+                for (final Log log : logs) {
+                    if (log.enabledLogTypes.contains(LogType.PROGRESS)) {
+                        log.out.print(message);
+                    }
+                }
+            } else {
+                System.out.print(message);
+            }
+        }
     }
 
     private static synchronized void println(String message, LogType logType) {

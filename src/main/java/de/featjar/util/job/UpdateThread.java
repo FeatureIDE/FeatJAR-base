@@ -20,6 +20,8 @@
  */
 package de.featjar.util.job;
 
+import de.featjar.util.logging.Logger;
+
 /**
  * Thread to run an arbitrary function at a regular time interval.
  *
@@ -27,13 +29,15 @@ package de.featjar.util.job;
  */
 public class UpdateThread extends Thread {
 
+    private static final int DEFAULT_UPDATE_TIME = 1_000;
+
     private final UpdateFunction function;
 
     protected boolean monitorRun = true;
     private long updateTime;
 
     public UpdateThread(UpdateFunction function) {
-        this(function, 5_000);
+        this(function, DEFAULT_UPDATE_TIME);
     }
 
     /**
@@ -55,14 +59,20 @@ public class UpdateThread extends Thread {
                 monitorRun = function.update();
             }
         } catch (final InterruptedException e) {
+        } finally {
+            function.update();
         }
-        function.update();
     }
 
     public void finish() {
         // to ensure to stop the monitor thread
         monitorRun = false;
         interrupt();
+        try {
+            join();
+        } catch (InterruptedException e) {
+            Logger.logError(e);
+        }
     }
 
     public long getUpdateTime() {
