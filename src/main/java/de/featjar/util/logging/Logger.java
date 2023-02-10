@@ -144,6 +144,8 @@ public final class Logger {
         if (installed) {
             System.setOut(orgOut);
             System.setErr(orgErr);
+            logs.clear();
+            formatters.clear();
             installed = false;
         }
     }
