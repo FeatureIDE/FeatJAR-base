@@ -86,6 +86,7 @@ public final class Logger {
     private static final LinkedHashSet<Log> logs = new LinkedHashSet<>();
     private static final LinkedList<Formatter> formatters = new LinkedList<>();
     private static Progress progressBar = null;
+    private static boolean printStackTrace = false;
 
     public static synchronized boolean addFileLog(Path path, LogType... logTypes) {
         if (!installed) {
@@ -259,12 +260,16 @@ public final class Logger {
             for (final Log log : logs) {
                 if (log.enabledLogTypes.contains(LogType.ERROR)) {
                     log.out.println(formattedMessage);
-                    error.printStackTrace(log.out);
+                    if (printStackTrace) {
+                        error.printStackTrace(log.out);
+                    }
                 }
             }
         } else {
             System.err.println(formattedMessage);
-            error.printStackTrace(System.err);
+            if (printStackTrace) {
+                error.printStackTrace(System.err);
+            }
         }
     }
 
@@ -279,5 +284,13 @@ public final class Logger {
             sb.append(message);
             return sb.toString();
         }
+    }
+
+    public static boolean isPrintStackTrace() {
+        return printStackTrace;
+    }
+
+    public static void setPrintStackTrace(boolean printStackTrace) {
+        Logger.printStackTrace = printStackTrace;
     }
 }
