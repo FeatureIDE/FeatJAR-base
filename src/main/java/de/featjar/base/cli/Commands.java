@@ -35,6 +35,7 @@ import java.io.InputStreamReader;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.time.Duration;
 import java.util.LinkedHashSet;
 import java.util.concurrent.*;
 import java.util.regex.Matcher;
@@ -109,11 +110,11 @@ public class Commands extends AExtensionPoint<ICommand> {
      * @param <T>     the type of the result
      * @return the result of the function, if any
      */
-    public static <T> Result<T> runInThread(Callable<T> fn, Long timeout) {
+    public static <T> Result<T> runInThread(Callable<T> fn, Duration timeout) {
         final ExecutorService executor = Executors.newSingleThreadExecutor();
         final Future<T> future = executor.submit(fn);
         try {
-            return Result.of(timeout == null ? future.get() : future.get(timeout, TimeUnit.MILLISECONDS));
+            return Result.of(timeout == null ? future.get() : future.get(timeout.toMillis(), TimeUnit.MILLISECONDS));
         } catch (final TimeoutException | ExecutionException | InterruptedException e) {
             return Result.empty(e);
         } finally {
