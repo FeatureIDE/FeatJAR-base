@@ -122,6 +122,32 @@ public class Commands extends AExtensionPoint<ICommand> {
         }
     }
 
+    /**
+     * A function that can throw exceptions.
+     */
+    public interface ExceptionRunnable {
+        /**
+         * Runs the function.
+         *
+         * @throws Exception if an error occurred
+         */
+        void run() throws Exception;
+    }
+
+    /**
+     * Runs a given function in a new thread, aborting it when it is not done after a timeout expires.
+     *
+     * @param fn      the function
+     * @param timeout the timeout in milliseconds
+     * @param <T>     the type of the result
+     * @throws RuntimeException if an error occurred
+     */
+    public static <T> void runInThread(ExceptionRunnable fn, Duration timeout) {
+        runInThread(() -> {
+            fn.run();
+            return Result.ofVoid();
+        }, timeout).orElseThrow();
+    }
 
     /**
      * {@return an object loaded from the given path or the standard input stream}
