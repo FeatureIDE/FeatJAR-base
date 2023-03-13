@@ -167,7 +167,7 @@ public class Option<T> {
     public Result<T> parseFrom(OptionList optionList) {
         Result<String> valueString =
                 isRequired ? optionList.parseRequiredOption(getArgumentName()) : optionList.parseOption(getArgumentName());
-        if (valueString.isEmpty()) return Result.ofNullable(defaultValue);
+        if (valueString.isEmpty()) return valueString.merge(Result.ofNullable(defaultValue));
         Result<T> parseResult = parser.apply(valueString.get());
         if (parseResult.isEmpty()) {
             FeatJAR.log().warning("could not parse option " + getArgumentName() + ", using default value");

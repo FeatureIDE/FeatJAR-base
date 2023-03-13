@@ -84,7 +84,7 @@ public interface IOptionInput {
     default String getHelp() {
         IndentStringBuilder sb = new IndentStringBuilder();
         List<ICommand> commands = FeatJAR.extensionPoint(Commands.class).getExtensions();
-        sb.appendLine("Usage: java -jar " + FeatJAR.LIBRARY_NAME + " <command> [--<flag> | --<option> <value>]...")
+        sb.appendLine("Usage: java -jar " + FeatJAR.LIBRARY_NAME + " --command <command> [--<flag> | --<option> <value>]...")
                 .appendLine();
         if (commands.size() == 0) {
             sb.append("No commands are available. You can register commands in an extensions.xml file when building "
