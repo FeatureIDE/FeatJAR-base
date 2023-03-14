@@ -123,6 +123,13 @@ public abstract class AExtensionPoint<T extends IExtension> {
                 : Result.empty(new Problem("no extension found for identifier " + identifier, Problem.Severity.ERROR));
     }
 
+    /**
+     * {@return the installed extension matching the given part of its identifier, if any}
+     * The matching is case-insensitive.
+     * If no extensions match or the match is ambiguous, an empty result is returned.
+     *
+     * @param partOfIdentifier the part of the extension's identifier
+     */
     public Result<T> getMatchingExtension(String partOfIdentifier) {
         LinkedHashSet<String> matchingIdentifiers = indexMap.keySet().stream()
                 .filter(identifier -> identifier.toLowerCase().contains(partOfIdentifier.toLowerCase()))
@@ -138,6 +145,13 @@ public abstract class AExtensionPoint<T extends IExtension> {
         return getExtension(matchingIdentifiers.iterator().next());
     }
 
+    /**
+     * {@return all installed extensions matching the given regular expression}
+     * The matching is case-insensitive.
+     * If no extensions match, an empty set is returned.
+     *
+     * @param regex the regular expression
+     */
     public LinkedHashSet<T> getMatchingExtensions(String regex) {
         LinkedHashSet<String> matchingIdentifiers = indexMap.keySet().stream()
                 .filter(identifier -> identifier.toLowerCase().matches(String.format(".*%s.*", regex.toLowerCase())))

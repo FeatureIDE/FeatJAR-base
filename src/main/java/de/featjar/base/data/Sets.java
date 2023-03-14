@@ -27,7 +27,7 @@ import java.util.stream.Collector;
 import java.util.stream.Collectors;
 
 /**
- * Utilities for handing linked hash sets.
+ * Utilities for handling linked hash sets.
  * Prefer to use {@link LinkedHashSet} over {@link java.util.HashSet}, as it guarantees determinism.
  *
  * @author Elias Kuiter

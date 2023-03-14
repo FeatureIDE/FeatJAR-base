@@ -20,7 +20,9 @@
  */
 package de.featjar.base;
 
-import de.featjar.base.cli.*;
+import de.featjar.base.cli.Commands;
+import de.featjar.base.cli.IOptionInput;
+import de.featjar.base.cli.OptionList;
 import de.featjar.base.computation.Cache;
 import de.featjar.base.data.Result;
 import de.featjar.base.extension.AExtensionPoint;

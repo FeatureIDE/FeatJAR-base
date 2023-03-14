@@ -27,7 +27,7 @@ import java.util.stream.Collector;
 import java.util.stream.Collectors;
 
 /**
- * Utilities for handing linked hash maps.
+ * Utilities for handling linked hash maps.
  * Prefer to use {@link LinkedHashMap} over {@link java.util.HashMap}, as it guarantees determinism.
  *
  * @author Elias Kuiter

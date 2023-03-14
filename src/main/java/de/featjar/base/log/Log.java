@@ -305,7 +305,9 @@ public class Log implements IInitializer {
      * @param problems the problems
      */
     public void problem(List<Problem> problems) {
-        problems.forEach(this::problem);
+        for (Problem problem : problems) {
+            problem(problem);
+        }
     }
 
     /**

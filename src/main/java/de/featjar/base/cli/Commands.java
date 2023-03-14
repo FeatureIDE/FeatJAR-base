@@ -81,24 +81,20 @@ public class Commands extends AExtensionPoint<ICommand> {
      * @param optionInput the option input
      */
     public static void run(IOptionInput optionInput) {
-        LinkedHashSet<ICommand> matchingCommands = optionInput.getCommands();
-        if (optionInput.isHelp() || matchingCommands.isEmpty()) {
+        Result<ICommand> command = optionInput.getCommand();
+        if (command.hasProblems())
+            FeatJAR.log().problem(command.getProblems());
+        if (optionInput.isHelp() || command.isEmpty()) {
             System.out.println(optionInput.getHelp());
         } else if (optionInput.isVersion()) {
             System.out.println(FeatJAR.LIBRARY_NAME + ", development version");
         } else {
-            FeatJAR.log()
-                    .info("running matching commands: "
-                            + matchingCommands.stream()
-                            .map(IExtension::getIdentifier)
-                            .collect(Collectors.joining(", ")));
-            matchingCommands.forEach(command -> {
-                FeatJAR.log().problem(optionInput.validate(Stream.concat(
-                                optionInput.getOptions().stream(),
-                                command.getOptions().stream())
-                        .collect(Collectors.toList())).getProblems());
-                command.run(optionInput);
-            });
+            FeatJAR.log().debug("running command " + command.get().getIdentifier());
+            FeatJAR.log().problem(optionInput.validate(Stream.concat(
+                            optionInput.getOptions().stream(),
+                            command.get().getOptions().stream())
+                    .collect(Collectors.toList())).getProblems());
+            command.get().run(optionInput);
         }
     }
 

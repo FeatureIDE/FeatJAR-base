@@ -21,10 +21,10 @@ public interface IOptionInput {
     /**
      * Option for printing usage information.
      */
-    Option<LinkedHashSet<ICommand>> COMMAND_OPTION = new Option<>("command",
-            Result.mapReturnValue(s -> FeatJAR.extensionPoint(Commands.class).getMatchingExtensions(s)))
-            .setDescription("Command(s) to execute")
-            .setDefaultValue(new LinkedHashSet<>());
+    Option<ICommand> COMMAND_OPTION = new Option<>("command",
+            s -> FeatJAR.extensionPoint(Commands.class).getMatchingExtension(s))
+            .setRequired(true)
+            .setDescription("Command to execute");
 
     /**
      * Option for printing usage information.
@@ -67,8 +67,8 @@ public interface IOptionInput {
     /**
      * {@return the commands supplied in this option input}
      */
-    default LinkedHashSet<ICommand> getCommands() {
-        return get(COMMAND_OPTION).get();
+    default Result<ICommand> getCommand() {
+        return get(COMMAND_OPTION);
     }
 
     /**
@@ -102,7 +102,8 @@ public interface IOptionInput {
         sb.appendLine("General options:").addIndent();
         sb.appendLine(getOptions());
         sb.removeIndent();
-        for (ICommand command : getCommands()) {
+        if (getCommand().isPresent()) {
+            ICommand command = getCommand().get();
             if (!command.getOptions().isEmpty()) {
                 sb.appendLine();
                 sb.appendLine(String.format("Options of command %s:", command.getIdentifier()));
