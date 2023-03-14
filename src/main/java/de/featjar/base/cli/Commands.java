@@ -100,6 +100,7 @@ public class Commands extends AExtensionPoint<ICommand> {
 
     /**
      * Runs a given function in a new thread, aborting it when it is not done after a timeout expires.
+     * If the entire process should be stopped afterwards, {@link System#exit(int)} must be called explicitly.
      *
      * @param fn      the function
      * @param timeout the timeout in milliseconds
