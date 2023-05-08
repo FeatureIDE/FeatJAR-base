@@ -531,7 +531,6 @@ public interface ITree<T extends ITree<T>> extends IBrowsable<GraphVizTreeFormat
             this.index = index;
         }
 
-        @SuppressWarnings("unchecked")
         public U get(T tree) {
             U u = (U) tree.getChild(index).orElse(defaultValue);
             if (u == null)

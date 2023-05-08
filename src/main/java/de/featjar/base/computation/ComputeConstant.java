@@ -34,7 +34,7 @@ import java.util.Objects;
  * @author Elias Kuiter
  */
 public class ComputeConstant<T> extends ALeafNode<IComputation<?>> implements IComputation<T> {
-    //todo: T should implement Serializable and overload hashCode and equals
+    // todo: T should implement Serializable and overload hashCode and equals
     protected final T value;
 
     /**
@@ -53,8 +53,7 @@ public class ComputeConstant<T> extends ALeafNode<IComputation<?>> implements IC
 
     @Override
     public boolean equalsNode(IComputation<?> other) {
-        return getClass() == other.getClass()
-                && Objects.equals(value, ((ComputeConstant<?>) other).value);
+        return getClass() == other.getClass() && Objects.equals(value, ((ComputeConstant<?>) other).value);
     }
 
     @Override

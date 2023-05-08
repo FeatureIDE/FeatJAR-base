@@ -21,7 +21,6 @@
 package de.featjar.base.env;
 
 import de.featjar.base.data.Result;
-
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;

@@ -23,8 +23,6 @@ package de.featjar.base.data;
 import java.util.Arrays;
 import java.util.Collection;
 
-
-
 /**
  * An unordered list of integers.
  * Subclasses implement specific interpretations of these integers (e.g., as an index into a {@link RangeMap}).
@@ -34,6 +32,7 @@ import java.util.Collection;
  * @author Elias Kuiter
  */
 public class IntegerList implements IIntegerList {
+    // TODO rename to elements
     protected final int[] array;
     protected boolean hashCodeValid;
     protected int hashCode;
@@ -79,11 +78,7 @@ public class IntegerList implements IIntegerList {
 
     @Override
     public int hashCode() {
-        if (hashCodeValid)
-            return hashCode;
-        hashCode = Arrays.hashCode(array);
-        hashCodeValid = true;
-        return hashCode;
+        return hashCodeValid ? hashCode : (hashCode = Arrays.hashCode(array));
     }
 
     @Override

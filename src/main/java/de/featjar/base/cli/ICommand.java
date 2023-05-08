@@ -24,7 +24,6 @@ import de.featjar.base.computation.IRandomDependency;
 import de.featjar.base.computation.ITimeoutDependency;
 import de.featjar.base.data.Result;
 import de.featjar.base.extension.IExtension;
-
 import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
@@ -39,9 +38,8 @@ public interface ICommand extends IExtension {
     /**
      * Input option for loading files.
      */
-    Option<String> INPUT_OPTION = new StringOption("input")
-            .setDescription("Path to input file(s)")
-            .setDefaultValue(Commands.STANDARD_INPUT);
+    Option<String> INPUT_OPTION =
+            new StringOption("input").setDescription("Path to input file(s)").setDefaultValue(Commands.STANDARD_INPUT);
 
     /**
      * Output option for saving files.
@@ -53,8 +51,8 @@ public interface ICommand extends IExtension {
     /**
      * Timeout option for cancelling running computations.
      */
-    Option<Duration> TIMEOUT_OPTION = new Option<>("timeout",
-            Result.mapReturnValue(s -> Duration.ofMillis(Long.parseLong(s))))
+    Option<Duration> TIMEOUT_OPTION = new Option<>(
+                    "timeout", Result.mapReturnValue(s -> Duration.ofMillis(Long.parseLong(s))))
             .setDescription("Timeout in milliseconds")
             .setValidator(timeout -> !timeout.isNegative())
             .setDefaultValue(ITimeoutDependency.DEFAULT_TIMEOUT);

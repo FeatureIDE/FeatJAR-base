@@ -4,16 +4,16 @@
  * This file is part of FeatJAR-base.
  *
  * base is free software: you can redistribute it and/or modify it
- * under the terms of the GNU Lesser General default License as published by
+ * under the terms of the GNU Lesser General Public License as published by
  * the Free Software Foundation, either version 3.0 of the License,
  * or (at your option) any later version.
  *
  * base is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
- * See the GNU Lesser General default License for more details.
+ * See the GNU Lesser General Public License for more details.
  *
- * You should have received a copy of the GNU Lesser General default License
+ * You should have received a copy of the GNU Lesser General Public License
  * along with base. If not, see <https://www.gnu.org/licenses/>.
  *
  * See <https://github.com/FeatureIDE/FeatJAR-base> for further information.
@@ -21,13 +21,11 @@
 package de.featjar.base.data;
 
 import java.util.Arrays;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.Comparator;
 import java.util.function.Function;
 import java.util.function.Supplier;
 import java.util.stream.IntStream;
-
 
 /**
  * An unordered list of integers.
@@ -37,6 +35,7 @@ import java.util.stream.IntStream;
  * @author Sebastian Krieter
  * @author Elias Kuiter
  */
+// TODO is this interface necessary?
 public interface IIntegerList extends Supplier<int[]> {
     static <T> T merge(Collection<IIntegerList> integerLists, Function<int[], T> integerListFactory) {
         return integerListFactory.apply(integerLists.stream()
@@ -77,7 +76,8 @@ public interface IIntegerList extends Supplier<int[]> {
      * @param range the range
      */
     default int[] copyOfRange(Range range) {
-        return copyOfRange(range.getLowerBound().orElse(0), range.getUpperBound().orElse(get().length));
+        return copyOfRange(
+                range.getLowerBound().orElse(0), range.getUpperBound().orElse(get().length));
     }
 
     /**
@@ -141,12 +141,66 @@ public interface IIntegerList extends Supplier<int[]> {
     }
 
     /**
+     * {@return whether this integer list contains any of the given integers in negated form}
+     *
+     * @param integers the integers
+     */
+    default boolean containsAnyNegated(int... integers) {
+        return Arrays.stream(integers).anyMatch(integer -> indexOf(-integer) >= 0);
+    }
+
+    /**
      * {@return whether this integer list contains all of the given integers}
      *
      * @param integers the integers
      */
     default boolean containsAll(int... integers) {
         return Arrays.stream(integers).noneMatch(integer -> indexOf(integer) < 0);
+    }
+
+    /**
+     * {@return whether this integer list contains all of the given integers in negated form}
+     *
+     * @param integers the integers
+     */
+    default boolean containsAllNegated(int... integers) {
+        return Arrays.stream(integers).noneMatch(integer -> indexOf(-integer) < 0);
+    }
+
+    /**
+     * {@return whether this integer list contains any integer in the given integer list}
+     *
+     * @param integers another integer list
+     */
+    default boolean containsAny(IIntegerList integers) {
+        return containsAny(integers.get());
+    }
+
+    /**
+     * {@return whether this integer list contains any negated integer in the given integer list}
+     *
+     * @param integers another integer list
+     */
+    default boolean containsAnyNegated(IIntegerList integers) {
+        return containsAnyNegated(integers.get());
+    }
+
+    /**
+     * {@return whether this integer list contains all integers in the given integer list}
+     *
+     * @param integers another integer list
+     */
+    default boolean containsAll(IIntegerList integers) {
+        return containsAll(integers.get());
+    }
+
+    /**
+     * {@return whether this integer list contains all negated integers in the given integer list}
+     *
+     * @param integers another integer list
+     */
+    default boolean containsAllNegated(IIntegerList integers) {
+        return containsAllNegated(integers.get());
     }
 
     /**

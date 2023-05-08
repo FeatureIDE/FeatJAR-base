@@ -21,7 +21,6 @@
 package de.featjar.base.computation;
 
 import de.featjar.base.data.Result;
-
 import java.time.Duration;
 
 /**
@@ -32,8 +31,7 @@ import java.time.Duration;
  *
  * @author Elias Kuiter
  */
-public
-interface ITimeoutDependency {
+public interface ITimeoutDependency {
     /**
      * The default timeout returned by {@link #getTimeout()}, if not specified otherwise.
      * Specifies that no timeout should be set; that is, the analysis runs until it completes.

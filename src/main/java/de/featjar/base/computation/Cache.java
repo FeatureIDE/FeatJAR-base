@@ -27,7 +27,6 @@ import de.featjar.base.env.StackTrace;
 import de.featjar.base.extension.IInitializer;
 import de.featjar.base.io.graphviz.GraphVizTreeFormat;
 import de.featjar.base.tree.structure.ITree;
-
 import java.net.URI;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
@@ -238,7 +237,7 @@ public class Cache implements IInitializer, IBrowsable<GraphVizTreeFormat<ICompu
      */
     public <T> boolean put(IComputation<T> computation, FutureResult<T> futureResult) {
         if (has(computation)) // once set, immutable
-            return false;
+        return false;
         computationMap.put(computation, futureResult);
         return true;
     }

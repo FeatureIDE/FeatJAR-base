@@ -22,7 +22,6 @@ package de.featjar.base.cli;
 
 import de.featjar.base.FeatJAR;
 import de.featjar.base.data.Result;
-
 import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
@@ -165,8 +164,9 @@ public class Option<T> {
      * @return the parsed value
      */
     public Result<T> parseFrom(OptionList optionList) {
-        Result<String> valueString =
-                isRequired ? optionList.parseRequiredOption(getArgumentName()) : optionList.parseOption(getArgumentName());
+        Result<String> valueString = isRequired
+                ? optionList.parseRequiredOption(getArgumentName())
+                : optionList.parseOption(getArgumentName());
         if (valueString.isEmpty()) return valueString.merge(Result.ofNullable(defaultValue));
         Result<T> parseResult = parser.apply(valueString.get());
         if (parseResult.isEmpty()) {
@@ -174,7 +174,8 @@ public class Option<T> {
             return Result.ofNullable(defaultValue);
         }
         if (validator.test(parseResult.get())) return parseResult;
-        throw new IllegalArgumentException("value " + parseResult.get() + " for option " + getArgumentName() + " is invalid");
+        throw new IllegalArgumentException(
+                "value " + parseResult.get() + " for option " + getArgumentName() + " is invalid");
     }
 
     /**
@@ -185,8 +186,7 @@ public class Option<T> {
      */
     public Result<T> parseFrom(OptionFile optionFile) {
         String value = optionFile.getProperties().getProperty(name);
-        if (value == null)
-            return new OptionList().get(this);
+        if (value == null) return new OptionList().get(this);
         return new OptionList(getArgumentName(), value).get(this);
     }
 

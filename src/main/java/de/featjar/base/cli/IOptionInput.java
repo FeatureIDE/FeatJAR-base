@@ -1,3 +1,23 @@
+/*
+ * Copyright (C) 2023 Sebastian Krieter, Elias Kuiter
+ *
+ * This file is part of FeatJAR-base.
+ *
+ * base is free software: you can redistribute it and/or modify it
+ * under the terms of the GNU Lesser General Public License as published by
+ * the Free Software Foundation, either version 3.0 of the License,
+ * or (at your option) any later version.
+ *
+ * base is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+ * See the GNU Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public License
+ * along with base. If not, see <https://www.gnu.org/licenses/>.
+ *
+ * See <https://github.com/FeatureIDE/FeatJAR-base> for further information.
+ */
 package de.featjar.base.cli;
 
 import de.featjar.base.FeatJAR;
@@ -5,9 +25,7 @@ import de.featjar.base.data.Result;
 import de.featjar.base.data.Void;
 import de.featjar.base.log.IndentStringBuilder;
 import de.featjar.base.log.Log;
-
 import java.util.Arrays;
-import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
@@ -21,8 +39,8 @@ public interface IOptionInput {
     /**
      * Option for printing usage information.
      */
-    Option<ICommand> COMMAND_OPTION = new Option<>("command",
-            s -> FeatJAR.extensionPoint(Commands.class).getMatchingExtension(s))
+    Option<ICommand> COMMAND_OPTION = new Option<>(
+                    "command", s -> FeatJAR.extensionPoint(Commands.class).getMatchingExtension(s))
             .setRequired(true)
             .setDescription("Command to execute");
 
@@ -34,8 +52,7 @@ public interface IOptionInput {
     /**
      * Option for printing version information.
      */
-    Option<Boolean> VERSION_OPTION =
-            new Flag("version").setDescription("Print version information");
+    Option<Boolean> VERSION_OPTION = new Flag("version").setDescription("Print version information");
 
     /**
      * Option for setting the logger verbosity.
@@ -43,9 +60,9 @@ public interface IOptionInput {
     Option<Log.Verbosity> VERBOSITY_OPTION = new Option<>("verbosity", Log.Verbosity::of)
             .setDescription("The logger verbosity, one of "
                     + Arrays.stream(Log.Verbosity.values())
-                    .map(Objects::toString)
-                    .map(String::toLowerCase)
-                    .collect(Collectors.joining(", ")))
+                            .map(Objects::toString)
+                            .map(String::toLowerCase)
+                            .collect(Collectors.joining(", ")))
             .setDefaultValue(Commands.DEFAULT_VERBOSITY);
 
     /**
@@ -84,7 +101,8 @@ public interface IOptionInput {
     default String getHelp() {
         IndentStringBuilder sb = new IndentStringBuilder();
         List<ICommand> commands = FeatJAR.extensionPoint(Commands.class).getExtensions();
-        sb.appendLine("Usage: java -jar " + FeatJAR.LIBRARY_NAME + " --command <command> [--<flag> | --<option> <value>]...")
+        sb.appendLine("Usage: java -jar " + FeatJAR.LIBRARY_NAME
+                        + " --command <command> [--<flag> | --<option> <value>]...")
                 .appendLine();
         if (commands.size() == 0) {
             sb.append("No commands are available. You can register commands in an extensions.xml file when building "
@@ -135,5 +153,4 @@ public interface IOptionInput {
     default Log.Verbosity getVerbosity() {
         return get(VERBOSITY_OPTION).get();
     }
-
 }

@@ -44,6 +44,9 @@ public class Trees {
      * Thrown when a visitor requests the {@link ITreeVisitor.TraversalAction#FAIL} action.
      */
     public static class VisitorFailException extends Exception {
+
+        private static final long serialVersionUID = -3736018981484477491L;
+
         List<Problem> problems;
 
         public VisitorFailException(Problem... problems) {

@@ -26,9 +26,8 @@ import static org.junit.jupiter.api.Assertions.*;
 import de.featjar.base.FeatJAR;
 import de.featjar.base.computation.*;
 import de.featjar.base.tree.structure.ITree;
-import org.junit.jupiter.api.Test;
-
 import java.util.function.Supplier;
+import org.junit.jupiter.api.Test;
 
 class IComputationTest {
     @Test
@@ -140,7 +139,8 @@ class IComputationTest {
 
     @Test
     void allOfSimple() {
-        Pair<Integer, Integer> r = Computations.of(Computations.of(1), Computations.of(2)).get().get();
+        Pair<Integer, Integer> r =
+                Computations.of(Computations.of(1), Computations.of(2)).get().get();
         assertEquals(1, r.getKey());
         assertEquals(2, r.getValue());
     }

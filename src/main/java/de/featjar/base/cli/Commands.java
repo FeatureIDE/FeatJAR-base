@@ -23,12 +23,10 @@ package de.featjar.base.cli;
 import de.featjar.base.FeatJAR;
 import de.featjar.base.data.Result;
 import de.featjar.base.extension.AExtensionPoint;
-import de.featjar.base.extension.IExtension;
 import de.featjar.base.io.IO;
 import de.featjar.base.io.format.IFormat;
 import de.featjar.base.io.format.IFormatSupplier;
 import de.featjar.base.log.Log;
-
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -36,7 +34,6 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.time.Duration;
-import java.util.LinkedHashSet;
 import java.util.concurrent.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -82,18 +79,19 @@ public class Commands extends AExtensionPoint<ICommand> {
      */
     public static void run(IOptionInput optionInput) {
         Result<ICommand> command = optionInput.getCommand();
-        if (command.hasProblems())
-            FeatJAR.log().problem(command.getProblems());
+        if (command.hasProblems()) FeatJAR.log().problem(command.getProblems());
         if (optionInput.isHelp() || command.isEmpty()) {
             System.out.println(optionInput.getHelp());
         } else if (optionInput.isVersion()) {
             System.out.println(FeatJAR.LIBRARY_NAME + ", development version");
         } else {
             FeatJAR.log().debug("running command " + command.get().getIdentifier());
-            FeatJAR.log().problem(optionInput.validate(Stream.concat(
-                            optionInput.getOptions().stream(),
-                            command.get().getOptions().stream())
-                    .collect(Collectors.toList())).getProblems());
+            FeatJAR.log()
+                    .problem(optionInput
+                            .validate(Stream.concat(
+                                            optionInput.getOptions().stream(), command.get().getOptions().stream())
+                                    .collect(Collectors.toList()))
+                            .getProblems());
             command.get().run(optionInput);
         }
     }
@@ -140,10 +138,13 @@ public class Commands extends AExtensionPoint<ICommand> {
      * @throws RuntimeException if an error occurred
      */
     public static <T> void runInThread(ExceptionRunnable fn, Duration timeout) {
-        runInThread(() -> {
-            fn.run();
-            return Result.ofVoid();
-        }, timeout).orElseThrow();
+        runInThread(
+                        () -> {
+                            fn.run();
+                            return Result.ofVoid();
+                        },
+                        timeout)
+                .orElseThrow();
     }
 
     /**
@@ -176,7 +177,7 @@ public class Commands extends AExtensionPoint<ICommand> {
                 || Files.exists(Paths.get(pathOrStdin));
     }
 
-    //todo: allow to load many files
+    // todo: allow to load many files
 
     /**
      * Saves the given object to the given path or the standard output stream.

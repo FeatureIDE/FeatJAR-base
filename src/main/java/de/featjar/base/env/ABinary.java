@@ -22,7 +22,6 @@ package de.featjar.base.env;
 
 import de.featjar.base.data.Result;
 import de.featjar.base.extension.IExtension;
-
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;

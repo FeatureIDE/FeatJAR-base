@@ -29,6 +29,8 @@ import de.featjar.base.io.input.AInput;
  */
 public class ParseException extends Exception {
 
+    private static final long serialVersionUID = -6948189323221248464L;
+
     protected final int lineNumber;
 
     /**

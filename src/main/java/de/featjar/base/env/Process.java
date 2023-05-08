@@ -24,8 +24,6 @@ import de.featjar.base.FeatJAR;
 import de.featjar.base.data.Problem;
 import de.featjar.base.data.Result;
 import de.featjar.base.data.Void;
-import net.tascalate.concurrent.CompletableTask;
-
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
@@ -37,7 +35,6 @@ import java.util.*;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
-import java.util.stream.Stream;
 
 /**
  * Executes an external executable in a process.
@@ -85,8 +82,7 @@ public class Process implements Supplier<Result<List<String>>> {
             boolean terminatedInTime = true;
             if (timeout != null && !timeout.isZero())
                 terminatedInTime = process.waitFor(timeout.toMillis(), TimeUnit.MILLISECONDS);
-            else
-                process.waitFor();
+            else process.waitFor();
             long elapsedTime = Duration.between(start, Instant.now()).toMillis();
             final int exitValue = process.exitValue();
             Result<Void> result;
@@ -97,11 +93,11 @@ public class Process implements Supplier<Result<List<String>>> {
                 result = Result.empty(
                         new Problem(executablePath + " exited with value " + exitValue, Problem.Severity.ERROR));
             }
-            //todo: add info severity, as these are no real warnings
+            // todo: add info severity, as these are no real warnings
             return Result.empty(
-                    new Problem("in time = " + terminatedInTime, Problem.Severity.WARNING),
-                    new Problem("elapsed time in ms = " + elapsedTime, Problem.Severity.WARNING)
-            ).merge(result);
+                            new Problem("in time = " + terminatedInTime, Problem.Severity.WARNING),
+                            new Problem("elapsed time in ms = " + elapsedTime, Problem.Severity.WARNING))
+                    .merge(result);
         } catch (IOException | InterruptedException e) {
             return Result.empty(e);
         } finally {
@@ -114,16 +110,16 @@ public class Process implements Supplier<Result<List<String>>> {
     protected void consumeInputStream(InputStream inputStream, Consumer<String> consumer, boolean isError) {
         if (consumer != null) {
             new Thread(() -> {
-                try (BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream))) {
-                    for (String line = reader.readLine(); line != null; line = reader.readLine()) {
-                        consumer.accept(line);
-                        if (isError)
-                            errorOccurred = true;
-                    }
-                } catch (final IOException e) {
-                    FeatJAR.log().error(e);
-                }
-            }).start();
+                        try (BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream))) {
+                            for (String line = reader.readLine(); line != null; line = reader.readLine()) {
+                                consumer.accept(line);
+                                if (isError) errorOccurred = true;
+                            }
+                        } catch (final IOException e) {
+                            FeatJAR.log().error(e);
+                        }
+                    })
+                    .start();
         }
     }
 }

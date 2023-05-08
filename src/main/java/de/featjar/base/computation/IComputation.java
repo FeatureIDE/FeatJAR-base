@@ -24,7 +24,6 @@ import de.featjar.base.FeatJAR;
 import de.featjar.base.data.Problem;
 import de.featjar.base.data.Result;
 import de.featjar.base.tree.structure.ITree;
-
 import java.time.Duration;
 import java.util.List;
 import java.util.function.Consumer;
@@ -320,7 +319,7 @@ public interface IComputation<T> extends Supplier<Result<T>>, ITree<IComputation
 
     // todo: serialization scheme. may require that all inputs (all dependencies) implement Serializable.
     default byte[] serialize() {
-        return new byte[]{};
+        return new byte[] {};
     }
 
     // TODO: validate whether a computation is sensible.
@@ -329,6 +328,7 @@ public interface IComputation<T> extends Supplier<Result<T>>, ITree<IComputation
         return true;
     }
 
-    // TODO: "magically" complete incomplete computation specifications with a suitable feature model (in a separate module).
+    // TODO: "magically" complete incomplete computation specifications with a suitable feature model (in a separate
+    // module).
     //  it may also be nice to denote THE canonical best input for a computation (in a separate module).
 }

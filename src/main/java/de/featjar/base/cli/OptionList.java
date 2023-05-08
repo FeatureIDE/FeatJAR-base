@@ -23,8 +23,8 @@ package de.featjar.base.cli;
 import de.featjar.base.data.Problem;
 import de.featjar.base.data.Result;
 import de.featjar.base.data.Void;
-
 import java.util.*;
+import java.util.function.BooleanSupplier;
 import java.util.stream.Collectors;
 
 /**
@@ -68,7 +68,8 @@ public class OptionList implements IOptionInput {
                 unusedArguments.set(i, null);
                 found = true;
             } else if (flag.equals(currentArgument))
-                return Result.empty(new Problem(String.format("Flag %s supplied several times, but may only be supplied once.", flag)));
+                return Result.empty(new Problem(
+                        String.format("Flag %s supplied several times, but may only be supplied once.", flag)));
         }
         return Result.of(found);
     }
@@ -88,9 +89,13 @@ public class OptionList implements IOptionInput {
                 i++;
             }
         if (!arguments.isEmpty() && arguments.get(arguments.size() - 1).equals(option))
-            return Result.empty(new Problem(String.format("Option %s supplied without value, but a value was expected.", option)));
+            return Result.empty(
+                    new Problem(String.format("Option %s supplied without value, but a value was expected.", option)));
         if (values.size() > 2)
-            return Result.of(values.get(values.size() - 1), new Problem(String.format("Option %s supplied with several values, but only one value was expected.", option)));
+            return Result.of(
+                    values.get(values.size() - 1),
+                    new Problem(String.format(
+                            "Option %s supplied with several values, but only one value was expected.", option)));
         return values.isEmpty() ? Result.empty() : Result.of(values.get(0));
     }
 
@@ -102,7 +107,8 @@ public class OptionList implements IOptionInput {
     public Result<String> parseRequiredOption(String option) {
         Result<String> value = parseOption(option);
         if (value.isEmpty())
-            return value.merge(Result.empty(new Problem(String.format("Option %s not supplied, but was expected.", option))));
+            return value.merge(
+                    Result.empty(new Problem(String.format("Option %s not supplied, but was expected.", option))));
         return value;
     }
 
@@ -127,8 +133,8 @@ public class OptionList implements IOptionInput {
     public Result<Void> ensureAllArgumentsUsed() {
         String unusedString = unusedArguments.stream().filter(Objects::nonNull).collect(Collectors.joining(" "));
         if (!unusedString.isBlank())
-            return Result.empty(new Problem(
-                    String.format("Arguments %s supplied, but could not be recognized.", unusedString)));
+            return Result.empty(
+                    new Problem(String.format("Arguments %s supplied, but could not be recognized.", unusedString)));
         return Result.ofVoid();
     }
 
@@ -141,5 +147,13 @@ public class OptionList implements IOptionInput {
     @Override
     public <T> Result<T> get(Option<T> option) {
         return option.parseFrom(this);
+    }
+
+    public BooleanSupplier hasHelpOption() {
+        throw new UnsupportedOperationException();
+    }
+
+    public String getCommands() {
+        throw new UnsupportedOperationException();
     }
 }

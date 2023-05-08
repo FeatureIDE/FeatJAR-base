@@ -32,7 +32,6 @@ import de.featjar.base.io.IO;
 import de.featjar.base.log.CallerFormatter;
 import de.featjar.base.log.Log;
 import de.featjar.base.log.TimeStampFormatter;
-
 import java.util.function.Consumer;
 import java.util.function.Function;
 

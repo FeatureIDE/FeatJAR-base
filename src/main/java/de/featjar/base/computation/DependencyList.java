@@ -29,6 +29,8 @@ import java.util.ArrayList;
  * @author Elias Kuiter
  */
 public class DependencyList extends ArrayList<Object> {
+    private static final long serialVersionUID = -2755495164705486095L;
+
     public <T> T get(Dependency<T> dependency) {
         return dependency.get(this);
     }

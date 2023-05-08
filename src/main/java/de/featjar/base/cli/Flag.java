@@ -21,7 +21,6 @@
 package de.featjar.base.cli;
 
 import de.featjar.base.data.Result;
-
 import java.util.Objects;
 
 /**
@@ -53,6 +52,7 @@ public class Flag extends Option<Boolean> {
 
     @Override
     public String toString() {
-        return String.format("%s%s", getArgumentName(), getDescription().map(d -> ": " + d).orElse(""));
+        return String.format(
+                "%s%s", getArgumentName(), getDescription().map(d -> ": " + d).orElse(""));
     }
 }

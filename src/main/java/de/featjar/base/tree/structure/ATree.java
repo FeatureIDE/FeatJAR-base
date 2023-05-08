@@ -196,8 +196,7 @@ public abstract class ATree<T extends ITree<T>> implements ITree<T> {
 
     @Override
     public int hashCodeTree() {
-        if (hashCodeValid)
-            return hashCode;
+        if (hashCodeValid) return hashCode;
         hashCode = ITree.super.hashCodeTree();
         hashCodeValid = true;
         return hashCode;
