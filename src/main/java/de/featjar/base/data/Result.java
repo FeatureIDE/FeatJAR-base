@@ -343,12 +343,12 @@ public class Result<T> implements Supplier<T> {
             problems = problems.stream()
                     .filter(problem -> problem.getSeverity().equals(Problem.Severity.ERROR))
                     .collect(Collectors.toList());
-            if (problems.size() == 0)
-                return new RuntimeException("an unknown error occurred");
+            if (problems.size() == 0) return new RuntimeException("an unknown error occurred");
             Problem problem = problems.get(0);
-            if (problems.size() == 1)
-                return new RuntimeException(problem.getException());
-            return new RuntimeException(problem.getMessage() + " (and " + (problems.size() - 1) + " other problems)", problem.getException());
+            if (problems.size() == 1) return new RuntimeException(problem.getException());
+            return new RuntimeException(
+                    problem.getMessage() + " (and " + (problems.size() - 1) + " other problems)",
+                    problem.getException());
         });
     }
 
@@ -409,5 +409,13 @@ public class Result<T> implements Supplier<T> {
     @Override
     public String toString() {
         return "Result{" + orElse(null) + ", " + problems + "}";
+    }
+
+    /**
+     * {@return {@code true} if a value is present and it equals {@code otherValue}, {@code false} otherwise}
+     * @param otherValue the value that is being compared to
+     */
+    public boolean valueEquals(T otherValue) {
+        return isPresent() && Objects.equals(get(), otherValue);
     }
 }
