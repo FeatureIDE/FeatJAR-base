@@ -182,8 +182,8 @@ public final class Trees {
                 return false;
             } else {
                 final X node = stack.removeFirst();
-                consumer.accept(node);
                 stack.addAll(0, node.getChildren());
+                consumer.accept(node);
                 return true;
             }
         }
