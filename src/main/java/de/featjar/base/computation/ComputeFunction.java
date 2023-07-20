@@ -21,7 +21,7 @@
 package de.featjar.base.computation;
 
 import de.featjar.base.data.Result;
-import de.featjar.base.tree.structure.ITree;
+import java.util.List;
 import java.util.Objects;
 import java.util.function.Function;
 
@@ -34,8 +34,8 @@ import java.util.function.Function;
  * @param <U> the type of the mapped result
  * @author Elias Kuiter
  */
-public class ComputeFunction<T, U> extends AComputation<U> implements IAnalysis<T, U> {
-    protected static final Dependency<?> INPUT = newRequiredDependency();
+public class ComputeFunction<T, U> extends AComputation<U> {
+    protected static final Dependency<?> INPUT = Dependency.newDependency(ComputeFunction.class);
     protected final Class<?> klass;
     protected final String scope;
     protected final Function<T, Result<U>> function;
@@ -49,24 +49,23 @@ public class ComputeFunction<T, U> extends AComputation<U> implements IAnalysis<
      * @param function the mapper function
      */
     public ComputeFunction(IComputation<T> input, Class<?> klass, String scope, Function<T, Result<U>> function) {
-        dependOn(INPUT);
-        setInput(input);
+        super(input);
         this.klass = klass;
         this.scope = scope;
         this.function = function;
     }
 
-    @SuppressWarnings("unchecked")
-    @Override
-    public Dependency<T> getInputDependency() {
-        return (Dependency<T>) INPUT;
+    protected ComputeFunction(ComputeFunction<T, U> other) {
+        super(other);
+        this.klass = other.klass;
+        this.scope = other.scope;
+        this.function = other.function;
     }
 
     @SuppressWarnings("unchecked")
     @Override
-    public Result<U> compute(DependencyList dependencyList, Progress progress) {
-        T input = (T) dependencyList.get(INPUT);
-        return function.apply(input);
+    public Result<U> compute(List<Object> dependencyList, Progress progress) {
+        return function.apply((T) INPUT.getValue(dependencyList));
     }
 
     @Override
@@ -79,11 +78,6 @@ public class ComputeFunction<T, U> extends AComputation<U> implements IAnalysis<
     @Override
     public int hashCodeNode() {
         return Objects.hash(super.hashCodeNode(), klass, scope);
-    }
-
-    @Override
-    public ITree<IComputation<?>> cloneNode() {
-        return new ComputeFunction<>(getInput(), klass, scope, function);
     }
 
     @Override

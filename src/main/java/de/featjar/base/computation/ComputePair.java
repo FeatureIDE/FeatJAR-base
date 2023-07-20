@@ -22,7 +22,7 @@ package de.featjar.base.computation;
 
 import de.featjar.base.data.Pair;
 import de.featjar.base.data.Result;
-import de.featjar.base.tree.structure.ITree;
+import java.util.List;
 
 /**
  * A computation that computes two computations.
@@ -31,18 +31,20 @@ import de.featjar.base.tree.structure.ITree;
  * @author Elias Kuiter
  */
 public class ComputePair<T, U> extends AComputation<Pair<T, U>> {
-    protected static Dependency<?> KEY_COMPUTATION = newRequiredDependency();
-    protected static Dependency<?> VALUE_COMPUTATION = newRequiredDependency();
+    protected static Dependency<?> KEY_COMPUTATION = Dependency.newDependency(ComputePair.class);
+    protected static Dependency<?> VALUE_COMPUTATION = Dependency.newDependency(ComputePair.class);
 
     public ComputePair(IComputation<T> key, IComputation<U> value) {
-        dependOn(KEY_COMPUTATION, VALUE_COMPUTATION);
-        setKeyComputation(key);
-        setValueComputation(value);
+        super(key, value);
+    }
+
+    protected ComputePair(ComputePair<T, U> other) {
+        super(other);
     }
 
     @SuppressWarnings("unchecked")
     public IComputation<T> getKeyComputation() {
-        return getDependency((Dependency<T>) KEY_COMPUTATION);
+        return getDependency((Dependency<T>) KEY_COMPUTATION).get();
     }
 
     @SuppressWarnings("unchecked")
@@ -52,7 +54,7 @@ public class ComputePair<T, U> extends AComputation<Pair<T, U>> {
 
     @SuppressWarnings("unchecked")
     public IComputation<U> getValueComputation() {
-        return getDependency((Dependency<U>) VALUE_COMPUTATION);
+        return getDependency((Dependency<U>) VALUE_COMPUTATION).get();
     }
 
     @SuppressWarnings("unchecked")
@@ -62,13 +64,8 @@ public class ComputePair<T, U> extends AComputation<Pair<T, U>> {
 
     @SuppressWarnings("unchecked")
     @Override
-    public Result<Pair<T, U>> compute(DependencyList dependencyList, Progress progress) {
-        return Result.of(
-                new Pair<>((T) dependencyList.get(KEY_COMPUTATION), (U) dependencyList.get(VALUE_COMPUTATION)));
-    }
-
-    @Override
-    public ITree<IComputation<?>> cloneNode() {
-        return new ComputePair<>(getKeyComputation(), getValueComputation());
+    public Result<Pair<T, U>> compute(List<Object> dependencyList, Progress progress) {
+        return Result.of(new Pair<>(
+                (T) KEY_COMPUTATION.getValue(dependencyList), (U) VALUE_COMPUTATION.getValue(dependencyList)));
     }
 }

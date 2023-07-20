@@ -36,7 +36,7 @@ public class ComputeAllOf extends AComputation<List<?>> {
     }
 
     @Override
-    public Result<List<?>> compute(DependencyList dependencyList, Progress progress) {
+    public Result<List<?>> compute(List<Object> dependencyList, Progress progress) {
         return Result.of(dependencyList);
     }
 

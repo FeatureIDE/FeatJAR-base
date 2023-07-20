@@ -31,7 +31,7 @@ import java.time.Duration;
  *
  * @author Elias Kuiter
  */
-public interface ITimeoutDependency {
+public interface ITimeoutDependency extends IDependent {
     /**
      * The default timeout returned by {@link #getTimeout()}, if not specified otherwise.
      * Specifies that no timeout should be set; that is, the analysis runs until it completes.
@@ -47,7 +47,7 @@ public interface ITimeoutDependency {
      * {@return the timeout computation of this computation}
      */
     default IComputation<Duration> getTimeout() {
-        return getTimeoutDependency().get((IComputation<?>) this);
+        return getDependency(getTimeoutDependency()).get();
     }
 
     /**
@@ -56,6 +56,6 @@ public interface ITimeoutDependency {
      * @param timeout the timeout computation, if any
      */
     default void setTimeout(IComputation<Duration> timeout) {
-        getTimeoutDependency().set((IComputation<?>) this, timeout);
+        setDependency(getTimeoutDependency(), timeout);
     }
 }

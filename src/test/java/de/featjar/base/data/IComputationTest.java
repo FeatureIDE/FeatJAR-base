@@ -55,27 +55,20 @@ class IComputationTest {
         assertTrue(FeatJAR.cache().getCachedComputations().isEmpty());
     }
 
-    static class ComputeIsEven extends AComputation<Boolean> implements IInputDependency<Integer> {
-        protected static Dependency<Integer> INPUT = newRequiredDependency();
+    static class ComputeIsEven extends AComputation<Boolean> {
+        protected static Dependency<Integer> INPUT = Dependency.newDependency(ComputeIsEven.class, Integer.class);
 
         public ComputeIsEven(IComputation<Integer> input) {
-            dependOn(INPUT);
-            setInput(input);
+            super(input);
         }
 
-        @Override
-        public Dependency<Integer> getInputDependency() {
-            return INPUT;
+        protected ComputeIsEven(ComputeIsEven other) {
+            super(other);
         }
 
         @Override
         public Result<Boolean> compute(DependencyList dependencyList, Progress progress) {
             return Result.of(dependencyList.get(INPUT) % 2 == 0);
-        }
-
-        @Override
-        public ITree<IComputation<?>> cloneNode() {
-            return new ComputeIsEven(getInput());
         }
     }
 
@@ -88,7 +81,7 @@ class IComputationTest {
         assertTrue(computation.map(ComputeIsEven::new).get().get());
     }
 
-    static class ComputeIsParity extends AComputation<Boolean> implements IInputDependency<Integer> {
+    static class ComputeIsParity extends AComputation<Boolean> {
         @Override
         public ITree<IComputation<?>> cloneNode() {
             return null;
@@ -99,26 +92,19 @@ class IComputationTest {
             ODD
         }
 
-        protected static Dependency<Integer> INPUT = newRequiredDependency();
-        protected static Dependency<Parity> PARITY = newRequiredDependency();
+        protected static Dependency<Integer> INPUT = Dependency.newDependency(ComputeIsParity.class, Integer.class);
+        protected static Dependency<Parity> PARITY = Dependency.newDependency(ComputeIsParity.class, Parity.class);
 
         public ComputeIsParity(IComputation<Integer> input, IComputation<Parity> parity) {
-            dependOn(INPUT, PARITY);
-            setInput(input);
-            setDependency(PARITY, parity);
-        }
-
-        @Override
-        public Dependency<Integer> getInputDependency() {
-            return INPUT;
+            super(input, parity);
         }
 
         @Override
         public Result<Boolean> compute(DependencyList dependencyList, Progress progress) {
-            return Result.of(
-                    dependencyList.get(PARITY) == Parity.EVEN
-                            ? INPUT.get(dependencyList) % 2 == 0
-                            : INPUT.get(dependencyList) % 2 == 1);
+            boolean c = INPUT.get(dependencyList) % 2 == 0;
+            boolean d = INPUT.get(dependencyList) % 2 == 1;
+            boolean b = dependencyList.get(PARITY) == Parity.EVEN ? c : d;
+            return Result.of(b);
         }
     }
 

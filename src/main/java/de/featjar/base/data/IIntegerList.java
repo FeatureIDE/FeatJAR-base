@@ -51,6 +51,11 @@ public interface IIntegerList extends Supplier<int[]> {
     int[] get();
 
     /**
+     * {@return this integer list's integers as an {@code IntStream}}
+     */
+    IntStream stream();
+
+    /**
      * {@return the value at the given index of this integer list}
      * To ensure performance, no {@link Result} is created, so the index should be checked for validity beforehand.
      *

@@ -23,6 +23,7 @@ package de.featjar.base.computation;
 import de.featjar.base.data.Result;
 import de.featjar.base.tree.structure.ALeafNode;
 import de.featjar.base.tree.structure.ITree;
+import java.util.List;
 import java.util.Objects;
 
 /**
@@ -43,11 +44,12 @@ public class ComputeConstant<T> extends ALeafNode<IComputation<?>> implements IC
      * @param value   the value
      */
     public ComputeConstant(T value) {
+        super();
         this.value = Objects.requireNonNull(value, "constant computation of null not allowed");
     }
 
     @Override
-    public Result<T> compute(DependencyList dependencyList, Progress progress) {
+    public Result<T> compute(List<Object> dependencyList, Progress progress) {
         return Result.of(value);
     }
 

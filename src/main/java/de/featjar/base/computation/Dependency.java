@@ -20,37 +20,70 @@
  */
 package de.featjar.base.computation;
 
-import static de.featjar.base.computation.Computations.async;
-
-import de.featjar.base.tree.structure.ATree;
+import java.util.HashMap;
 import java.util.List;
-import java.util.Objects;
+import java.util.Map;
 
 /**
- * A dependency of a computation.
- * Describes the dependency without storing its actual value, which is passed in a {@link DependencyList} to {@link IComputation#compute(DependencyList, Progress)}.
+ * A dependency of a computation. Describes the dependency without storing its
+ * actual value, which is passed in a {@link DependencyList} to
+ * {@link IComputation#compute(DependencyList, Progress)}.
  *
  * @param <U> the type of the dependency's computation result
  * @author Elias Kuiter
  */
-public class Dependency<U> extends ATree.Entry<IComputation<?>, IComputation<U>> {
-    /**
-     * Creates a new required dependency.
-     */
-    public Dependency() {}
+public class Dependency<U> {
 
-    /**
-     * Creates a new optional dependency with a given default value.
-     *
-     * @param defaultValue the default value
-     */
-    public Dependency(U defaultValue) {
-        super(async(Objects.requireNonNull(defaultValue, "default value must not be null")));
+    private static Map<Class<?>, Integer> map = new HashMap<>();
+
+    public static Dependency<Object> newDependency(Class<?> clazz) {
+        return newDependency(clazz, Object.class);
     }
 
-    @SuppressWarnings("unchecked")
-    public U get(List<?> list) {
-        if (index < 0 || index >= list.size()) throw new IllegalArgumentException();
-        return (U) list.get(index);
+    public static <U> Dependency<U> newDependency(Class<?> clazz, Class<U> type) {
+        final int count = getDependencyCount(clazz);
+        map.put(clazz, count + 1);
+        return new Dependency<>(type, count);
+    }
+
+    public static void deleteAllDependencies() {
+        map.clear();
+        map = null;
+    }
+
+    public static int getDependencyCount(Class<?> clazz) {
+        final Integer integer = map.get(clazz);
+        if (integer != null) {
+            return integer;
+        } else {
+            final Class<?> p = clazz.getSuperclass();
+            final int curIndex = (p == null) ? 0 : getDependencyCount(p);
+            map.put(clazz, curIndex);
+            return curIndex;
+        }
+    }
+
+    private final Class<U> type;
+    private final int index;
+
+    private Dependency(Class<U> type, int index) {
+        this.type = type;
+        this.index = index;
+    }
+
+    public Class<U> getType() {
+        return type;
+    }
+
+    public int getIndex() {
+        return index;
+    }
+
+    public U getValue(List<?> values) {
+        return type.cast(values.get(index));
+    }
+
+    public U get(List<?> values) {
+        return getValue(values);
     }
 }

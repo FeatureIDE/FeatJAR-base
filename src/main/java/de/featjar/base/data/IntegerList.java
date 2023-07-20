@@ -22,6 +22,7 @@ package de.featjar.base.data;
 
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.stream.IntStream;
 
 /**
  * An unordered list of integers.
@@ -69,6 +70,11 @@ public class IntegerList implements IIntegerList {
 
     public static IntegerList merge(Collection<IIntegerList> integerLists) {
         return IIntegerList.merge(integerLists, IntegerList::new);
+    }
+
+    @Override
+    public IntStream stream() {
+        return IntStream.of(array);
     }
 
     @Override

@@ -507,57 +507,6 @@ public interface ITree<T extends ITree<T>> extends IBrowsable<GraphVizTreeFormat
         Trees.sort((T) this, comparator);
     }
 
-    class Entry<T extends ITree<T>, U extends T> implements Function<T, U> {
-        protected final U defaultValue;
-        protected int index = -1;
-
-        public Entry() {
-            this(null);
-        }
-
-        public Entry(U defaultValue) {
-            this.defaultValue = defaultValue;
-        }
-
-        public Result<U> getDefaultValue() {
-            return Result.ofNullable(defaultValue);
-        }
-
-        public int getIndex() {
-            return index;
-        }
-
-        public void setIndex(int index) {
-            this.index = index;
-        }
-
-        public U get(T tree) {
-            U u = (U) tree.getChild(index).orElse(defaultValue);
-            if (u == null)
-                throw new IllegalStateException("cannot get value, no default value supplied for tree entry");
-            return u;
-        }
-
-        public U apply(T tree) {
-            return get(tree);
-        }
-
-        protected void setOptional(T tree, U child) {
-            if (index < 0) throw new IllegalStateException("entry index was not initialized");
-            while (tree.getChildrenCount() <= index) tree.addChild(null);
-            tree.replaceChild(index, child);
-        }
-
-        public void set(T tree, U child) {
-            Objects.requireNonNull(child, "cannot set value of tree entry to null");
-            setOptional(tree, child);
-        }
-
-        public void setToDefaultValue(T tree) {
-            if (tree.getChild(index).isEmpty()) setOptional(tree, defaultValue);
-        }
-    }
-
     @Override
     default Result<URI> getBrowseURI(GraphVizTreeFormat<T> argument) {
         Result<String> dot = argument.serialize((T) this);

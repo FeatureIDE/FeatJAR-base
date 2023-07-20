@@ -21,7 +21,6 @@
 package de.featjar.base.computation;
 
 import de.featjar.base.data.Result;
-import de.featjar.base.tree.structure.ITree;
 import java.util.List;
 
 /**
@@ -30,32 +29,24 @@ import java.util.List;
  * @param <T> the type of the input
  * @author Elias Kuiter
  */
-public class ComputePresence<T> extends AComputation<Boolean> implements IInputDependency<T> {
-    protected static Dependency<?> INPUT = newRequiredDependency();
+public class ComputePresence<T> extends AComputation<Boolean> {
+    protected static Dependency<?> INPUT = Dependency.newDependency(ComputePresence.class);
 
     public ComputePresence(IComputation<T> input) {
-        dependOn(INPUT);
-        setInput(input);
+        super(input);
     }
 
-    @SuppressWarnings("unchecked")
-    @Override
-    public Dependency<T> getInputDependency() {
-        return (Dependency<T>) INPUT;
+    protected ComputePresence(ComputePresence<T> other) {
+        super(other);
     }
 
     @Override
-    public Result<DependencyList> mergeResults(List<? extends Result<?>> results) {
+    public Result<List<Object>> mergeResults(List<? extends Result<?>> results) {
         return Result.mergeAllNullable(results, DependencyList::new);
     }
 
     @Override
-    public Result<Boolean> compute(DependencyList dependencyList, Progress progress) {
-        return Result.of(dependencyList.get(INPUT) != null);
-    }
-
-    @Override
-    public ITree<IComputation<?>> cloneNode() {
-        return new ComputePresence<>(getInput());
+    public Result<Boolean> compute(List<Object> dependencyList, Progress progress) {
+        return Result.of(INPUT.getValue(dependencyList) != null);
     }
 }

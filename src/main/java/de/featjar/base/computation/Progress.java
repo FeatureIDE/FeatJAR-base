@@ -92,7 +92,7 @@ public class Progress implements Supplier<Double> {
      * @param totalSteps the total steps
      */
     public void setTotalSteps(Integer totalSteps) {
-        if (totalSteps != null && totalSteps == 0) throw new IllegalArgumentException();
+        if (totalSteps != null && totalSteps == 0) throw new IllegalArgumentException(String.valueOf(totalSteps));
         if (totalSteps == null) range.setUpperBound(null);
         else range.setUpperBound(Math.max(getCurrentStep(), totalSteps));
     }

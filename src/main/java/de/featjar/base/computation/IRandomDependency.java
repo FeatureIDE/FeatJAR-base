@@ -28,11 +28,11 @@ import java.util.Random;
  *
  * @author Elias Kuiter
  */
-public interface IRandomDependency {
+public interface IRandomDependency extends IDependent {
     /**
      * The default seed for the pseudorandom number generator returned by {@link #getRandom()}, if not specified otherwise.
      */
-    long DEFAULT_RANDOM_SEED = 0;
+    long DEFAULT_RANDOM_SEED = 1;
 
     /**
      * {@return the random dependency of this computation}
@@ -43,7 +43,7 @@ public interface IRandomDependency {
      * {@return the pseudorandom number generator computation of this computation}
      */
     default IComputation<Random> getRandom() {
-        return getRandomDependency().get((IComputation<?>) this);
+        return getDependency(getRandomDependency()).get();
     }
 
     /**
@@ -52,6 +52,6 @@ public interface IRandomDependency {
      * @param random the pseudorandom number generator computation
      */
     default void setRandom(IComputation<Random> random) {
-        getRandomDependency().set((IComputation<?>) this, random);
+        setDependency(getRandomDependency(), random);
     }
 }

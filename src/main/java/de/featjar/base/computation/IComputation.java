@@ -23,8 +23,8 @@ package de.featjar.base.computation;
 import de.featjar.base.FeatJAR;
 import de.featjar.base.data.Problem;
 import de.featjar.base.data.Result;
-import de.featjar.base.tree.structure.ITree;
 import java.time.Duration;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Consumer;
 import java.util.function.Function;
@@ -62,7 +62,7 @@ import java.util.stream.Stream;
  * @author Elias Kuiter
  * @author Sebastian Krieter
  */
-public interface IComputation<T> extends Supplier<Result<T>>, ITree<IComputation<?>> {
+public interface IComputation<T> extends Supplier<Result<T>>, IDependent {
     /**
      * {@return the result of this computation for the given list of dependencies}
      * Implementations must be deterministic to guarantee proper caching:
@@ -79,7 +79,15 @@ public interface IComputation<T> extends Supplier<Result<T>>, ITree<IComputation
      * @param dependencyList the dependency list
      * @param progress       the progress
      */
-    Result<T> compute(DependencyList dependencyList, Progress progress);
+    default Result<T> compute(List<Object> dependencyList, Progress progress) {
+        DependencyList dependencyList2 = new DependencyList();
+        dependencyList2.addAll(dependencyList);
+        return compute(dependencyList2, progress);
+    }
+    // TODO remove
+    default Result<T> compute(DependencyList dependencyList, Progress progress) {
+        return compute((List<Object>) dependencyList, progress);
+    }
 
     /**
      * {@return the (asynchronous) future result of this computation}
@@ -215,29 +223,8 @@ public interface IComputation<T> extends Supplier<Result<T>>, ITree<IComputation
      *
      * @param results the results
      */
-    default Result<DependencyList> mergeResults(List<? extends Result<?>> results) {
-        return Result.mergeAll(results, DependencyList::new);
-    }
-
-    /**
-     * {@return the computation for a given dependency of this computation}
-     *
-     * @param dependency the dependency
-     * @param <U>        the type of the computation result
-     */
-    default <U> IComputation<U> getDependency(Dependency<U> dependency) {
-        return dependency.get(this);
-    }
-
-    /**
-     * Sets the computation for a given dependency of this computation.
-     *
-     * @param dependency  the dependency
-     * @param computation the computation
-     * @param <U>         the type of the computation result
-     */
-    default <U> void setDependency(Dependency<U> dependency, IComputation<U> computation) {
-        dependency.set(this, computation);
+    default Result<List<Object>> mergeResults(List<? extends Result<?>> results) {
+        return Result.mergeAll(results, ArrayList::new);
     }
 
     /**

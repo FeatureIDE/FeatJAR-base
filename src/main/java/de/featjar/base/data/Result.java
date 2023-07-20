@@ -22,7 +22,12 @@ package de.featjar.base.data;
 
 import de.featjar.base.computation.IComputation;
 import de.featjar.base.io.format.IFormat;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.NoSuchElementException;
+import java.util.Objects;
+import java.util.Optional;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Supplier;
@@ -181,16 +186,18 @@ public class Result<T> implements Supplier<T> {
                 .collect(Collectors.toList());
     }
 
-    protected static List<Result<?>> replaceNull(List<? extends Result<?>> results) {
-        return results.stream()
-                .map(result -> result == null ? Result.empty() : result)
-                .collect(Collectors.toList());
+    public static Stream<Result<?>> nonNull(List<? extends Result<?>> results) {
+        return results.stream().map(result -> result == null ? Result.empty() : result);
+    }
+
+    public static List<Result<?>> replaceNull(List<? extends Result<?>> results) {
+        return nonNull(results).collect(Collectors.toList());
     }
 
     public static <T extends List<Object>> Result<T> mergeAll(
             List<? extends Result<?>> results, Supplier<T> listFactory) {
         List<Problem> problems = getProblems(results);
-        return replaceNull(results).stream().noneMatch(Result::isEmpty)
+        return nonNull(results).noneMatch(Result::isEmpty)
                 ? Result.of(results.stream().map(Result::get).collect(Collectors.toCollection(listFactory)), problems)
                 : Result.empty(problems);
     }
@@ -203,8 +210,7 @@ public class Result<T> implements Supplier<T> {
             List<? extends Result<?>> results, Supplier<T> listFactory) {
         List<Problem> problems = getProblems(results);
         return Result.of(
-                replaceNull(results).stream().map(r -> r.orElse(null)).collect(Collectors.toCollection(listFactory)),
-                problems);
+                nonNull(results).map(r -> r.orElse(null)).collect(Collectors.toCollection(listFactory)), problems);
     }
 
     public static Result<ArrayList<Object>> mergeAllNullable(List<? extends Result<?>> results) {
@@ -393,7 +399,7 @@ public class Result<T> implements Supplier<T> {
 
     @Override
     public boolean equals(Object o) {
-        // the problem is ignored as it cannot be compared for equality, and it only carries metadata for the user
+        // TODO the problem is ignored as it cannot be compared for equality, and it only carries metadata for the user
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         Result<?> result = (Result<?>) o;
@@ -402,7 +408,7 @@ public class Result<T> implements Supplier<T> {
 
     @Override
     public int hashCode() {
-        // the problem is ignored as it cannot be hashed, and it only carries metadata for the user
+        // TODO the problem is ignored as it cannot be hashed, and it only carries metadata for the user
         return Objects.hash(object);
     }
 

@@ -95,7 +95,7 @@ public class RangeMap<T> {
         return getValidIndexRange().flatMap(Range::getUpperBound);
     }
 
-    private boolean isValidIndex(int index) {
+    protected boolean isValidIndex(int index) {
         return getValidIndexRange().map(range -> range.test(index)).orElse(false);
     }
 
@@ -278,6 +278,15 @@ public class RangeMap<T> {
      */
     public Result<T> get(int index) {
         return isValidIndex(index) ? Result.ofNullable(indexToObject.get(index)) : Result.empty();
+    }
+
+    /**
+     * {@return a stream of objects that are mapped to the given indices}
+     *
+     * @param indices a list of indices
+     */
+    public Stream<T> stream(IntegerList indices) {
+        return indices.stream().filter(this::isValidIndex).mapToObj(indexToObject::get);
     }
 
     /**

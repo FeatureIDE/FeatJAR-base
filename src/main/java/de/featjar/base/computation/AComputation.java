@@ -22,7 +22,8 @@ package de.featjar.base.computation;
 
 import de.featjar.base.FeatJAR;
 import de.featjar.base.tree.structure.ATree;
-import java.util.Arrays;
+import de.featjar.base.tree.structure.ITree;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
@@ -34,15 +35,46 @@ import java.util.Objects;
  * @author Elias Kuiter
  */
 public abstract class AComputation<T> extends ATree<IComputation<?>> implements IComputation<T> {
+
     protected Cache cache = FeatJAR.cache();
 
     protected AComputation(IComputation<?>... computations) {
-        if (computations.length > 0) super.setChildren(Arrays.asList(computations));
+        final Integer size = Dependency.getDependencyCount(getClass());
+        assert size == computations.length;
+        setChildren(List.of(computations));
     }
 
-    protected AComputation(List<? extends IComputation<?>> computations) {
-        super.setChildren(computations);
+    protected AComputation(List<IComputation<?>> computations1, IComputation<?>... computations2) {
+        final Integer size = Dependency.getDependencyCount(getClass());
+        assert size == computations1.size() + computations2.length;
+        ArrayList<IComputation<?>> computations = new ArrayList<>(size);
+        computations.addAll(computations1);
+        computations.addAll(List.of(computations2));
+        setChildren(computations);
     }
+
+    protected AComputation(Object... computations) {
+        final Integer size = Dependency.getDependencyCount(getClass());
+        ArrayList<IComputation<?>> computationList = new ArrayList<>(size);
+        for (int i = 0; i < computations.length; i++) {
+            Object element = computations[i];
+            if (element instanceof IComputation<?>) {
+                computationList.add((IComputation<?>) element);
+            } else if (element instanceof IComputation[]) {
+                for (IComputation<?> computation : (IComputation[]) element) {
+                    computationList.add(computation);
+                }
+            } else if (element instanceof List<?>) {
+                for (Object computation : (List<?>) element) {
+                    computationList.add((IComputation<?>) computation);
+                }
+            }
+        }
+        assert size == computationList.size();
+        setChildren(computationList);
+    }
+
+    protected AComputation(AComputation<T> other) {}
 
     @Override
     public boolean equalsNode(IComputation<?> other) {
@@ -68,60 +100,28 @@ public abstract class AComputation<T> extends ATree<IComputation<?>> implements 
         this.cache = Objects.requireNonNull(cache);
     }
 
-    /**
-     * Declares all dependencies of this computation class.
-     * This method must be called once per computation class at the top of its constructor.
-     * Each passed dependency must be a static member of this computation class.
-     * Each dependency is then assigned an ascending index into the children of this computation, viewed as a tree.
-     *
-     * @param dependencies the dependencies
-     */
-    protected void dependOn(Dependency<?>... dependencies) {
-        dependOn(List.of(dependencies));
-    }
-
-    /**
-     * Declares all dependencies of this computation class.
-     * This method must be called once per computation class at the top of its constructor.
-     * Each passed dependency must be a static member of this computation class.
-     * Each dependency is then assigned an ascending index into the children of this computation, viewed as a tree.
-     *
-     * @param dependencies the dependencies
-     */
-    protected void dependOn(List<Dependency<?>> dependencies) {
-        if (!dependencies.isEmpty() && dependencies.get(0).getIndex() == -1) {
-            for (int i = 0; i < dependencies.size(); i++) {
-                dependencies.get(i).setIndex(i);
-            }
-        }
-        dependencies.forEach(dependency -> dependency.setToDefaultValue(this));
-    }
-
-    /**
-     * {@return a new required dependency for this computation class}
-     * Should only be called in a static context to avoid creating unnecessary objects.
-     * A required dependency must be set in the constructor of the computation class.
-     *
-     * @param <U> the type of the dependency's computation result
-     */
-    protected static <U> Dependency<U> newRequiredDependency() {
-        return new Dependency<>();
-    }
-
-    /**
-     * {@return a new optional dependency for this computation class with a given default value}
-     * Should only be called in a static context to avoid creating unnecessary objects.
-     * An optional dependency should not be set in the constructor of the computation class.
-     *
-     * @param defaultValue the default value
-     * @param <U> the type of the dependency's computation result
-     */
-    protected static <U> Dependency<U> newOptionalDependency(U defaultValue) {
-        return new Dependency<>(defaultValue);
+    public <U> AComputation<T> setDependency(Dependency<U> dependency, IComputation<? extends U> computation) {
+        replaceChild(dependency.getIndex(), computation);
+        return this;
     }
 
     @Override
     public String toString() {
         return getClass().getSimpleName();
+    }
+
+    @Override
+    public ITree<IComputation<?>> cloneNode() {
+        try {
+            @SuppressWarnings("unchecked")
+            final Class<? extends AComputation<T>> computationClass = (Class<? extends AComputation<T>>) getClass();
+            return computationClass.getDeclaredConstructor(computationClass).newInstance(this);
+        } catch (InstantiationException | NoSuchMethodException e) {
+            FeatJAR.log().error(e);
+            throw new UnsupportedOperationException(e);
+        } catch (Exception e) {
+            FeatJAR.log().error(e);
+            throw new RuntimeException(e);
+        }
     }
 }
