@@ -259,6 +259,18 @@ public class Computations {
     }
 
     /**
+     * {@return a computation for casting the computed element to another type}
+     *
+     * @param computation the original computation
+     * @param newType the new class
+     * @param <T> the type of the original computation
+     * @param <U> the type of the new computation
+     */
+    public static <T, U> IComputation<U> cast(IComputation<T> computation, Class<U> newType) {
+        return computation.mapResult(newType, "castTo", i -> newType.cast(i));
+    }
+
+    /**
      * {@return the value of the given pair, unchanged}
      * Useful to allow transparently switching between (a-)synchronous computation modes.
      *
