@@ -31,8 +31,8 @@ import java.util.List;
  * @author Elias Kuiter
  */
 public class ComputePair<T, U> extends AComputation<Pair<T, U>> {
-    protected static Dependency<?> KEY_COMPUTATION = Dependency.newDependency(ComputePair.class);
-    protected static Dependency<?> VALUE_COMPUTATION = Dependency.newDependency(ComputePair.class);
+    protected static Dependency<?> KEY_COMPUTATION = Dependency.newDependency();
+    protected static Dependency<?> VALUE_COMPUTATION = Dependency.newDependency();
 
     public ComputePair(IComputation<T> key, IComputation<U> value) {
         super(key, value);

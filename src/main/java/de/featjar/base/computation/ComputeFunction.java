@@ -35,7 +35,7 @@ import java.util.function.Function;
  * @author Elias Kuiter
  */
 public class ComputeFunction<T, U> extends AComputation<U> {
-    protected static final Dependency<?> INPUT = Dependency.newDependency(ComputeFunction.class);
+    protected static final Dependency<?> INPUT = Dependency.newDependency();
     protected final Class<?> klass;
     protected final String scope;
     protected final Function<T, Result<U>> function;

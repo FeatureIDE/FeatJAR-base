@@ -56,7 +56,7 @@ class IComputationTest {
     }
 
     static class ComputeIsEven extends AComputation<Boolean> {
-        protected static Dependency<Integer> INPUT = Dependency.newDependency(ComputeIsEven.class, Integer.class);
+        protected static Dependency<Integer> INPUT = Dependency.newDependency(Integer.class);
 
         public ComputeIsEven(IComputation<Integer> input) {
             super(input);
@@ -92,8 +92,8 @@ class IComputationTest {
             ODD
         }
 
-        protected static Dependency<Integer> INPUT = Dependency.newDependency(ComputeIsParity.class, Integer.class);
-        protected static Dependency<Parity> PARITY = Dependency.newDependency(ComputeIsParity.class, Parity.class);
+        protected static Dependency<Integer> INPUT = Dependency.newDependency(Integer.class);
+        protected static Dependency<Parity> PARITY = Dependency.newDependency(Parity.class);
 
         public ComputeIsParity(IComputation<Integer> input, IComputation<Parity> parity) {
             super(input, parity);

@@ -20,7 +20,8 @@
  */
 package de.featjar.base.computation;
 
-import java.util.HashMap;
+import de.featjar.base.FeatJAR;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -34,13 +35,39 @@ import java.util.Map;
  */
 public class Dependency<U> {
 
-    private static Map<Class<?>, Integer> map = new HashMap<>();
+    private static Map<Class<?>, Integer> map = new LinkedHashMap<>();
 
-    public static Dependency<Object> newDependency(Class<?> clazz) {
-        return newDependency(clazz, Object.class);
+    public static Dependency<Object> newDependency() {
+        return addDependency(getCallingClass(), Object.class);
     }
 
-    public static <U> Dependency<U> newDependency(Class<?> clazz, Class<U> type) {
+    public static <U> Dependency<U> newDependency(Class<U> type) {
+        return addDependency(getCallingClass(), type);
+    }
+
+    private static Class<?> getCallingClass() {
+        try {
+            Class<?> callingClass =
+                    Class.forName(Thread.currentThread().getStackTrace()[3].getClassName());
+            assert isComputation(callingClass);
+            return callingClass;
+        } catch (ClassNotFoundException e) {
+            FeatJAR.log().error(e);
+            throw new RuntimeException(e);
+        }
+    }
+
+    private static boolean isComputation(Class<?> callingClass) {
+        if (callingClass == null) {
+            return false;
+        }
+        if (callingClass == AComputation.class) {
+            return true;
+        }
+        return isComputation(callingClass.getSuperclass());
+    }
+
+    private static <U> Dependency<U> addDependency(Class<?> clazz, Class<U> type) {
         final int count = getDependencyCount(clazz);
         map.put(clazz, count + 1);
         return new Dependency<>(type, count);
