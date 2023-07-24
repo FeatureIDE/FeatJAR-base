@@ -56,22 +56,27 @@ public abstract class AComputation<T> extends ATree<IComputation<?>> implements 
     protected AComputation(Object... computations) {
         final Integer size = Dependency.getDependencyCount(getClass());
         ArrayList<IComputation<?>> computationList = new ArrayList<>(size);
-        for (int i = 0; i < computations.length; i++) {
-            Object element = computations[i];
-            if (element instanceof IComputation<?>) {
-                computationList.add((IComputation<?>) element);
-            } else if (element instanceof IComputation[]) {
-                for (IComputation<?> computation : (IComputation[]) element) {
-                    computationList.add(computation);
-                }
-            } else if (element instanceof List<?>) {
-                for (Object computation : (List<?>) element) {
-                    computationList.add((IComputation<?>) computation);
-                }
-            }
+        for (Object computation : computations) {
+            unpackComputations(computationList, computation);
         }
         assert size == computationList.size();
         setChildren(computationList);
+    }
+
+    private void unpackComputations(List<IComputation<?>> computationList, Object element) {
+        if (element instanceof IComputation<?>) {
+            computationList.add((IComputation<?>) element);
+        } else if (element instanceof Object[]) {
+            for (Object computation : (Object[]) element) {
+                unpackComputations(computationList, computation);
+            }
+        } else if (element instanceof List<?>) {
+            for (Object computation : (List<?>) element) {
+                unpackComputations(computationList, computation);
+            }
+        } else {
+            throw new RuntimeException("Argument is not a computation: " + element.getClass());
+        }
     }
 
     protected AComputation(AComputation<T> other) {}
