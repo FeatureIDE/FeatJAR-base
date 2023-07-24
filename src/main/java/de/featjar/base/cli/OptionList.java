@@ -24,7 +24,6 @@ import de.featjar.base.data.Problem;
 import de.featjar.base.data.Result;
 import de.featjar.base.data.Void;
 import java.util.*;
-import java.util.function.BooleanSupplier;
 import java.util.stream.Collectors;
 
 /**
@@ -147,13 +146,5 @@ public class OptionList implements IOptionInput {
     @Override
     public <T> Result<T> get(Option<T> option) {
         return option.parseFrom(this);
-    }
-
-    public BooleanSupplier hasHelpOption() {
-        throw new UnsupportedOperationException();
-    }
-
-    public String getCommands() {
-        throw new UnsupportedOperationException();
     }
 }

@@ -33,13 +33,6 @@ class ArgumentParserTest {
     }
 
     @Test
-    void parsePositionalArguments() {
-        assertTrue(parser().getCommands().isEmpty());
-        //        assertEquals("arg", parser("arg").commandNameRegex);
-        //        assertEquals("arg1", parser("arg1", "arg2").commandNameRegex);
-    }
-
-    @Test
     void parseCommand() {
         // todo: needs mocking of extension points
     }
@@ -51,14 +44,8 @@ class ArgumentParserTest {
     }
 
     @Test
-    void isHelpOption() {
-        assertFalse(parser("arg").hasHelpOption());
-        assertTrue(parser("arg", "--help").hasHelpOption());
-    }
-
-    @Test
     void parseOption() {
-        Option<Integer> option = new Option<>("--x", Result.mapReturnValue(Integer::valueOf));
+        Option<Integer> option = new Option<>("x", Result.mapReturnValue(Integer::valueOf));
         assertEquals(Result.empty(), option.parseFrom(parser("arg")));
         assertEquals(Result.of(42), option.parseFrom(parser("arg", "--x", "42")));
     }
