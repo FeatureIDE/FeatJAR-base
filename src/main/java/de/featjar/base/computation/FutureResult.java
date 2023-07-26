@@ -26,12 +26,16 @@ import de.featjar.base.data.Result;
 import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.*;
+import java.util.concurrent.CancellationException;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Executor;
 import java.util.function.BiFunction;
 import java.util.function.Function;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
-import net.tascalate.concurrent.*;
+import net.tascalate.concurrent.CompletableTask;
+import net.tascalate.concurrent.Promise;
+import net.tascalate.concurrent.Promises;
 
 /**
  * A result that will become available in the future.
