@@ -34,6 +34,10 @@ public interface IRandomDependency extends IDependent {
      */
     long DEFAULT_RANDOM_SEED = 1;
 
+    public static Random newDefaultRandom() {
+        return new Random(IRandomDependency.DEFAULT_RANDOM_SEED);
+    }
+
     /**
      * {@return the random dependency of this computation}
      */
