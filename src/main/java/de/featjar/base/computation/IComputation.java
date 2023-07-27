@@ -278,6 +278,10 @@ public interface IComputation<T> extends Supplier<Result<T>>, IDependent {
         return flatMapResult(klass, scope, t -> Result.of(fn.apply(t)));
     }
 
+    default <U> IComputation<U> cast(Class<U> newType) {
+        return mapResult(newType, "castTo", i -> newType.cast(i));
+    }
+
     /**
      * {@return a computation that maps the result of this computation to another value}
      * To allow proper caching, a unique combination of the calling class and scope (e.g., a method name)

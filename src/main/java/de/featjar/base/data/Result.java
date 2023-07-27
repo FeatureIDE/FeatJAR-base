@@ -20,6 +20,7 @@
  */
 package de.featjar.base.data;
 
+import de.featjar.base.computation.Computations;
 import de.featjar.base.computation.IComputation;
 import de.featjar.base.io.format.IFormat;
 import java.util.ArrayList;
@@ -423,5 +424,9 @@ public class Result<T> implements Supplier<T> {
      */
     public boolean valueEquals(T otherValue) {
         return isPresent() && Objects.equals(get(), otherValue);
+    }
+
+    public IComputation<T> toComputation() {
+        return Computations.of(orElseThrow());
     }
 }
