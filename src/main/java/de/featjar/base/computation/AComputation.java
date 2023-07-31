@@ -26,6 +26,7 @@ import de.featjar.base.tree.structure.ITree;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+import java.util.concurrent.CancellationException;
 
 /**
  * Describes a deterministic (potentially complex or long-running) computation.
@@ -80,6 +81,12 @@ public abstract class AComputation<T> extends ATree<IComputation<?>> implements 
     }
 
     protected AComputation(AComputation<T> other) {}
+
+    protected final void checkCancel() {
+        if (Thread.interrupted()) {
+            throw new CancellationException();
+        }
+    }
 
     @Override
     public boolean equalsNode(IComputation<?> other) {

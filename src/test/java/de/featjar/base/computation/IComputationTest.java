@@ -201,12 +201,45 @@ class IComputationTest {
         }
     }
 
+    static class WaitCompute2 extends AComputation<Object> {
+        private static final Dependency<?> INPUT = Dependency.newDependency();
+
+        public WaitCompute2(IComputation<Object> input) {
+            super(input);
+        }
+
+        protected WaitCompute2(WaitCompute other) {
+            super(other);
+        }
+
+        @Override
+        public Result<Object> compute(List<Object> dependencyList, Progress progress) {
+            Object x = INPUT.get(dependencyList);
+            checkCancel();
+            return Result.of(x);
+        }
+    }
+
     @Test
     void futureCanBeCanceled() {
         WaitCompute computation1 = new WaitCompute(Computations.of(125));
         FutureResult<Object> computeFutureResult =
                 computation1.map(WaitCompute::new).computeFutureResult();
         computeFutureResult.cancelAfter(Duration.ofMillis(10));
+        assertNull(computeFutureResult.get().orElse(null));
+        try {
+            Thread.sleep(300);
+        } catch (InterruptedException e) {
+        }
+        assertFalse(computation1.completed);
+    }
+
+    @Test
+    void futureDoesNotCompleteWhenCanceled() {
+        WaitCompute computation1 = new WaitCompute(Computations.of(125));
+        FutureResult<Object> computeFutureResult =
+                computation1.map(WaitCompute2::new).computeFutureResult();
+        computeFutureResult.cancel();
         assertNull(computeFutureResult.get().orElse(null));
         try {
             Thread.sleep(300);
