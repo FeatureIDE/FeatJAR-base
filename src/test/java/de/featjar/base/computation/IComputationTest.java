@@ -18,14 +18,20 @@
  *
  * See <https://github.com/FeatureIDE/FeatJAR-base> for further information.
  */
-package de.featjar.base.data;
+package de.featjar.base.computation;
 
 import static de.featjar.base.computation.Computations.async;
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import de.featjar.base.FeatJAR;
-import de.featjar.base.computation.*;
+import de.featjar.base.data.Pair;
+import de.featjar.base.data.Result;
 import de.featjar.base.tree.structure.ITree;
+import java.time.Duration;
+import java.util.List;
 import java.util.function.Supplier;
 import org.junit.jupiter.api.Test;
 
@@ -67,8 +73,8 @@ class IComputationTest {
         }
 
         @Override
-        public Result<Boolean> compute(DependencyList dependencyList, Progress progress) {
-            return Result.of(dependencyList.get(INPUT) % 2 == 0);
+        public Result<Boolean> compute(List<Object> dependencyList, Progress progress) {
+            return Result.of(INPUT.get(dependencyList) % 2 == 0);
         }
     }
 
@@ -100,10 +106,10 @@ class IComputationTest {
         }
 
         @Override
-        public Result<Boolean> compute(DependencyList dependencyList, Progress progress) {
+        public Result<Boolean> compute(List<Object> dependencyList, Progress progress) {
             boolean c = INPUT.get(dependencyList) % 2 == 0;
             boolean d = INPUT.get(dependencyList) % 2 == 1;
-            boolean b = dependencyList.get(PARITY) == Parity.EVEN ? c : d;
+            boolean b = PARITY.get(dependencyList) == Parity.EVEN ? c : d;
             return Result.of(b);
         }
     }
@@ -144,7 +150,7 @@ class IComputationTest {
     void allOfSleep() {
         IComputation<Integer> c1 = new AComputation<>() {
             @Override
-            public Result<Integer> compute(DependencyList dependencyList, Progress progress) {
+            public Result<Integer> compute(List<Object> dependencyList, Progress progress) {
                 try {
                     Thread.sleep(10);
                 } catch (InterruptedException e) {
@@ -169,5 +175,43 @@ class IComputationTest {
         // cache should have changed
         // computationSupplier.get().get()
         // cache should not have changed
+    }
+
+    static class WaitCompute extends AComputation<Object> {
+        private static final Dependency<?> INPUT = Dependency.newDependency();
+        private boolean completed;
+
+        public WaitCompute(IComputation<Object> input) {
+            super(input);
+        }
+
+        protected WaitCompute(WaitCompute other) {
+            super(other);
+        }
+
+        @Override
+        public Result<Object> compute(List<Object> dependencyList, Progress progress) {
+            Object x = INPUT.get(dependencyList);
+            try {
+                Thread.sleep(100);
+                completed = true;
+            } catch (InterruptedException e) {
+            }
+            return Result.of(x);
+        }
+    }
+
+    @Test
+    void futureCanBeCanceled() {
+        WaitCompute computation1 = new WaitCompute(Computations.of(125));
+        FutureResult<Object> computeFutureResult =
+                computation1.map(WaitCompute::new).computeFutureResult();
+        computeFutureResult.cancelAfter(Duration.ofMillis(10));
+        assertNull(computeFutureResult.get().orElse(null));
+        try {
+            Thread.sleep(300);
+        } catch (InterruptedException e) {
+        }
+        assertFalse(computation1.completed);
     }
 }

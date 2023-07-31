@@ -21,6 +21,7 @@
 package de.featjar.base.computation;
 
 import de.featjar.base.data.Result;
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -42,7 +43,7 @@ public class ComputePresence<T> extends AComputation<Boolean> {
 
     @Override
     public Result<List<Object>> mergeResults(List<? extends Result<?>> results) {
-        return Result.mergeAllNullable(results, DependencyList::new);
+        return Result.mergeAllNullable(results, ArrayList::new);
     }
 
     @Override

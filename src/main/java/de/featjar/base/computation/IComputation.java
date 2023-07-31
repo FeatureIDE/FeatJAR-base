@@ -66,9 +66,9 @@ public interface IComputation<T> extends Supplier<Result<T>>, IDependent {
     /**
      * {@return the result of this computation for the given list of dependencies}
      * Implementations must be deterministic to guarantee proper caching:
-     * That is, they may only depend on the given {@link DependencyList} and must not use data structures with
+     * That is, they may only depend on the given dependency list and must not use data structures with
      * nondeterministic access (e.g., prefer {@link java.util.LinkedHashMap} over {@link java.util.HashMap}).
-     * The {@link DependencyList} is guaranteed to contain a non-null object for each declared {@link Dependency},
+     * The dependency list is guaranteed to contain a non-null object for each declared {@link Dependency},
      * provided that {@link #mergeResults(List)} is not overridden.
      * Consequently, when {@link Result#empty(Problem...)} is returned, any dependent computations return {@link Result#empty(Problem...)} as well.
      * The given {@link Progress} can be used to report progress tracking information to the backing {@link FutureResult}.
@@ -79,15 +79,7 @@ public interface IComputation<T> extends Supplier<Result<T>>, IDependent {
      * @param dependencyList the dependency list
      * @param progress       the progress
      */
-    default Result<T> compute(List<Object> dependencyList, Progress progress) {
-        DependencyList dependencyList2 = new DependencyList();
-        dependencyList2.addAll(dependencyList);
-        return compute(dependencyList2, progress);
-    }
-    // TODO remove
-    default Result<T> compute(DependencyList dependencyList, Progress progress) {
-        return compute((List<Object>) dependencyList, progress);
-    }
+    Result<T> compute(List<Object> dependencyList, Progress progress);
 
     /**
      * {@return the (asynchronous) future result of this computation}
@@ -100,17 +92,7 @@ public interface IComputation<T> extends Supplier<Result<T>>, IDependent {
      * @param tryWriteCache whether the result should be stored in the cache
      */
     default FutureResult<T> computeFutureResult(boolean tryHitCache, boolean tryWriteCache) {
-        if (tryHitCache) {
-            Result<FutureResult<T>> cacheHit = getCache().tryHit(this);
-            if (cacheHit.isPresent()) return cacheHit.get();
-        }
-        List<FutureResult<?>> futureResults = getChildren().stream()
-                .map(computation -> computation.computeFutureResult(tryHitCache, tryWriteCache))
-                .collect(Collectors.toList());
-        FutureResult<T> futureResult =
-                FutureResult.allOf(futureResults, this::mergeResults).thenResult(this::compute);
-        if (tryWriteCache) getCache().tryWrite(this, futureResult);
-        return futureResult;
+        return FutureResult.compute(this, tryHitCache, tryWriteCache, Progress::new);
     }
 
     /**

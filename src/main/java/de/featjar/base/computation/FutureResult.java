@@ -30,12 +30,11 @@ import java.util.concurrent.CancellationException;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Executor;
 import java.util.function.BiFunction;
-import java.util.function.Function;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import net.tascalate.concurrent.CompletableTask;
-import net.tascalate.concurrent.Promise;
-import net.tascalate.concurrent.Promises;
+import net.tascalate.concurrent.DependentPromise;
+import net.tascalate.concurrent.PromiseOrigin;
 
 /**
  * A result that will become available in the future.
@@ -50,7 +49,7 @@ import net.tascalate.concurrent.Promises;
  * @author Elias Kuiter
  */
 public class FutureResult<T> implements Supplier<Result<T>> {
-    protected final Promise<Result<T>> promise;
+    protected final DependentPromise<Result<T>> promise;
 
     protected final Progress progress;
 
@@ -60,7 +59,7 @@ public class FutureResult<T> implements Supplier<Result<T>> {
      * @param result the result
      */
     public FutureResult(Result<T> result, Progress progress) {
-        this(CompletableTask.completed(result, getExecutor()), progress);
+        this(DependentPromise.from(CompletableTask.completed(result, getExecutor())), progress);
     }
 
     /**
@@ -68,7 +67,7 @@ public class FutureResult<T> implements Supplier<Result<T>> {
      *
      * @param promise the promise
      */
-    public FutureResult(Promise<Result<T>> promise, Progress progress) {
+    public FutureResult(DependentPromise<Result<T>> promise, Progress progress) {
         this.promise = promise;
         this.progress = progress;
     }
@@ -77,38 +76,105 @@ public class FutureResult<T> implements Supplier<Result<T>> {
         return FeatJAR.cache().getConfiguration().executor;
     }
 
-    /**
-     * {@return a future result from given future results that resolves when all given future results are resolved}
-     *
-     * @param futureResults the future results
-     * @param resultMerger the result merger
-     */
-    public static <T extends List<Object>> FutureResult<T> allOf(
-            List<FutureResult<?>> futureResults, Function<List<? extends Result<?>>, Result<T>> resultMerger) {
-        List<Promise<? extends Result<?>>> promises =
-                futureResults.stream().map(FutureResult::getPromise).collect(Collectors.toList());
-        Promise<Result<T>> promise = Promises.all(promises)
-                .thenApplyAsync(
-                        list -> resultMerger.apply(
-                                futureResults.stream().map(FutureResult::get).collect(Collectors.toList())),
-                        getExecutor());
-        return new FutureResult<>(promise, Progress.Null.NULL);
+    private static <T> Result<T> compute(
+            IComputation<T> computation, List<Object> args, boolean tryHitCache, Progress progress) {
+        if (tryHitCache) {
+            Result<FutureResult<T>> cacheHit = FeatJAR.cache().tryHit(computation);
+            if (cacheHit.isPresent()) {
+                Result<T> result = cacheHit.get().get();
+                if (result.isPresent()) {
+                    return result;
+                }
+            }
+        }
+        return computation.compute(args, progress);
     }
 
     /**
-     * {@return a future result from given future results that resolves when all given future results are resolved}
-     * Resolves to a non-empty result only when all future results resolve to non-empty results.
+     * {@return a future result from given {@link IComputation} that resolves when all dependencies are resolved}
      *
-     * @param futureResults the future results
+     * @param computation the computation
+     * @param tryHitCache whether to try to read from the cache
+     * @param tryWriteCache whether to try to write to the cache
+     * @param progressSupplier creates a {@link Progress} for each future result
      */
-    public static FutureResult<ArrayList<Object>> allOf(List<FutureResult<?>> futureResults) {
-        return allOf(futureResults, Result::mergeAll);
+    @SuppressWarnings("unchecked")
+    public static <U, T extends List<Object>> FutureResult<U> compute(
+            IComputation<U> computation,
+            boolean tryHitCache,
+            boolean tryWriteCache,
+            Supplier<Progress> progressSupplier) {
+        Progress progress = progressSupplier.get();
+
+        if (tryHitCache) {
+            Result<FutureResult<U>> cacheHit = FeatJAR.cache().tryHit(computation);
+            if (cacheHit.isPresent()) {
+                FutureResult<U> futureResult = cacheHit.get();
+                Result<U> result = futureResult.getPromise().getNow(Result.<U>empty());
+                if (result.isPresent()) {
+                    return new FutureResult<U>(
+                            DependentPromise.from(CompletableTask.completed(result, getExecutor())), progress);
+                }
+            }
+        }
+
+        DependentPromise<Result<U>> promise;
+        if (!computation.hasChildren()) {
+            promise = DependentPromise.from(
+                    CompletableTask.submit(() -> compute(computation, List.of(), tryHitCache, progress), getExecutor()),
+                    PromiseOrigin.ALL);
+        } else {
+            DependentPromise<List<Object>> allOf = null;
+            for (IComputation<?> child : computation.getChildren()) {
+                if (allOf == null) {
+                    allOf = compute(child, tryHitCache, tryWriteCache, progressSupplier)
+                            .getPromise()
+                            .thenApplyAsync(
+                                    r -> {
+                                        List<Object> list = new ArrayList<>();
+                                        list.add(r);
+                                        return list;
+                                    },
+                                    getExecutor(),
+                                    true);
+                } else {
+                    allOf = allOf.thenCombineAsync(
+                            compute(child, tryHitCache, tryWriteCache, progressSupplier)
+                                    .getPromise(),
+                            (a, b) -> {
+                                List<Object> list = (List<Object>) a;
+                                list.add(b);
+                                return list;
+                            },
+                            getExecutor(),
+                            PromiseOrigin.ALL);
+                }
+            }
+            promise = allOf.thenApplyAsync(
+                    list -> compute(
+                            computation,
+                            computation
+                                    .mergeResults(list.stream()
+                                            .map(r -> (Result<Object>) r)
+                                            .collect(Collectors.toList()))
+                                    .get(),
+                            tryHitCache,
+                            progress),
+                    getExecutor(),
+                    true);
+        }
+
+        FutureResult<U> futureResult = new FutureResult<>(promise, progress);
+        if (tryWriteCache) {
+            FeatJAR.cache().tryWrite(computation, futureResult);
+        }
+        return futureResult;
     }
 
     /**
      * {@return this future result's promise}
      */
-    public Promise<Result<T>> getPromise() {
+    public DependentPromise<Result<T>> getPromise() {
         return promise;
     }
 

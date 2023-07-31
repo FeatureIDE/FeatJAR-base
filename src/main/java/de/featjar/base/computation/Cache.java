@@ -118,7 +118,7 @@ public class Cache implements IInitializer, IBrowsable<GraphVizTreeFormat<ICompu
      */
     protected final Map<IComputation<?>, FutureResult<?>> computationMap = new ConcurrentHashMap<>();
 
-    protected final Map<IComputation<?>, Long> hitStatistics = new ConcurrentHashMap<>();
+    protected final Map<IComputation<?>, Long> hitStatistics = new HashMap<>();
 
     /**
      * Sets the default configuration used for new caches.
@@ -180,12 +180,29 @@ public class Cache implements IInitializer, IBrowsable<GraphVizTreeFormat<ICompu
      * @param computation the computation
      * @param <T>         the type of the computation result
      */
+    @SuppressWarnings("unchecked")
     public <T> Result<FutureResult<T>> tryHit(IComputation<T> computation) {
-        if (has(computation)) {
+        FutureResult<T> futureResult;
+        synchronized (computationMap) {
+            futureResult = (FutureResult<T>) computationMap.get(computation);
+            if (futureResult != null
+                    && (futureResult.getPromise().isCancelled()
+                            || futureResult.getPromise().isCompletedExceptionally())) {
+                computationMap.put(computation, null);
+                futureResult = null;
+            }
+        }
+        if (futureResult != null) {
             FeatJAR.log().debug("cache hit for " + computation);
-            hitStatistics.putIfAbsent(computation, 0L);
-            hitStatistics.put(computation, hitStatistics.get(computation) + 1);
-            return Result.of(get(computation).get());
+            synchronized (hitStatistics) {
+                Long count = hitStatistics.get(computation);
+                if (count == null) {
+                    hitStatistics.put(computation, 1L);
+                } else {
+                    hitStatistics.put(computation, count + 1);
+                }
+            }
+            return Result.of(futureResult);
         }
         FeatJAR.log().debug("cache miss for " + computation);
         return Result.empty();
@@ -223,7 +240,7 @@ public class Cache implements IInitializer, IBrowsable<GraphVizTreeFormat<ICompu
      */
     @SuppressWarnings("unchecked")
     public <T> Result<FutureResult<T>> get(IComputation<T> computation) {
-        return has(computation) ? Result.of((FutureResult<T>) computationMap.get(computation)) : Result.empty();
+        return Result.ofNullable((FutureResult<T>) computationMap.get(computation));
     }
 
     /**
@@ -271,7 +288,11 @@ public class Cache implements IInitializer, IBrowsable<GraphVizTreeFormat<ICompu
      * @param computation the computation
      */
     public Long getNumberOfHits(IComputation<?> computation) {
-        return Result.ofNullable(hitStatistics.get(computation)).orElse(0L);
+        Long hits;
+        synchronized (hitStatistics) {
+            hits = hitStatistics.get(computation);
+        }
+        return Result.ofNullable(hits).orElse(0L);
     }
 
     /**

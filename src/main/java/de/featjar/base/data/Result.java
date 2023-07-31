@@ -90,6 +90,16 @@ public class Result<T> implements Supplier<T> {
      * {@return a result of a nullable object}
      *
      * @param object   the nullable object
+     * @param <T>      the type of the result's object
+     */
+    public static <T> Result<T> ofNullable(T object) {
+        return new Result<>(object, null);
+    }
+
+    /**
+     * {@return a result of a nullable object}
+     *
+     * @param object   the nullable object
      * @param problems the problems
      * @param <T>      the type of the result's object
      */
