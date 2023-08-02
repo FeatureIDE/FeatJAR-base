@@ -264,6 +264,15 @@ public interface IComputation<T> extends Supplier<Result<T>>, IDependent {
         return mapResult(newType, "castTo", i -> newType.cast(i));
     }
 
+    default <U> IComputation<T> setDependencyComputation(
+            Dependency<U> dependency, IComputation<? extends U> computation) {
+        throw new UnsupportedOperationException();
+    }
+
+    default <U> IComputation<T> set(Dependency<U> dependency, U value) {
+        throw new UnsupportedOperationException();
+    }
+
     /**
      * {@return a computation that maps the result of this computation to another value}
      * To allow proper caching, a unique combination of the calling class and scope (e.g., a method name)

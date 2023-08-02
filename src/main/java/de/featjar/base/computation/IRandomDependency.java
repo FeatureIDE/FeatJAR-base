@@ -56,6 +56,6 @@ public interface IRandomDependency extends IDependent {
      * @param random the pseudorandom number generator computation
      */
     default void setRandom(IComputation<Random> random) {
-        setDependency(getRandomDependency(), random);
+        setDependencyComputation(getRandomDependency(), random);
     }
 }

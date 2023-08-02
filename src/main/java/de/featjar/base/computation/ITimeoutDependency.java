@@ -56,6 +56,6 @@ public interface ITimeoutDependency extends IDependent {
      * @param timeout the timeout computation, if any
      */
     default void setTimeout(IComputation<Duration> timeout) {
-        setDependency(getTimeoutDependency(), timeout);
+        setDependencyComputation(getTimeoutDependency(), timeout);
     }
 }

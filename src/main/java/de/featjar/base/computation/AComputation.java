@@ -112,9 +112,14 @@ public abstract class AComputation<T> extends ATree<IComputation<?>> implements 
         this.cache = Objects.requireNonNull(cache);
     }
 
-    public <U> AComputation<T> setDependency(Dependency<U> dependency, IComputation<? extends U> computation) {
+    public <U> AComputation<T> setDependencyComputation(
+            Dependency<U> dependency, IComputation<? extends U> computation) {
         replaceChild(dependency.getIndex(), computation);
         return this;
+    }
+
+    public <U> AComputation<T> set(Dependency<U> dependency, U value) {
+        return setDependencyComputation(dependency, Computations.of(value));
     }
 
     @Override

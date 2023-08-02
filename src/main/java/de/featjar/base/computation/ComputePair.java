@@ -49,7 +49,7 @@ public class ComputePair<T, U> extends AComputation<Pair<T, U>> {
 
     @SuppressWarnings("unchecked")
     public void setKeyComputation(IComputation<T> key) {
-        setDependency((Dependency<T>) KEY_COMPUTATION, key);
+        setDependencyComputation((Dependency<T>) KEY_COMPUTATION, key);
     }
 
     @SuppressWarnings("unchecked")
@@ -59,7 +59,7 @@ public class ComputePair<T, U> extends AComputation<Pair<T, U>> {
 
     @SuppressWarnings("unchecked")
     public void setValueComputation(IComputation<U> value) {
-        setDependency((Dependency<U>) VALUE_COMPUTATION, value);
+        setDependencyComputation((Dependency<U>) VALUE_COMPUTATION, value);
     }
 
     @SuppressWarnings("unchecked")

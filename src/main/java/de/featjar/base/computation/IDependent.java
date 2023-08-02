@@ -72,7 +72,7 @@ public interface IDependent extends ITree<IComputation<?>> {
      * @param <U>         the type of the computation result
      */
     // TODO rename to setDependencyComputation
-    default <U> IDependent setDependency(Dependency<U> dependency, IComputation<? extends U> computation) {
+    default <U> IDependent setDependencyComputation(Dependency<U> dependency, IComputation<? extends U> computation) {
         replaceChild(dependency.getIndex(), computation);
         return this;
     }
