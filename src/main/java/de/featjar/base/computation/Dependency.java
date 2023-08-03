@@ -27,8 +27,8 @@ import java.util.Map;
 
 /**
  * A dependency of a computation. Describes the dependency without storing its
- * actual value, which is passed in a {@link DependencyList} to
- * {@link IComputation#compute(DependencyList, Progress)}.
+ * actual value, which is passed in a dependency list to
+ * {@link IComputation#compute(List, Progress)}.
  *
  * @param <U> the type of the dependency's computation result
  * @author Elias Kuiter

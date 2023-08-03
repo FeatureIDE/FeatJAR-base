@@ -26,14 +26,16 @@ import de.featjar.base.io.input.InputHeader;
 /**
  * Decides on a format for a given file content and file path.
  *
+ * @param <T> the type of the parsed object
+ *
  * @author Sebastian Krieter
  */
 public interface IFormatSupplier<T> {
+
     /**
      * {@return a constant format}
      *
      * @param format the format
-     * @param <T> the type of the parsed object
      */
     static <T> IFormatSupplier<T> of(IFormat<T> format) {
         return inputHeader -> Result.of(format);

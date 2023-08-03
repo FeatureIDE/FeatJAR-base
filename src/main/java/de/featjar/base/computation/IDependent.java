@@ -31,7 +31,7 @@ import java.util.function.Supplier;
  * Describes a deterministic (potentially complex or long-running) computation.
  * An {@link IDependent} does not contain the computation result itself, it only computes it on demand as a {@link Supplier}.
  * There are several modes for computing the result of an {@link IDependent}:
- * The computation mode can be either synchronous (e.g., {@link #computeResult()}) or asynchronous,
+ * The computation mode can be either synchronous (e.g., {@link IComputation#computeResult()}) or asynchronous,
  * returning a {@link Result} or {@link FutureResult}, respectively.
  * An asynchronous {@link FutureResult} can be shared between different threads.
  * It can be waited for, it can be cancelled, and its progress can be tracked, so it is well-suited for a graphical user interface.
@@ -39,21 +39,19 @@ import java.util.function.Supplier;
  * Synchronous computation modes are well-suited for a command-line interface.
  * In addition, the computation mode can either leverage results stored in a {@link Cache} (e.g., the global cache in {@link FeatJAR#cache()}).
  * Caching computation modes are well-suited for implementing knowledge compilation, incremental analyses, and evolution operators.
- * Computations can depend on other computations by declaring a {@link Dependency} of type {@code T}
- * with {@link AComputation#dependOn(Dependency[])}, which is stored as an {@link IDependent} child of type {@code T}.
+ * Computations can depend on other computations by declaring a {@link Dependency} of type {@code T}.
  * Thus, every computation is a tree of computations, where the dependencies of the computation are its children.
- * When a child is {@link Result#empty(Problem...)}, this signals an unrecoverable error by default, this behavior can be overridden with {@link #mergeResults(List)}.
+ * When a child is {@link Result#empty(Problem...)}, this signals an unrecoverable error by default, this behavior can be overridden with {@link IComputation#mergeResults(List)}.
  * Thus, every required dependency must be set to a non-null value in the constructor, and every optional dependency must have a non-null default value.
  * To ensure the determinism required by caching, all parameters of a computation must be depended on (including sources of randomness).
  * Also, all used data structures must be deterministic (e.g., by using {@link de.featjar.base.data.Maps} and {@link de.featjar.base.data.Sets}).
  * Implementors should pass mandatory parameters in the constructor and optional parameters using dedicated setters.
- * This can be facilitated by using specializations of {@link IDependent} (e.g., {@link IInputDependency}).
+ * This can be facilitated by using specializations of {@link IDependent}.
  * Though not necessary, it is recommended to implement this interface by subclassing {@link AComputation}, which provides a mechanism for declaring dependencies.
  * It is strongly discouraged to implement this interface anonymously to ensure correct caching
  * with {@link Cache.CachePolicy#CACHE_TOP_LEVEL} and correct hash code and equality computations.
  * To compose anonymous computations, consider using {@link ComputeFunction} instead.
  *
- * @param <T> the type of the computation result
  * @author Elias Kuiter
  * @author Sebastian Krieter
  */

@@ -80,7 +80,7 @@ public abstract class ABinary implements IExtension {
      * Creates a process and waits until it exits.
      *
      * @param arguments the arguments passed to this binary's executable
-     *                  {@return the output of the process as a line stream, if any}
+     * @return the output of the process as a line stream, if any
      */
     public Process getProcess(List<String> arguments, Duration timeout) {
         return new Process(getExecutablePath(), arguments, timeout);
@@ -91,7 +91,7 @@ public abstract class ABinary implements IExtension {
      * Creates a process and waits until it exits.
      *
      * @param arguments the arguments passed to this binary's executable
-     *                  {@return the output of the process as a line stream, if any}
+     * @return the output of the process as a line stream, if any
      */
     public Process getProcess(String... arguments) {
         return new Process(getExecutablePath(), arguments);

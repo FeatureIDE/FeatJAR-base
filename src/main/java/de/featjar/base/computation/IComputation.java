@@ -44,15 +44,14 @@ import java.util.stream.Stream;
  * Synchronous computation modes are well-suited for a command-line interface.
  * In addition, the computation mode can either leverage results stored in a {@link Cache} (e.g., the global cache in {@link FeatJAR#cache()}).
  * Caching computation modes are well-suited for implementing knowledge compilation, incremental analyses, and evolution operators.
- * Computations can depend on other computations by declaring a {@link Dependency} of type {@code T}
- * with {@link AComputation#dependOn(Dependency[])}, which is stored as an {@link IComputation} child of type {@code T}.
+ * Computations can depend on other computations by declaring a {@link Dependency} of type {@code T}.
  * Thus, every computation is a tree of computations, where the dependencies of the computation are its children.
  * When a child is {@link Result#empty(Problem...)}, this signals an unrecoverable error by default, this behavior can be overridden with {@link #mergeResults(List)}.
  * Thus, every required dependency must be set to a non-null value in the constructor, and every optional dependency must have a non-null default value.
  * To ensure the determinism required by caching, all parameters of a computation must be depended on (including sources of randomness).
  * Also, all used data structures must be deterministic (e.g., by using {@link de.featjar.base.data.Maps} and {@link de.featjar.base.data.Sets}).
  * Implementors should pass mandatory parameters in the constructor and optional parameters using dedicated setters.
- * This can be facilitated by using specializations of {@link IComputation} (e.g., {@link IInputDependency}).
+ * This can be facilitated by using specializations of {@link IComputation}.
  * Though not necessary, it is recommended to implement this interface by subclassing {@link AComputation}, which provides a mechanism for declaring dependencies.
  * It is strongly discouraged to implement this interface anonymously to ensure correct caching
  * with {@link Cache.CachePolicy#CACHE_TOP_LEVEL} and correct hash code and equality computations.
