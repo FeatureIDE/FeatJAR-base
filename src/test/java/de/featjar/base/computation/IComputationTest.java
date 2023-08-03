@@ -107,8 +107,8 @@ class IComputationTest {
 
         @Override
         public Result<Boolean> compute(List<Object> dependencyList, Progress progress) {
-            boolean c = INPUT.get(dependencyList) % 2 == 0;
-            boolean d = INPUT.get(dependencyList) % 2 == 1;
+            boolean c = Math.abs(INPUT.get(dependencyList)) % 2 == 0;
+            boolean d = Math.abs(INPUT.get(dependencyList)) % 2 == 1;
             boolean b = PARITY.get(dependencyList) == Parity.EVEN ? c : d;
             return Result.of(b);
         }

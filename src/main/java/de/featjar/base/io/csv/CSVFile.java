@@ -49,7 +49,7 @@ public class CSVFile {
     protected List<String> headerFields = null;
     protected boolean headerFieldsFlushed;
     protected final LinkedList<List<String>> values = new LinkedList<>();
-    protected AOutput output;
+    protected final AOutput output;
 
     /**
      * Creates CSV file written to the given output.

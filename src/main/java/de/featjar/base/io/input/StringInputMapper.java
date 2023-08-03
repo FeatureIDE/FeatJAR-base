@@ -24,6 +24,7 @@ import de.featjar.base.data.Maps;
 import java.nio.charset.Charset;
 import java.nio.file.Path;
 import java.util.LinkedHashMap;
+import java.util.Map.Entry;
 
 /**
  * Maps virtual paths to string inputs.
@@ -48,10 +49,10 @@ public class StringInputMapper extends AInputMapper {
             java.lang.String fileExtension) {
         super(relativizeRootPath(rootPath, mainPath));
         checkParameters(pathStringMap.keySet(), rootPath, mainPath);
-        for (Path currentPath : pathStringMap.keySet()) {
+        for (Entry<Path, String> entry : pathStringMap.entrySet()) {
             ioMap.put(
-                    relativizeRootPath(rootPath, currentPath),
-                    new StringInput(pathStringMap.get(currentPath), charset, fileExtension));
+                    relativizeRootPath(rootPath, entry.getKey()),
+                    new StringInput(entry.getValue(), charset, fileExtension));
         }
     }
 

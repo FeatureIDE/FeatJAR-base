@@ -457,6 +457,13 @@ public interface ITree<T extends ITree<T>> extends IBrowsable<GraphVizTreeFormat
     }
 
     /**
+     * {@return an inner-order stream of the descendants of this node}
+     */
+    default Stream<? extends T> innerOrderStream() {
+        return Trees.innerOrderStream((T) this);
+    }
+
+    /**
      * {@return a lever-order stream of the descendants of this node}
      */
     default Stream<? extends T> levelOrderStream() {

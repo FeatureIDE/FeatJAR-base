@@ -31,7 +31,7 @@ import java.util.List;
  * @author Elias Kuiter
  */
 public class ComputePresence<T> extends AComputation<Boolean> {
-    protected static Dependency<?> INPUT = Dependency.newDependency();
+    protected static final Dependency<?> INPUT = Dependency.newDependency();
 
     public ComputePresence(IComputation<T> input) {
         super(input);

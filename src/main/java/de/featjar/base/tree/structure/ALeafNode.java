@@ -60,7 +60,7 @@ public abstract class ALeafNode<T extends ITree<T>> implements ITree<T> {
     @SuppressWarnings("unchecked")
     @Override
     public boolean equals(Object other) {
-        return getClass() == other.getClass() && equalsTree((T) other);
+        return this == other || (other != null && getClass() == other.getClass() && equalsTree((T) other));
     }
 
     @Override

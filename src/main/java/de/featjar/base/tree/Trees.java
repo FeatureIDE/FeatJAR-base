@@ -44,17 +44,20 @@ public class Trees {
      * Thrown when a visitor requests the {@link ITreeVisitor.TraversalAction#FAIL} action.
      */
     public static class VisitorFailException extends Exception {
-
         private static final long serialVersionUID = -3736018981484477491L;
 
-        List<Problem> problems;
+        private final List<Problem> problems;
 
         public VisitorFailException(Problem... problems) {
             this(List.of(problems));
         }
 
         public VisitorFailException(List<Problem> problems) {
-            this.problems = problems;
+            this.problems = List.copyOf(problems);
+        }
+
+        public List<Problem> getProblems() {
+            return problems;
         }
     }
 
@@ -119,6 +122,18 @@ public class Trees {
      */
     public static <T extends ITree<T>> Stream<T> postOrderStream(T node) {
         return StreamSupport.stream(new PostOrderSpliterator<>(node), false);
+    }
+
+    /**
+     * Creates an inner-order stream of the descendents of a tree.
+     * Is more efficient than {@link #traverse(ITree, ITreeVisitor)}, but lacks support for {@link TraversalAction}.
+     *
+     * @param node the starting node of the tree
+     * @return the stream
+     * @param <T> the type of tree
+     */
+    public static <T extends ITree<T>> Stream<T> innerOrderStream(T node) {
+        return StreamSupport.stream(new InnerOrderSpliterator<>(node), false);
     }
 
     /**
@@ -343,9 +358,72 @@ public class Trees {
                 } else {
                     consumer.accept(entry.node);
                     stack.pop();
+                    return true;
                 }
             }
-            return true;
+            return false;
+        }
+
+        @Override
+        public Spliterator<T> trySplit() {
+            return null;
+        }
+    }
+
+    private static class InnerOrderSpliterator<T extends ITree<T>> implements Spliterator<T> {
+
+        final LinkedList<StackEntry<T>> stack = new LinkedList<>();
+
+        public InnerOrderSpliterator(T node) {
+            if (node != null) {
+                stack.push(new StackEntry<>(node));
+            }
+        }
+
+        @Override
+        public int characteristics() {
+            return Spliterator.ORDERED | Spliterator.IMMUTABLE;
+        }
+
+        @Override
+        public long estimateSize() {
+            return Long.MAX_VALUE;
+        }
+
+        @Override
+        public boolean tryAdvance(Consumer<? super T> consumer) {
+            if (stack.isEmpty()) {
+                return false;
+            }
+            while (!stack.isEmpty()) {
+                final StackEntry<T> entry = stack.peek();
+                if (entry.remainingChildren == null) {
+                    final List<? extends T> children = entry.node.getChildren();
+                    if (children.isEmpty()) {
+                        consumer.accept(entry.node);
+                        stack.pop();
+                        return true;
+                    } else if (children.size() == 1) {
+                        consumer.accept(entry.node);
+                        stack.pop();
+                        entry.remainingChildren = new LinkedList<>(children);
+                        stack.push(new StackEntry<>(entry.remainingChildren.remove(0)));
+                        return true;
+                    } else {
+                        entry.remainingChildren = new LinkedList<>(children);
+                        stack.push(new StackEntry<>(entry.remainingChildren.remove(0)));
+                    }
+                } else {
+                    if (entry.remainingChildren.isEmpty()) {
+                        stack.pop();
+                    } else {
+                        consumer.accept(entry.node);
+                        stack.push(new StackEntry<>(entry.remainingChildren.remove(0)));
+                        return true;
+                    }
+                }
+            }
+            return false;
         }
 
         @Override

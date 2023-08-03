@@ -36,17 +36,19 @@ import java.util.function.Consumer;
 import java.util.function.Function;
 
 /**
- * Configures, initializes, and runs FeatJAR.
- * To use FeatJAR, create a {@link FeatJAR} object and use it.
- * After usage, call {@link #close()} or use a try...with block.
- * If only a quick computation is needed, call {@link #run(Consumer)} or {@link #apply(Function)}.
- * For convenience, this class inherits all methods in {@link IO} and provides
- * access to the {@link Log} with {@link #log()} and {@link Cache} with {@link #cache()}.
- * Both  {@link #log()} and {@link #cache()} return fallback instances when used outside a FeatJAR instantiation.
- * For simplicity, only one FeatJAR instance can exist at a time (although this limitation may be lifted in the future).
+ * Configures, initializes, and runs FeatJAR. To use FeatJAR, create a
+ * {@link FeatJAR} object and use it. After usage, call {@link #close()} or use
+ * a try...with block. If only a quick computation is needed, call
+ * {@link #run(Consumer)} or {@link #apply(Function)}. For convenience, this
+ * class inherits all methods in {@link IO} and provides access to the
+ * {@link Log} with {@link #log()} and {@link Cache} with {@link #cache()}. Both
+ * {@link #log()} and {@link #cache()} return fallback instances when used
+ * outside a FeatJAR instantiation. For simplicity, only one FeatJAR instance
+ * can exist at a time (although this limitation may be lifted in the future).
  * Thus, do not create FeatJAR objects at the same time in different threads.
  * Also, do not nest {@link #run(Consumer)} or {@link #apply(Function)} calls.
- * However, different FeatJAR instances can be created over time in the same thread (e.g., to change the configuration).
+ * However, different FeatJAR instances can be created over time in the same
+ * thread (e.g., to change the configuration).
  *
  * @author Elias Kuiter
  */
@@ -92,25 +94,19 @@ public class FeatJAR extends IO implements AutoCloseable {
     }
 
     /**
-     * The current instance of FeatJAR.
-     * Only one instance can exist at a time.
+     * The current instance of FeatJAR. Only one instance can exist at a time.
      */
     private static FeatJAR instance;
 
     /**
-     * This FeatJAR instance's extension manager.
-     * Holds references to all loaded extension points and extensions.
+     * This FeatJAR instance's extension manager. Holds references to all loaded
+     * extension points and extensions.
      */
     protected final ExtensionManager extensionManager;
 
     /**
-     * Set to {@code true} after this FeatJAR instance has been initialized.
-     */
-    protected boolean initialized;
-
-    /**
-     * The default verbosity of FeatJAR, if not adjusted otherwise.
-     * Can be set at startup to allow showing log output even before this value is adjusted.
+     * The default verbosity of FeatJAR, if not adjusted otherwise. Can be set at
+     * startup to allow showing log output even before this value is adjusted.
      */
     public static Log.Verbosity defaultVerbosity = Log.Verbosity.INFO;
 
@@ -132,7 +128,15 @@ public class FeatJAR extends IO implements AutoCloseable {
      * {@return the current FeatJAR instance}
      */
     public static FeatJAR getInstance() {
-        return instance == null ? (instance = new FeatJAR()) : instance;
+        return instance;
+    }
+
+    /**
+     * Initializes FeatJAR with a default configuration.
+     */
+    public static FeatJAR initialize() {
+        return initialize(
+                new Configuration().log(defaultLogConfiguration::apply).cache(defaultCacheConfiguration::apply));
     }
 
     /**
@@ -140,22 +144,31 @@ public class FeatJAR extends IO implements AutoCloseable {
      *
      * @param configuration the FeatJAR configuration
      */
-    public FeatJAR(Configuration configuration) {
+    public static FeatJAR initialize(Configuration configuration) {
         if (instance != null) throw new RuntimeException("FeatJAR already initialized");
-        log().debug("initializing FeatJAR");
-        instance = this;
-        Log.setDefaultConfiguration(configuration.log);
-        Cache.setDefaultConfiguration(configuration.cache);
-        extensionManager = new ExtensionManager();
-        initialized = true;
+        return instance = new FeatJAR(configuration);
+    }
+    /**
+     * De-initializes FeatJAR.
+     */
+    public static void deinitialize() {
+        if (instance != null) {
+            log().debug("de-initializing FeatJAR");
+            instance.extensionManager.close();
+            instance = null;
+        }
     }
 
     /**
      * Initializes FeatJAR.
-     * The log reports only error and info messages.
+     *
+     * @param configuration the FeatJAR configuration
      */
-    public FeatJAR() {
-        this(new Configuration().log(defaultLogConfiguration::apply).cache(defaultCacheConfiguration::apply));
+    private FeatJAR(Configuration configuration) {
+        log().debug("initializing FeatJAR");
+        Log.setDefaultConfiguration(configuration.log);
+        Cache.setDefaultConfiguration(configuration.cache);
+        extensionManager = new ExtensionManager();
     }
 
     /**
@@ -163,9 +176,7 @@ public class FeatJAR extends IO implements AutoCloseable {
      */
     @Override
     public void close() {
-        log().debug("de-initializing FeatJAR");
-        instance = null;
-        extensionManager.close();
+        deinitialize();
     }
 
     /**
@@ -176,7 +187,8 @@ public class FeatJAR extends IO implements AutoCloseable {
     }
 
     /**
-     * {@return the extension point for a given class installed in this FeatJAR instance's extension manager}
+     * {@return the extension point for a given class installed in this FeatJAR
+     * instance's extension manager}
      *
      * @param <T>   the type of the extension point's class
      * @param klass the extension point's class
@@ -186,7 +198,8 @@ public class FeatJAR extends IO implements AutoCloseable {
     }
 
     /**
-     * {@return the extension for a given class installed in this FeatJAR instance's extension manager}
+     * {@return the extension for a given class installed in this FeatJAR instance's
+     * extension manager}
      *
      * @param <T>   the type of the extension's class
      * @param klass the extension's class
@@ -196,27 +209,13 @@ public class FeatJAR extends IO implements AutoCloseable {
     }
 
     /**
-     * {@return this FeatJAR instance's log, or a fallback log if uninitialized}
-     */
-    public Log getLog() {
-        return initialized ? getExtension(Log.class).orElseGet(Log.Fallback::new) : new Log.Fallback();
-    }
-
-    /**
-     * {@return this FeatJAR instance's cache, or a fallback cache if uninitialized}
-     */
-    public Cache getCache() {
-        return initialized ? getExtension(Cache.class).orElseGet(Cache.Fallback::new) : new Cache.Fallback();
-    }
-
-    /**
      * Runs some function in a temporary FeatJAR instance.
      *
      * @param configuration the FeatJAR configuration
      * @param fn            the function
      */
     public static void run(Configuration configuration, Consumer<FeatJAR> fn) {
-        try (FeatJAR featJAR = new FeatJAR(configuration)) {
+        try (FeatJAR featJAR = FeatJAR.initialize(configuration)) {
             fn.accept(featJAR);
         }
     }
@@ -227,7 +226,7 @@ public class FeatJAR extends IO implements AutoCloseable {
      * @param fn the function
      */
     public static void run(Consumer<FeatJAR> fn) {
-        try (FeatJAR featJAR = new FeatJAR()) {
+        try (FeatJAR featJAR = FeatJAR.initialize()) {
             fn.accept(featJAR);
         }
     }
@@ -241,7 +240,7 @@ public class FeatJAR extends IO implements AutoCloseable {
      */
     public static <T> T apply(Configuration configuration, Function<FeatJAR, T> fn) {
         T t;
-        try (FeatJAR featJAR = new FeatJAR(configuration)) {
+        try (FeatJAR featJAR = FeatJAR.initialize(configuration)) {
             t = fn.apply(featJAR);
         }
         return t;
@@ -255,14 +254,15 @@ public class FeatJAR extends IO implements AutoCloseable {
      */
     public static <T> T apply(Function<FeatJAR, T> fn) {
         T t;
-        try (FeatJAR featJAR = new FeatJAR()) {
+        try (FeatJAR featJAR = FeatJAR.initialize()) {
             t = fn.apply(featJAR);
         }
         return t;
     }
 
     /**
-     * {@return the extension point for a given class installed in the current FeatJAR instance's extension manager}
+     * {@return the extension point for a given class installed in the current
+     * FeatJAR instance's extension manager}
      *
      * @param <T>   the type of the extension point's class
      * @param klass the extension point's class
@@ -276,7 +276,8 @@ public class FeatJAR extends IO implements AutoCloseable {
     }
 
     /**
-     * {@return the extension point for a given class installed in the current FeatJAR instance's extension manager}
+     * {@return the extension point for a given class installed in the current
+     * FeatJAR instance's extension manager}
      *
      * @param <T>   the type of the extension point's class
      * @param klass the extension point's class
@@ -290,17 +291,23 @@ public class FeatJAR extends IO implements AutoCloseable {
     }
 
     /**
-     * {@return the current FeatJAR instance's log, or a fallback log if uninitialized}
+     * {@return the current FeatJAR instance's log, or a fallback log if
+     * uninitialized}
      */
     public static Log log() {
-        return instance == null ? new Log.Fallback() : instance.getLog();
+        return instance == null
+                ? new Log.Fallback()
+                : instance.getExtension(Log.class).orElseGet(Log.Fallback::new);
     }
 
     /**
-     * {@return the current FeatJAR instance's cache, or a fallback cache if uninitialized}
+     * {@return the current FeatJAR instance's cache, or a fallback cache if
+     * uninitialized}
      */
     public static Cache cache() {
-        return instance == null ? new Cache.Fallback() : instance.getCache();
+        return instance == null
+                ? new Cache.Fallback()
+                : instance.getExtension(Cache.class).orElseGet(Cache.Fallback::new);
     }
 
     /**

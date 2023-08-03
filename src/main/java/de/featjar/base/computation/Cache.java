@@ -105,7 +105,7 @@ public class Cache implements IInitializer, IBrowsable<GraphVizTreeFormat<ICompu
     /**
      * The default configuration used for new caches.
      */
-    protected static Configuration defaultConfiguration = null;
+    static Configuration defaultConfiguration = null;
 
     /**
      * This cache's configuration.

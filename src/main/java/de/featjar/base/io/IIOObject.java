@@ -22,6 +22,7 @@ package de.featjar.base.io;
 
 import de.featjar.base.data.Result;
 import java.io.IOException;
+import java.nio.file.InvalidPathException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 
@@ -42,7 +43,15 @@ public interface IIOObject extends AutoCloseable {
      * @param path the path
      */
     static String getFileNameWithoutExtension(Path path) {
-        return getFileNameWithoutExtension(path.getFileName().toString());
+        return getFileNameWithoutExtension(getFileName(path));
+    }
+
+    private static String getFileName(Path path) {
+        final Path fileName = path.getFileName();
+        if (fileName == null) {
+            throw new InvalidPathException(path.toString(), "Empty path");
+        }
+        return fileName.toString();
     }
 
     /**
@@ -63,8 +72,7 @@ public interface IIOObject extends AutoCloseable {
      * @param path the path
      */
     static Result<String> getFileExtension(Path path) {
-        return Result.ofNullable(path)
-                .flatMap(_path -> getFileExtension(_path.getFileName().toString()));
+        return Result.ofNullable(path).flatMap(_path -> getFileExtension(getFileName(_path)));
     }
 
     /**
@@ -86,9 +94,10 @@ public interface IIOObject extends AutoCloseable {
      * @param fileName the file name
      * @param fileExtension the new file extension
      */
-    static String getFileNameWithExtension(String fileName, String fileExtension) {
-        if (fileExtension == null) return IIOObject.getFileNameWithoutExtension(fileName);
-        return String.format("%s.%s", IIOObject.getFileNameWithoutExtension(fileName), fileExtension);
+    static String getFileNameWithNewExtension(String fileName, String fileExtension) {
+        final String fileNameWithoutExtension = IIOObject.getFileNameWithoutExtension(fileName);
+        if (fileExtension == null) return fileNameWithoutExtension;
+        return String.format("%s.%s", fileNameWithoutExtension, fileExtension);
     }
 
     /**
@@ -97,8 +106,8 @@ public interface IIOObject extends AutoCloseable {
      * @param path the path
      * @param fileExtension the new file extension
      */
-    static Path getPathWithExtension(Path path, String fileExtension) {
-        return path.resolveSibling(getFileNameWithExtension(path.getFileName().toString(), fileExtension));
+    static Path getPathWithNewExtension(Path path, String fileExtension) {
+        return path.resolveSibling(getFileNameWithNewExtension(getFileName(path), fileExtension));
     }
 
     /**
@@ -107,7 +116,7 @@ public interface IIOObject extends AutoCloseable {
      * @param fileName the file name
      * @param fileExtension the new file extension
      */
-    static Path getPathWithExtension(String fileName, String fileExtension) {
-        return Paths.get(getFileNameWithExtension(fileName, fileExtension));
+    static Path getPathWithNewExtension(String fileName, String fileExtension) {
+        return Paths.get(getFileNameWithNewExtension(fileName, fileExtension));
     }
 }

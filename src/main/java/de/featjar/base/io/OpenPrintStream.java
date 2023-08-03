@@ -21,15 +21,16 @@
 package de.featjar.base.io;
 
 import java.io.OutputStream;
+import java.io.PrintStream;
 
 /**
- * A {@link java.io.PrintStream} that exposes its wrapped {@link OutputStream}.
+ * A {@link PrintStream} that exposes its wrapped {@link OutputStream}.
  *
  * @author Elias Kuiter
  */
-public class PrintStream extends java.io.PrintStream {
+public class OpenPrintStream extends PrintStream {
 
-    public PrintStream(OutputStream out) {
+    public OpenPrintStream(OutputStream out) {
         super(out);
     }
 

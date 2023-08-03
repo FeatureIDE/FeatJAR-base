@@ -25,6 +25,7 @@ import java.io.InputStream;
 import java.nio.charset.Charset;
 import java.nio.file.Path;
 import java.util.LinkedHashMap;
+import java.util.Map.Entry;
 
 /**
  * Maps virtual paths to stream inputs.
@@ -49,10 +50,10 @@ public class StreamInputMapper extends AInputMapper {
             java.lang.String fileExtension) {
         super(relativizeRootPath(rootPath, mainPath));
         checkParameters(pathInputStreamMap.keySet(), rootPath, mainPath);
-        for (Path currentPath : pathInputStreamMap.keySet()) {
+        for (Entry<Path, InputStream> entry : pathInputStreamMap.entrySet()) {
             ioMap.put(
-                    relativizeRootPath(rootPath, currentPath),
-                    new StreamInput(pathInputStreamMap.get(currentPath), charset, fileExtension));
+                    relativizeRootPath(rootPath, entry.getKey()),
+                    new StreamInput(entry.getValue(), charset, fileExtension));
         }
     }
 

@@ -109,7 +109,7 @@ public class IOTest {
             LabeledTree<Integer> integerTree = new LabeledTree<>(Integer.valueOf(lines.remove(0)));
             for (String line : lines) {
                 Result<LabeledTree<Integer>> result = inputMapper.withMainPath(
-                        IIOObject.getPathWithExtension(line, getFileExtension()),
+                        IIOObject.getPathWithNewExtension(line, getFileExtension()),
                         () -> getInstance().parse(inputMapper));
                 if (result.isPresent()) integerTree.addChild(result.get());
                 else problems.add(new Problem("could not parse subtree", Problem.Severity.WARNING));
@@ -133,7 +133,7 @@ public class IOTest {
                                     .collect(Collectors.joining("\n")));
             for (LabeledTree<Integer> child : object.getChildren()) {
                 outputMapper.withMainPath(
-                        IIOObject.getPathWithExtension(String.valueOf(child.hashCode()), getFileExtension()),
+                        IIOObject.getPathWithNewExtension(String.valueOf(child.hashCode()), getFileExtension()),
                         () -> getInstance().write(child, outputMapper));
             }
         }
@@ -167,7 +167,7 @@ public class IOTest {
                         outputMapper
                                 .getPath(outputMapper.get())
                                 .get()
-                                .resolveSibling(IIOObject.getPathWithExtension(
+                                .resolveSibling(IIOObject.getPathWithNewExtension(
                                                 String.valueOf(object.remove(0)), getFileExtension())
                                         .resolve("index")),
                         () -> getInstance().write(object, outputMapper));

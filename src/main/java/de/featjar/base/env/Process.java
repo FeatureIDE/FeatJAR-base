@@ -28,6 +28,7 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
 import java.time.Duration;
 import java.time.Instant;
@@ -110,7 +111,8 @@ public class Process implements Supplier<Result<List<String>>> {
     protected void consumeInputStream(InputStream inputStream, Consumer<String> consumer, boolean isError) {
         if (consumer != null) {
             new Thread(() -> {
-                        try (BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream))) {
+                        try (BufferedReader reader =
+                                new BufferedReader(new InputStreamReader(inputStream, StandardCharsets.UTF_8))) {
                             for (String line = reader.readLine(); line != null; line = reader.readLine()) {
                                 consumer.accept(line);
                                 if (isError) errorOccurred = true;

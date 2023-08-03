@@ -48,14 +48,6 @@ public class IndentStringBuilder {
         this.indentFormatter = indentFormatter;
     }
 
-    public StringBuilder getStringBuilder() {
-        return stringBuilder;
-    }
-
-    public IndentFormatter getIndentFormatter() {
-        return indentFormatter;
-    }
-
     public IndentStringBuilder append(String string) {
         stringBuilder.append(indentFormatter.getPrefix()).append(string);
         return this;

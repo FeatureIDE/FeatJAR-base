@@ -68,6 +68,6 @@ public class IndentFormatter implements IFormatter {
     }
 
     public static String formatList(String prefix, Collection<?> collection) {
-        return String.format("%s[\n%s]", prefix, formatList(collection));
+        return String.format("%s[%n%s]", prefix, formatList(collection));
     }
 }

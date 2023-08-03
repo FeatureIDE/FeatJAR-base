@@ -59,10 +59,10 @@ public abstract class AOutputMapper extends AIOMapper<AOutput> {
     public static AOutputMapper of(Path mainPath, Charset charset, IOMapperOptions... options) throws IOException {
         return Arrays.asList(options).contains(IOMapperOptions.OUTPUT_FILE_JAR)
                 ? new JARFileOutputMapper(
-                        IIOObject.getPathWithExtension(mainPath, "jar"), mainPath.getFileName(), charset)
+                        IIOObject.getPathWithNewExtension(mainPath, "jar"), mainPath.getFileName(), charset)
                 : Arrays.asList(options).contains(IOMapperOptions.OUTPUT_FILE_ZIP)
                         ? new ZIPFileOutputMapper(
-                                IIOObject.getPathWithExtension(mainPath, "zip"), mainPath.getFileName(), charset)
+                                IIOObject.getPathWithNewExtension(mainPath, "zip"), mainPath.getFileName(), charset)
                         : new FileOutputMapper(mainPath, charset);
     }
 

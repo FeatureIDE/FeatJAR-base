@@ -41,7 +41,7 @@ import org.junit.jupiter.api.Test;
 public class TreesTest {
 
     LabeledTree<String> emptyRoot, root1, root2, root3;
-    List<LabeledTree<String>> preOrderList, postOrderList, innerList;
+    List<LabeledTree<String>> preOrderList, postOrderList, innerOrderList;
 
     @BeforeEach
     public void setUp() {
@@ -73,8 +73,8 @@ public class TreesTest {
 
         preOrderList = Arrays.asList(root1, a, b, b1, b1a, b1b, b1c, b2, b3, b3a, b3b, c, c1, c1a, c1b, c1c, c1d);
         postOrderList = Arrays.asList(a, b1a, b1b, b1c, b1, b2, b3a, b3b, b3, b, c1a, c1b, c1c, c1d, c1, c, root1);
-        innerList = Arrays.asList(
-                a, root1, b1a, b1, b1b, b1, b1c, b, b3a, b3, b3b, root1, c1a, c1, c1b, c1, c1c, c1, c1d, c);
+        innerOrderList = Arrays.asList(
+                a, root1, b1a, b1, b1b, b1, b1c, b, b2, b, b3a, b3, b3b, root1, c, c1a, c1, c1b, c1, c1c, c1, c1d);
 
         root2 = new LabeledTree<>("Root");
         a = new LabeledTree<>("A");
@@ -142,6 +142,12 @@ public class TreesTest {
     public void postOrderStream() {
         assertEquals(postOrderList, root1.postOrderStream().collect(Collectors.toList()));
         assertEquals(Collections.emptyList(), Trees.postOrderStream(null).collect(Collectors.toList()));
+    }
+
+    @Test
+    public void innerOrderStream() {
+        assertEquals(innerOrderList, root1.innerOrderStream().collect(Collectors.toList()));
+        assertEquals(Collections.emptyList(), Trees.innerOrderStream(null).collect(Collectors.toList()));
     }
 
     @Test

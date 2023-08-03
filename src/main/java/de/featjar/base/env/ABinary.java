@@ -130,7 +130,7 @@ public abstract class ABinary implements IExtension {
      */
     @SuppressWarnings("ResultOfMethodCallIgnored")
     protected void extractResources(LinkedHashSet<String> resourceNames) throws IOException {
-        BINARY_DIRECTORY.toFile().mkdirs();
+        Files.createDirectories(BINARY_DIRECTORY);
         for (String resourceName : resourceNames) {
             Path outputPath = BINARY_DIRECTORY.resolve(resourceName);
             if (Files.notExists(outputPath)) {

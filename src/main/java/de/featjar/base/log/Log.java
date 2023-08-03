@@ -26,9 +26,11 @@ import de.featjar.base.data.Problem;
 import de.featjar.base.data.Result;
 import de.featjar.base.extension.IInitializer;
 import de.featjar.base.io.MultiStream;
+import de.featjar.base.io.OpenPrintStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.PrintStream;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
 import java.util.Arrays;
 import java.util.LinkedHashMap;
@@ -98,7 +100,7 @@ public class Log implements IInitializer {
     public static class Configuration {
         // TODO: to make this more general, we could use an OutputMapper here to
         //  log to anything supported by an OutputMapper (even a ZIP file).
-        protected final LinkedHashMap<Verbosity, de.featjar.base.io.PrintStream> logStreams = Maps.empty();
+        protected final LinkedHashMap<Verbosity, OpenPrintStream> logStreams = Maps.empty();
         protected final LinkedList<IFormatter> formatters = new LinkedList<>();
 
         {
@@ -108,8 +110,7 @@ public class Log implements IInitializer {
         public Configuration resetLogStreams() {
             logStreams.clear();
             Arrays.asList(Verbosity.values())
-                    .forEach(verbosity ->
-                            logStreams.put(verbosity, new de.featjar.base.io.PrintStream(new MultiStream())));
+                    .forEach(verbosity -> logStreams.put(verbosity, new OpenPrintStream(new MultiStream())));
             return this;
         }
 
@@ -136,8 +137,11 @@ public class Log implements IInitializer {
          */
         public Configuration logToFile(Path path, Verbosity... verbosities) throws FileNotFoundException {
             logToStream(
-                    new PrintStream(new FileOutputStream(
-                            path.toAbsolutePath().normalize().toFile())),
+                    new PrintStream(
+                            new FileOutputStream(
+                                    path.toAbsolutePath().normalize().toFile()),
+                            false,
+                            StandardCharsets.UTF_8),
                     verbosities);
             return this;
         }
@@ -209,10 +213,10 @@ public class Log implements IInitializer {
         }
     }
 
-    protected final PrintStream originalSystemOut = System.out;
-    protected final PrintStream originalSystemErr = System.err;
-    protected static Configuration defaultConfiguration = null;
-    protected Configuration configuration;
+    final PrintStream originalSystemOut = System.out;
+    final PrintStream originalSystemErr = System.err;
+    static Configuration defaultConfiguration = null;
+    Configuration configuration;
 
     /**
      * Sets the default configuration used for new logs.

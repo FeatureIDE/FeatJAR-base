@@ -62,7 +62,7 @@ public class GraphVizTreeFormat<T extends ITree<T>> implements IFormat<T> {
     public Result<String> serialize(T tree) {
         List<? extends T> descendants = tree.getDescendantsAsLevelOrder();
         return Result.of(String.format(
-                "digraph {\n%s%s%s\n%s\n%s\n}",
+                "digraph {%n%s%s%s%n%s%n%s%n}",
                 globalOptions("graph"),
                 globalOptions(
                         "node",
@@ -115,7 +115,7 @@ public class GraphVizTreeFormat<T extends ITree<T>> implements IFormat<T> {
 
     protected String getEdge(T parent, T child, String option) {
         return String.format(
-                "  %s -> %s%s;\n", quote(getNodeIdentifier(parent)), quote(getNodeIdentifier(child)), option);
+                "  %s -> %s%s;%n", quote(getNodeIdentifier(parent)), quote(getNodeIdentifier(child)), option);
     }
 
     protected String quote(String str) {

@@ -25,6 +25,7 @@ import de.featjar.base.data.Result;
 import java.awt.*;
 import java.io.IOException;
 import java.net.URI;
+import java.nio.charset.StandardCharsets;
 import java.util.Scanner;
 
 /**
@@ -87,6 +88,6 @@ public interface IBrowsable<T> {
     default void debugBrowse(T argument) {
         browse(argument);
         FeatJAR.log().info("press return to continue");
-        new Scanner(System.in).nextLine();
+        new Scanner(System.in, StandardCharsets.UTF_8).nextLine();
     }
 }
