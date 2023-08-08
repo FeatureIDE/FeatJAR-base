@@ -20,8 +20,6 @@
  */
 package de.featjar.base.env;
 
-import de.featjar.base.data.Result;
-
 /**
  * Utilities for host-specific operations and information.
  *
@@ -45,26 +43,19 @@ public class HostEnvironment {
 
     static {
         final String osName = System.getProperty("os.name").toLowerCase();
-        if (osName.matches(".*(win).*")) OPERATING_SYSTEM = OperatingSystem.WINDOWS;
-        else if (osName.matches(".*(mac).*")) OPERATING_SYSTEM = OperatingSystem.MAC_OS;
-        else if (osName.matches(".*(nix|nux|aix).*")) OPERATING_SYSTEM = OperatingSystem.LINUX;
-        else OPERATING_SYSTEM = OperatingSystem.UNKNOWN;
+        OPERATING_SYSTEM = osName.matches(".*(win).*")
+                ? OperatingSystem.WINDOWS
+                : osName.matches(".*(mac).*")
+                        ? OperatingSystem.MAC_OS
+                        : osName.matches(".*(nix|nux|aix).*") //
+                                ? OperatingSystem.LINUX //
+                                : OperatingSystem.UNKNOWN;
     }
 
     /**
      * The current user's home directory.
      */
     public static final String HOME_DIRECTORY = System.getProperty("user.home");
-
-    /**
-     * {@return the given environment variable}
-     *
-     * @param environmentVariable the environment variable
-     */
-    @SuppressWarnings("SameParameterValue")
-    private static Result<String> getEnvironmentVariable(String environmentVariable) {
-        return Result.ofNullable(System.getenv(environmentVariable));
-    }
 
     /**
      * {@return whether FeatJAR is currently running on Windows}
