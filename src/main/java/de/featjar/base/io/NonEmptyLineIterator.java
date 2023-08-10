@@ -25,7 +25,7 @@ import java.io.IOException;
 import java.util.function.Supplier;
 
 /**
- * Reads a source file line-by-line, skipping empty lines.
+ * Reads a text-based stream line-by-line, skipping empty lines.
  *
  * @author Sebastian Krieter
  */
@@ -39,6 +39,11 @@ public class NonEmptyLineIterator implements Supplier<String> {
         this.reader = reader;
     }
 
+    /**
+     * Reads the underlying stream and returns the next line or {@code null} if the stream was completely read.
+     * This operation advances the underlying input stream.
+     * @return the next line.
+     */
     @Override
     public String get() {
         try {
@@ -55,6 +60,9 @@ public class NonEmptyLineIterator implements Supplier<String> {
         }
     }
 
+    /**
+     * {@return the last read line. Does not advance the underlying stream}
+     */
     public String currentLine() {
         return line;
     }

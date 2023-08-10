@@ -637,6 +637,7 @@ public class IO {
                 format.getInstance().write(object, outputMapper);
             }
         }
+        outStream.flush();
     }
 
     /**

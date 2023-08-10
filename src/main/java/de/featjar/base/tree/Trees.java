@@ -24,24 +24,31 @@ import de.featjar.base.data.Problem;
 import de.featjar.base.data.Result;
 import de.featjar.base.data.Void;
 import de.featjar.base.tree.structure.ITree;
-import de.featjar.base.tree.visitor.IInOrderTreeVisitor;
 import de.featjar.base.tree.visitor.ITreeVisitor;
 import de.featjar.base.tree.visitor.ITreeVisitor.TraversalAction;
-import java.util.*;
+import java.util.ArrayDeque;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Spliterator;
 import java.util.function.Consumer;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
 /**
- * Traverses and manipulates trees.
- * Most methods available in {@link Trees} are also available on {@link ITree} instances.
+ * Traverses and manipulates trees. Most methods available in {@link Trees} are
+ * also available on {@link ITree} instances.
  *
  * @author Sebastian Krieter
  */
 public class Trees {
 
     /**
-     * Thrown when a visitor requests the {@link ITreeVisitor.TraversalAction#FAIL} action.
+     * Thrown when a visitor requests the {@link ITreeVisitor.TraversalAction#FAIL}
+     * action.
      */
     public static class VisitorFailException extends Exception {
         private static final long serialVersionUID = -3736018981484477491L;
@@ -62,29 +69,11 @@ public class Trees {
     }
 
     /**
-     * Traverses a tree using depth-first search, allowing for pre-, in-, and postorder traversal.
+     * Traverses a tree using depth-first search, allowing for pre- and postorder
+     * traversal. This is equivalent to using a trivial {@link IInOrderTreeVisitor},
+     * but more efficient.
      *
-     * @param node the starting node of the tree
-     * @param visitor the visitor
-     * @return the optional result from the visitor
-     * @param <R> the type of result
-     * @param <T> the type of tree
-     */
-    public static <R, T extends ITree<?>> Result<R> traverse(T node, IInOrderTreeVisitor<T, R> visitor) {
-        visitor.reset();
-        try {
-            depthFirstSearch(node, visitor);
-            return visitor.getResult();
-        } catch (final VisitorFailException e) {
-            return Result.empty(e.problems);
-        }
-    }
-
-    /**
-     * Traverses a tree using depth-first search, allowing for pre- and postorder traversal.
-     * This is equivalent to using a trivial {@link IInOrderTreeVisitor}, but more efficient.
-     *
-     * @param node the starting node of the tree
+     * @param node    the starting node of the tree
      * @param visitor the visitor
      * @return the optional result from the visitor
      * @param <R> the type of result
@@ -93,7 +82,11 @@ public class Trees {
     public static <R, T extends ITree<?>> Result<R> traverse(T node, ITreeVisitor<T, R> visitor) {
         visitor.reset();
         try {
-            depthFirstSearch(node, visitor);
+            if (visitor.isInorder()) {
+                depthFirstSearchInorder(node, visitor);
+            } else {
+                depthFirstSearch(node, visitor);
+            }
             return visitor.getResult();
         } catch (final VisitorFailException e) {
             return Result.empty(e.problems);
@@ -101,8 +94,9 @@ public class Trees {
     }
 
     /**
-     * Creates a preorder stream of the descendents of a tree.
-     * Is more efficient than {@link #traverse(ITree, ITreeVisitor)}, but lacks support for {@link TraversalAction}.
+     * Creates a preorder stream of the descendents of a tree. Is more efficient
+     * than {@link #traverse(ITree, ITreeVisitor)}, but lacks support for
+     * {@link TraversalAction}.
      *
      * @param node the starting node of the tree
      * @return the stream
@@ -113,8 +107,9 @@ public class Trees {
     }
 
     /**
-     * Creates a postorder stream of the descendents of a tree.
-     * Is more efficient than {@link #traverse(ITree, ITreeVisitor)}, but lacks support for {@link TraversalAction}.
+     * Creates a postorder stream of the descendents of a tree. Is more efficient
+     * than {@link #traverse(ITree, ITreeVisitor)}, but lacks support for
+     * {@link TraversalAction}.
      *
      * @param node the starting node of the tree
      * @return the stream
@@ -125,8 +120,9 @@ public class Trees {
     }
 
     /**
-     * Creates an inner-order stream of the descendents of a tree.
-     * Is more efficient than {@link #traverse(ITree, ITreeVisitor)}, but lacks support for {@link TraversalAction}.
+     * Creates an inner-order stream of the descendents of a tree. Is more efficient
+     * than {@link #traverse(ITree, ITreeVisitor)}, but lacks support for
+     * {@link TraversalAction}.
      *
      * @param node the starting node of the tree
      * @return the stream
@@ -148,8 +144,8 @@ public class Trees {
     }
 
     /**
-     * Creates a parallel stream of the descendents of a tree.
-     * Does not make any guarantees regarding the order of the descendents.
+     * Creates a parallel stream of the descendents of a tree. Does not make any
+     * guarantees regarding the order of the descendents.
      *
      * @param node the starting node of the tree
      * @return the stream
@@ -242,7 +238,7 @@ public class Trees {
      * Sorts a node (and its children).
      *
      * @param root the node
-     * @param <T> the type of tree
+     * @param <T>  the type of tree
      */
     public static <T extends ITree<T>> void sort(T root) {
         sort(root, Comparator.comparing(T::toString));
@@ -251,9 +247,9 @@ public class Trees {
     /**
      * Sorts a node (and its children).
      *
-     * @param root the node
+     * @param root       the node
      * @param comparator comparator used for sorting
-     * @param <T> the type of tree
+     * @param <T>        the type of tree
      */
     public static <T extends ITree<T>> void sort(T root, Comparator<T> comparator) {
         final LinkedList<StackEntry<T>> stack = new LinkedList<>();
@@ -513,7 +509,7 @@ public class Trees {
     }
 
     @SuppressWarnings("unchecked")
-    private static <T extends ITree<?>> void depthFirstSearch(T node, IInOrderTreeVisitor<T, ?> visitor)
+    private static <T extends ITree<?>> void depthFirstSearchInorder(T node, ITreeVisitor<T, ?> visitor)
             throws VisitorFailException {
         if (node == null) {
             return;
@@ -543,7 +539,11 @@ public class Trees {
                     default:
                         throw new IllegalStateException(String.valueOf(traversalAction));
                 }
-            } else {
+                if (!entry.remainingChildren.isEmpty()) {
+                    stack.addLast(new StackEntry<>(entry.remainingChildren.remove(0)));
+                }
+            } else if (!entry.remainingChildren.isEmpty()) {
+                stack.addLast(new StackEntry<>(entry.remainingChildren.remove(0)));
                 final TraversalAction traversalAction = visitor.visit(path);
                 switch (traversalAction) {
                     case CONTINUE:
@@ -559,12 +559,21 @@ public class Trees {
                     default:
                         throw new IllegalStateException(String.valueOf(traversalAction));
                 }
-            }
-
-            if (!entry.remainingChildren.isEmpty()) {
-                stack.addLast(new StackEntry<>(entry.remainingChildren.remove(0)));
             } else {
-                if (lastVisit(visitor, path, stack)) return;
+                final TraversalAction traversalAction = visitor.lastVisit(path);
+                switch (traversalAction) {
+                    case CONTINUE:
+                    case SKIP_CHILDREN:
+                        break;
+                    case SKIP_ALL:
+                        return;
+                    case FAIL:
+                        throw new VisitorFailException(new Problem("visitor failed", Problem.Severity.ERROR));
+                    default:
+                        throw new IllegalStateException(String.valueOf(traversalAction));
+                }
+                stack.removeLast();
+                path.remove(path.size() - 1);
             }
         }
     }
@@ -600,28 +609,22 @@ public class Trees {
                             throw new IllegalStateException(String.valueOf(traversalAction));
                     }
                 } else {
-                    if (lastVisit(visitor, path, stack)) return;
+                    final TraversalAction traversalAction = visitor.lastVisit(path);
+                    switch (traversalAction) {
+                        case CONTINUE:
+                        case SKIP_CHILDREN:
+                            break;
+                        case SKIP_ALL:
+                            return;
+                        case FAIL:
+                            throw new VisitorFailException(new Problem("visitor failed", Problem.Severity.ERROR));
+                        default:
+                            throw new IllegalStateException(String.valueOf(traversalAction));
+                    }
+                    stack.removeLast();
+                    path.remove(path.size() - 1);
                 }
             }
         }
-    }
-
-    private static <T extends ITree<?>> boolean lastVisit(
-            ITreeVisitor<T, ?> visitor, ArrayList<T> path, ArrayDeque<?> stack) throws VisitorFailException {
-        final TraversalAction traversalAction = visitor.lastVisit(path);
-        switch (traversalAction) {
-            case CONTINUE:
-            case SKIP_CHILDREN:
-                break;
-            case SKIP_ALL:
-                return true;
-            case FAIL:
-                throw new VisitorFailException(new Problem("visitor failed", Problem.Severity.ERROR));
-            default:
-                throw new IllegalStateException(String.valueOf(traversalAction));
-        }
-        stack.removeLast();
-        path.remove(path.size() - 1);
-        return false;
     }
 }

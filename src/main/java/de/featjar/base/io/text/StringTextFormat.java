@@ -18,35 +18,41 @@
  *
  * See <https://github.com/FeatureIDE/FeatJAR-base> for further information.
  */
-package de.featjar.base.tree.visitor;
+package de.featjar.base.io.text;
 
-import de.featjar.base.tree.Trees;
-import de.featjar.base.tree.structure.ITree;
-import java.util.List;
+import de.featjar.base.data.Result;
+import de.featjar.base.io.format.IFormat;
+import de.featjar.base.io.input.AInputMapper;
 
 /**
- * Visits each node of a tree in a depth-first search.
- * Compared with {@link ITreeVisitor}, also allows for inorder traversal.
- * The actual traversal algorithm is {@link Trees#traverse(ITree, IInOrderTreeVisitor)}.
+ * Parses and serializes a list of strings line-by-line, skipping comment and empty lines.
  *
- * @param <T> the type of tree
- * @param <U> the type of result
  * @author Sebastian Krieter
  */
-public interface IInOrderTreeVisitor<T extends ITree<?>, U> extends ITreeVisitor<T, U> {
+public class StringTextFormat implements IFormat<String> {
 
-    /**
-     * Visit a node in between the visits of its children.
-     * Override this to implement inorder traversal.
-     *
-     * @param path the path to the visited node
-     * @return the action the traversal algorithm must take next
-     */
-    default TraversalAction visit(List<T> path) {
-        return TraversalAction.CONTINUE;
+    @Override
+    public String getName() {
+        return "String";
     }
 
-    default boolean isInorder() {
+    @Override
+    public boolean supportsParse() {
         return true;
+    }
+
+    @Override
+    public boolean supportsSerialize() {
+        return true;
+    }
+
+    @Override
+    public Result<String> parse(AInputMapper inputMapper) {
+        return Result.of(inputMapper.get().text());
+    }
+
+    @Override
+    public Result<String> serialize(String object) {
+        return Result.of(object);
     }
 }

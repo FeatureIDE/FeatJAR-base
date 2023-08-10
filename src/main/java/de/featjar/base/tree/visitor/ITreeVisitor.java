@@ -40,7 +40,7 @@ public interface ITreeVisitor<T extends ITree<?>, U> {
     /**
      * All possible actions a traversal can take after visiting a tree node.
      */
-    enum TraversalAction {
+    static enum TraversalAction {
         /**
          * Continue normally.
          * That is, traverse all children of the visited node.
@@ -63,6 +63,36 @@ public interface ITreeVisitor<T extends ITree<?>, U> {
     }
 
     /**
+     * {@return the currently visited node}
+     *
+     * @param path the current traversal path, guaranteed to contain at least one node
+     */
+    static <T> T getCurrentNode(List<T> path) {
+        return path.get(path.size() - 1);
+    }
+
+    /**
+     * {@return the parent of the currently visited node}
+     *
+     * @param path the current traversal path, guaranteed to contain at least one node
+     */
+    static <T> Result<T> getParentNode(List<T> path) {
+        return (path.size() > 1) ? Result.of(path.get(path.size() - 2)) : Result.empty();
+    }
+
+    /**
+     * {@return a condition that is {@code true} if visiting the root implies it satisfying a given predicate}
+     *
+     * @param path the path to the visited node
+     * @param predicate the predicate
+     */
+    static <T> Result<Void> rootValidator(List<T> path, Function<T, Boolean> predicate, String message) {
+        return path.size() != 1 || predicate.apply(path.get(0))
+                ? Result.ofVoid()
+                : Result.ofVoid(new Problem(message, Problem.Severity.ERROR));
+    }
+
+    /**
      * {@return a problem with the the node about to be visited, if any}
      * If a problem is returned, the traversal algorithm will fail.
      *
@@ -74,18 +104,6 @@ public interface ITreeVisitor<T extends ITree<?>, U> {
     }
 
     /**
-     * {@return a condition that is {@code true} if visiting the root implies it satisfying a given predicate}
-     *
-     * @param path the path to the visited node
-     * @param predicate the predicate
-     */
-    default Result<Void> rootValidator(List<T> path, Function<T, Boolean> predicate, String message) {
-        return path.size() != 1 || predicate.apply(path.get(0))
-                ? Result.ofVoid()
-                : Result.ofVoid(new Problem(message, Problem.Severity.ERROR));
-    }
-
-    /**
      * Visit a node for the first time.
      * Override this to implement preorder traversal.
      *
@@ -94,6 +112,21 @@ public interface ITreeVisitor<T extends ITree<?>, U> {
      */
     default TraversalAction firstVisit(List<T> path) {
         return TraversalAction.CONTINUE;
+    }
+
+    /**
+     * Visit a node in between the visits of its children.
+     * Override this to implement inorder traversal.
+     *
+     * @param path the path to the visited node
+     * @return the action the traversal algorithm must take next
+     */
+    default TraversalAction visit(List<T> path) {
+        throw new UnsupportedOperationException();
+    }
+
+    default boolean isInorder() {
+        return false;
     }
 
     /**
@@ -118,23 +151,5 @@ public interface ITreeVisitor<T extends ITree<?>, U> {
      */
     default Result<U> getResult() {
         return Result.empty();
-    }
-
-    /**
-     * {@return the currently visited node}
-     *
-     * @param path the current traversal path, guaranteed to contain at least one node
-     */
-    default T getCurrentNode(List<T> path) {
-        return path.get(path.size() - 1);
-    }
-
-    /**
-     * {@return the parent of the currently visited node}
-     *
-     * @param path the current traversal path, guaranteed to contain at least one node
-     */
-    default Result<T> getParentNode(List<T> path) {
-        return (path.size() > 1) ? Result.of(path.get(path.size() - 2)) : Result.empty();
     }
 }

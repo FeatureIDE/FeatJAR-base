@@ -48,7 +48,7 @@ public class TreeDepthCounter implements ITreeVisitor<ITree<?>, Integer> {
         if (maxDepth < depth) {
             maxDepth = depth;
         }
-        final ITree<?> node = getCurrentNode(path);
+        final ITree<?> node = ITreeVisitor.getCurrentNode(path);
         if ((terminalClass != null) && terminalClass.isInstance(node)) {
             return TraversalAction.SKIP_CHILDREN;
         } else {

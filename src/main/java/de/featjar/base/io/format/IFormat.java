@@ -48,7 +48,7 @@ public interface IFormat<T> extends IExtension {
      * @return the parsed result
      */
     default Result<T> parse(AInputMapper inputMapper) {
-        return Result.empty();
+        throw new UnsupportedOperationException();
     }
 
     /**
@@ -59,7 +59,7 @@ public interface IFormat<T> extends IExtension {
      * @return the parsed result
      */
     default Result<T> parse(AInputMapper inputMapper, Supplier<T> supplier) {
-        return parse(inputMapper);
+        throw new UnsupportedOperationException();
     }
 
     /**

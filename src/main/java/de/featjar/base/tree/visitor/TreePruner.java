@@ -46,7 +46,7 @@ public class TreePruner implements ITreeVisitor<ITree<?>, Void> {
     public TraversalAction firstVisit(List<ITree<?>> path) {
         try {
             if (path.size() > depthLimit) {
-                final ITree<?> node = getCurrentNode(path);
+                final ITree<?> node = ITreeVisitor.getCurrentNode(path);
                 node.setChildren(Collections.emptyList());
                 return TraversalAction.SKIP_CHILDREN;
             }

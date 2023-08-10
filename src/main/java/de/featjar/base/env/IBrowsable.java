@@ -85,6 +85,7 @@ public interface IBrowsable<T> {
      *
      * @param argument the argument
      */
+    @SuppressWarnings("resource")
     default void debugBrowse(T argument) {
         browse(argument);
         FeatJAR.log().info("press return to continue");

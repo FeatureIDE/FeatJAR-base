@@ -75,7 +75,7 @@ public class TreePrinter implements ITreeVisitor<ITree<?>, String> {
 
     @Override
     public TraversalAction firstVisit(List<ITree<?>> path) {
-        final ITree<?> currentNode = getCurrentNode(path);
+        final ITree<?> currentNode = ITreeVisitor.getCurrentNode(path);
         if ((filter == null) || filter.test(currentNode)) {
             try {
                 treeStringBuilder.append(String.valueOf(indentation).repeat(Math.max(0, path.size() - 1)));

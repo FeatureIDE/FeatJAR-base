@@ -184,6 +184,26 @@ public class Computations {
     }
 
     /**
+     * {@return the result of the given computation}
+     *
+     * @param tComputation the computation
+     * @param <T> the type of the computation result
+     */
+    public static <T> T compute(IComputation<T> tComputation) {
+        return tComputation.computeResult().orElseThrow();
+    }
+
+    /**
+     * {@return a {@link FutureResult} of the given computation}
+     *
+     * @param tComputation the computation
+     * @param <T> the type of the computation result
+     */
+    public static <T> FutureResult<T> computeAsync(IComputation<T> tComputation) {
+        return tComputation.computeFutureResult();
+    }
+
+    /**
      * {@return the given object, unchanged}
      * Useful to allow transparently switching between (a-)synchronous computation modes.
      *

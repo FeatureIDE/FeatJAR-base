@@ -38,10 +38,13 @@ public abstract class ABinaryFormat<T> implements IFormat<T> {
         out.write(bytes);
     }
 
-    protected void writeString(OutputStream out, String string) throws IOException {
-        final byte[] bytes = string.getBytes(StandardCharsets.UTF_8);
+    protected void writeByteArray(OutputStream out, byte[] bytes) throws IOException {
         writeInt(out, bytes.length);
         writeBytes(out, bytes);
+    }
+
+    protected void writeString(OutputStream out, String string) throws IOException {
+        writeByteArray(out, string.getBytes(StandardCharsets.UTF_8));
     }
 
     protected void writeInt(OutputStream out, int value) throws IOException {
@@ -70,8 +73,12 @@ public abstract class ABinaryFormat<T> implements IFormat<T> {
         return bytes;
     }
 
+    protected byte[] readByteArray(InputStream in) throws IOException {
+        return readBytes(in, readInt(in));
+    }
+
     protected String readString(InputStream in) throws IOException {
-        return new String(readBytes(in, readInt(in)), StandardCharsets.UTF_8);
+        return new String(readByteArray(in), StandardCharsets.UTF_8);
     }
 
     protected int readInt(InputStream in) throws IOException {

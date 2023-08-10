@@ -25,10 +25,11 @@ import java.util.*;
 import java.util.stream.Stream;
 
 /**
- * Maps a collection of at most n objects to the range of natural numbers [1, n].
- * Typically maps n objects one-to-one onto the range [1, n], but can contain definition gaps if needed.
- * TODO: currently, the edge case of an empty range is not handled gracefully (with optionals everywhere).
- *  maybe this can be solved in a better way.
+ * Maps a collection of at most n objects to the range of natural numbers [1,
+ * n]. Typically maps n objects one-to-one onto the range [1, n], but can
+ * contain definition gaps if needed. TODO: currently, the edge case of an empty
+ * range is not handled gracefully (with optionals everywhere). maybe this can
+ * be solved in a better way.
  *
  * @author Sebastian Krieter
  * @author Elias Kuiter
@@ -65,9 +66,9 @@ public class RangeMap<T> {
     }
 
     /**
-     * Merges two range maps into this range map.
-     * Joins on common objects and does not necessarily preserve indices.
-     * If one map is empty, creates a clone of the other.
+     * Merges two range maps into this range map. Joins on common objects and does
+     * not necessarily preserve indices. If one map is empty, creates a clone of the
+     * other.
      *
      * @param rangeMap1 the first map
      * @param rangeMap2 the second map
@@ -78,6 +79,10 @@ public class RangeMap<T> {
         clear();
         indexToObject.addAll(objects);
         updateObjectToIndex();
+    }
+
+    public int maxIndex() {
+        return indexToObject.size() - 1;
     }
 
     /**
@@ -164,7 +169,8 @@ public class RangeMap<T> {
      *
      * @param index  the index
      * @param object the object
-     * @throws IllegalArgumentException if the index or object are invalid or already mapped
+     * @throws IllegalArgumentException if the index or object are invalid or
+     *                                  already mapped
      */
     public void add(int index, T object) {
         if (index < -1 || index == 0) {
@@ -238,15 +244,16 @@ public class RangeMap<T> {
     }
 
     /**
-     * {@return whether this range map has gaps}
-     * That is, whether not all indices in {@link #getValidIndexRange()} are mapped.
+     * {@return whether this range map has gaps} That is, whether not all indices in
+     * {@link #getValidIndexRange()} are mapped.
      */
     public boolean hasGaps() {
         return objectToIndex.size() != indexToObject.size();
     }
 
     /**
-     * {@return whether this range map also maps all objects mapped by a given range map}
+     * {@return whether this range map also maps all objects mapped by a given range
+     * map}
      *
      * @param rangeMap the range map
      */

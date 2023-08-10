@@ -35,6 +35,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 /**
  * Readable input source of a {@link IFormat}.
@@ -66,9 +67,9 @@ public abstract class AInput implements IIOObject {
     /**
      * {@return the full string read from this input, if any}
      */
-    public Result<java.lang.String> read() {
+    public Result<String> read() {
         try {
-            return Result.of(new java.lang.String(inputStream.readAllBytes(), charset));
+            return Result.of(new String(inputStream.readAllBytes(), charset));
         } catch (final IOException e) {
             FeatJAR.log().error(e);
             return Result.empty(e);
@@ -85,7 +86,7 @@ public abstract class AInput implements IIOObject {
     /**
      * {@return a stream of all lines read from this input}
      */
-    public java.util.stream.Stream<java.lang.String> getLineStream() {
+    public Stream<String> getLineStream() {
         return getReader().lines();
     }
 
@@ -97,9 +98,16 @@ public abstract class AInput implements IIOObject {
     }
 
     /**
+     * {@return complete text read from this input}
+     */
+    public String text() {
+        return getLineStream().collect(Collectors.joining("\n"));
+    }
+
+    /**
      * {@return a list of all lines read from this input}
      */
-    public List<java.lang.String> readLines() {
+    public List<String> readLines() {
         return getLineStream().collect(Collectors.toList());
     }
 

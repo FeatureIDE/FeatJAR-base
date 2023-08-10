@@ -80,6 +80,10 @@ public interface IComputation<T> extends Supplier<Result<T>>, IDependent {
      */
     Result<T> compute(List<Object> dependencyList, Progress progress);
 
+    default T compute() {
+        return computeResult().orElseThrow();
+    }
+
     /**
      * {@return the (asynchronous) future result of this computation}
      * Implements an asynchronous mode of computation that does or does not use the {@link Cache}.

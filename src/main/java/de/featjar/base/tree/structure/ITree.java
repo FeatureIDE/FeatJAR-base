@@ -26,12 +26,16 @@ import de.featjar.base.data.Sets;
 import de.featjar.base.env.IBrowsable;
 import de.featjar.base.io.graphviz.GraphVizTreeFormat;
 import de.featjar.base.tree.Trees;
-import de.featjar.base.tree.visitor.IInOrderTreeVisitor;
 import de.featjar.base.tree.visitor.ITreeVisitor;
 import de.featjar.base.tree.visitor.TreePrinter;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.LinkedHashSet;
+import java.util.List;
+import java.util.NoSuchElementException;
+import java.util.Objects;
 import java.util.function.BiFunction;
 import java.util.function.Function;
 import java.util.function.Predicate;
@@ -400,19 +404,6 @@ public interface ITree<T extends ITree<T>> extends IBrowsable<GraphVizTreeFormat
             hashCode += (hashCode * 37) + child.hashCodeTree();
         }
         return hashCode;
-    }
-
-    /**
-     * Traverses the tree using depth-first search, allowing for pre-, in-, and postorder traversal.
-     * Only accepts tree visitors that operate on T.
-     * For more general visitors, use {@link Trees#traverse(ITree, IInOrderTreeVisitor)} instead.
-     *
-     * @param treeVisitor the tree visitor
-     * @param <R>         the type of result
-     * @return the result from the visitor
-     */
-    default <R> Result<R> traverse(IInOrderTreeVisitor<T, R> treeVisitor) {
-        return Trees.traverse((T) this, treeVisitor);
     }
 
     /**

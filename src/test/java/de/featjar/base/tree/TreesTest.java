@@ -204,7 +204,7 @@ public class TreesTest {
             public TraversalAction firstVisit(List<LabeledTree<String>> path) {
                 assertEquals(TraversalAction.CONTINUE, ITreeVisitor.super.firstVisit(path));
                 actualCallOrder.add("first");
-                preOrderCollect.add(getCurrentNode(path));
+                preOrderCollect.add(ITreeVisitor.getCurrentNode(path));
                 return TraversalAction.CONTINUE;
             }
 
@@ -212,7 +212,7 @@ public class TreesTest {
             public TraversalAction lastVisit(List<LabeledTree<String>> path) {
                 assertEquals(TraversalAction.CONTINUE, ITreeVisitor.super.lastVisit(path));
                 actualCallOrder.add("last");
-                postOrderCollect.add(getCurrentNode(path));
+                postOrderCollect.add(ITreeVisitor.getCurrentNode(path));
                 return TraversalAction.CONTINUE;
             }
         });
@@ -307,7 +307,7 @@ public class TreesTest {
             public TraversalAction firstVisit(List<LabeledTree<String>> path) {
                 assertEquals(TraversalAction.CONTINUE, IInOrderTreeVisitor.super.firstVisit(path));
                 actualCallOrder.add("first");
-                preOrderCollect.add(getCurrentNode(path));
+                preOrderCollect.add(ITreeVisitor.getCurrentNode(path));
                 return TraversalAction.CONTINUE;
             }
 
@@ -322,7 +322,7 @@ public class TreesTest {
             public TraversalAction lastVisit(List<LabeledTree<String>> path) {
                 assertEquals(TraversalAction.CONTINUE, IInOrderTreeVisitor.super.lastVisit(path));
                 actualCallOrder.add("last");
-                postOrderCollect.add(getCurrentNode(path));
+                postOrderCollect.add(ITreeVisitor.getCurrentNode(path));
                 return TraversalAction.CONTINUE;
             }
         });
@@ -334,7 +334,7 @@ public class TreesTest {
 
         assertThrows(
                 RuntimeException.class,
-                () -> Trees.traverse(root1, new IInOrderTreeVisitor<LabeledTree<?>, Void>() {
+                () -> Trees.traverse(root1, new ITreeVisitor<LabeledTree<?>, Void>() {
                     @Override
                     public TraversalAction firstVisit(List<LabeledTree<?>> path) {
                         throw new RuntimeException();
@@ -352,7 +352,7 @@ public class TreesTest {
 
         assertThrows(
                 RuntimeException.class,
-                () -> Trees.traverse(root1, new IInOrderTreeVisitor<LabeledTree<?>, Void>() {
+                () -> Trees.traverse(root1, new ITreeVisitor<LabeledTree<?>, Void>() {
                     @Override
                     public TraversalAction lastVisit(List<LabeledTree<?>> path) {
                         throw new RuntimeException();
@@ -361,7 +361,7 @@ public class TreesTest {
 
         assertThrows(
                 RuntimeException.class,
-                () -> Trees.traverse(root1, new IInOrderTreeVisitor<LabeledTree<?>, Void>() {
+                () -> Trees.traverse(root1, new ITreeVisitor<LabeledTree<?>, Void>() {
                     @Override
                     public Result<Void> getResult() {
                         throw new RuntimeException();
@@ -370,14 +370,14 @@ public class TreesTest {
 
         assertThrows(
                 RuntimeException.class,
-                () -> Trees.traverse(root1, new IInOrderTreeVisitor<LabeledTree<?>, Void>() {
+                () -> Trees.traverse(root1, new ITreeVisitor<LabeledTree<?>, Void>() {
                     @Override
                     public void reset() {
                         throw new RuntimeException();
                     }
                 }));
 
-        assertFalse(Trees.traverse(root1, new IInOrderTreeVisitor<LabeledTree<?>, Void>() {
+        assertFalse(Trees.traverse(root1, new ITreeVisitor<LabeledTree<?>, Void>() {
                     @Override
                     public TraversalAction firstVisit(List<LabeledTree<?>> path) {
                         return TraversalAction.FAIL;
@@ -385,7 +385,7 @@ public class TreesTest {
                 })
                 .isPresent());
 
-        assertFalse(Trees.traverse(root1, new IInOrderTreeVisitor<LabeledTree<?>, Void>() {
+        assertFalse(Trees.traverse(root1, new ITreeVisitor<LabeledTree<?>, Void>() {
                     @Override
                     public TraversalAction visit(List<LabeledTree<?>> path) {
                         return TraversalAction.FAIL;
@@ -393,7 +393,7 @@ public class TreesTest {
                 })
                 .isPresent());
 
-        assertFalse(Trees.traverse(root1, new IInOrderTreeVisitor<LabeledTree<?>, Void>() {
+        assertFalse(Trees.traverse(root1, new ITreeVisitor<LabeledTree<?>, Void>() {
                     @Override
                     public TraversalAction lastVisit(List<LabeledTree<?>> path) {
                         return TraversalAction.FAIL;
