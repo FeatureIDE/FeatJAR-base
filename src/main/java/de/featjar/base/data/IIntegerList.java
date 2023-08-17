@@ -160,7 +160,7 @@ public interface IIntegerList extends Supplier<int[]> {
      * @param integers the integers
      */
     default boolean containsAll(int... integers) {
-        return Arrays.stream(integers).noneMatch(integer -> indexOf(integer) < 0);
+        return Arrays.stream(integers).allMatch(integer -> indexOf(integer) >= 0);
     }
 
     /**
@@ -169,7 +169,7 @@ public interface IIntegerList extends Supplier<int[]> {
      * @param integers the integers
      */
     default boolean containsAllNegated(int... integers) {
-        return Arrays.stream(integers).noneMatch(integer -> indexOf(-integer) < 0);
+        return Arrays.stream(integers).allMatch(integer -> indexOf(-integer) >= 0);
     }
 
     /**
