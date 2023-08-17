@@ -23,11 +23,16 @@ package de.featjar.base.data;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 
+/**
+ * Basic implementation of a Trie data structure.
+ *
+ * @author Sebastian Krieter
+ */
 public class Trie {
 
     private static class TrieNode {
-        private LinkedHashMap<Character, TrieNode> children = new LinkedHashMap<>();
-        private String element;
+        LinkedHashMap<Character, TrieNode> children = new LinkedHashMap<>();
+        String element;
     }
 
     private final TrieNode root = new TrieNode();
@@ -73,7 +78,7 @@ public class Trie {
             }
         }
         node.element = null;
-        for (int i = nodePath.size(); i > 0; i++) {
+        for (int i = nodePath.size() - 1; i > 0; i++) {
             final TrieNode trieNode = nodePath.get(i);
             if (trieNode.children.isEmpty()) {
                 nodePath.get(i - 1).children.remove(charArray[i]);

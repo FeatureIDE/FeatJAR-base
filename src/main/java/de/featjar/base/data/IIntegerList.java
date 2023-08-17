@@ -237,6 +237,13 @@ public interface IIntegerList extends Supplier<int[]> {
     }
 
     /**
+     * {@return the number of non-zero values in this integer list's integers}
+     */
+    default int countNonZero() {
+        return countPositives() + countNegatives();
+    }
+
+    /**
      * {@return the number of integers in this integer list}
      */
     default int size() {
