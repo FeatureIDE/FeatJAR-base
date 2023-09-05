@@ -36,21 +36,22 @@ import java.util.Arrays;
 import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.ListIterator;
 
 /**
- * Logs messages to standard output and files.
- * Formats log messages with {@link IFormatter formatters}.
- * TODO: instead of logging values directly, only pass suppliers that are called if some log target is configured.
- *  this saves time for creating log strings
+ * Logs messages to standard output and files. Formats log messages with
+ * {@link IFormatter formatters}. TODO: instead of logging values directly, only
+ * pass suppliers that are called if some log target is configured. this saves
+ * time for creating log strings
  *
  * @author Sebastian Krieter
  * @author Elias Kuiter
  */
 public class Log implements IInitializer {
     /**
-     * Logging verbosity.
-     * Each verbosity (save for {@link Verbosity#NONE}) defines a type of message that can be logged.
-     * In addition, defines a log level that includes all log messages of the message type and all types above.
+     * Logging verbosity. Each verbosity (save for {@link Verbosity#NONE}) defines a
+     * type of message that can be logged. In addition, defines a log level that
+     * includes all log messages of the message type and all types above.
      */
     public enum Verbosity {
         /**
@@ -58,28 +59,23 @@ public class Log implements IInitializer {
          */
         NONE,
         /**
-         * Error message.
-         * Typically used to log critical exceptions and errors.
+         * Error message. Typically used to log critical exceptions and errors.
          */
         ERROR,
         /**
-         * Warning message.
-         * Typically used to log non-critical warnings.
+         * Warning message. Typically used to log non-critical warnings.
          */
         WARNING,
         /**
-         * Info message.
-         * Typically used to log high-level information.
+         * Info message. Typically used to log high-level information.
          */
         INFO,
         /**
-         * Debug message.
-         * Typically used to log low-level information.
+         * Debug message. Typically used to log low-level information.
          */
         DEBUG,
         /**
-         * Progress message.
-         * Typically used to signal progress in long-running jobs.
+         * Progress message. Typically used to signal progress in long-running jobs.
          */
         PROGRESS;
 
@@ -99,7 +95,7 @@ public class Log implements IInitializer {
      */
     public static class Configuration {
         // TODO: to make this more general, we could use an OutputMapper here to
-        //  log to anything supported by an OutputMapper (even a ZIP file).
+        // log to anything supported by an OutputMapper (even a ZIP file).
         protected final LinkedHashMap<Verbosity, OpenPrintStream> logStreams = Maps.empty();
         protected final LinkedList<IFormatter> formatters = new LinkedList<>();
 
@@ -236,10 +232,10 @@ public class Log implements IInitializer {
     }
 
     /**
-     * Creates a log.
-     * Overrides the standard output/error streams.
-     * That is, calls to {@link System#out} are equivalent to calling {@link #info(String)}.
-     * Analogously, calls to {@link System#err} are equivalent to calling {@link #error(String)}.
+     * Creates a log. Overrides the standard output/error streams. That is, calls to
+     * {@link System#out} are equivalent to calling {@link #info(String)}.
+     * Analogously, calls to {@link System#err} are equivalent to calling
+     * {@link #error(String)}.
      *
      * @param configuration the configuration
      */
@@ -249,8 +245,7 @@ public class Log implements IInitializer {
     }
 
     /**
-     * {@inheritDoc}
-     * Resets the standard output/error streams.
+     * {@inheritDoc} Resets the standard output/error streams.
      */
     @Override
     public void close() {
@@ -324,6 +319,17 @@ public class Log implements IInitializer {
     }
 
     /**
+     * Logs a {@link String#format(String, Object...) formatted} error message.
+     *
+     * @param formatMessage the message with format specifiers
+     * @param elements      the arguments for the format specifiers in the format
+     *                      message
+     */
+    public void error(String formatMessage, Object... elements) {
+        error(String.format(formatMessage, elements));
+    }
+
+    /**
      * Logs an error message.
      *
      * @param error the error object
@@ -339,6 +345,17 @@ public class Log implements IInitializer {
      */
     public void warning(String message) {
         println(message, Verbosity.WARNING);
+    }
+
+    /**
+     * Logs a {@link String#format(String, Object...) formatted} warning message.
+     *
+     * @param formatMessage the message with format specifiers
+     * @param elements      the arguments for the format specifiers in the format
+     *                      message
+     */
+    public void warning(String formatMessage, Object... elements) {
+        warning(String.format(formatMessage, elements));
     }
 
     /**
@@ -360,6 +377,17 @@ public class Log implements IInitializer {
     }
 
     /**
+     * Logs a {@link String#format(String, Object...) formatted} info message.
+     *
+     * @param formatMessage the message with format specifiers
+     * @param elements      the arguments for the format specifiers in the format
+     *                      message
+     */
+    public void info(String formatMessage, Object... elements) {
+        info(String.format(formatMessage, elements));
+    }
+
+    /**
      * Logs an info message.
      *
      * @param messageObject the message object
@@ -378,6 +406,17 @@ public class Log implements IInitializer {
     }
 
     /**
+     * Logs a {@link String#format(String, Object...) formatted} debug message.
+     *
+     * @param formatMessage the message with format specifiers
+     * @param elements      the arguments for the format specifiers in the format
+     *                      message
+     */
+    public void debug(String formatMessage, Object... elements) {
+        debug(String.format(formatMessage, elements));
+    }
+
+    /**
      * Logs a debug message.
      *
      * @param messageObject the message object
@@ -393,6 +432,17 @@ public class Log implements IInitializer {
      */
     public void progress(String message) {
         println(message, Verbosity.PROGRESS);
+    }
+
+    /**
+     * Logs a {@link String#format(String, Object...) formatted} progress message.
+     *
+     * @param formatMessage the message with format specifiers
+     * @param elements      the arguments for the format specifiers in the format
+     *                      message
+     */
+    public void progress(String formatMessage, Object... elements) {
+        progress(String.format(formatMessage, elements));
     }
 
     /**
@@ -448,19 +498,21 @@ public class Log implements IInitializer {
             return message;
         } else {
             final StringBuilder sb = new StringBuilder();
-            for (final IFormatter formatter : configuration.formatters) {
-                sb.append(formatter.getPrefix());
+            final ListIterator<IFormatter> it = configuration.formatters.listIterator();
+            while (it.hasNext()) {
+                sb.append(it.next().getPrefix());
             }
             sb.append(message);
-            for (final IFormatter formatter : configuration.formatters) {
-                sb.append(formatter.getSuffix());
+            while (it.hasPrevious()) {
+                sb.append(it.previous().getSuffix());
             }
             return sb.toString();
         }
     }
 
     /**
-     * Logs messages during (de-)initialization of FeatJAR, as there is no {@link Log} configured then.
+     * Logs messages during (de-)initialization of FeatJAR, as there is no
+     * {@link Log} configured then.
      */
     public static class Fallback extends Log {
         IFormatter timeStampFormatter = new TimeStampFormatter();
