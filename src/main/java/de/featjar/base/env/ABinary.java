@@ -20,16 +20,16 @@
  */
 package de.featjar.base.env;
 
-import de.featjar.base.data.Result;
 import de.featjar.base.extension.IExtension;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.nio.file.attribute.BasicFileAttributes;
 import java.time.Duration;
 import java.util.LinkedHashSet;
 import java.util.List;
-import java.util.function.Function;
+import java.util.concurrent.TimeUnit;
 
 /**
  * A native binary bundled with FeatJAR.
@@ -98,33 +98,6 @@ public abstract class ABinary implements IExtension {
     }
 
     /**
-     * Runs a function (e.g., this binary's executable) that gets access to a temporary file.
-     * The file is created in the default temporary-file directory and deleted after the function is done.
-     *
-     * @param prefix the prefix of the temporary file's name
-     * @param suffix the suffix of the temporary file's name
-     * @param fn     the function
-     * @param <T>    the type of the returned result
-     * @return the result returned by the function, if any
-     */
-    public <T> Result<T> withTemporaryFile(String prefix, String suffix, Function<Path, Result<T>> fn) {
-        Path temporaryFilePath = null;
-        try {
-            temporaryFilePath = Files.createTempFile(prefix, suffix);
-            return fn.apply(temporaryFilePath);
-        } catch (IOException e) {
-            return Result.empty(e);
-        } finally {
-            if (temporaryFilePath != null) {
-                try {
-                    Files.deleteIfExists(temporaryFilePath);
-                } catch (IOException ignored) {
-                }
-            }
-        }
-    }
-
-    /**
      * Extracts this binary's resources into the binary directory.
      * Each resource is set to be executable.
      */
@@ -132,11 +105,19 @@ public abstract class ABinary implements IExtension {
     protected void extractResources(LinkedHashSet<String> resourceNames) throws IOException {
         Files.createDirectories(BINARY_DIRECTORY);
         for (String resourceName : resourceNames) {
-            Path outputPath = BINARY_DIRECTORY.resolve(resourceName);
-            if (Files.notExists(outputPath)) {
+            final Path outputPath = BINARY_DIRECTORY.resolve(resourceName);
+            if (Files.notExists(outputPath) || isNewer(resourceName, outputPath)) {
                 JARs.extractResource("bin/" + resourceName, outputPath);
                 outputPath.toFile().setExecutable(true);
             }
         }
+    }
+
+    private boolean isNewer(String resourceName, Path outputPath) throws IOException {
+        final long localFile = Files.readAttributes(outputPath, BasicFileAttributes.class)
+                .lastModifiedTime()
+                .to(TimeUnit.MILLISECONDS);
+        final long jarFile = JARs.getLastModificationDate("bin/" + resourceName);
+        return jarFile > localFile;
     }
 }

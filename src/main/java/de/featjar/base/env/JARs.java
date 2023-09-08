@@ -46,4 +46,11 @@ public class JARs {
             Files.copy(in, outputPath);
         }
     }
+
+    public static long getLastModificationDate(String resourceName) throws IOException {
+        return ClassLoader.getSystemClassLoader()
+                .getResource("bin/" + resourceName)
+                .openConnection()
+                .getLastModified();
+    }
 }
