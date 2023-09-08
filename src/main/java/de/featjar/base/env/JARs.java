@@ -49,7 +49,7 @@ public class JARs {
 
     public static long getLastModificationDate(String resourceName) throws IOException {
         return ClassLoader.getSystemClassLoader()
-                .getResource("bin/" + resourceName)
+                .getResource(resourceName)
                 .openConnection()
                 .getLastModified();
     }
