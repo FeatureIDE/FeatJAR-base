@@ -50,7 +50,7 @@ public class Computations {
      * @param object  the object
      * @param <T>     the type of the object
      */
-    public static <T> IComputation<T> of(T object) {
+    public static <T> ComputeConstant<T> of(T object) {
         return new ComputeConstant<>(object);
     }
 

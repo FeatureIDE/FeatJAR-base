@@ -260,7 +260,7 @@ public interface IComputation<T> extends Supplier<Result<T>>, IDependent {
      * @param <U>   the type of the mapped result
      */
     default <U> IComputation<U> mapResult(Class<?> klass, String scope, Function<T, U> fn) {
-        return flatMapResult(klass, scope, t -> Result.of(fn.apply(t)));
+        return flatMapResult(klass, scope, t -> Result.ofNullable(fn.apply(t)));
     }
 
     default <U> IComputation<U> cast(Class<U> newType) {
