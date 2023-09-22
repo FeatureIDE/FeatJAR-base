@@ -20,23 +20,10 @@
  */
 package de.featjar.base.log;
 
-import de.featjar.base.FeatJAR;
-import de.featjar.base.data.Maps;
 import de.featjar.base.data.Problem;
 import de.featjar.base.data.Result;
-import de.featjar.base.extension.IInitializer;
-import de.featjar.base.io.MultiStream;
-import de.featjar.base.io.OpenPrintStream;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
-import java.io.PrintStream;
-import java.nio.charset.StandardCharsets;
-import java.nio.file.Path;
 import java.util.Arrays;
-import java.util.LinkedHashMap;
-import java.util.LinkedList;
 import java.util.List;
-import java.util.ListIterator;
 
 /**
  * Logs messages to standard output and files. Formats log messages with
@@ -47,7 +34,7 @@ import java.util.ListIterator;
  * @author Sebastian Krieter
  * @author Elias Kuiter
  */
-public class Log implements IInitializer {
+public interface Log {
     /**
      * Logging verbosity. Each verbosity (save for {@link Verbosity#NONE}) defines a
      * type of message that can be logged. In addition, defines a log level that
@@ -58,6 +45,10 @@ public class Log implements IInitializer {
          * Indicates that no messages should be logged.
          */
         NONE,
+        /**
+         * Regular message. For explicit console output.
+         */
+        MESSAGE,
         /**
          * Error message. Typically used to log critical exceptions and errors.
          */
@@ -77,7 +68,11 @@ public class Log implements IInitializer {
         /**
          * Progress message. Typically used to signal progress in long-running jobs.
          */
-        PROGRESS;
+        PROGRESS,
+        /**
+         * Indicates that all messages should be logged.
+         */
+        ALL;
 
         public static boolean isValid(String verbosityString) {
             String[] verbosities = new String[] {"none", "error", "warning", "info", "debug", "progress"};
@@ -91,203 +86,11 @@ public class Log implements IInitializer {
     }
 
     /**
-     * Configures a log.
-     */
-    public static class Configuration {
-        // TODO: to make this more general, we could use an OutputMapper here to
-        // log to anything supported by an OutputMapper (even a ZIP file).
-        protected final LinkedHashMap<Verbosity, OpenPrintStream> logStreams = Maps.empty();
-        protected final LinkedList<IFormatter> formatters = new LinkedList<>();
-
-        {
-            resetLogStreams();
-        }
-
-        public Configuration resetLogStreams() {
-            logStreams.clear();
-            Arrays.asList(Verbosity.values())
-                    .forEach(verbosity -> logStreams.put(verbosity, new OpenPrintStream(new MultiStream())));
-            return this;
-        }
-
-        /**
-         * Configures a stream to be a logging target.
-         *
-         * @param stream      the stream
-         * @param verbosities the logged verbosities
-         * @return this configuration
-         */
-        public Configuration logToStream(PrintStream stream, Verbosity... verbosities) {
-            Arrays.asList(verbosities)
-                    .forEach(verbosity ->
-                            ((MultiStream) logStreams.get(verbosity).getOutputStream()).addStream(stream));
-            return this;
-        }
-
-        /**
-         * Configures a file to be a logging target.
-         *
-         * @param path        the path to the file
-         * @param verbosities the logged verbosities
-         * @return this configuration
-         */
-        public Configuration logToFile(Path path, Verbosity... verbosities) throws FileNotFoundException {
-            logToStream(
-                    new PrintStream(
-                            new FileOutputStream(
-                                    path.toAbsolutePath().normalize().toFile()),
-                            false,
-                            StandardCharsets.UTF_8),
-                    verbosities);
-            return this;
-        }
-
-        /**
-         * Configures the standard output stream to be a logging target.
-         *
-         * @param verbosities the logged verbosities
-         * @return this configuration
-         */
-        public Configuration logToSystemOut(Verbosity... verbosities) {
-            logToStream(System.out, verbosities);
-            return this;
-        }
-
-        /**
-         * Configures the standard error stream to be a logging target.
-         *
-         * @param verbosities the logged verbosities
-         * @return this configuration
-         */
-        public Configuration logToSystemErr(Verbosity... verbosities) {
-            logToStream(System.err, verbosities);
-            return this;
-        }
-
-        /**
-         * Configures a formatter for all logging targets.
-         *
-         * @param formatter the formatter
-         * @return this configuration
-         */
-        public Configuration addFormatter(IFormatter formatter) {
-            formatters.add(formatter);
-            return this;
-        }
-
-        public Configuration logAtMost(Verbosity verbosity) {
-            switch (verbosity) {
-                case NONE:
-                    break;
-                case ERROR:
-                    logToSystemErr(Verbosity.ERROR);
-                    break;
-                case WARNING:
-                    logToSystemErr(Verbosity.ERROR, Verbosity.WARNING);
-                    break;
-                case INFO:
-                    logToSystemErr(Verbosity.ERROR, Verbosity.WARNING);
-                    logToSystemOut(Log.Verbosity.INFO);
-                    break;
-                case DEBUG:
-                    logToSystemErr(Verbosity.ERROR, Verbosity.WARNING);
-                    logToSystemOut(Log.Verbosity.INFO, Log.Verbosity.DEBUG);
-                    break;
-                case PROGRESS:
-                    logToSystemErr(Verbosity.ERROR, Verbosity.WARNING);
-                    logToSystemOut(Log.Verbosity.INFO, Log.Verbosity.DEBUG, Log.Verbosity.PROGRESS);
-                    break;
-            }
-            return this;
-        }
-
-        public Configuration logAtMost(String verbosityString) {
-            Result<Verbosity> verbosity = Verbosity.of(verbosityString);
-            if (verbosity.isEmpty()) throw new IllegalArgumentException("invalid verbosity " + verbosityString);
-            logAtMost(verbosity.get());
-            return this;
-        }
-    }
-
-    final PrintStream originalSystemOut = System.out;
-    final PrintStream originalSystemErr = System.err;
-    static Configuration defaultConfiguration = null;
-    Configuration configuration;
-
-    /**
-     * Sets the default configuration used for new logs.
-     *
-     * @param defaultConfiguration the default configuration
-     */
-    public static void setDefaultConfiguration(Configuration defaultConfiguration) {
-        FeatJAR.log().debug("setting new default log configuration");
-        Log.defaultConfiguration = defaultConfiguration;
-    }
-
-    /**
-     * Creates a log based on the default configuration.
-     */
-    public Log() {
-        this(defaultConfiguration);
-    }
-
-    /**
-     * Creates a log. Overrides the standard output/error streams. That is, calls to
-     * {@link System#out} are equivalent to calling {@link #info(String)}.
-     * Analogously, calls to {@link System#err} are equivalent to calling
-     * {@link #error(String)}.
-     *
-     * @param configuration the configuration
-     */
-    public Log(Configuration configuration) {
-        this.configuration = configuration;
-        redirectSystemStreams(configuration);
-    }
-
-    /**
-     * {@inheritDoc} Resets the standard output/error streams.
-     */
-    @Override
-    public void close() {
-        if (configuration != null) {
-            FeatJAR.log().debug("de-initializing log");
-            System.setOut(originalSystemOut);
-            System.setErr(originalSystemErr);
-        }
-    }
-
-    protected static void redirectSystemStreams(Configuration configuration) {
-        if (configuration != null) {
-            FeatJAR.log().debug("initializing log");
-            System.setOut(configuration.logStreams.get(Verbosity.INFO));
-            System.setErr(configuration.logStreams.get(Verbosity.ERROR));
-        }
-    }
-
-    /**
-     * {@return this log's configuration}
-     */
-    public Configuration getConfiguration() {
-        return configuration;
-    }
-
-    /**
-     * Sets this log's configuration.
-     *
-     * @param configuration the configuration
-     */
-    public void setConfiguration(Configuration configuration) {
-        FeatJAR.log().debug("setting new log configuration");
-        this.configuration = configuration;
-        redirectSystemStreams(configuration);
-    }
-
-    /**
      * Logs a problem.
      *
      * @param problem the problem
      */
-    public void problem(Problem problem) {
+    default void problem(Problem problem) {
         switch (problem.getSeverity()) {
             case ERROR:
                 error(problem.getException());
@@ -303,7 +106,7 @@ public class Log implements IInitializer {
      *
      * @param problems the problems
      */
-    public void problem(List<Problem> problems) {
+    default void problem(List<Problem> problems) {
         for (Problem problem : problems) {
             problem(problem);
         }
@@ -314,7 +117,7 @@ public class Log implements IInitializer {
      *
      * @param message the error message
      */
-    public void error(String message) {
+    default void error(String message) {
         println(message, Verbosity.ERROR);
     }
 
@@ -325,7 +128,7 @@ public class Log implements IInitializer {
      * @param elements      the arguments for the format specifiers in the format
      *                      message
      */
-    public void error(String formatMessage, Object... elements) {
+    default void error(String formatMessage, Object... elements) {
         error(String.format(formatMessage, elements));
     }
 
@@ -334,7 +137,7 @@ public class Log implements IInitializer {
      *
      * @param error the error object
      */
-    public void error(Throwable error) {
+    default void error(Throwable error) {
         println(error, false);
     }
 
@@ -343,7 +146,7 @@ public class Log implements IInitializer {
      *
      * @param message the warning message
      */
-    public void warning(String message) {
+    default void warning(String message) {
         println(message, Verbosity.WARNING);
     }
 
@@ -354,7 +157,7 @@ public class Log implements IInitializer {
      * @param elements      the arguments for the format specifiers in the format
      *                      message
      */
-    public void warning(String formatMessage, Object... elements) {
+    default void warning(String formatMessage, Object... elements) {
         warning(String.format(formatMessage, elements));
     }
 
@@ -363,7 +166,7 @@ public class Log implements IInitializer {
      *
      * @param warning the warning object
      */
-    public void warning(Throwable warning) {
+    default void warning(Throwable warning) {
         println(warning, true);
     }
 
@@ -372,7 +175,7 @@ public class Log implements IInitializer {
      *
      * @param message the message
      */
-    public void info(String message) {
+    default void info(String message) {
         println(message, Verbosity.INFO);
     }
 
@@ -383,7 +186,7 @@ public class Log implements IInitializer {
      * @param elements      the arguments for the format specifiers in the format
      *                      message
      */
-    public void info(String formatMessage, Object... elements) {
+    default void info(String formatMessage, Object... elements) {
         info(String.format(formatMessage, elements));
     }
 
@@ -392,8 +195,37 @@ public class Log implements IInitializer {
      *
      * @param messageObject the message object
      */
-    public void info(Object messageObject) {
+    default void info(Object messageObject) {
         info(String.valueOf(messageObject));
+    }
+
+    /**
+     * Logs a regular message.
+     *
+     * @param message the message
+     */
+    default void message(String message) {
+        println(message, Verbosity.MESSAGE);
+    }
+
+    /**
+     * Logs a {@link String#format(String, Object...) formatted} regular message.
+     *
+     * @param formatMessage the message with format specifiers
+     * @param elements      the arguments for the format specifiers in the format
+     *                      message
+     */
+    default void message(String formatMessage, Object... elements) {
+        message(String.format(formatMessage, elements));
+    }
+
+    /**
+     * Logs a regular message.
+     *
+     * @param messageObject the message object
+     */
+    default void message(Object messageObject) {
+        message(String.valueOf(messageObject));
     }
 
     /**
@@ -401,7 +233,7 @@ public class Log implements IInitializer {
      *
      * @param message the message
      */
-    public void debug(String message) {
+    default void debug(String message) {
         println(message, Verbosity.DEBUG);
     }
 
@@ -412,7 +244,7 @@ public class Log implements IInitializer {
      * @param elements      the arguments for the format specifiers in the format
      *                      message
      */
-    public void debug(String formatMessage, Object... elements) {
+    default void debug(String formatMessage, Object... elements) {
         debug(String.format(formatMessage, elements));
     }
 
@@ -421,7 +253,7 @@ public class Log implements IInitializer {
      *
      * @param messageObject the message object
      */
-    public void debug(Object messageObject) {
+    default void debug(Object messageObject) {
         debug(String.valueOf(messageObject));
     }
 
@@ -430,7 +262,7 @@ public class Log implements IInitializer {
      *
      * @param message the message
      */
-    public void progress(String message) {
+    default void progress(String message) {
         println(message, Verbosity.PROGRESS);
     }
 
@@ -441,7 +273,7 @@ public class Log implements IInitializer {
      * @param elements      the arguments for the format specifiers in the format
      *                      message
      */
-    public void progress(String formatMessage, Object... elements) {
+    default void progress(String formatMessage, Object... elements) {
         progress(String.format(formatMessage, elements));
     }
 
@@ -450,7 +282,7 @@ public class Log implements IInitializer {
      *
      * @param messageObject the message object
      */
-    public void progress(Object messageObject) {
+    default void progress(Object messageObject) {
         progress(String.valueOf(messageObject));
     }
 
@@ -460,73 +292,11 @@ public class Log implements IInitializer {
      * @param message   the message
      * @param verbosity the verbosities
      */
-    public void log(String message, Verbosity verbosity) {
+    default void log(String message, Verbosity verbosity) {
         println(message, verbosity);
     }
 
-    protected void println(String message, Verbosity verbosity) {
-        final String formattedMessage = formatMessage(message);
-        if (formattedMessage != null) {
-            if (configuration != null) {
-                configuration.logStreams.get(verbosity).println(formattedMessage);
-            } else {
-                if (verbosity == Verbosity.WARNING || verbosity == Verbosity.ERROR) {
-                    System.err.println(formattedMessage);
-                } else {
-                    System.out.println(formattedMessage);
-                }
-            }
-        }
-    }
+    void println(String message, Verbosity verbosity);
 
-    protected void println(Throwable error, boolean isWarning) {
-        final String formattedMessage = formatMessage(error.getMessage());
-        Verbosity verbosity = isWarning ? Verbosity.WARNING : Verbosity.ERROR;
-        if (formattedMessage != null) {
-            if (configuration != null) {
-                configuration.logStreams.get(verbosity).println(formattedMessage);
-                error.printStackTrace(configuration.logStreams.get(verbosity));
-            } else {
-                System.err.println(formattedMessage);
-                error.printStackTrace(System.err);
-            }
-        }
-    }
-
-    protected String formatMessage(String message) {
-        if (configuration == null || configuration.formatters.isEmpty()) {
-            return message;
-        } else {
-            final StringBuilder sb = new StringBuilder();
-            final ListIterator<IFormatter> it = configuration.formatters.listIterator();
-            while (it.hasNext()) {
-                sb.append(it.next().getPrefix());
-            }
-            sb.append(message);
-            while (it.hasPrevious()) {
-                sb.append(it.previous().getSuffix());
-            }
-            return sb.toString();
-        }
-    }
-
-    /**
-     * Logs messages during (de-)initialization of FeatJAR, as there is no
-     * {@link Log} configured then.
-     */
-    public static class Fallback extends Log {
-        IFormatter timeStampFormatter = new TimeStampFormatter();
-        IFormatter callerFormatter = new CallerFormatter();
-
-        public Fallback() {
-            super(null);
-        }
-
-        @Override
-        protected String formatMessage(String message) {
-            return FeatJAR.defaultVerbosity.compareTo(Verbosity.DEBUG) >= 0
-                    ? timeStampFormatter.getPrefix() + callerFormatter.getPrefix() + message
-                    : null;
-        }
-    }
+    void println(Throwable error, boolean isWarning);
 }

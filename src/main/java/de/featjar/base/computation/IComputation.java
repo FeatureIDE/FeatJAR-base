@@ -29,7 +29,6 @@ import java.util.List;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Supplier;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 /**
@@ -127,19 +126,7 @@ public interface IComputation<T> extends Supplier<Result<T>>, IDependent {
      * @param tryWriteCache    whether the result should be stored in the cache
      * @param progressSupplier the progress supplier
      */
-    default Result<T> computeResult(boolean tryHitCache, boolean tryWriteCache, Supplier<Progress> progressSupplier) {
-        if (tryHitCache) {
-            Result<FutureResult<T>> cacheHit = getCache().tryHit(this);
-            if (cacheHit.isPresent()) return cacheHit.get().get();
-        }
-        List<Result<?>> results = getChildren().stream()
-                .map(computation -> computation.computeResult(tryHitCache, tryWriteCache, progressSupplier))
-                .collect(Collectors.toList());
-        Progress progress = progressSupplier.get();
-        Result<T> result = mergeResults(results).flatMap(r -> compute(r, progress));
-        if (tryWriteCache) getCache().tryWrite(this, new FutureResult<>(result, progress));
-        return result;
-    }
+    Result<T> computeResult(boolean tryHitCache, boolean tryWriteCache, Supplier<Progress> progressSupplier);
 
     /**
      * {@return the (synchronous) result of this computation}

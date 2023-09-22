@@ -33,6 +33,7 @@ import java.util.stream.Collectors;
  * @param <T> the type of the option value
  */
 public class ListOption<T> extends Option<List<T>> {
+
     /**
      * Creates a list option.
      *
@@ -41,10 +42,8 @@ public class ListOption<T> extends Option<List<T>> {
      */
     @SuppressWarnings({"unchecked", "rawtypes"})
     public ListOption(String name, Function<String, Result<T>> parser) {
-        super(name, s -> (Result)
-                Result.mergeAll(Arrays.stream(String.join(",", s.split("\n")).split(","))
-                        .map(parser)
-                        .collect(Collectors.toList())));
+        super(name, s -> (Result) Result.mergeAll( //
+                Arrays.stream(s.split("[,\n]")).map(parser).collect(Collectors.toList())));
     }
 
     @Override

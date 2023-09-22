@@ -87,6 +87,9 @@ public class FutureResult<T> implements Supplier<Result<T>> {
                 }
             }
         }
+        if (Thread.interrupted()) {
+            throw new CancellationException();
+        }
         return computation.compute(args, progress);
     }
 

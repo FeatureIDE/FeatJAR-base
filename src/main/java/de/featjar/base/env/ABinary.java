@@ -106,7 +106,11 @@ public abstract class ABinary implements IExtension {
         Files.createDirectories(BINARY_DIRECTORY);
         for (String resourceName : resourceNames) {
             final Path outputPath = BINARY_DIRECTORY.resolve(resourceName);
-            if (Files.notExists(outputPath) || isNewer(resourceName, outputPath)) {
+            if (Files.notExists(outputPath)) {
+                JARs.extractResource("bin/" + resourceName, outputPath);
+                outputPath.toFile().setExecutable(true);
+            } else if (isNewer(resourceName, outputPath)) {
+                Files.delete(outputPath);
                 JARs.extractResource("bin/" + resourceName, outputPath);
                 outputPath.toFile().setExecutable(true);
             }

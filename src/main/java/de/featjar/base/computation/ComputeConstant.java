@@ -25,6 +25,7 @@ import de.featjar.base.tree.structure.ALeafNode;
 import de.featjar.base.tree.structure.ITree;
 import java.util.List;
 import java.util.Objects;
+import java.util.function.Supplier;
 
 /**
  * A constant computation.
@@ -72,5 +73,10 @@ public class ComputeConstant<T> extends ALeafNode<IComputation<?>> implements IC
     public String toString() {
         return String.format(
                 "%s(%s, %s)", getClass().getSimpleName(), value.getClass().getSimpleName(), value);
+    }
+
+    @Override
+    public Result<T> computeResult(boolean tryHitCache, boolean tryWriteCache, Supplier<Progress> progressSupplier) {
+        return Result.of(value);
     }
 }

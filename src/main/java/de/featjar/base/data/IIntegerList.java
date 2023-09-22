@@ -67,6 +67,11 @@ public interface IIntegerList extends Supplier<int[]> {
     }
 
     /**
+     * {@return a new integer list containing the negated values of this integer list}
+     */
+    int[] negate();
+
+    /**
      * {@return a copy of this integer list's integers}
      * The returned get() may be modified.
      */

@@ -21,13 +21,18 @@
 package de.featjar.base.cli;
 
 import de.featjar.base.FeatJAR;
+import de.featjar.base.FeatJAR.Configuration;
 import de.featjar.base.data.Result;
 import de.featjar.base.data.Void;
 import de.featjar.base.log.IndentStringBuilder;
 import de.featjar.base.log.Log;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
+import java.util.Properties;
 import java.util.stream.Collectors;
 
 /**
@@ -64,6 +69,12 @@ public interface IOptionInput {
                             .map(String::toLowerCase)
                             .collect(Collectors.joining(", ")))
             .setDefaultValue(Commands.DEFAULT_VERBOSITY);
+
+    /**
+     * Option for setting the logger output.
+     */
+    Option<String> CONFIGURATION_OPTION =
+            new Option<>("config", Result::ofNullable).setDescription("The path to a configuration file");
 
     /**
      * {@return a void result when the given options are valid in this option input}
@@ -152,5 +163,31 @@ public interface IOptionInput {
      */
     default Log.Verbosity getVerbosity() {
         return get(VERBOSITY_OPTION).get();
+    }
+
+    /**
+     * {@return a @link Configuration} instance build from the provided options}
+     */
+    default Result<Configuration> getConfiguration() {
+        Result<Path> configPath = get(CONFIGURATION_OPTION).map(Path::of);
+        if (configPath.isEmpty()) {
+            return Result.empty();
+        }
+
+        final Configuration configuration = new Configuration();
+        final Properties properties = new Properties();
+        try {
+            properties.load(Files.newInputStream(configPath.get()));
+            // TODO implement property options for logs and cache
+            //			for (final Property<?> prop : propertyList) {
+            //				final String value = properties.getProperty(prop.getKey());
+            //				if (value != null) {
+            //					prop.setValue(value);
+            //				}
+            //			}
+            return Result.of(configuration);
+        } catch (final IOException e) {
+            return Result.empty(e);
+        }
     }
 }

@@ -22,6 +22,8 @@ package de.featjar.base.cli;
 
 import de.featjar.base.FeatJAR;
 import de.featjar.base.data.Result;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
@@ -35,6 +37,36 @@ import java.util.function.Supplier;
  * @author Elias Kuiter
  */
 public class Option<T> {
+
+    public static final Function<String, Result<Boolean>> BooleanParser = s -> Result.of(Boolean.parseBoolean(s));
+    public static final Function<String, Result<Integer>> IntegerParser = s -> {
+        try {
+            return Result.of(Integer.parseInt(s));
+        } catch (Exception e) {
+            return Result.empty(e);
+        }
+    };
+    public static final Function<String, Result<Double>> DoubleParser = s -> {
+        try {
+            return Result.of(Double.parseDouble(s));
+        } catch (Exception e) {
+            return Result.empty(e);
+        }
+    };
+    public static final Function<String, Result<Long>> LongParser = s -> {
+        try {
+            return Result.of(Long.parseLong(s));
+        } catch (Exception e) {
+            return Result.empty(e);
+        }
+    };
+    public static final Function<String, Result<String>> StringParser = Result::of;
+
+    public static final Function<String, Result<Path>> ExistingPathParser = s -> {
+        Path path = Path.of(s);
+        return Files.exists(path) ? Result.of(path) : Result.empty();
+    };
+
     protected final String name;
     protected final Function<String, Result<T>> parser;
     protected Supplier<String> descriptionSupplier = () -> null;
@@ -51,6 +83,18 @@ public class Option<T> {
     public Option(String name, Function<String, Result<T>> parser) {
         this.name = name;
         this.parser = parser;
+    }
+
+    /**
+     * Creates an option.
+     *
+     * @param name the name of the option
+     * @param parser the parser for the option's value
+     */
+    public Option(String name, Function<String, Result<T>> parser, T defaultValue) {
+        this.name = name;
+        this.parser = parser;
+        this.defaultValue = defaultValue;
     }
 
     /**
@@ -72,13 +116,6 @@ public class Option<T> {
      */
     public Function<String, Result<T>> getParser() {
         return parser;
-    }
-
-    /**
-     * {@return whether this option is required}
-     */
-    public boolean isRequired() {
-        return isRequired;
     }
 
     /**

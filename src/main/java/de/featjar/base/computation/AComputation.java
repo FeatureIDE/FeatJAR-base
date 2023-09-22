@@ -21,12 +21,15 @@
 package de.featjar.base.computation;
 
 import de.featjar.base.FeatJAR;
+import de.featjar.base.data.Result;
 import de.featjar.base.tree.structure.ATree;
 import de.featjar.base.tree.structure.ITree;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.CancellationException;
+import java.util.function.Supplier;
+import java.util.stream.Collectors;
 
 /**
  * Describes a deterministic (potentially complex or long-running) computation.
@@ -86,6 +89,22 @@ public abstract class AComputation<T> extends ATree<IComputation<?>> implements 
         if (Thread.interrupted()) {
             throw new CancellationException();
         }
+    }
+
+    @Override
+    public Result<T> computeResult(boolean tryHitCache, boolean tryWriteCache, Supplier<Progress> progressSupplier) {
+        if (tryHitCache) {
+            Result<FutureResult<T>> cacheHit = getCache().tryHit(this);
+            if (cacheHit.isPresent()) return cacheHit.get().get();
+        }
+        List<Result<?>> results = getChildren().stream()
+                .map(computation -> computation.computeResult(tryHitCache, tryWriteCache, progressSupplier))
+                .collect(Collectors.toList());
+        Progress progress = progressSupplier.get();
+        checkCancel();
+        Result<T> result = mergeResults(results).flatMap(r -> compute(r, progress));
+        if (tryWriteCache) getCache().tryWrite(this, new FutureResult<>(result, progress));
+        return result;
     }
 
     @Override

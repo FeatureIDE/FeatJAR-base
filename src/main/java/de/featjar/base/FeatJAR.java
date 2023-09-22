@@ -24,12 +24,15 @@ import de.featjar.base.cli.Commands;
 import de.featjar.base.cli.IOptionInput;
 import de.featjar.base.cli.OptionList;
 import de.featjar.base.computation.Cache;
+import de.featjar.base.computation.FallbackCache;
 import de.featjar.base.data.Result;
 import de.featjar.base.extension.AExtensionPoint;
 import de.featjar.base.extension.ExtensionManager;
 import de.featjar.base.extension.IExtension;
 import de.featjar.base.io.IO;
+import de.featjar.base.log.BufferedLog;
 import de.featjar.base.log.CallerFormatter;
+import de.featjar.base.log.ConfigurableLog;
 import de.featjar.base.log.Log;
 import de.featjar.base.log.TimeStampFormatter;
 import java.util.function.Consumer;
@@ -52,7 +55,7 @@ import java.util.function.Function;
  *
  * @author Elias Kuiter
  */
-public class FeatJAR extends IO implements AutoCloseable {
+public final class FeatJAR extends IO implements AutoCloseable {
     public static final String ROOT_PACKAGE_NAME = "de.featjar";
     public static final String LIBRARY_NAME = "feat.jar";
 
@@ -60,15 +63,16 @@ public class FeatJAR extends IO implements AutoCloseable {
      * Configures FeatJAR.
      */
     public static class Configuration {
+
         /**
          * This configuration's log sub-configuration.
          */
-        protected final Log.Configuration log = new Log.Configuration();
+        protected final ConfigurableLog.Configuration logConfig = new ConfigurableLog.Configuration();
 
         /**
          * This configuration's cache sub-configuration.
          */
-        protected final Cache.Configuration cache = new Cache.Configuration();
+        protected final Cache.Configuration cacheConfig = new Cache.Configuration();
 
         /**
          * Configures this configuration's log sub-configuration.
@@ -76,8 +80,8 @@ public class FeatJAR extends IO implements AutoCloseable {
          * @param configurationConsumer the log configuration consumer
          * @return this configuration
          */
-        public Configuration log(Consumer<Log.Configuration> configurationConsumer) {
-            configurationConsumer.accept(log);
+        public Configuration log(Consumer<ConfigurableLog.Configuration> configurationConsumer) {
+            configurationConsumer.accept(logConfig);
             return this;
         }
 
@@ -88,7 +92,7 @@ public class FeatJAR extends IO implements AutoCloseable {
          * @return this configuration
          */
         public Configuration cache(Consumer<Cache.Configuration> configurationConsumer) {
-            configurationConsumer.accept(cache);
+            configurationConsumer.accept(cacheConfig);
             return this;
         }
     }
@@ -98,31 +102,8 @@ public class FeatJAR extends IO implements AutoCloseable {
      */
     private static FeatJAR instance;
 
-    /**
-     * This FeatJAR instance's extension manager. Holds references to all loaded
-     * extension points and extensions.
-     */
-    protected final ExtensionManager extensionManager;
-
-    /**
-     * The default verbosity of FeatJAR, if not adjusted otherwise. Can be set at
-     * startup to allow showing log output even before this value is adjusted.
-     */
-    public static Log.Verbosity defaultVerbosity = Log.Verbosity.INFO;
-
-    /**
-     * Configures the default log configuration, if not adjusted otherwise.
-     */
-    public static final Function<Log.Configuration, Log.Configuration> defaultLogConfiguration =
-            cfg -> cfg.logAtMost(defaultVerbosity)
-                    .addFormatter(new TimeStampFormatter())
-                    .addFormatter(new CallerFormatter());
-
-    /**
-     * Configures the default cache configuration, if not adjusted otherwise.
-     */
-    public static final Function<Cache.Configuration, Cache.Configuration> defaultCacheConfiguration =
-            cfg -> cfg.setCachePolicy(Cache.CachePolicy.CACHE_TOP_LEVEL);
+    private static BufferedLog fallbackLog = new BufferedLog();
+    private static FallbackCache fallbackCache = new FallbackCache();
 
     /**
      * {@return the current FeatJAR instance}
@@ -135,8 +116,19 @@ public class FeatJAR extends IO implements AutoCloseable {
      * Initializes FeatJAR with a default configuration.
      */
     public static FeatJAR initialize() {
-        return initialize(
-                new Configuration().log(defaultLogConfiguration::apply).cache(defaultCacheConfiguration::apply));
+        Configuration configuration = createDefaultConfiguration();
+        return initialize(configuration);
+    }
+
+    public static Configuration createDefaultConfiguration() {
+        final Configuration configuration = new Configuration();
+        configuration
+                .logConfig
+                .logAtMost(Log.Verbosity.INFO)
+                .addFormatter(new TimeStampFormatter())
+                .addFormatter(new CallerFormatter());
+        configuration.cacheConfig.setCachePolicy(Cache.CachePolicy.CACHE_TOP_LEVEL);
+        return configuration;
     }
 
     /**
@@ -148,16 +140,29 @@ public class FeatJAR extends IO implements AutoCloseable {
         if (instance != null) throw new RuntimeException("FeatJAR already initialized");
         return instance = new FeatJAR(configuration);
     }
+
     /**
      * De-initializes FeatJAR.
      */
     public static void deinitialize() {
         if (instance != null) {
-            log().debug("de-initializing FeatJAR");
+            instance.log.debug("de-initializing FeatJAR");
             instance.extensionManager.close();
+            instance.extensionManager = null;
+            instance.log = null;
+            instance.cache = null;
             instance = null;
         }
     }
+
+    /**
+     * This FeatJAR instance's extension manager. Holds references to all loaded
+     * extension points and extensions.
+     */
+    private ExtensionManager extensionManager;
+
+    private ConfigurableLog log;
+    private Cache cache;
 
     /**
      * Initializes FeatJAR.
@@ -166,9 +171,13 @@ public class FeatJAR extends IO implements AutoCloseable {
      */
     private FeatJAR(Configuration configuration) {
         log().debug("initializing FeatJAR");
-        Log.setDefaultConfiguration(configuration.log);
-        Cache.setDefaultConfiguration(configuration.cache);
         extensionManager = new ExtensionManager();
+        log = getExtension(ConfigurableLog.class).orElseGet(ConfigurableLog::new);
+        log.setConfiguration(configuration.logConfig);
+        fallbackLog.flush(m -> log.log(m.getValue(), m.getKey()));
+
+        cache = getExtension(Cache.class).orElseGet(Cache::new);
+        cache.setConfiguration(configuration.cacheConfig);
     }
 
     /**
@@ -295,9 +304,7 @@ public class FeatJAR extends IO implements AutoCloseable {
      * uninitialized}
      */
     public static Log log() {
-        return instance == null
-                ? new Log.Fallback()
-                : instance.getExtension(Log.class).orElseGet(Log.Fallback::new);
+        return instance == null ? fallbackLog : instance.log;
     }
 
     /**
@@ -305,9 +312,7 @@ public class FeatJAR extends IO implements AutoCloseable {
      * uninitialized}
      */
     public static Cache cache() {
-        return instance == null
-                ? new Cache.Fallback()
-                : instance.getExtension(Cache.class).orElseGet(Cache.Fallback::new);
+        return instance == null ? fallbackCache : instance.cache;
     }
 
     /**
@@ -317,7 +322,9 @@ public class FeatJAR extends IO implements AutoCloseable {
      */
     public static void main(String[] arguments) {
         IOptionInput optionInput = new OptionList(arguments);
-        defaultVerbosity = optionInput.getVerbosity();
-        FeatJAR.run(featJAR -> Commands.run(optionInput));
+        Configuration configuration = optionInput.getConfiguration().orElseGet(FeatJAR::createDefaultConfiguration);
+        FeatJAR.initialize(configuration);
+        Commands.run(optionInput);
+        FeatJAR.deinitialize();
     }
 }

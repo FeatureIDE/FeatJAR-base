@@ -25,9 +25,9 @@ import java.util.Collection;
 import java.util.stream.IntStream;
 
 /**
- * An unordered list of integers.
- * Subclasses implement specific interpretations of these integers (e.g., as an index into a {@link RangeMap}).
- * Negative and zero integers are allowed.
+ * An unordered list of integers. Subclasses implement specific interpretations
+ * of these integers (e.g., as an index into a {@link RangeMap}). Negative and
+ * zero integers are allowed.
  *
  * @author Sebastian Krieter
  * @author Elias Kuiter
@@ -39,8 +39,8 @@ public class IntegerList implements IIntegerList {
     protected int hashCode;
 
     /**
-     * Creates a new integer list from a given array of integers.
-     * To ensure performance, the array is not copied, so it must not be modified.
+     * Creates a new integer list from a given array of integers. To ensure
+     * performance, the array is not copied, so it must not be modified.
      *
      * @param array the array
      */
@@ -80,6 +80,15 @@ public class IntegerList implements IIntegerList {
     @Override
     public int[] get() {
         return array;
+    }
+
+    @Override
+    public int[] negate() {
+        int[] inverseLiterals = new int[array.length];
+        for (int i = 0; i < array.length; i++) {
+            inverseLiterals[i] = -array[i];
+        }
+        return inverseLiterals;
     }
 
     @Override

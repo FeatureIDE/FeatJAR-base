@@ -103,11 +103,6 @@ public class Cache implements IInitializer, IBrowsable<GraphVizTreeFormat<ICompu
     }
 
     /**
-     * The default configuration used for new caches.
-     */
-    static Configuration defaultConfiguration = null;
-
-    /**
      * This cache's configuration.
      */
     protected Configuration configuration;
@@ -121,20 +116,10 @@ public class Cache implements IInitializer, IBrowsable<GraphVizTreeFormat<ICompu
     protected final Map<IComputation<?>, Long> hitStatistics = new HashMap<>();
 
     /**
-     * Sets the default configuration used for new caches.
-     *
-     * @param defaultConfiguration the default configuration
-     */
-    public static void setDefaultConfiguration(Configuration defaultConfiguration) {
-        FeatJAR.log().debug("setting new default cache configuration");
-        Cache.defaultConfiguration = defaultConfiguration;
-    }
-
-    /**
-     * Creates a cache based on the default configuration.
+     * Creates a cache without configuration.
      */
     public Cache() {
-        this(defaultConfiguration);
+        FeatJAR.log().debug("initializing cache");
     }
 
     /**
@@ -143,8 +128,8 @@ public class Cache implements IInitializer, IBrowsable<GraphVizTreeFormat<ICompu
      * @param configuration the configuration
      */
     public Cache(Cache.Configuration configuration) {
-        FeatJAR.log().debug("initializing cache");
-        this.configuration = configuration;
+        this();
+        setConfiguration(configuration);
     }
 
     /**
@@ -337,17 +322,5 @@ public class Cache implements IInitializer, IBrowsable<GraphVizTreeFormat<ICompu
     public Result<URI> getBrowseURI(GraphVizTreeFormat<IComputation<?>> graphVizComputationTreeFormat) {
         graphVizComputationTreeFormat.setIncludeRoot(false);
         return getCacheComputation().getBrowseURI(graphVizComputationTreeFormat);
-    }
-
-    /**
-     * Caches nothing during (de-)initialization of FeatJAR, as there is no {@link Cache} configured then.
-     */
-    public static class Fallback extends Cache {
-        /**
-         * Creates a fallback cache.
-         */
-        public Fallback() {
-            super(new Configuration());
-        }
     }
 }
