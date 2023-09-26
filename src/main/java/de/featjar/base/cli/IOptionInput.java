@@ -63,7 +63,7 @@ public interface IOptionInput {
     /**
      * Option for setting the logger verbosity.
      */
-    Option<Log.Verbosity> VERBOSITY_OPTION = new Option<>("verbosity", Log.Verbosity::valueOf)
+    Option<Log.Verbosity> VERBOSITY_OPTION = new Option<>("verbosity", Option.valueOf(Log.Verbosity.class))
             .setDescription(String.format("The logger verbosity (%s)", Option.possibleValues(Log.Verbosity.class)))
             .setDefaultValue(Commands.DEFAULT_VERBOSITY);
 

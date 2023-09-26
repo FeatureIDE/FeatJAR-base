@@ -248,11 +248,9 @@ public final class FeatJAR extends IO implements AutoCloseable {
      * @return the supplied object
      */
     public static <T> T apply(Configuration configuration, Function<FeatJAR, T> fn) {
-        T t;
         try (FeatJAR featJAR = FeatJAR.initialize(configuration)) {
-            t = fn.apply(featJAR);
+            return fn.apply(featJAR);
         }
-        return t;
     }
 
     /**
@@ -262,11 +260,9 @@ public final class FeatJAR extends IO implements AutoCloseable {
      * @return the supplied object
      */
     public static <T> T apply(Function<FeatJAR, T> fn) {
-        T t;
         try (FeatJAR featJAR = FeatJAR.initialize()) {
-            t = fn.apply(featJAR);
+            return fn.apply(featJAR);
         }
-        return t;
     }
 
     /**
@@ -324,9 +320,9 @@ public final class FeatJAR extends IO implements AutoCloseable {
         try {
             IOptionInput optionInput = new OptionList(arguments);
             Configuration configuration = optionInput.getConfiguration().orElseGet(FeatJAR::createDefaultConfiguration);
-            FeatJAR.initialize(configuration);
-            Commands.run(optionInput);
-            FeatJAR.deinitialize();
+            try (FeatJAR featJAR = FeatJAR.initialize(configuration)) {
+                Commands.run(optionInput);
+            }
         } catch (Exception e) {
             e.printStackTrace();
             System.exit(1);

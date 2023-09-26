@@ -66,6 +66,10 @@ public class Option<T> {
                         .collect(Collectors.joining(", "));
     }
 
+    public static <E extends Enum<E>> Function<String, E> valueOf(Class<E> enumClass) {
+        return s -> Enum.valueOf(enumClass, s.toUpperCase());
+    }
+
     /**
      * Creates an option.
      *

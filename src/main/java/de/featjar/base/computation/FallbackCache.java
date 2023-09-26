@@ -32,7 +32,10 @@ import java.util.List;
  */
 public class FallbackCache extends Cache {
 
-    public FallbackCache() {}
+    public FallbackCache() {
+        super();
+        configuration = new Configuration();
+    }
 
     public <T> Result<FutureResult<T>> tryHit(IComputation<T> computation) {
         return Result.empty();

@@ -46,15 +46,24 @@ class IComputationTest {
         assertTrue(FeatJAR.cache().getCachedComputations().isEmpty());
 
         FeatJAR.run(fj -> {
-            IComputation<Integer> computation = Computations.of(42);
+            IComputation<Integer> computation = Computations.of(42).flatMapResult(getClass(), "42", i -> Result.of(i));
             assertEquals(42, computation.get().get());
             assertTrue(FeatJAR.cache().has(computation));
             assertFalse(FeatJAR.cache().getCachedComputations().isEmpty());
         });
-
         assertTrue(FeatJAR.cache().getCachedComputations().isEmpty());
-        {
+
+        FeatJAR.run(fj -> {
             IComputation<Integer> computation = Computations.of(42);
+            assertEquals(42, computation.get().get());
+            assertFalse(FeatJAR.cache().has(computation));
+            assertTrue(FeatJAR.cache().getCachedComputations().isEmpty());
+        });
+        assertTrue(FeatJAR.cache().getCachedComputations().isEmpty());
+
+        {
+            IComputation<Integer> computation = Computations.of(42).flatMapResult(getClass(), "42", i -> Result.of(i));
+            ;
             assertEquals(42, computation.get().get());
             assertFalse(FeatJAR.cache().has(computation));
         }
