@@ -95,7 +95,9 @@ public abstract class AComputation<T> extends ATree<IComputation<?>> implements 
     public Result<T> computeResult(boolean tryHitCache, boolean tryWriteCache, Supplier<Progress> progressSupplier) {
         if (tryHitCache) {
             Result<FutureResult<T>> cacheHit = getCache().tryHit(this);
-            if (cacheHit.isPresent()) return cacheHit.get().get();
+            if (cacheHit.isPresent()) {
+                return cacheHit.get().get();
+            }
         }
         List<Result<?>> results = getChildren().stream()
                 .map(computation -> computation.computeResult(tryHitCache, tryWriteCache, progressSupplier))
@@ -103,7 +105,9 @@ public abstract class AComputation<T> extends ATree<IComputation<?>> implements 
         Progress progress = progressSupplier.get();
         checkCancel();
         Result<T> result = mergeResults(results).flatMap(r -> compute(r, progress));
-        if (tryWriteCache) getCache().tryWrite(this, new FutureResult<>(result, progress));
+        if (tryWriteCache) {
+            getCache().tryWrite(this, new FutureResult<>(result, progress));
+        }
         return result;
     }
 

@@ -45,7 +45,7 @@ class ArgumentParserTest {
 
     @Test
     void parseOption() {
-        Option<Integer> option = new Option<>("x", Result.mapReturnValue(Integer::valueOf));
+        Option<Integer> option = new Option<>("x", Integer::valueOf);
         assertEquals(Result.empty(), option.parseFrom(parser("arg")));
         assertEquals(Result.of(42), option.parseFrom(parser("arg", "--x", "42")));
     }

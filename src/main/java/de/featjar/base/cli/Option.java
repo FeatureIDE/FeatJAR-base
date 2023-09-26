@@ -24,13 +24,15 @@ import de.featjar.base.FeatJAR;
 import de.featjar.base.data.Result;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.Arrays;
+import java.util.Objects;
 import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
+import java.util.stream.Collectors;
 
 /**
- * An option for an {@link ICommand}.
- * Parses a string value into an object.
+ * An option for an {@link ICommand}. Parses a string value into an object.
  * Allows to set a default value.
  *
  * @param <T> the type of the option's value
@@ -38,49 +40,39 @@ import java.util.function.Supplier;
  */
 public class Option<T> {
 
-    public static final Function<String, Result<Boolean>> BooleanParser = s -> Result.of(Boolean.parseBoolean(s));
-    public static final Function<String, Result<Integer>> IntegerParser = s -> {
-        try {
-            return Result.of(Integer.parseInt(s));
-        } catch (Exception e) {
-            return Result.empty(e);
-        }
-    };
-    public static final Function<String, Result<Double>> DoubleParser = s -> {
-        try {
-            return Result.of(Double.parseDouble(s));
-        } catch (Exception e) {
-            return Result.empty(e);
-        }
-    };
-    public static final Function<String, Result<Long>> LongParser = s -> {
-        try {
-            return Result.of(Long.parseLong(s));
-        } catch (Exception e) {
-            return Result.empty(e);
-        }
-    };
-    public static final Function<String, Result<String>> StringParser = Result::of;
+    public static final Function<String, Boolean> BooleanParser = Boolean::parseBoolean;
+    public static final Function<String, Integer> IntegerParser = Integer::parseInt;
+    public static final Function<String, Double> DoubleParser = Double::parseDouble;
+    public static final Function<String, Long> LongParser = Long::parseLong;
+    public static final Function<String, String> StringParser = s -> s;
+    public static final Function<String, Path> PathParser = Path::of;
 
-    public static final Function<String, Result<Path>> ExistingPathParser = s -> {
-        Path path = Path.of(s);
-        return Files.exists(path) ? Result.of(path) : Result.empty();
-    };
+    public static final Predicate<Path> PathValidator = Files::exists;
 
     protected final String name;
-    protected final Function<String, Result<T>> parser;
+    protected final Function<String, T> parser;
     protected Supplier<String> descriptionSupplier = () -> null;
     protected boolean isRequired = false;
     protected T defaultValue;
     protected Predicate<T> validator = t -> true;
 
+    public static String possibleValues(Class<?> enumClass) {
+        final Object[] enumConstants = enumClass.getEnumConstants();
+        return enumConstants == null //
+                ? "" //
+                : Arrays.stream(enumConstants)
+                        .map(Objects::toString)
+                        .map(String::toLowerCase)
+                        .collect(Collectors.joining(", "));
+    }
+
     /**
      * Creates an option.
      *
-     * @param name the name of the option
+     * @param name   the name of the option
      * @param parser the parser for the option's value
      */
-    public Option(String name, Function<String, Result<T>> parser) {
+    public Option(String name, Function<String, T> parser) {
         this.name = name;
         this.parser = parser;
     }
@@ -88,10 +80,10 @@ public class Option<T> {
     /**
      * Creates an option.
      *
-     * @param name the name of the option
+     * @param name   the name of the option
      * @param parser the parser for the option's value
      */
-    public Option(String name, Function<String, Result<T>> parser, T defaultValue) {
+    public Option(String name, Function<String, T> parser, T defaultValue) {
         this.name = name;
         this.parser = parser;
         this.defaultValue = defaultValue;
@@ -114,7 +106,7 @@ public class Option<T> {
     /**
      * {@return this option's parser}
      */
-    public Function<String, Result<T>> getParser() {
+    public Function<String, T> getParser() {
         return parser;
     }
 
@@ -147,8 +139,8 @@ public class Option<T> {
     }
 
     /**
-     * Sets this option's description supplier.
-     * Should be used when the description is complicated or only known after initialization.
+     * Sets this option's description supplier. Should be used when the description
+     * is complicated or only known after initialization.
      *
      * @param descriptionSupplier the description supplier
      * @return this option
@@ -205,7 +197,7 @@ public class Option<T> {
                 ? optionList.parseRequiredOption(getArgumentName())
                 : optionList.parseOption(getArgumentName());
         if (valueString.isEmpty()) return valueString.merge(Result.ofNullable(defaultValue));
-        Result<T> parseResult = parser.apply(valueString.get());
+        Result<T> parseResult = parse(valueString.get());
         if (parseResult.isEmpty()) {
             FeatJAR.log().warning("could not parse option " + getArgumentName() + ", using default value");
             return Result.ofNullable(defaultValue);
@@ -234,5 +226,13 @@ public class Option<T> {
                 getArgumentName(),
                 getDescription().map(d -> ": " + d).orElse(""),
                 defaultValue != null ? String.format(" (default: %s)", defaultValue) : "");
+    }
+
+    private Result<T> parse(String s) {
+        try {
+            return Result.of(parser.apply(s));
+        } catch (Exception e) {
+            return Result.empty(e);
+        }
     }
 }

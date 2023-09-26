@@ -20,7 +20,6 @@
  */
 package de.featjar.base.cli;
 
-import de.featjar.base.data.Result;
 import java.util.Arrays;
 import java.util.List;
 import java.util.function.Function;
@@ -40,10 +39,8 @@ public class ListOption<T> extends Option<List<T>> {
      * @param name the name
      * @param parser the parser
      */
-    @SuppressWarnings({"unchecked", "rawtypes"})
-    public ListOption(String name, Function<String, Result<T>> parser) {
-        super(name, s -> (Result) Result.mergeAll( //
-                Arrays.stream(s.split("[,\n]")).map(parser).collect(Collectors.toList())));
+    public ListOption(String name, Function<String, T> parser) {
+        super(name, s -> Arrays.stream(s.split("[,\n]")).map(parser).collect(Collectors.toList()));
     }
 
     @Override

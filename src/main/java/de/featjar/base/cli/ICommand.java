@@ -20,11 +20,8 @@
  */
 package de.featjar.base.cli;
 
-import de.featjar.base.computation.IRandomDependency;
-import de.featjar.base.computation.ITimeoutDependency;
-import de.featjar.base.data.Result;
 import de.featjar.base.extension.IExtension;
-import java.time.Duration;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -38,31 +35,14 @@ public interface ICommand extends IExtension {
     /**
      * Input option for loading files.
      */
-    Option<String> INPUT_OPTION =
-            new StringOption("input").setDescription("Path to input file(s)").setDefaultValue(Commands.STANDARD_INPUT);
+    Option<Path> INPUT_OPTION = new Option<>("input", Option.PathParser)
+            .setDescription("Path to input file(s)")
+            .setValidator(Option.PathValidator);
 
     /**
      * Output option for saving files.
      */
-    Option<String> OUTPUT_OPTION = new StringOption("output")
-            .setDescription("Path to output file(s)")
-            .setDefaultValue(Commands.STANDARD_OUTPUT);
-
-    /**
-     * Timeout option for cancelling running computations.
-     */
-    Option<Duration> TIMEOUT_OPTION = new Option<>(
-                    "timeout", Result.mapReturnValue(s -> Duration.ofMillis(Long.parseLong(s))))
-            .setDescription("Timeout in milliseconds")
-            .setValidator(timeout -> !timeout.isNegative())
-            .setDefaultValue(ITimeoutDependency.DEFAULT_TIMEOUT);
-
-    /**
-     * Seed option for computations that require randomness.
-     */
-    Option<Long> SEED_OPTION = new Option<>("seed", Result.mapReturnValue(Long::valueOf))
-            .setDescription("Seed for pseudorandom number generator")
-            .setDefaultValue(IRandomDependency.DEFAULT_RANDOM_SEED);
+    Option<Path> OUTPUT_OPTION = new Option<>("output", Option.PathParser).setDescription("Path to output file(s)");
 
     /**
      * {@return this command's description, if any}

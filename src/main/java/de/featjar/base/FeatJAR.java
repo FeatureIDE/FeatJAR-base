@@ -321,10 +321,16 @@ public final class FeatJAR extends IO implements AutoCloseable {
      * @param arguments command-line arguments
      */
     public static void main(String[] arguments) {
-        IOptionInput optionInput = new OptionList(arguments);
-        Configuration configuration = optionInput.getConfiguration().orElseGet(FeatJAR::createDefaultConfiguration);
-        FeatJAR.initialize(configuration);
-        Commands.run(optionInput);
-        FeatJAR.deinitialize();
+        try {
+            IOptionInput optionInput = new OptionList(arguments);
+            Configuration configuration = optionInput.getConfiguration().orElseGet(FeatJAR::createDefaultConfiguration);
+            FeatJAR.initialize(configuration);
+            Commands.run(optionInput);
+            FeatJAR.deinitialize();
+        } catch (Exception e) {
+            e.printStackTrace();
+            System.exit(1);
+        }
+        System.exit(0);
     }
 }

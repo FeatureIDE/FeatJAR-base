@@ -29,11 +29,11 @@ import de.featjar.base.log.Log;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.Arrays;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
-import java.util.Objects;
 import java.util.Properties;
-import java.util.stream.Collectors;
 
 /**
  * Parses and validates options.
@@ -44,8 +44,9 @@ public interface IOptionInput {
     /**
      * Option for printing usage information.
      */
-    Option<ICommand> COMMAND_OPTION = new Option<>(
-                    "command", s -> FeatJAR.extensionPoint(Commands.class).getMatchingExtension(s))
+    Option<ICommand> COMMAND_OPTION = new Option<>("command", s -> FeatJAR.extensionPoint(Commands.class)
+                    .getMatchingExtension(s)
+                    .get())
             .setRequired(true)
             .setDescription("Command to execute");
 
@@ -62,23 +63,20 @@ public interface IOptionInput {
     /**
      * Option for setting the logger verbosity.
      */
-    Option<Log.Verbosity> VERBOSITY_OPTION = new Option<>("verbosity", Log.Verbosity::of)
-            .setDescription("The logger verbosity, one of "
-                    + Arrays.stream(Log.Verbosity.values())
-                            .map(Objects::toString)
-                            .map(String::toLowerCase)
-                            .collect(Collectors.joining(", ")))
+    Option<Log.Verbosity> VERBOSITY_OPTION = new Option<>("verbosity", Log.Verbosity::valueOf)
+            .setDescription(String.format("The logger verbosity (%s)", Option.possibleValues(Log.Verbosity.class)))
             .setDefaultValue(Commands.DEFAULT_VERBOSITY);
 
     /**
      * Option for setting the logger output.
      */
-    Option<String> CONFIGURATION_OPTION =
-            new Option<>("config", Result::ofNullable).setDescription("The path to a configuration file");
+    Option<Path> CONFIGURATION_OPTION =
+            new Option<>("config", Option.PathParser).setDescription("The path to a configuration file");
 
     /**
      * {@return a void result when the given options are valid in this option input}
-     * In particular, returns an empty result when there are unused options in this option input.
+     * In particular, returns an empty result when there are unused options in this
+     * option input.
      *
      * @param options the options
      */
@@ -88,7 +86,7 @@ public interface IOptionInput {
      * {@return the value of the given option in this option input}
      *
      * @param option the option
-     * @param <T> the type of the option value
+     * @param <T>    the type of the option value
      */
     <T> Result<T> get(Option<T> option);
 
@@ -112,33 +110,44 @@ public interface IOptionInput {
     default String getHelp() {
         IndentStringBuilder sb = new IndentStringBuilder();
         List<ICommand> commands = FeatJAR.extensionPoint(Commands.class).getExtensions();
-        sb.appendLine("Usage: java -jar " + FeatJAR.LIBRARY_NAME
-                        + " --command <command> [--<flag> | --<option> <value>]...")
-                .appendLine();
-        if (commands.size() == 0) {
-            sb.append("No commands are available. You can register commands in an extensions.xml file when building "
-                    + FeatJAR.LIBRARY_NAME + ".\n");
-        }
-        sb.append("The following commands are available:\n").addIndent();
-        for (final ICommand command : commands) {
-            sb.appendLine(String.format(
-                    "%s: %s",
-                    command.getIdentifier(),
-                    Result.ofNullable(command.getDescription()).orElse("")));
-        }
-        sb.removeIndent();
+        sb.appendLine(String.format(
+                "Usage: java -jar %s --command <command> [--<flag> | --<option> <value>]...", FeatJAR.LIBRARY_NAME));
         sb.appendLine();
-        sb.appendLine("General options:").addIndent();
-        sb.appendLine(getOptions());
-        sb.removeIndent();
-        if (getCommand().isPresent()) {
-            ICommand command = getCommand().get();
-            if (!command.getOptions().isEmpty()) {
+        if (commands.size() == 0) {
+            sb.append(String.format(
+                    "No commands are available. You can register commands in an extensions.xml file when building %s.",
+                    FeatJAR.LIBRARY_NAME));
+            sb.appendLine();
+        } else {
+            if (getCommand().isEmpty()) {
+                sb.append("The following commands are available:").appendLine().addIndent();
+                for (final ICommand command : commands) {
+                    sb.appendLine(String.format(
+                            "%s: %s", //
+                            command.getIdentifier(), //
+                            Result.ofNullable(command.getDescription()).orElse("")));
+                }
+            } else {
+                final ICommand command = getCommand().get();
+                sb.appendLine(String.format("Help for %s", command.getIdentifier()))
+                        .addIndent();
+                sb.appendLine(String.format(command.getDescription()));
+
                 sb.appendLine();
-                sb.appendLine(String.format("Options of command %s:", command.getIdentifier()));
-                sb.addIndent();
-                sb.appendLine(command.getOptions());
-                sb.removeIndent();
+                sb.appendLine("General options:").addIndent();
+                List<Option<?>> generalOptions = new ArrayList<>(getOptions());
+                Collections.sort(generalOptions, Comparator.comparing(Option::getArgumentName));
+                sb.appendLine(generalOptions).removeIndent();
+
+                List<Option<?>> options = new ArrayList<>(command.getOptions());
+                if (!options.isEmpty()) {
+                    Collections.sort(options, Comparator.comparing(Option::getArgumentName));
+                    sb.appendLine();
+                    sb.appendLine(String.format("Options of command %s:", command.getIdentifier()));
+                    sb.addIndent();
+                    sb.appendLine(options);
+                    sb.removeIndent();
+                }
             }
         }
         return sb.toString();
@@ -169,7 +178,7 @@ public interface IOptionInput {
      * {@return a @link Configuration} instance build from the provided options}
      */
     default Result<Configuration> getConfiguration() {
-        Result<Path> configPath = get(CONFIGURATION_OPTION).map(Path::of);
+        Result<Path> configPath = get(CONFIGURATION_OPTION);
         if (configPath.isEmpty()) {
             return Result.empty();
         }
@@ -179,12 +188,12 @@ public interface IOptionInput {
         try {
             properties.load(Files.newInputStream(configPath.get()));
             // TODO implement property options for logs and cache
-            //			for (final Property<?> prop : propertyList) {
-            //				final String value = properties.getProperty(prop.getKey());
-            //				if (value != null) {
-            //					prop.setValue(value);
-            //				}
-            //			}
+            // for (final Property<?> prop : propertyList) {
+            // final String value = properties.getProperty(prop.getKey());
+            // if (value != null) {
+            // prop.setValue(value);
+            // }
+            // }
             return Result.of(configuration);
         } catch (final IOException e) {
             return Result.empty(e);

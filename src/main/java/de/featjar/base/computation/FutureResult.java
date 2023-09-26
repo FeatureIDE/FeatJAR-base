@@ -76,17 +76,7 @@ public class FutureResult<T> implements Supplier<Result<T>> {
         return FeatJAR.cache().getConfiguration().executor;
     }
 
-    private static <T> Result<T> compute(
-            IComputation<T> computation, List<Object> args, boolean tryHitCache, Progress progress) {
-        if (tryHitCache) {
-            Result<FutureResult<T>> cacheHit = FeatJAR.cache().tryHit(computation);
-            if (cacheHit.isPresent()) {
-                Result<T> result = cacheHit.get().get();
-                if (result.isPresent()) {
-                    return result;
-                }
-            }
-        }
+    private static <T> Result<T> compute(IComputation<T> computation, List<Object> args, Progress progress) {
         if (Thread.interrupted()) {
             throw new CancellationException();
         }
@@ -109,14 +99,22 @@ public class FutureResult<T> implements Supplier<Result<T>> {
             Supplier<Progress> progressSupplier) {
         Progress progress = progressSupplier.get();
 
+        if (computation instanceof ComputeConstant) {
+            return new FutureResult<>(
+                    DependentPromise.from(
+                            CompletableTask.submit(() -> compute(computation, List.of(), progress), getExecutor()),
+                            PromiseOrigin.ALL),
+                    progress);
+        }
+
         if (tryHitCache) {
             Result<FutureResult<U>> cacheHit = FeatJAR.cache().tryHit(computation);
             if (cacheHit.isPresent()) {
-                FutureResult<U> futureResult = cacheHit.get();
-                Result<U> result = futureResult.getPromise().getNow(Result.<U>empty());
+                Result<U> result = cacheHit.get().getPromise().getNow(Result.<U>empty());
                 if (result.isPresent()) {
-                    return new FutureResult<U>(
-                            DependentPromise.from(CompletableTask.completed(result, getExecutor())), progress);
+                    return new FutureResult<>(
+                            DependentPromise.from(CompletableTask.completed(result, getExecutor()), PromiseOrigin.ALL),
+                            progress);
                 }
             }
         }
@@ -124,7 +122,7 @@ public class FutureResult<T> implements Supplier<Result<T>> {
         DependentPromise<Result<U>> promise;
         if (!computation.hasChildren()) {
             promise = DependentPromise.from(
-                    CompletableTask.submit(() -> compute(computation, List.of(), tryHitCache, progress), getExecutor()),
+                    CompletableTask.submit(() -> compute(computation, List.of(), progress), getExecutor()),
                     PromiseOrigin.ALL);
         } else {
             DependentPromise<List<Object>> allOf = null;
@@ -161,7 +159,6 @@ public class FutureResult<T> implements Supplier<Result<T>> {
                                             .map(r -> (Result<Object>) r)
                                             .collect(Collectors.toList()))
                                     .get(),
-                            tryHitCache,
                             progress),
                     getExecutor(),
                     true);
@@ -169,6 +166,7 @@ public class FutureResult<T> implements Supplier<Result<T>> {
 
         FutureResult<U> futureResult = new FutureResult<>(promise, progress);
         if (tryWriteCache) {
+            // TODO write only result to cache not futureResult
             FeatJAR.cache().tryWrite(computation, futureResult);
         }
         return futureResult;

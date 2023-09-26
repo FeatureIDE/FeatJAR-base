@@ -21,6 +21,7 @@
 package de.featjar.base.cli;
 
 import de.featjar.base.data.Problem;
+import de.featjar.base.data.Problem.Severity;
 import de.featjar.base.data.Result;
 import de.featjar.base.data.Void;
 import java.util.*;
@@ -132,8 +133,9 @@ public class OptionList implements IOptionInput {
     public Result<Void> ensureAllArgumentsUsed() {
         String unusedString = unusedArguments.stream().filter(Objects::nonNull).collect(Collectors.joining(" "));
         if (!unusedString.isBlank())
-            return Result.empty(
-                    new Problem(String.format("Arguments %s supplied, but could not be recognized.", unusedString)));
+            return Result.empty(new Problem(
+                    String.format("Arguments %s supplied, but could not be recognized.", unusedString),
+                    Severity.WARNING));
         return Result.ofVoid();
     }
 

@@ -40,9 +40,7 @@ public class Flag extends Option<Boolean> {
 
     @Override
     public Result<Boolean> parseFrom(OptionList optionList) {
-        Result<Boolean> value = optionList.parseFlag(getArgumentName());
-        if (defaultValue != null || isRequired) throw new IllegalArgumentException();
-        return value;
+        return optionList.parseFlag(getArgumentName());
     }
 
     @Override

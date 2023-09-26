@@ -70,7 +70,7 @@ public class Commands extends AExtensionPoint<ICommand> {
     /**
      * A pattern that matches the standard input identifier, accepting an optional file extension.
      */
-    public static final Pattern STANDARD_INPUT_PATTERN = Pattern.compile("<stdin>(\\.(.+))?");
+    public static final Pattern STANDARD_INPUT_PATTERN = Pattern.compile(STANDARD_INPUT + "(\\.(.+))?");
 
     /**
      * Runs the command supplied in the given option input.
