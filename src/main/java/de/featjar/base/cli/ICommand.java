@@ -75,5 +75,5 @@ public interface ICommand extends IExtension {
      *
      * @param optionParser the option parser
      */
-    void run(IOptionInput optionParser);
+    void run(OptionList optionParser);
 }

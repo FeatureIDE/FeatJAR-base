@@ -68,7 +68,7 @@ public class IntegerList implements IIntegerList {
         hashCode = integerList.hashCode;
     }
 
-    public static IntegerList merge(Collection<IIntegerList> integerLists) {
+    public static IntegerList merge(Collection<? extends IIntegerList> integerLists) {
         return IIntegerList.merge(integerLists, IntegerList::new);
     }
 

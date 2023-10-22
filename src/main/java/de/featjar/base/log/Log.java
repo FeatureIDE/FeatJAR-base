@@ -106,7 +106,7 @@ public interface Log {
      *
      * @param problems the problems
      */
-    default void problem(List<Problem> problems) {
+    default void problems(List<Problem> problems) {
         for (Problem problem : problems) {
             problem(problem);
         }

@@ -38,17 +38,23 @@ public class BufferedLog implements Log {
     private final LinkedList<Pair<Verbosity, String>> logBuffer = new LinkedList<>();
 
     public void println(String message, Verbosity verbosity) {
-        logBuffer.add(new Pair<>(verbosity, message));
+        synchronized (logBuffer) {
+            logBuffer.add(new Pair<>(verbosity, message));
+        }
     }
 
     public void println(Throwable error, boolean isWarning) {
-        logBuffer.add(new Pair<>(isWarning ? Verbosity.WARNING : Verbosity.ERROR, error.getMessage()));
+        synchronized (logBuffer) {
+            logBuffer.add(new Pair<>(isWarning ? Verbosity.WARNING : Verbosity.ERROR, error.getMessage()));
+        }
     }
 
     public void flush(Consumer<Pair<Verbosity, String>> messageConsumer) {
-        for (Pair<Verbosity, String> message : logBuffer) {
-            messageConsumer.accept(message);
+        synchronized (logBuffer) {
+            for (Pair<Verbosity, String> message : logBuffer) {
+                messageConsumer.accept(message);
+            }
+            logBuffer.clear();
         }
-        logBuffer.clear();
     }
 }

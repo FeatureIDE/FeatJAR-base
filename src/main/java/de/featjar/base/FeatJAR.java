@@ -21,7 +21,6 @@
 package de.featjar.base;
 
 import de.featjar.base.cli.Commands;
-import de.featjar.base.cli.IOptionInput;
 import de.featjar.base.cli.OptionList;
 import de.featjar.base.computation.Cache;
 import de.featjar.base.computation.FallbackCache;
@@ -67,12 +66,12 @@ public final class FeatJAR extends IO implements AutoCloseable {
         /**
          * This configuration's log sub-configuration.
          */
-        protected final ConfigurableLog.Configuration logConfig = new ConfigurableLog.Configuration();
+        public final ConfigurableLog.Configuration logConfig = new ConfigurableLog.Configuration();
 
         /**
          * This configuration's cache sub-configuration.
          */
-        protected final Cache.Configuration cacheConfig = new Cache.Configuration();
+        public final Cache.Configuration cacheConfig = new Cache.Configuration();
 
         /**
          * Configures this configuration's log sub-configuration.
@@ -113,6 +112,13 @@ public final class FeatJAR extends IO implements AutoCloseable {
     }
 
     /**
+     * {@return {@code true} if FeatJAR is initialized, {@code false} otherwise}
+     */
+    public static boolean isInitialized() {
+        return instance != null;
+    }
+
+    /**
      * Initializes FeatJAR with a default configuration.
      */
     public static FeatJAR initialize() {
@@ -138,7 +144,22 @@ public final class FeatJAR extends IO implements AutoCloseable {
      */
     public static FeatJAR initialize(Configuration configuration) {
         if (instance != null) throw new RuntimeException("FeatJAR already initialized");
-        return instance = new FeatJAR(configuration);
+        instance = new FeatJAR();
+        instance.setConfiguration(configuration);
+        return instance;
+    }
+
+    /**
+     * Initializes FeatJAR.
+     *
+     * @param configuration the FeatJAR configuration
+     */
+    public static FeatJAR initialize(OptionList optionInput) {
+        if (instance != null) throw new RuntimeException("FeatJAR already initialized");
+        instance = new FeatJAR();
+        optionInput.parseArguments(false);
+        instance.setConfiguration(optionInput.getConfiguration());
+        return instance;
     }
 
     /**
@@ -169,9 +190,12 @@ public final class FeatJAR extends IO implements AutoCloseable {
      *
      * @param configuration the FeatJAR configuration
      */
-    private FeatJAR(Configuration configuration) {
+    private FeatJAR() {
         log().debug("initializing FeatJAR");
         extensionManager = new ExtensionManager();
+    }
+
+    private void setConfiguration(Configuration configuration) {
         log = getExtension(ConfigurableLog.class).orElseGet(ConfigurableLog::new);
         log.setConfiguration(configuration.logConfig);
         fallbackLog.flush(m -> log.log(m.getValue(), m.getKey()));
@@ -300,7 +324,7 @@ public final class FeatJAR extends IO implements AutoCloseable {
      * uninitialized}
      */
     public static Log log() {
-        return instance == null ? fallbackLog : instance.log;
+        return instance == null || instance.log == null ? fallbackLog : instance.log;
     }
 
     /**
@@ -308,7 +332,7 @@ public final class FeatJAR extends IO implements AutoCloseable {
      * uninitialized}
      */
     public static Cache cache() {
-        return instance == null ? fallbackCache : instance.cache;
+        return instance == null || instance.cache == null ? fallbackCache : instance.cache;
     }
 
     /**
@@ -318,9 +342,10 @@ public final class FeatJAR extends IO implements AutoCloseable {
      */
     public static void main(String[] arguments) {
         try {
-            IOptionInput optionInput = new OptionList(arguments);
-            Configuration configuration = optionInput.getConfiguration().orElseGet(FeatJAR::createDefaultConfiguration);
-            try (FeatJAR featJAR = FeatJAR.initialize(configuration)) {
+            OptionList optionInput = new OptionList(arguments);
+            try (FeatJAR featJAR = FeatJAR.initialize(optionInput)) {
+                //            	Configuration configuration =
+                // optionInput.getConfiguration().orElseGet(FeatJAR::createDefaultConfiguration);
                 Commands.run(optionInput);
             }
         } catch (Exception e) {

@@ -20,9 +20,8 @@
  */
 package de.featjar.base.cli;
 
-import java.util.Arrays;
+import java.util.List;
 import java.util.function.Function;
-import java.util.stream.Collectors;
 
 /**
  * A list option, which is parsed as a list of values.
@@ -31,15 +30,42 @@ import java.util.stream.Collectors;
  * @author Sebastian Krieter
  * @param <T> the type of the option value
  */
-public class ListOption<T> extends AListOption<T> {
+public class AListOption<T> extends Option<List<T>> {
 
     /**
-     * Creates a list option.
+     * Creates a list option with an empty default list.
      *
      * @param name the name
      * @param parser the parser
      */
-    public ListOption(String name, Function<String, T> parser) {
-        super(name, s -> Arrays.stream(s.split("[,\n]")).map(parser).collect(Collectors.toList()));
+    public AListOption(String name, Function<String, List<T>> parser) {
+        this(name, parser, List.of());
+    }
+    /**
+     * Creates a list option with a single-element default list.
+     *
+     * @param name the name
+     * @param parser the parser
+     * @param defaultValue the value for the default list
+     */
+    public AListOption(String name, Function<String, List<T>> parser, T defaultValue) {
+        this(name, parser, List.of(defaultValue));
+    }
+
+    /**
+     * Creates a list option with a given default list.
+     *
+     * @param name the name
+     * @param parser the parser
+     * @param defaultValue a default list
+     */
+    public AListOption(String name, Function<String, List<T>> parser, List<T> defaultValue) {
+        super(name, parser, defaultValue);
+    }
+
+    @Override
+    public String toString() {
+        return String.format(
+                "%s <value,...>%s", name, getDescription().map(d -> ": " + d).orElse(""));
     }
 }

@@ -29,8 +29,14 @@ import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Enumeration;
+import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
+import java.util.List;
 import java.util.Map.Entry;
+import java.util.Objects;
 import java.util.stream.Stream;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
@@ -42,9 +48,10 @@ import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
 /**
- * Searches, installs, and uninstalls extension points and extensions defined on the classpath.
- * An {@link AExtensionPoint} or {@link IExtension} can be defined on the classpath by
- * registering it in {@code resources/extensions.xml}.
+ * Searches, installs, and uninstalls extension points and extensions defined on
+ * the classpath. An {@link AExtensionPoint} or {@link IExtension} can be
+ * defined on the classpath by registering it in
+ * {@code resources/extensions.xml}.
  *
  * @author Sebastian Krieter
  * @author Elias Kuiter
@@ -55,8 +62,9 @@ public class ExtensionManager implements AutoCloseable {
     private final LinkedHashMap<String, IExtension> extensions = Maps.empty();
 
     /**
-     * Installs all extensions and extension points that can be found on the classpath.
-     * To this end, filters all files on the classpath for extension definition files, and loads each of them.
+     * Installs all extensions and extension points that can be found on the
+     * classpath. To this end, filters all files on the classpath for extension
+     * definition files, and loads each of them.
      */
     @SuppressWarnings({"unchecked", "rawtypes"})
     public ExtensionManager() {
@@ -98,7 +106,8 @@ public class ExtensionManager implements AutoCloseable {
     }
 
     /**
-     * {@return whether the file with the given name is an extension definition file}
+     * {@return whether the file with the given name is an extension definition
+     * file}
      *
      * @param pathName the file name
      */

@@ -20,38 +20,22 @@
  */
 package de.featjar.base.cli;
 
-import de.featjar.base.data.Result;
-import de.featjar.base.io.format.IFormat;
-import de.featjar.base.io.input.AInputMapper;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 /**
- * A format that parses options from a properties file.
+ * A range option, representing a list of integer values from 1 to n.
  *
- * @author Elias Kuiter
+ * @author Sebastian Krieter
  */
-public class OptionFileFormat implements IFormat<OptionFile> {
-    @Override
-    public Result<OptionFile> parse(AInputMapper inputMapper) {
-        return Result.of(new OptionFile(inputMapper.get().getInputStream()));
-    }
+public class RangeOption extends AListOption<Integer> {
 
-    @Override
-    public boolean supportsParse() {
-        return true;
-    }
-
-    @Override
-    public boolean supportsSerialize() {
-        return false;
-    }
-
-    @Override
-    public String getFileExtension() {
-        return "properties";
-    }
-
-    @Override
-    public String getName() {
-        return "Configuration File";
+    /**
+     * Creates a range option.
+     *
+     * @param name the name
+     */
+    public RangeOption(String name) {
+        super(name, s -> IntStream.rangeClosed(1, Integer.parseInt(s)).boxed().collect(Collectors.toList()), 1);
     }
 }

@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <extensions>
     <point id="de.featjar.base.extension.Initializers">
-        <extension id="de.featjar.base.log.Log" />
+        <extension id="de.featjar.base.log.ConfigurableLog" />
         <extension id="de.featjar.base.computation.Cache" />
     </point>
     <point id="de.featjar.base.cli.Commands" />

@@ -57,7 +57,6 @@ public class CSVFile {
      */
     public CSVFile(AOutput output) {
         this.output = output;
-        newLine();
     }
 
     public CSVFile(Path path) throws IOException {

@@ -31,6 +31,7 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.function.Consumer;
 import java.util.function.Function;
+import java.util.function.Predicate;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -296,6 +297,26 @@ public class Result<T> implements Supplier<T> {
         } else {
             return Result.empty(problems);
         }
+    }
+
+    /**
+     * Filters the object in this result using a given {@link Predicate}
+     * If the predicate evaluates to {@code false} the value of this result is set to {@code null}.
+     *
+     * @param mapper the predicate
+     * @return A new result with the original object or an empty result.
+     */
+    public Result<T> filter(Predicate<T> predicate) {
+        if (object != null) {
+            try {
+                if (!predicate.test(object)) {
+                    return Result.empty(problems);
+                }
+            } catch (final Exception e) {
+                return merge(Result.empty(e));
+            }
+        }
+        return this;
     }
 
     /**

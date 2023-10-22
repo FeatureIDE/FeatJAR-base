@@ -34,11 +34,16 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.time.Duration;
-import java.util.concurrent.*;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 /**
  * Helpers for running commands.
@@ -77,24 +82,22 @@ public class Commands extends AExtensionPoint<ICommand> {
      *
      * @param optionInput the option input
      */
-    public static void run(IOptionInput optionInput) {
+    public static void run(OptionList optionInput) {
         if (optionInput.isHelp()) {
             System.out.println(optionInput.getHelp());
         } else if (optionInput.isVersion()) {
             System.out.println(FeatJAR.LIBRARY_NAME + ", development version");
         } else {
-            Result<ICommand> command = optionInput.getCommand();
-            if (command.isEmpty() || command.hasProblems()) {
-                FeatJAR.log().problem(command.getProblems());
+            Result<ICommand> optionalCommand = optionInput.getCommand();
+            if (optionalCommand.hasProblems()) {
+                FeatJAR.log().problems(optionalCommand.getProblems());
+            } else if (optionalCommand.isEmpty()) {
+                FeatJAR.log().error("No command provided");
+                System.out.println(optionInput.getHelp());
             } else {
-                FeatJAR.log().debug("running command " + command.get().getIdentifier());
-                FeatJAR.log()
-                        .problem(optionInput
-                                .validate(Stream.concat(
-                                                optionInput.getOptions().stream(), command.get().getOptions().stream())
-                                        .collect(Collectors.toList()))
-                                .getProblems());
-                command.get().run(optionInput);
+                ICommand command = optionalCommand.get();
+                FeatJAR.log().debug("running command " + command.getIdentifier());
+                command.run(optionInput.addOptions(command.getOptions()).parseArguments());
             }
         }
     }

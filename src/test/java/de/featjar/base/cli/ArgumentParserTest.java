@@ -24,12 +24,15 @@ import static org.junit.jupiter.api.Assertions.*;
 
 import de.featjar.base.data.Result;
 import de.featjar.base.log.Log;
+import java.util.List;
 import org.junit.jupiter.api.Test;
 
 class ArgumentParserTest {
 
     OptionList parser(String... args) {
-        return new OptionList(args);
+        OptionList optionList = new OptionList(args);
+        optionList.parseArguments();
+        return optionList;
     }
 
     @Test
@@ -40,13 +43,23 @@ class ArgumentParserTest {
     @Test
     void getVerbosity() {
         // assertEquals(Log.Verbosity.DEBUG, parser("arg", "--verbosity").getVerbosity()); todo: mock System.exit
-        assertEquals(Log.Verbosity.DEBUG, parser("arg", "--verbosity", "debug").getVerbosity());
+        assertEquals(
+                Log.Verbosity.DEBUG,
+                parser("arg", "--verbosity", "debug").parseArguments().getVerbosity());
     }
 
     @Test
-    void parseOption() {
+    void parseOption1() {
         Option<Integer> option = new Option<>("x", Integer::valueOf);
-        assertEquals(Result.empty(), option.parseFrom(parser("arg")));
-        assertEquals(Result.of(42), option.parseFrom(parser("arg", "--x", "42")));
+        OptionList parser = parser("arg").addOptions(List.of(option)).parseArguments();
+        assertEquals(Result.empty(), parser.get(option));
+    }
+
+    @Test
+    void parseOption2() {
+        Option<Integer> option = new Option<>("x", Integer::valueOf);
+        OptionList parser =
+                parser("arg", "--x", "42").addOptions(List.of(option)).parseArguments();
+        assertEquals(Result.of(42), parser.get(option));
     }
 }

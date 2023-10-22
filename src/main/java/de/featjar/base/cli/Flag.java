@@ -20,9 +20,6 @@
  */
 package de.featjar.base.cli;
 
-import de.featjar.base.data.Result;
-import java.util.Objects;
-
 /**
  * A Boolean flag option, which can either be present or not.
  *
@@ -36,16 +33,6 @@ public class Flag extends Option<Boolean> {
      */
     public Flag(String name) {
         super(name, null);
-    }
-
-    @Override
-    public Result<Boolean> parseFrom(OptionList optionList) {
-        return optionList.parseFlag(getArgumentName());
-    }
-
-    @Override
-    public Result<Boolean> parseFrom(OptionFile optionFile) {
-        return Result.of(Objects.nonNull(optionFile.getProperties().getProperty(name)));
     }
 
     @Override

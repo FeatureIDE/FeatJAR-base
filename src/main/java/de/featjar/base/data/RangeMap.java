@@ -339,6 +339,23 @@ public class RangeMap<T> {
         }
     }
 
+    /**
+     * Normalizes the indices of this range map by removing any gaps.
+     */
+    public void normalize() {
+        if (!isEmpty()) {
+            int normalizedIndex = 0;
+            for (int i = 0; i < indexToObject.size(); i++) {
+                T o = indexToObject.get(i);
+                if (o != null) {
+                    indexToObject.set(normalizedIndex, o);
+                    normalizedIndex++;
+                }
+            }
+            updateObjectToIndex();
+        }
+    }
+
     public boolean isEmpty() {
         return getValidIndexRange().isEmpty();
     }

@@ -20,7 +20,6 @@
  */
 package de.featjar.base.cli;
 
-import de.featjar.base.FeatJAR;
 import de.featjar.base.data.Result;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -190,39 +189,6 @@ public class Option<T> {
         return this;
     }
 
-    /**
-     * Parses the value of this option from a given option list.
-     *
-     * @param optionList the option list
-     * @return the parsed value
-     */
-    public Result<T> parseFrom(OptionList optionList) {
-        Result<String> valueString = isRequired
-                ? optionList.parseRequiredOption(getArgumentName())
-                : optionList.parseOption(getArgumentName());
-        if (valueString.isEmpty()) return valueString.merge(Result.ofNullable(defaultValue));
-        Result<T> parseResult = parse(valueString.get());
-        if (parseResult.isEmpty()) {
-            FeatJAR.log().warning("could not parse option " + getArgumentName() + ", using default value");
-            return Result.ofNullable(defaultValue);
-        }
-        if (validator.test(parseResult.get())) return parseResult;
-        throw new IllegalArgumentException(
-                "value " + parseResult.get() + " for option " + getArgumentName() + " is invalid");
-    }
-
-    /**
-     * Parses the value of this option from a given option file.
-     *
-     * @param optionFile the option file
-     * @return the parsed value
-     */
-    public Result<T> parseFrom(OptionFile optionFile) {
-        String value = optionFile.getProperties().getProperty(name);
-        if (value == null) return new OptionList().get(this);
-        return new OptionList(getArgumentName(), value).get(this);
-    }
-
     @Override
     public String toString() {
         return String.format(
@@ -232,7 +198,7 @@ public class Option<T> {
                 defaultValue != null ? String.format(" (default: %s)", defaultValue) : "");
     }
 
-    private Result<T> parse(String s) {
+    Result<T> parse(String s) {
         try {
             return Result.of(parser.apply(s));
         } catch (Exception e) {

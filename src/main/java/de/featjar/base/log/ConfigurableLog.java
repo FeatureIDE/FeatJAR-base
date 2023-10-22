@@ -35,6 +35,7 @@ import java.util.Arrays;
 import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.ListIterator;
+import java.util.Objects;
 
 /**
  * Logs messages to standard output and files. Formats log messages with
@@ -78,6 +79,7 @@ public class ConfigurableLog implements Log, IInitializer {
          * @return this configuration
          */
         public Configuration logToStream(PrintStream stream, Verbosity... verbosities) {
+            Objects.requireNonNull(stream);
             Arrays.asList(verbosities)
                     .forEach(verbosity ->
                             ((MultiStream) logStreams.get(verbosity).getOutputStream()).addStream(stream));
@@ -92,6 +94,7 @@ public class ConfigurableLog implements Log, IInitializer {
          * @return this configuration
          */
         public Configuration logToFile(Path path, Verbosity... verbosities) throws FileNotFoundException {
+            Objects.requireNonNull(path);
             logToStream(
                     new PrintStream(
                             new FileOutputStream(
@@ -136,40 +139,58 @@ public class ConfigurableLog implements Log, IInitializer {
         }
 
         public Configuration logAtMost(Verbosity verbosity) {
+            try {
+                return logAtMost(verbosity, null, null);
+            } catch (FileNotFoundException e) {
+                throw new RuntimeException(e);
+            }
+        }
+
+        public Configuration logAtMost(Verbosity verbosity, Path logFile, Path errorFile) throws FileNotFoundException {
             switch (verbosity) {
                 case NONE:
                     break;
                 case MESSAGE:
-                    logToSystemOut(Verbosity.MESSAGE);
+                    logToLog(logFile, Verbosity.MESSAGE);
                     break;
                 case ERROR:
-                    logToSystemErr(Verbosity.ERROR);
-                    logToSystemOut(Verbosity.MESSAGE);
+                    logToError(errorFile, Verbosity.ERROR);
+                    logToLog(logFile, Verbosity.MESSAGE);
                     break;
                 case WARNING:
-                    logToSystemErr(Verbosity.ERROR, Verbosity.WARNING);
-                    logToSystemOut(Verbosity.MESSAGE);
+                    logToError(errorFile, Verbosity.ERROR, Verbosity.WARNING);
+                    logToLog(logFile, Verbosity.MESSAGE);
                     break;
                 case INFO:
-                    logToSystemErr(Verbosity.ERROR, Verbosity.WARNING);
-                    logToSystemOut(Verbosity.MESSAGE, Verbosity.INFO);
+                    logToError(errorFile, Verbosity.ERROR, Verbosity.WARNING);
+                    logToLog(logFile, Verbosity.MESSAGE, Verbosity.INFO);
                     break;
                 case DEBUG:
-                    logToSystemErr(Verbosity.ERROR, Verbosity.WARNING);
-                    logToSystemOut(Verbosity.MESSAGE, Verbosity.INFO, Verbosity.MESSAGE, Verbosity.DEBUG);
+                    logToError(errorFile, Verbosity.ERROR, Verbosity.WARNING);
+                    logToLog(logFile, Verbosity.MESSAGE, Verbosity.INFO, Verbosity.MESSAGE, Verbosity.DEBUG);
                     break;
                 case PROGRESS:
-                    logToSystemErr(Verbosity.ERROR, Verbosity.WARNING);
-                    logToSystemOut(Verbosity.MESSAGE, Verbosity.INFO, Verbosity.DEBUG, Verbosity.PROGRESS);
+                    logToError(errorFile, Verbosity.ERROR, Verbosity.WARNING);
+                    logToLog(logFile, Verbosity.MESSAGE, Verbosity.INFO, Verbosity.DEBUG, Verbosity.PROGRESS);
                     break;
                 case ALL:
-                    logToSystemErr(Verbosity.ERROR, Verbosity.WARNING);
-                    logToSystemOut(Verbosity.MESSAGE, Verbosity.INFO, Verbosity.DEBUG, Verbosity.PROGRESS);
+                    logToError(errorFile, Verbosity.ERROR, Verbosity.WARNING);
+                    logToLog(logFile, Verbosity.MESSAGE, Verbosity.INFO, Verbosity.DEBUG, Verbosity.PROGRESS);
                     break;
                 default:
                     break;
             }
             return this;
+        }
+
+        private void logToLog(Path logFile, Verbosity... verbosities) throws FileNotFoundException {
+            logToSystemOut(verbosities);
+            if (logFile != null) logToFile(logFile, verbosities);
+        }
+
+        private void logToError(Path errorFile, Verbosity... verbosities) throws FileNotFoundException {
+            logToSystemErr(verbosities);
+            if (errorFile != null) logToFile(errorFile, verbosities);
         }
 
         public Configuration logAtMost(String verbosityString) {
