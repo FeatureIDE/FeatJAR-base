@@ -354,4 +354,11 @@ public class OptionList {
     public Log.Verbosity getVerbosity() {
         return get(VERBOSITY_OPTION).get();
     }
+
+    /**
+     * {@return whether the given option has a custom value}
+     */
+    public boolean has(Option<?> opt) {
+        return properties.get(opt.getName()) != null;
+    }
 }
