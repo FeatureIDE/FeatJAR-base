@@ -133,7 +133,7 @@ public final class FeatJAR extends IO implements AutoCloseable {
                 .logAtMost(Log.Verbosity.INFO)
                 .addFormatter(new TimeStampFormatter())
                 .addFormatter(new CallerFormatter());
-        configuration.cacheConfig.setCachePolicy(Cache.CachePolicy.CACHE_TOP_LEVEL);
+        configuration.cacheConfig.setCachePolicy(Cache.CachePolicy.CACHE_NONE);
         return configuration;
     }
 
@@ -344,8 +344,6 @@ public final class FeatJAR extends IO implements AutoCloseable {
         try {
             OptionList optionInput = new OptionList(arguments);
             try (FeatJAR featJAR = FeatJAR.initialize(optionInput)) {
-                //            	Configuration configuration =
-                // optionInput.getConfiguration().orElseGet(FeatJAR::createDefaultConfiguration);
                 Commands.run(optionInput);
             }
         } catch (Exception e) {
