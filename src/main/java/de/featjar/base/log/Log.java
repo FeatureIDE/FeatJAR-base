@@ -187,7 +187,7 @@ public interface Log {
      *                      message
      */
     default void info(String formatMessage, Object... elements) {
-        info(String.format(formatMessage, elements));
+        //        info(String.format(formatMessage, elements));
     }
 
     /**
@@ -196,7 +196,7 @@ public interface Log {
      * @param messageObject the message object
      */
     default void info(Object messageObject) {
-        info(String.valueOf(messageObject));
+        //        info(String.valueOf(messageObject));
     }
 
     /**
@@ -245,7 +245,7 @@ public interface Log {
      *                      message
      */
     default void debug(String formatMessage, Object... elements) {
-        debug(String.format(formatMessage, elements));
+        //        debug(String.format(formatMessage, elements));
     }
 
     /**
@@ -254,7 +254,7 @@ public interface Log {
      * @param messageObject the message object
      */
     default void debug(Object messageObject) {
-        debug(String.valueOf(messageObject));
+        //        debug(String.valueOf(messageObject));
     }
 
     /**

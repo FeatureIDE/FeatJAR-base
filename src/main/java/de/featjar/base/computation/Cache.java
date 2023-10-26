@@ -178,7 +178,7 @@ public class Cache implements IInitializer, IBrowsable<GraphVizTreeFormat<ICompu
             }
         }
         if (futureResult != null) {
-            FeatJAR.log().debug("cache hit for " + computation);
+            //            FeatJAR.log().debug("cache hit for " + computation);
             synchronized (hitStatistics) {
                 Long count = hitStatistics.get(computation);
                 if (count == null) {
