@@ -23,6 +23,7 @@ package de.featjar.base.log;
 import de.featjar.base.data.Pair;
 import java.util.LinkedList;
 import java.util.function.Consumer;
+import java.util.function.Supplier;
 
 /**
  * Logs messages to standard output and files. Formats log messages with
@@ -37,12 +38,14 @@ public class BufferedLog implements Log {
 
     private final LinkedList<Pair<Verbosity, String>> logBuffer = new LinkedList<>();
 
-    public void println(String message, Verbosity verbosity) {
+    @Override
+    public void println(Supplier<String> message, Verbosity verbosity) {
         synchronized (logBuffer) {
-            logBuffer.add(new Pair<>(verbosity, message));
+            logBuffer.add(new Pair<>(verbosity, message.get()));
         }
     }
 
+    @Override
     public void println(Throwable error, boolean isWarning) {
         synchronized (logBuffer) {
             logBuffer.add(new Pair<>(isWarning ? Verbosity.WARNING : Verbosity.ERROR, error.getMessage()));

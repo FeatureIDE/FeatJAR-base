@@ -198,7 +198,7 @@ public final class FeatJAR extends IO implements AutoCloseable {
     private void setConfiguration(Configuration configuration) {
         log = getExtension(ConfigurableLog.class).orElseGet(ConfigurableLog::new);
         log.setConfiguration(configuration.logConfig);
-        fallbackLog.flush(m -> log.log(m.getValue(), m.getKey()));
+        fallbackLog.flush(m -> log.log(() -> m.getValue(), m.getKey()));
 
         cache = getExtension(Cache.class).orElseGet(Cache::new);
         cache.setConfiguration(configuration.cacheConfig);

@@ -24,6 +24,7 @@ import de.featjar.base.data.Problem;
 import de.featjar.base.data.Result;
 import java.util.Arrays;
 import java.util.List;
+import java.util.function.Supplier;
 
 /**
  * Logs messages to standard output and files. Formats log messages with
@@ -117,7 +118,7 @@ public interface Log {
      *
      * @param message the error message
      */
-    default void error(String message) {
+    default void error(Supplier<String> message) {
         println(message, Verbosity.ERROR);
     }
 
@@ -129,7 +130,7 @@ public interface Log {
      *                      message
      */
     default void error(String formatMessage, Object... elements) {
-        error(String.format(formatMessage, elements));
+        error(() -> String.format(formatMessage, elements));
     }
 
     /**
@@ -146,7 +147,7 @@ public interface Log {
      *
      * @param message the warning message
      */
-    default void warning(String message) {
+    default void warning(Supplier<String> message) {
         println(message, Verbosity.WARNING);
     }
 
@@ -158,7 +159,7 @@ public interface Log {
      *                      message
      */
     default void warning(String formatMessage, Object... elements) {
-        warning(String.format(formatMessage, elements));
+        warning(() -> String.format(formatMessage, elements));
     }
 
     /**
@@ -175,7 +176,7 @@ public interface Log {
      *
      * @param message the message
      */
-    default void info(String message) {
+    default void info(Supplier<String> message) {
         println(message, Verbosity.INFO);
     }
 
@@ -187,7 +188,7 @@ public interface Log {
      *                      message
      */
     default void info(String formatMessage, Object... elements) {
-        //        info(String.format(formatMessage, elements));
+        info(() -> String.format(formatMessage, elements));
     }
 
     /**
@@ -196,7 +197,7 @@ public interface Log {
      * @param messageObject the message object
      */
     default void info(Object messageObject) {
-        //        info(String.valueOf(messageObject));
+        info(() -> String.valueOf(messageObject));
     }
 
     /**
@@ -204,7 +205,7 @@ public interface Log {
      *
      * @param message the message
      */
-    default void message(String message) {
+    default void message(Supplier<String> message) {
         println(message, Verbosity.MESSAGE);
     }
 
@@ -216,7 +217,7 @@ public interface Log {
      *                      message
      */
     default void message(String formatMessage, Object... elements) {
-        message(String.format(formatMessage, elements));
+        message(() -> String.format(formatMessage, elements));
     }
 
     /**
@@ -225,7 +226,7 @@ public interface Log {
      * @param messageObject the message object
      */
     default void message(Object messageObject) {
-        message(String.valueOf(messageObject));
+        message(() -> String.valueOf(messageObject));
     }
 
     /**
@@ -233,7 +234,7 @@ public interface Log {
      *
      * @param message the message
      */
-    default void debug(String message) {
+    default void debug(Supplier<String> message) {
         println(message, Verbosity.DEBUG);
     }
 
@@ -245,7 +246,7 @@ public interface Log {
      *                      message
      */
     default void debug(String formatMessage, Object... elements) {
-        //        debug(String.format(formatMessage, elements));
+        debug(() -> String.format(formatMessage, elements));
     }
 
     /**
@@ -254,7 +255,7 @@ public interface Log {
      * @param messageObject the message object
      */
     default void debug(Object messageObject) {
-        //        debug(String.valueOf(messageObject));
+        debug(() -> String.valueOf(messageObject));
     }
 
     /**
@@ -262,7 +263,7 @@ public interface Log {
      *
      * @param message the message
      */
-    default void progress(String message) {
+    default void progress(Supplier<String> message) {
         println(message, Verbosity.PROGRESS);
     }
 
@@ -274,7 +275,7 @@ public interface Log {
      *                      message
      */
     default void progress(String formatMessage, Object... elements) {
-        progress(String.format(formatMessage, elements));
+        progress(() -> String.format(formatMessage, elements));
     }
 
     /**
@@ -283,7 +284,7 @@ public interface Log {
      * @param messageObject the message object
      */
     default void progress(Object messageObject) {
-        progress(String.valueOf(messageObject));
+        progress(() -> String.valueOf(messageObject));
     }
 
     /**
@@ -292,11 +293,11 @@ public interface Log {
      * @param message   the message
      * @param verbosity the verbosities
      */
-    default void log(String message, Verbosity verbosity) {
+    default void log(Supplier<String> message, Verbosity verbosity) {
         println(message, verbosity);
     }
 
-    void println(String message, Verbosity verbosity);
+    void println(Supplier<String> message, Verbosity verbosity);
 
     void println(Throwable error, boolean isWarning);
 }

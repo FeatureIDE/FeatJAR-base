@@ -28,14 +28,15 @@ import de.featjar.base.io.MultiStream;
 import de.featjar.base.io.OpenPrintStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
+import java.io.OutputStream;
 import java.io.PrintStream;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
-import java.util.Arrays;
 import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.ListIterator;
 import java.util.Objects;
+import java.util.function.Supplier;
 
 /**
  * Logs messages to standard output and files. Formats log messages with
@@ -52,9 +53,6 @@ public class ConfigurableLog implements Log, IInitializer {
      * Configures a log.
      */
     public static class Configuration {
-        private static final PrintStream originalSystemOut = System.out;
-        private static final PrintStream originalSystemErr = System.err;
-
         // TODO: to make this more general, we could use an OutputMapper here to
         // log to anything supported by an OutputMapper (even a ZIP file).
         protected final LinkedHashMap<Verbosity, OpenPrintStream> logStreams = Maps.empty();
@@ -66,9 +64,17 @@ public class ConfigurableLog implements Log, IInitializer {
 
         public Configuration resetLogStreams() {
             logStreams.clear();
-            Arrays.asList(Verbosity.values())
-                    .forEach(verbosity -> logStreams.put(verbosity, new OpenPrintStream(new MultiStream())));
             return this;
+        }
+
+        private void addStream(OutputStream stream, Verbosity verbostiy) {
+            OpenPrintStream multiStream = logStreams.get(verbostiy);
+            if (multiStream == null) {
+                multiStream = new OpenPrintStream(new MultiStream(stream));
+                logStreams.put(verbostiy, multiStream);
+            } else {
+                ((MultiStream) multiStream.getOutputStream()).addStream(stream);
+            }
         }
 
         /**
@@ -80,9 +86,9 @@ public class ConfigurableLog implements Log, IInitializer {
          */
         public Configuration logToStream(PrintStream stream, Verbosity... verbosities) {
             Objects.requireNonNull(stream);
-            Arrays.asList(verbosities)
-                    .forEach(verbosity ->
-                            ((MultiStream) logStreams.get(verbosity).getOutputStream()).addStream(stream));
+            for (Verbosity verbosity : verbosities) {
+                addStream(stream, verbosity);
+            }
             return this;
         }
 
@@ -201,10 +207,10 @@ public class ConfigurableLog implements Log, IInitializer {
         }
     }
 
+    private Configuration configuration;
+
     private static final PrintStream originalSystemOut = System.out;
     private static final PrintStream originalSystemErr = System.err;
-
-    private Configuration configuration;
 
     /**
      * Creates a log based on the default configuration.
@@ -256,47 +262,55 @@ public class ConfigurableLog implements Log, IInitializer {
         }
     }
 
-    @Override
-    public void println(String message, Verbosity verbosity) {
-        final String formattedMessage = formatMessage(message);
-        if (formattedMessage != null) {
-            if (configuration != null) {
-                configuration.logStreams.get(verbosity).println(formattedMessage);
-            } else {
-                if (verbosity == Verbosity.WARNING || verbosity == Verbosity.ERROR) {
-                    originalSystemErr.println(formattedMessage);
-                } else {
-                    originalSystemOut.println(formattedMessage);
-                }
+    public void println(Supplier<String> message, Verbosity verbosity) {
+        if (configuration == null) {
+            originalSystemErr.println(message);
+        } else {
+            OpenPrintStream multiStream = configuration.logStreams.get(verbosity);
+            if (multiStream != null) {
+                final String formattedMessage = formatMessage(message.get());
+                multiStream.println(formattedMessage);
             }
         }
     }
 
-    @Override
+    public void println(String message, Verbosity verbosity) {
+        if (configuration == null) {
+            originalSystemErr.println(message);
+        } else {
+            OpenPrintStream multiStream = configuration.logStreams.get(verbosity);
+            if (multiStream != null) {
+                final String formattedMessage = formatMessage(message);
+                multiStream.println(formattedMessage);
+            }
+        }
+    }
+
     public void println(Throwable error, boolean isWarning) {
-        final String formattedMessage = formatMessage(error.getMessage());
-        Verbosity verbosity = isWarning ? Verbosity.WARNING : Verbosity.ERROR;
-        if (formattedMessage != null) {
-            if (configuration != null) {
-                configuration.logStreams.get(verbosity).println(formattedMessage);
-                error.printStackTrace(configuration.logStreams.get(verbosity));
-            } else {
-                originalSystemErr.println(formattedMessage);
-                error.printStackTrace(originalSystemErr);
+        if (configuration == null) {
+            originalSystemErr.println(error.getMessage());
+            error.printStackTrace(originalSystemErr);
+        } else {
+            Verbosity verbosity = isWarning ? Verbosity.WARNING : Verbosity.ERROR;
+            OpenPrintStream multiStream = configuration.logStreams.get(verbosity);
+            if (multiStream != null) {
+                final String formattedMessage = formatMessage(error.getMessage());
+                multiStream.println(formattedMessage);
+                error.printStackTrace(multiStream);
             }
         }
     }
 
     private String formatMessage(String message) {
-        if (configuration == null || configuration.formatters.isEmpty()) {
-            return message;
+        if (configuration.formatters.isEmpty()) {
+            return message != null ? message : "null";
         } else {
             final StringBuilder sb = new StringBuilder();
             final ListIterator<IFormatter> it = configuration.formatters.listIterator();
             while (it.hasNext()) {
                 sb.append(it.next().getPrefix());
             }
-            sb.append(message);
+            sb.append(message != null ? message : "null");
             while (it.hasPrevious()) {
                 sb.append(it.previous().getSuffix());
             }
