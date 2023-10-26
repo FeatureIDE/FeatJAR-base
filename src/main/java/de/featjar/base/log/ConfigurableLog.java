@@ -264,23 +264,11 @@ public class ConfigurableLog implements Log, IInitializer {
 
     public void println(Supplier<String> message, Verbosity verbosity) {
         if (configuration == null) {
-            originalSystemErr.println(message);
+            originalSystemErr.println(message.get());
         } else {
             OpenPrintStream multiStream = configuration.logStreams.get(verbosity);
             if (multiStream != null) {
                 final String formattedMessage = formatMessage(message.get());
-                multiStream.println(formattedMessage);
-            }
-        }
-    }
-
-    public void println(String message, Verbosity verbosity) {
-        if (configuration == null) {
-            originalSystemErr.println(message);
-        } else {
-            OpenPrintStream multiStream = configuration.logStreams.get(verbosity);
-            if (multiStream != null) {
-                final String formattedMessage = formatMessage(message);
                 multiStream.println(formattedMessage);
             }
         }

@@ -36,25 +36,25 @@ import java.util.function.Supplier;
  */
 public class BufferedLog implements Log {
 
-    private final LinkedList<Pair<Verbosity, String>> logBuffer = new LinkedList<>();
+    private final LinkedList<Pair<Verbosity, Supplier<String>>> logBuffer = new LinkedList<>();
 
     @Override
     public void println(Supplier<String> message, Verbosity verbosity) {
         synchronized (logBuffer) {
-            logBuffer.add(new Pair<>(verbosity, message.get()));
+            logBuffer.add(new Pair<>(verbosity, message));
         }
     }
 
     @Override
     public void println(Throwable error, boolean isWarning) {
         synchronized (logBuffer) {
-            logBuffer.add(new Pair<>(isWarning ? Verbosity.WARNING : Verbosity.ERROR, error.getMessage()));
+            logBuffer.add(new Pair<>(isWarning ? Verbosity.WARNING : Verbosity.ERROR, error::getMessage));
         }
     }
 
-    public void flush(Consumer<Pair<Verbosity, String>> messageConsumer) {
+    public void flush(Consumer<Pair<Verbosity, Supplier<String>>> messageConsumer) {
         synchronized (logBuffer) {
-            for (Pair<Verbosity, String> message : logBuffer) {
+            for (Pair<Verbosity, Supplier<String>> message : logBuffer) {
                 messageConsumer.accept(message);
             }
             logBuffer.clear();
