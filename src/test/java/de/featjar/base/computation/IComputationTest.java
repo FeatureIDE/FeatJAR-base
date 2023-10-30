@@ -27,8 +27,12 @@ import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import de.featjar.base.FeatJAR;
+import de.featjar.base.FeatJAR.Configuration;
 import de.featjar.base.data.Pair;
 import de.featjar.base.data.Result;
+import de.featjar.base.log.CallerFormatter;
+import de.featjar.base.log.Log;
+import de.featjar.base.log.TimeStampFormatter;
 import de.featjar.base.tree.structure.ITree;
 import java.time.Duration;
 import java.util.List;
@@ -48,8 +52,8 @@ class IComputationTest {
         FeatJAR.run(fj -> {
             IComputation<Integer> computation = Computations.of(42).flatMapResult(getClass(), "42", i -> Result.of(i));
             assertEquals(42, computation.get().get());
-            assertTrue(FeatJAR.cache().has(computation));
-            assertFalse(FeatJAR.cache().getCachedComputations().isEmpty());
+            assertFalse(FeatJAR.cache().has(computation));
+            assertTrue(FeatJAR.cache().getCachedComputations().isEmpty());
         });
         assertTrue(FeatJAR.cache().getCachedComputations().isEmpty());
 
@@ -67,6 +71,30 @@ class IComputationTest {
             assertEquals(42, computation.get().get());
             assertFalse(FeatJAR.cache().has(computation));
         }
+        assertTrue(FeatJAR.cache().getCachedComputations().isEmpty());
+
+        final Configuration configuration = new Configuration();
+        configuration
+                .logConfig
+                .logAtMost(Log.Verbosity.INFO)
+                .addFormatter(new TimeStampFormatter())
+                .addFormatter(new CallerFormatter());
+        configuration.cacheConfig.setCachePolicy(Cache.CachePolicy.CACHE_TOP_LEVEL);
+
+        FeatJAR.run(configuration, fj -> {
+            IComputation<Integer> computation = Computations.of(42).flatMapResult(getClass(), "42", i -> Result.of(i));
+            assertEquals(42, computation.get().get());
+            assertTrue(FeatJAR.cache().has(computation));
+            assertFalse(FeatJAR.cache().getCachedComputations().isEmpty());
+        });
+        assertTrue(FeatJAR.cache().getCachedComputations().isEmpty());
+
+        FeatJAR.run(configuration, fj -> {
+            IComputation<Integer> computation = Computations.of(42);
+            assertEquals(42, computation.get().get());
+            assertFalse(FeatJAR.cache().has(computation));
+            assertTrue(FeatJAR.cache().getCachedComputations().isEmpty());
+        });
         assertTrue(FeatJAR.cache().getCachedComputations().isEmpty());
     }
 
