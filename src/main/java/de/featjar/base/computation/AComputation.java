@@ -104,11 +104,15 @@ public abstract class AComputation<T> extends ATree<IComputation<?>> implements 
                 .collect(Collectors.toList());
         Progress progress = progressSupplier.get();
         checkCancel();
-        Result<T> result = mergeResults(results).flatMap(r -> compute(r, progress));
-        if (tryWriteCache) {
-            getCache().tryWrite(this, new FutureResult<>(result, progress));
+        try {
+            Result<T> result = mergeResults(results).flatMap(r -> compute(r, progress));
+            if (tryWriteCache) {
+                getCache().tryWrite(this, new FutureResult<>(result, progress));
+            }
+            return result;
+        } catch (Exception e) {
+            return Result.empty(e);
         }
-        return result;
     }
 
     @Override
