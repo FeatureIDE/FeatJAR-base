@@ -20,8 +20,18 @@
  */
 package de.featjar.base.data;
 
+import de.featjar.base.FeatJAR;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Comparator;
+import java.util.Iterator;
+import java.util.List;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 import java.util.stream.IntStream;
 
 /**
@@ -32,9 +42,23 @@ import java.util.stream.IntStream;
  * @author Sebastian Krieter
  * @author Elias Kuiter
  */
-public class IntegerList implements IIntegerList {
-    // TODO rename to elements
-    protected final int[] array;
+public class IntegerList {
+
+    public static final class DescendingLengthComparator implements Comparator<IntegerList> {
+        @Override
+        public int compare(IntegerList o1, IntegerList o2) {
+            return o2.elements.length - o1.elements.length;
+        }
+    }
+
+    public static final class AscendingLengthComparator implements Comparator<IntegerList> {
+        @Override
+        public int compare(IntegerList o1, IntegerList o2) {
+            return o1.elements.length - o2.elements.length;
+        }
+    }
+
+    protected final int[] elements;
     protected boolean hashCodeValid;
     protected int hashCode;
 
@@ -45,7 +69,7 @@ public class IntegerList implements IIntegerList {
      * @param array the array
      */
     public IntegerList(int... array) {
-        this.array = array;
+        this.elements = array;
     }
 
     /**
@@ -63,37 +87,507 @@ public class IntegerList implements IIntegerList {
      * @param integerList the integer list
      */
     public IntegerList(IntegerList integerList) {
-        array = Arrays.copyOf(integerList.array, integerList.array.length);
+        elements = Arrays.copyOf(integerList.elements, integerList.elements.length);
         hashCodeValid = integerList.hashCodeValid;
         hashCode = integerList.hashCode;
     }
 
-    public static IntegerList merge(Collection<? extends IIntegerList> integerLists) {
-        return IIntegerList.merge(integerLists, IntegerList::new);
+    public static int[] merge(Collection<? extends IntegerList> integerLists) {
+        return integerLists.stream()
+                .flatMapToInt(l -> Arrays.stream(l.elements))
+                .distinct()
+                .toArray();
     }
 
-    @Override
-    public IntStream stream() {
-        return IntStream.of(array);
+    public static int[] mergeInt(Collection<int[]> integerLists) {
+        return integerLists.stream()
+                .flatMapToInt(l -> Arrays.stream(l))
+                .distinct()
+                .toArray();
     }
 
-    @Override
-    public int[] get() {
-        return array;
+    private static int[] mergeParallel(Collection<int[]> integerLists) {
+        final int p = Runtime.getRuntime().availableProcessors();
+
+        final int size = integerLists.size() / p;
+        final int largerGroupIndex = integerLists.size() % p;
+        List<List<int[]>> partitions = new ArrayList<>(p);
+        Iterator<int[]> iterator = integerLists.iterator();
+        for (int i = 0; i < p; i++) {
+            final int end = i < largerGroupIndex ? size + 1 : size;
+            final ArrayList<int[]> partition = new ArrayList<>(end);
+            for (int j = 0; j < end; j++) {
+                partition.add(iterator.next());
+            }
+            partitions.add(partition);
+        }
+
+        int max = integerLists.stream()
+                .flatMapToInt(l -> Arrays.stream(l))
+                .map(Math::abs)
+                .max()
+                .orElse(0);
+        final ArrayList<Callable<int[]>> mergers = new ArrayList<>(p);
+        for (int i = 0; i < p; i++) {
+            List<int[]> partition = partitions.get(i);
+            mergers.add(() -> {
+                final int[] literals = new int[max];
+                partition.stream().flatMapToInt(l -> Arrays.stream(l)).forEach(l -> literals[Math.abs(l) - 1] = l);
+                return literals;
+            });
+        }
+        ExecutorService newCachedThreadPool = Executors.newCachedThreadPool();
+        try {
+            List<Future<int[]>> invokeAll = newCachedThreadPool.invokeAll(mergers);
+            int[] merge = null;
+            for (Future<int[]> future : invokeAll) {
+                int[] result = future.get();
+                if (merge == null) {
+                    merge = result;
+                } else {
+                    for (int i = 0; i < result.length; i++) {
+                        if (merge[i] == 0) {
+                            merge[i] = result[i];
+                        }
+                    }
+                }
+            }
+            return Arrays.stream(merge).filter(e -> e != 0).toArray();
+        } catch (InterruptedException | ExecutionException e) {
+            FeatJAR.log().error(e);
+        } finally {
+            newCachedThreadPool.shutdown();
+        }
+        return null;
     }
 
-    @Override
-    public int[] negate() {
-        int[] inverseLiterals = new int[array.length];
-        for (int i = 0; i < array.length; i++) {
-            inverseLiterals[i] = -array[i];
+    /**
+     * {@return the value at the given index of this integer list} To ensure
+     * performance, no {@link Result} is created, so the index should be checked for
+     * validity beforehand.
+     *
+     * @param index the index
+     * @throws IndexOutOfBoundsException when the index is invalid
+     */
+    public final int get(int index) {
+        return elements[index];
+    }
+
+    /**
+     * {@return a copy of this integer list's integers} The returned array may be
+     * modified.
+     */
+    public final int[] copy() {
+        return copyOfRange(0, elements.length);
+    }
+
+    /**
+     * {@return a copy of this integer list's integers in a given range} The
+     * returned array may be modified.
+     *
+     * @param range the range
+     */
+    public final int[] copyOfRange(Range range) {
+        return copyOfRange(
+                range.getLowerBound().orElse(0), range.getUpperBound().orElse(elements.length));
+    }
+
+    /**
+     * {@return a copy of this integer list's integers in a given range} The
+     * returned array may be modified.
+     *
+     * @param start the start index
+     * @param end   the end index
+     */
+    public final int[] copyOfRange(int start, int end) {
+        return Arrays.copyOfRange(elements, start, end);
+    }
+
+    /**
+     * {@return the absolute values of this integer list's integers} The returned
+     * array may be modified.
+     */
+    public final int[] getAbsoluteValues() {
+        return Arrays.stream(elements).map(Math::abs).toArray();
+    }
+
+    /**
+     * {@return the positive values in this integer list's integers} The returned
+     * array may be modified.
+     */
+    public int[] getPositiveValues() {
+        int[] positiveIntegers = new int[countPositives()];
+        int i = 0;
+        for (final int integer : elements) {
+            if (integer > 0) {
+                positiveIntegers[i++] = integer;
+            }
+        }
+        return positiveIntegers;
+    }
+
+    /**
+     * {@return the negative values in this integer list's integers} The returned
+     * array may be modified.
+     */
+    public int[] getNegativeValues() {
+        int[] negativeIntegers = new int[countNegatives()];
+        int i = 0;
+        for (final int integer : elements) {
+            if (integer < 0) {
+                negativeIntegers[i++] = integer;
+            }
+        }
+        return negativeIntegers;
+    }
+
+    /**
+     * {@return the non-zero values in this integer list's integers} The returned
+     * array may be modified.
+     */
+    public int[] getNonZeroValues() {
+        int[] nonZeroIntegers = new int[countNonZero()];
+        int i = 0;
+        for (final int integer : elements) {
+            if (integer != 0) {
+                nonZeroIntegers[i++] = integer;
+            }
+        }
+        return nonZeroIntegers;
+    }
+
+    public final boolean contains(int element) {
+        return indexOf(element) >= 0;
+    }
+
+    public final boolean containsNegated(int element) {
+        return indexOf(-element) >= 0;
+    }
+
+    /**
+     * {@return whether this integer list contains any of the given integers}
+     *
+     * @param integers the integers
+     */
+    public final boolean containsAny(int... integers) {
+        return Arrays.stream(integers).anyMatch(this::contains);
+    }
+
+    /**
+     * {@return whether this integer list contains any of the given integers in
+     * negated form}
+     *
+     * @param integers the integers
+     */
+    public final boolean containsAnyNegated(int... integers) {
+        return Arrays.stream(integers).anyMatch(this::containsNegated);
+    }
+
+    /**
+     * {@return whether this integer list contains all of the given integers}
+     *
+     * @param integers the integers
+     */
+    public final boolean containsAll(int... integers) {
+        return Arrays.stream(integers).allMatch(this::contains);
+    }
+
+    /**
+     * {@return whether this integer list contains all of the given integers in
+     * negated form}
+     *
+     * @param integers the integers
+     */
+    public final boolean containsAllNegated(int... integers) {
+        return Arrays.stream(integers).allMatch(this::containsNegated);
+    }
+
+    /**
+     * {@return whether this integer list and the given integers are disjoint}
+     *
+     * @param integers the integers
+     */
+    public final boolean containsNone(int... integers) {
+        return Arrays.stream(integers).noneMatch(this::contains);
+    }
+    /**
+     * {@return whether this integer list and the given integers are disjoint}
+     *
+     * @param integers the integers
+     */
+    public final boolean containsNoneNegated(int... integers) {
+        return Arrays.stream(integers).noneMatch(this::containsNegated);
+    }
+
+    /**
+     * {@return whether this integer list contains any integer in the given integer
+     * list}
+     *
+     * @param integers another integer list
+     */
+    public final boolean containsAny(IntegerList integers) {
+        return containsAny(integers.elements);
+    }
+
+    /**
+     * {@return whether this integer list contains any negated integer in the given
+     * integer list}
+     *
+     * @param integers another integer list
+     */
+    public final boolean containsAnyNegated(IntegerList integers) {
+        return containsAnyNegated(integers.elements);
+    }
+
+    /**
+     * {@return whether this integer list contains all integers in the given integer
+     * list}
+     *
+     * @param integers another integer list
+     */
+    public final boolean containsAll(IntegerList integers) {
+        return containsAll(integers.elements);
+    }
+
+    /**
+     * {@return whether this integer list contains all negated integers in the given
+     * integer list}
+     *
+     * @param integers another integer list
+     */
+    public final boolean containsAllNegated(IntegerList integers) {
+        return containsAllNegated(integers.elements);
+    }
+
+    /**
+     * {@return whether this integer list contains no integer in the given integer
+     * list}
+     *
+     * @param integers another integer list
+     */
+    public final boolean containsNone(IntegerList integers) {
+        return containsNone(integers.elements);
+    }
+
+    /**
+     * {@return whether this integer list contains no negated integer in the given
+     * integer list}
+     *
+     * @param integers another integer list
+     */
+    public final boolean containsNoneNegated(IntegerList integers) {
+        return containsNoneNegated(integers.elements);
+    }
+
+    /**
+     * {@return the first index of the given integer in this integer list} To ensure
+     * performance, no {@link Result} is created. Instead, a negative number is
+     * returned when the integer is not contained.
+     *
+     * @param integer the integer
+     */
+    public int indexOf(int integer) {
+        return IntStream.range(0, elements.length)
+                .filter(i -> elements[i] == integer)
+                .findFirst()
+                .orElse(-1);
+    }
+
+    /**
+     * {@return all indices of the given integer in this integer list} To ensure
+     * performance, no {@link Result} is created. Instead, a negative number is
+     * returned when the integer is not contained.
+     *
+     * @param integer the integer
+     */
+    public int[] indicesOf(int integer) {
+        return IntStream.range(0, elements.length)
+                .filter(i -> elements[i] == integer)
+                .toArray();
+    }
+
+    /**
+     * {@return the number of positive values in this integer list's integers}
+     */
+    public int countPositives() {
+        return (int) Arrays.stream(elements).filter(integer -> integer > 0).count();
+    }
+
+    /**
+     * {@return the number of negative values in this integer list's integers}
+     */
+    public int countNegatives() {
+        return (int) Arrays.stream(elements).filter(integer -> integer < 0).count();
+    }
+
+    /**
+     * {@return the number of non-zero values in this integer list's integers}
+     */
+    public int countNonZero() {
+        return (int) Arrays.stream(elements).filter(integer -> integer != 0).count();
+    }
+
+    /**
+     * {@return the number of integers in this integer list}
+     */
+    public final int size() {
+        return elements.length;
+    }
+
+    /**
+     * {@return whether this integer list is empty}
+     */
+    public final boolean isEmpty() {
+        return elements.length == 0;
+    }
+
+    /**
+     * {@return the union of this integer list with the given integers} No
+     * duplicated are created.
+     *
+     * @param integers the integers
+     */
+    public final int[] addAll(int... integers) {
+        boolean[] intersectionMarker = new boolean[elements.length];
+        int count = 0;
+        for (int integer : integers) {
+            final int[] indices = indicesOf(integer);
+            for (int i = 0; i < indices.length; i++) {
+                int index = indices[i];
+                if (index >= 0 && !intersectionMarker[index]) {
+                    count++;
+                    intersectionMarker[index] = true;
+                }
+            }
+        }
+
+        int[] newArray = new int[elements.length + integers.length - count];
+        int j = 0;
+        for (int i = 0; i < elements.length; i++) {
+            if (!intersectionMarker[i]) {
+                newArray[j++] = elements[i];
+            }
+        }
+        System.arraycopy(integers, 0, newArray, j, integers.length);
+        assert Arrays.stream(elements).allMatch(e -> Arrays.stream(newArray).anyMatch(i -> i == e));
+        assert Arrays.stream(elements).allMatch(e -> Arrays.stream(integers).anyMatch(i -> i == e));
+        return newArray;
+    }
+
+    /**
+     * {@return the intersection of this integer list with the given integers}
+     *
+     * @param integers the integers
+     */
+    public final int[] retainAll(int... integers) {
+        boolean[] intersectionMarker = new boolean[elements.length];
+        int count = 0;
+        for (int integer : integers) {
+            final int[] indices = indicesOf(integer);
+            for (int i = 0; i < indices.length; i++) {
+                int index = indices[i];
+                if (index >= 0 && !intersectionMarker[index]) {
+                    count++;
+                    intersectionMarker[index] = true;
+                }
+            }
+        }
+
+        int[] newArray = new int[count];
+        int j = 0;
+        for (int i = 0; i < elements.length; i++) {
+            if (intersectionMarker[i]) {
+                newArray[j++] = elements[i];
+            }
+        }
+        assert Arrays.stream(elements)
+                .allMatch(e -> Arrays.stream(newArray).anyMatch(i -> i == e)
+                        == Arrays.stream(integers).anyMatch(i -> i == e));
+        return newArray;
+    }
+
+    /**
+     * {@return the difference of this integer list and the given integers}
+     *
+     * @param integers the integers
+     */
+    public final int[] removeAll(int... integers) {
+        boolean[] intersectionMarker = new boolean[elements.length];
+        int count = 0;
+        for (int integer : integers) {
+            final int[] indices = indicesOf(integer);
+            for (int i = 0; i < indices.length; i++) {
+                int index = indices[i];
+                if (index >= 0 && !intersectionMarker[index]) {
+                    count++;
+                    intersectionMarker[index] = true;
+                }
+            }
+        }
+
+        int[] newArray = new int[elements.length - count];
+        int j = 0;
+        for (int i = 0; i < elements.length; i++) {
+            if (!intersectionMarker[i]) {
+                newArray[j++] = elements[i];
+            }
+        }
+        assert Arrays.stream(elements)
+                .allMatch(e -> Arrays.stream(newArray).anyMatch(i -> i == e)
+                        ^ Arrays.stream(integers).anyMatch(i -> i == e));
+        return newArray;
+    }
+
+    /**
+     * {@return the number of elements in the given array that are also contained in
+     * this integer list.}
+     *
+     * @param integers the integers
+     */
+    public final int sizeOfIntersection(int... integers) {
+        return (int) Arrays.stream(integers).filter(this::contains).count();
+    }
+
+    /**
+     * {@return the number of elements in the given array that are not contained in
+     * this integer list.}
+     *
+     * @param integers the integers
+     */
+    public final int sizeOfDisjoint(int... integers) {
+        return (int) Arrays.stream(integers).filter(i -> !contains(i)).count();
+    }
+
+    /**
+     * {@return this integer list's elements as an {@code IntStream}}
+     */
+    public final IntStream stream() {
+        return IntStream.of(elements);
+    }
+
+    /**
+     * {@return this integer list's elements} The returned array must not be
+     * modified.
+     */
+    public final int[] get() {
+        return elements;
+    }
+
+    /**
+     * {@return a new integer list containing the negated values of this integer
+     * list}
+     */
+    public final int[] negate() {
+        int[] inverseLiterals = new int[elements.length];
+        for (int i = 0; i < elements.length; i++) {
+            inverseLiterals[i] = -elements[i];
         }
         return inverseLiterals;
     }
 
     @Override
     public int hashCode() {
-        return hashCodeValid ? hashCode : (hashCode = Arrays.hashCode(array));
+        return hashCodeValid ? hashCode : (hashCode = Arrays.hashCode(elements));
     }
 
     @Override
@@ -104,11 +598,11 @@ public class IntegerList implements IIntegerList {
         if ((obj == null) || (getClass() != obj.getClass())) {
             return false;
         }
-        return Arrays.equals(array, ((IntegerList) obj).array);
+        return Arrays.equals(elements, ((IntegerList) obj).elements);
     }
 
     @Override
     public String toString() {
-        return Arrays.toString(array);
+        return Arrays.toString(elements);
     }
 }
