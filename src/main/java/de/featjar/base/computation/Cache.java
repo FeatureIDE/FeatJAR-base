@@ -28,10 +28,14 @@ import de.featjar.base.extension.IInitializer;
 import de.featjar.base.io.graphviz.GraphVizTreeFormat;
 import de.featjar.base.tree.structure.ITree;
 import java.net.URI;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Executor;
-import java.util.concurrent.ForkJoinPool;
+import java.util.concurrent.Executors;
 import java.util.stream.Collectors;
 
 /**
@@ -77,7 +81,7 @@ public class Cache implements IInitializer, IBrowsable<GraphVizTreeFormat<ICompu
     public static class Configuration {
         protected CachePolicy cachePolicy = CachePolicy.CACHE_NONE;
 
-        protected Executor executor = ForkJoinPool.commonPool();
+        protected Executor executor = Executors.newCachedThreadPool();
 
         /**
          * Configures the cache policy.
