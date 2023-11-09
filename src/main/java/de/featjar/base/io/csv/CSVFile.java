@@ -43,9 +43,15 @@ import java.util.*;
  * @author Elias Kuiter
  */
 public class CSVFile {
+
     protected static final String NEW_LINE = System.lineSeparator();
-    protected String separator = ",";
     protected NumberFormat numberFormat = DecimalFormat.getInstance(Locale.ENGLISH);
+
+    {
+        numberFormat.setGroupingUsed(false);
+    }
+
+    protected String separator = ",";
     protected List<String> headerFields = null;
     protected boolean headerFieldsFlushed;
     protected final LinkedList<List<String>> values = new LinkedList<>();
