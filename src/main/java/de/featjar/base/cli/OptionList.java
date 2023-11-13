@@ -136,7 +136,10 @@ public class OptionList {
                 Result<List<Path>> config = get(CONFIGURATION_OPTION);
                 if (!config.isEmpty()) {
                     configFileArguments.clear();
-                    for (Path configPath : config.get()) {
+                    List<Path> configPathList = config.get();
+                    for (ListIterator<Path> it = configPathList.listIterator(configPathList.size());
+                            it.hasPrevious(); ) {
+                        Path configPath = (Path) it.previous();
                         final Properties properties = new Properties();
                         try {
                             properties.load(Files.newInputStream(configPath));
