@@ -32,6 +32,7 @@ import java.io.OutputStream;
 import java.io.PrintStream;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
+import java.util.Arrays;
 import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.ListIterator;
@@ -48,6 +49,9 @@ import java.util.function.Supplier;
  * @author Elias Kuiter
  */
 public class ConfigurableLog implements Log, IInitializer {
+
+    private static final PrintStream originalSystemOut = System.out;
+    private static final PrintStream originalSystemErr = System.err;
 
     /**
      * Configures a log.
@@ -173,11 +177,11 @@ public class ConfigurableLog implements Log, IInitializer {
                     break;
                 case DEBUG:
                     logToError(errorFile, Verbosity.ERROR, Verbosity.WARNING);
-                    logToLog(logFile, Verbosity.MESSAGE, Verbosity.INFO, Verbosity.MESSAGE, Verbosity.DEBUG);
+                    logToLog(logFile, Verbosity.MESSAGE, Verbosity.INFO, Verbosity.DEBUG);
                     break;
                 case PROGRESS:
                     logToError(errorFile, Verbosity.ERROR, Verbosity.WARNING);
-                    logToLog(logFile, Verbosity.MESSAGE, Verbosity.INFO, Verbosity.DEBUG, Verbosity.PROGRESS);
+                    logToLog(logFile, Verbosity.MESSAGE, Verbosity.INFO, Verbosity.PROGRESS);
                     break;
                 case ALL:
                     logToError(errorFile, Verbosity.ERROR, Verbosity.WARNING);
@@ -208,10 +212,7 @@ public class ConfigurableLog implements Log, IInitializer {
     }
 
     private Configuration configuration;
-
-    private static final PrintStream originalSystemOut = System.out;
-    private static final PrintStream originalSystemErr = System.err;
-
+    private int progressSize;
     /**
      * Creates a log based on the default configuration.
      */
@@ -264,26 +265,67 @@ public class ConfigurableLog implements Log, IInitializer {
 
     public void println(Supplier<String> message, Verbosity verbosity) {
         if (configuration == null) {
-            originalSystemErr.println(message.get());
+            println(originalSystemErr, message.get());
         } else {
             OpenPrintStream multiStream = configuration.logStreams.get(verbosity);
             if (multiStream != null) {
                 final String formattedMessage = formatMessage(message.get());
-                multiStream.println(formattedMessage);
+                println(multiStream, formattedMessage);
             }
         }
     }
 
+    public void printProgress(Supplier<String> message) {
+        if (configuration == null) {
+            printProgress(originalSystemOut, message.get());
+        } else {
+            OpenPrintStream multiStream = configuration.logStreams.get(Verbosity.PROGRESS);
+            if (multiStream != null) {
+                printProgress(multiStream, formatMessage(message.get()));
+            }
+        }
+    }
+
+    public void println(PrintStream stream, String message) {
+        synchronized (this) {
+            if (progressSize > 0) {
+                stream.println(fillBuffer(message.toCharArray()));
+                progressSize = 0;
+            } else {
+                stream.println(message);
+            }
+        }
+    }
+
+    public void printProgress(PrintStream stream, String message) {
+        synchronized (this) {
+            char[] charArray = message.toCharArray();
+            if (progressSize > 0) {
+                stream.print(fillBuffer(charArray));
+            } else {
+                stream.print(message);
+            }
+            progressSize = charArray.length;
+        }
+    }
+
+    private char[] fillBuffer(char[] charArray) {
+        char[] buffer = new char[Math.max(progressSize, charArray.length) + 1];
+        buffer[0] = '\r';
+        System.arraycopy(charArray, 0, buffer, 1, charArray.length);
+        Arrays.fill(buffer, charArray.length + 1, buffer.length, ' ');
+        return buffer;
+    }
+
     public void println(Throwable error, boolean isWarning) {
         if (configuration == null) {
-            originalSystemErr.println(error.getMessage());
+            println(originalSystemErr, error.getMessage());
             error.printStackTrace(originalSystemErr);
         } else {
             Verbosity verbosity = isWarning ? Verbosity.WARNING : Verbosity.ERROR;
             OpenPrintStream multiStream = configuration.logStreams.get(verbosity);
             if (multiStream != null) {
-                final String formattedMessage = formatMessage(error.getMessage());
-                multiStream.println(formattedMessage);
+                println(multiStream, formatMessage(error.getMessage()));
                 error.printStackTrace(multiStream);
             }
         }

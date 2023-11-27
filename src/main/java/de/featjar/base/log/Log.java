@@ -264,7 +264,7 @@ public interface Log {
      * @param message the message
      */
     default void progress(Supplier<String> message) {
-        println(message, Verbosity.PROGRESS);
+        printProgress(message);
     }
 
     /**
@@ -295,6 +295,10 @@ public interface Log {
      */
     default void log(Supplier<String> message, Verbosity verbosity) {
         println(message, verbosity);
+    }
+
+    default void printProgress(Supplier<String> message) {
+        println(message, Verbosity.PROGRESS);
     }
 
     void println(Supplier<String> message, Verbosity verbosity);
