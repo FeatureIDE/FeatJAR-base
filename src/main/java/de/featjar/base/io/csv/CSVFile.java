@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2023 FeatJAR-Development-Team
+ * Copyright (C) 2024 FeatJAR-Development-Team
  *
  * This file is part of FeatJAR-base.
  *
@@ -27,15 +27,21 @@ import de.featjar.base.io.output.FileOutput;
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.math.BigInteger;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Locale;
+import java.util.function.Consumer;
+import java.util.stream.Stream;
 
 /**
- * Writes CSV files.
- * Allows customized separators, number formats, and header fields.
- * Writes to a given output whenever {@link #flush()} is called.
+ * Writes CSV files. Allows customized separators, number formats, and header
+ * fields. Writes to a given output whenever {@link #flush()} is called.
  * Implements a fluent API for writing values to a new line, for example with
  * {@code csvFile.add(...).add(...).newLine().flush();}.
  *
@@ -44,14 +50,34 @@ import java.util.*;
  */
 public class CSVFile {
 
+    public static Stream<List<String>> readAllLines(Path csvFile) throws IOException {
+        return readAllLines(csvFile, DEFAULT_SEPARATOR);
+    }
+
+    public static Stream<List<String>> readAllLines(Path csvFile, String separator) throws IOException {
+        return Files.lines(csvFile).map(line -> Arrays.asList(line.split(separator)));
+    }
+
+    public static final void writeCSV(CSVFile writer, Consumer<CSVFile> writing) {
+        writer.newLine();
+        try {
+            writing.accept(writer);
+            writer.flush();
+        } catch (Exception e) {
+            FeatJAR.log().error(e);
+            writer.removeLastLine();
+        }
+    }
+
     protected static final String NEW_LINE = System.lineSeparator();
+    protected static final String DEFAULT_SEPARATOR = ",";
     protected NumberFormat numberFormat = DecimalFormat.getInstance(Locale.ENGLISH);
 
     {
         numberFormat.setGroupingUsed(false);
     }
 
-    protected String separator = ",";
+    protected String separator = DEFAULT_SEPARATOR;
     protected List<String> headerFields = null;
     protected boolean headerFieldsFlushed;
     protected final LinkedList<List<String>> values = new LinkedList<>();
@@ -59,6 +85,7 @@ public class CSVFile {
 
     /**
      * Creates CSV file written to the given output.
+     *
      * @param output the output
      */
     public CSVFile(AOutput output) {
@@ -69,9 +96,12 @@ public class CSVFile {
         this(new FileOutput(path, IO.DEFAULT_CHARSET));
     }
 
+    public CSVFile(Path path, boolean append) throws IOException {
+        this(new FileOutput(path, IO.DEFAULT_CHARSET, !append, true));
+    }
+
     /**
-     * {@return this CSV file's field separator}
-     * Usually "," or ";".
+     * {@return this CSV file's field separator} Usually "," or ";".
      */
     public String getSeparator() {
         return separator;
@@ -158,8 +188,8 @@ public class CSVFile {
     }
 
     /**
-     * Begin a new line of values in this CSV file.
-     * Add values with {@link #add(Object)}.
+     * Begin a new line of values in this CSV file. Add values with
+     * {@link #add(Object)}.
      *
      * @return this CSV file
      */
@@ -171,8 +201,8 @@ public class CSVFile {
     }
 
     /**
-     * Removes the last line of this CSV file.
-     * Useful to clean up an incomplete line.
+     * Removes the last line of this CSV file. Useful to clean up an incomplete
+     * line.
      *
      * @return this CSV file
      */
@@ -195,11 +225,11 @@ public class CSVFile {
     }
 
     /**
-     * Adds a value to the current line of this CSV file.
-     * Avoid scientific notation and non-English punctuation.
+     * Adds a value to the current line of this CSV file. Avoid scientific notation
+     * and non-English punctuation.
      *
      * @param value the value
-     *              @return this CSV file
+     * @return this CSV file
      */
     public CSVFile add(float value) {
         add(numberFormat.format(value));
@@ -207,11 +237,11 @@ public class CSVFile {
     }
 
     /**
-     * Adds a value to the current line of this CSV file.
-     * Avoid scientific notation and non-English punctuation.
+     * Adds a value to the current line of this CSV file. Avoid scientific notation
+     * and non-English punctuation.
      *
      * @param value the value
-     *              @return this CSV file
+     * @return this CSV file
      */
     public CSVFile add(double value) {
         add(numberFormat.format(value));
@@ -219,11 +249,11 @@ public class CSVFile {
     }
 
     /**
-     * Adds a value to the current line of this CSV file.
-     * Avoid scientific notation and non-English punctuation.
+     * Adds a value to the current line of this CSV file. Avoid scientific notation
+     * and non-English punctuation.
      *
      * @param value the value
-     *              @return this CSV file
+     * @return this CSV file
      */
     public CSVFile add(Float value) {
         add((float) value);
@@ -231,11 +261,11 @@ public class CSVFile {
     }
 
     /**
-     * Adds a value to the current line of this CSV file.
-     * Avoid scientific notation and non-English punctuation.
+     * Adds a value to the current line of this CSV file. Avoid scientific notation
+     * and non-English punctuation.
      *
      * @param value the value
-     *              @return this CSV file
+     * @return this CSV file
      */
     public CSVFile add(Double value) {
         add((double) value);
@@ -243,11 +273,11 @@ public class CSVFile {
     }
 
     /**
-     * Adds a value to the current line of this CSV file.
-     * Avoid scientific notation and non-English punctuation.
+     * Adds a value to the current line of this CSV file. Avoid scientific notation
+     * and non-English punctuation.
      *
      * @param value the value
-     *              @return this CSV file
+     * @return this CSV file
      */
     public CSVFile add(BigDecimal value) {
         add(value.doubleValue());
@@ -258,7 +288,7 @@ public class CSVFile {
      * Adds a value to the current line of this CSV file.
      *
      * @param value the value
-     *              @return this CSV file
+     * @return this CSV file
      */
     public CSVFile add(BigInteger value) {
         add(value.toString());
