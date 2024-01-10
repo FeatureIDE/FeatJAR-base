@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2023 FeatJAR-Development-Team
+ * Copyright (C) 2024 FeatJAR-Development-Team
  *
  * This file is part of FeatJAR-base.
  *
@@ -130,7 +130,7 @@ public final class FeatJAR extends IO implements AutoCloseable {
         final Configuration configuration = new Configuration();
         configuration
                 .logConfig
-                .logAtMost(Log.Verbosity.INFO)
+                .logAtMost(Log.Verbosity.PROGRESS)
                 .addFormatter(new TimeStampFormatter())
                 .addFormatter(new CallerFormatter());
         configuration.cacheConfig.setCachePolicy(Cache.CachePolicy.CACHE_NONE);
