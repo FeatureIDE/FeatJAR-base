@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2023 FeatJAR-Development-Team
+ * Copyright (C) 2024 FeatJAR-Development-Team
  *
  * This file is part of FeatJAR-base.
  *
@@ -239,6 +239,17 @@ public class Result<T> implements Supplier<T> {
     @SuppressWarnings("unchecked")
     public <U> Result<U> merge(Result<U> other) {
         return (Result<U>) mergeLast(Arrays.asList(this, other));
+    }
+
+    @SuppressWarnings("unchecked")
+    public <U> Result<U> unwrap() {
+        Result<?> innerResult = this;
+        Object innerObject = object;
+        while (innerObject instanceof Result) {
+            innerResult = (Result<?>) innerObject;
+            innerObject = innerResult.orElse(null);
+        }
+        return (Result<U>) innerResult;
     }
 
     /**
