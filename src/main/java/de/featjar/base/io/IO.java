@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2023 FeatJAR-Development-Team
+ * Copyright (C) 2024 FeatJAR-Development-Team
  *
  * This file is part of FeatJAR-base.
  *
@@ -56,6 +56,40 @@ public class IO {
      * Default {@link Charset} for loading inputs.
      */
     public static final Charset DEFAULT_CHARSET = StandardCharsets.UTF_8;
+
+    /**
+     * {@return the file extension of the given path.}
+     * @param file the file path
+     */
+    public static String getFileExtension(Path file) {
+        return getFileExtension(file.getFileName().toString());
+    }
+
+    /**
+     * {@return the file extension of the given file name.}
+     * @param fileName the file name
+     */
+    public static String getFileExtension(String fileName) {
+        final int extensionIndex = fileName.lastIndexOf('.');
+        return extensionIndex > 0 ? fileName.substring(extensionIndex + 1) : "";
+    }
+
+    /**
+     * {@return the file name of the given path as a String, omitting the file extension.}
+     * @param file the file path
+     */
+    public static String getFileNameWithoutExtension(Path file) {
+        return getFileNameWithoutExtension(file.getFileName().toString());
+    }
+
+    /**
+     * {@return the given file name omitting its file extension.}
+     * @param fileName the file name
+     */
+    public static String getFileNameWithoutExtension(String fileName) {
+        final int extensionIndex = fileName.lastIndexOf('.');
+        return extensionIndex > 0 ? fileName.substring(0, extensionIndex) : fileName;
+    }
 
     /**
      * Loads an input.
