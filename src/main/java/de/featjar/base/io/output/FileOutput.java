@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2023 FeatJAR-Development-Team
+ * Copyright (C) 2024 FeatJAR-Development-Team
  *
  * This file is part of FeatJAR-base.
  *
@@ -24,6 +24,7 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.nio.charset.Charset;
 import java.nio.file.Files;
+import java.nio.file.OpenOption;
 import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
 
@@ -33,24 +34,47 @@ import java.nio.file.StandardOpenOption;
  * @author Elias Kuiter
  */
 public class FileOutput extends AOutput {
+
+    /**
+     * Creates a physical file output. This method creates non-existent files and replaces existing ones.
+     *
+     * @param path    the path
+     * @param charset the charset
+     * @throws IOException if an I/O error occurs
+     *
+     * @see FileOutput#FileOutput(Path, Charset, boolean, boolean)
+     */
+    public FileOutput(Path path, Charset charset) throws IOException {
+        this(path, charset, true, true);
+    }
+
     /**
      * Creates a physical file output.
      *
      * @param path    the path
      * @param charset the charset
+     * @param overwrite whether an existing file should be replaced or appended to
+     * @param createNewFiles whether a non-existing file should be created
      * @throws IOException if an I/O error occurs
      */
-    public FileOutput(Path path, Charset charset) throws IOException {
-        super(newOutputStream(path), charset);
+    public FileOutput(Path path, Charset charset, boolean overwrite, boolean createNewFiles) throws IOException {
+        super(newOutputStream(path, overwrite, createNewFiles), charset);
     }
 
     @SuppressWarnings("ResultOfMethodCallIgnored")
-    private static OutputStream newOutputStream(Path path) throws IOException {
-        // TODO: currently, we always allow creating new files. this could be weakened with a flag, if necessary.
-        //  also, we always truncate files. we could consider allowing appending to files as well.
+    private static OutputStream newOutputStream(Path path, boolean overwrite, boolean createNewFiles)
+            throws IOException {
         final Path parent = path.getParent();
-        if (parent != null) Files.createDirectories(parent);
-        return Files.newOutputStream(
-                path, StandardOpenOption.TRUNCATE_EXISTING, StandardOpenOption.CREATE, StandardOpenOption.WRITE);
+        if (parent != null) {
+            if (createNewFiles) {
+                Files.createDirectories(parent);
+            } else {
+                throw new IOException(String.format("Path %s does not exist", parent.toString()));
+            }
+        }
+        OpenOption appendOption = overwrite ? StandardOpenOption.TRUNCATE_EXISTING : StandardOpenOption.APPEND;
+        return createNewFiles
+                ? Files.newOutputStream(path, StandardOpenOption.WRITE, appendOption, StandardOpenOption.CREATE)
+                : Files.newOutputStream(path, StandardOpenOption.WRITE, appendOption);
     }
 }
