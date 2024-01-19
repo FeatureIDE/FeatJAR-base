@@ -28,7 +28,7 @@ import java.util.function.Supplier;
 
 public class ResourcePool<T> {
 
-	private final BlockingQueue<T> pool;
+    private final BlockingQueue<T> pool;
     private Supplier<T> supplier;
 
     private int maxObjectsToCreate;
