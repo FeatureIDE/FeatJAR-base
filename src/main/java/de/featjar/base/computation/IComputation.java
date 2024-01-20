@@ -79,6 +79,10 @@ public interface IComputation<T> extends Supplier<Result<T>>, IDependent {
      */
     Result<T> compute(List<Object> dependencyList, Progress progress);
 
+    default Result<T> getIntermediateResult() {
+        return Result.empty();
+    }
+
     default T compute() {
         return computeResult().orElseThrow();
     }
@@ -149,6 +153,24 @@ public interface IComputation<T> extends Supplier<Result<T>>, IDependent {
         return computeResult(true, true);
     }
 
+    /**
+     * {@return the (cached) result of this computation or, in case of a timeout or an error, an intermediate result, if available}
+     * Blocks until the computation is finished or until the timeout is reached.
+     * 
+     * @param timeout the timeout
+     *
+     * @see #computeFutureResult(boolean, boolean)
+     */
+    default Result<T> computeResult(Duration timeout) {
+        try {
+            return computeFutureResult(true, true)
+                    .getPromise()
+                    .onTimeout(() -> getIntermediateResult(), timeout, true)
+                    .get();
+        } catch (Exception e) {
+            return Result.empty(e);
+        }
+    }
     /**
      * {@return the (synchronous and uncached) result of this computation}
      *

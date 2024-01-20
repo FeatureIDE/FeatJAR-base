@@ -252,6 +252,20 @@ public class FutureResult<T> implements Supplier<Result<T>> {
     }
 
     /**
+     * {@return this future result's result}
+     * Blocks synchronously until the result is available or until the timeout is reached.
+     *
+     * @param timeout the timeout
+     */
+    public Result<T> get(Duration timeout) {
+        try {
+            return promise.orTimeout(timeout).get();
+        } catch (InterruptedException | ExecutionException | CancellationException e) {
+            return Result.empty(e);
+        }
+    }
+
+    /**
      * Cancels the execution of this future result's promise when a given duration has passed.
      * Discards any partially computed result.
      *
