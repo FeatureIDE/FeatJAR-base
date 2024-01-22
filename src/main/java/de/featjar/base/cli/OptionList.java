@@ -22,9 +22,11 @@ package de.featjar.base.cli;
 
 import de.featjar.base.FeatJAR;
 import de.featjar.base.FeatJAR.Configuration;
+import de.featjar.base.data.Problem;
 import de.featjar.base.data.Result;
 import de.featjar.base.log.IndentStringBuilder;
 import de.featjar.base.log.Log;
+import de.featjar.base.log.Log.Verbosity;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.nio.file.Files;
@@ -36,6 +38,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.ListIterator;
 import java.util.Map.Entry;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.Properties;
 
@@ -48,9 +51,15 @@ import java.util.Properties;
 public class OptionList {
 
     /**
+     * Option for setting the logger output.
+     */
+    static Option<List<Path>> CONFIGURATION_OPTION =
+            new ListOption<>("config", Option.PathParser).setDescription("The path to a configuration file");
+
+    /**
      * Option for printing usage information.
      */
-    Option<ICommand> COMMAND_OPTION = new Option<>("command", s -> FeatJAR.extensionPoint(Commands.class)
+    static Option<ICommand> COMMAND_OPTION = new Option<>("command", s -> FeatJAR.extensionPoint(Commands.class)
                     .getMatchingExtension(s)
                     .get())
             .setRequired(true)
@@ -59,50 +68,58 @@ public class OptionList {
     /**
      * Option for printing usage information.
      */
-    Option<Boolean> HELP_OPTION = new Flag("help").setDescription("Print usage information");
+    static Option<Boolean> HELP_OPTION = new Flag("help").setDescription("Print usage information");
 
     /**
      * Option for printing version information.
      */
-    Option<Boolean> VERSION_OPTION = new Flag("version").setDescription("Print version information");
+    static Option<Boolean> VERSION_OPTION = new Flag("version").setDescription("Print version information");
 
-    /**
-     * Option for printing version information.
-     */
-    Option<Path> LOG_FILE_OPTION =
-            new Option<>("logfile", Option.PathParser).setDescription("Set the output file for the log");
+    static Option<Path> INFO_FILE_OPTION =
+            new Option<>("info-file", Option.PathParser).setDescription("Path to info log file");
 
-    /**
-     * Option for printing version information.
-     */
-    Option<Path> ERROR_LOG_FILE_OPTION =
-            new Option<>("errorfile", Option.PathParser).setDescription("Set the output file for the error log");
+    static Option<Path> ERROR_FILE_OPTION =
+            new Option<>("error-file", Option.PathParser).setDescription("Path to error log file");
 
-    /**
-     * Option for setting the logger verbosity.
-     */
-    Option<Log.Verbosity> VERBOSITY_OPTION = new Option<>("verbosity", Option.valueOf(Log.Verbosity.class))
-            .setDescription(String.format("The logger verbosity (%s)", Option.possibleValues(Log.Verbosity.class)))
-            .setDefaultValue(Commands.DEFAULT_VERBOSITY);
+    static Option<List<Log.Verbosity>> LOG_INFO_OPTION = new ListOption<>(
+                    "log-info", Option.valueOf(Log.Verbosity.class))
+            .setDescription(String.format(
+                    "Message types printed to the info stream (%s)", Option.possibleValues(Log.Verbosity.class)))
+            .setDefaultValue(List.of(Log.Verbosity.MESSAGE, Log.Verbosity.INFO, Log.Verbosity.PROGRESS));
+
+    static Option<List<Log.Verbosity>> LOG_ERROR_OPTION = new ListOption<>(
+                    "log-error", Option.valueOf(Log.Verbosity.class))
+            .setDescription(String.format(
+                    "Message types printed to the error stream (%s)", Option.possibleValues(Log.Verbosity.class)))
+            .setDefaultValue(List.of(Log.Verbosity.ERROR));
+
+    static Option<List<Log.Verbosity>> LOG_INFO_FILE_OPTION = new ListOption<>(
+                    "log-info-file", Option.valueOf(Log.Verbosity.class))
+            .setDescription(String.format(
+                    "Message types printed to the info file (%s)", Option.possibleValues(Log.Verbosity.class)))
+            .setDefaultValue(List.of(Log.Verbosity.MESSAGE, Log.Verbosity.INFO, Log.Verbosity.DEBUG));
+
+    static Option<List<Log.Verbosity>> LOG_ERROR_FILE_OPTION = new ListOption<>(
+                    "log-error-file", Option.valueOf(Log.Verbosity.class))
+            .setDescription(String.format(
+                    "Message types printed to the error file (%s)", Option.possibleValues(Log.Verbosity.class)))
+            .setDefaultValue(List.of(Log.Verbosity.ERROR, Log.Verbosity.WARNING));
 
     private final List<Option<?>> options = new ArrayList<>(List.of(
             CONFIGURATION_OPTION,
             COMMAND_OPTION,
             HELP_OPTION,
             VERSION_OPTION,
-            VERBOSITY_OPTION,
-            LOG_FILE_OPTION,
-            ERROR_LOG_FILE_OPTION));
+            INFO_FILE_OPTION,
+            ERROR_FILE_OPTION,
+            LOG_INFO_OPTION,
+            LOG_ERROR_OPTION,
+            LOG_INFO_FILE_OPTION,
+            LOG_ERROR_FILE_OPTION));
 
     private final List<String> commandLineArguments;
     private final List<String> configFileArguments = new ArrayList<>();
     private LinkedHashMap<String, Object> properties;
-
-    /**
-     * Option for setting the logger output.
-     */
-    public static Option<List<Path>> CONFIGURATION_OPTION =
-            new ListOption<>("config", Option.PathParser).setDescription("The path to a configuration file");
 
     /**
      * Creates a new option list.
@@ -133,7 +150,7 @@ public class OptionList {
         if (indexOf >= 0) {
             if (commandLineArguments.size() > indexOf + 1) {
                 parseOption(CONFIGURATION_OPTION, commandLineArguments.get(indexOf + 1));
-                Result<List<Path>> config = get(CONFIGURATION_OPTION);
+                Result<List<Path>> config = getResult(CONFIGURATION_OPTION);
                 if (!config.isEmpty()) {
                     configFileArguments.clear();
                     List<Path> configPathList = config.get();
@@ -169,7 +186,7 @@ public class OptionList {
         ListIterator<String> listIterator = arguments.listIterator();
         while (listIterator.hasNext()) {
             String argument = listIterator.next();
-            if (!argument.matches("--\\w+")) {
+            if (!argument.matches("--\\w[-\\w]*")) {
                 if (logWarnings) FeatJAR.log().warning("ignoring unrecognized argument %s", argument);
                 continue;
             }
@@ -243,15 +260,24 @@ public class OptionList {
     }
 
     @SuppressWarnings("unchecked")
-    public <T> Result<T> get(Option<T> option) {
-        return Result.ofNullable((T) properties.getOrDefault(option.getName(), option.defaultValue));
+    public <T> Result<T> getResult(Option<T> option) {
+        T optionValue = (T) properties.getOrDefault(option.getName(), option.defaultValue);
+        return optionValue != null
+                ? Result.of(optionValue)
+                : Result.empty(
+                        new Problem(String.format("Option <%s> was not set and has no default value", option.name)));
+    }
+
+    @SuppressWarnings("unchecked")
+    public <T> T get(Option<T> option) {
+        return Objects.requireNonNull((T) properties.getOrDefault(option.getName(), option.defaultValue));
     }
 
     /**
      * {@return the commands supplied in this option input}
      */
     public Result<ICommand> getCommand() {
-        return get(COMMAND_OPTION);
+        return getResult(COMMAND_OPTION);
     }
 
     /**
@@ -303,7 +329,7 @@ public class OptionList {
                 sb.appendLine();
                 sb.appendLine("General options:").addIndent();
                 List<Option<?>> generalOptions = new ArrayList<>(getOptions());
-                Collections.sort(generalOptions, Comparator.comparing(Option::getArgumentName));
+                Collections.sort(generalOptions, Comparator.comparing(Option::getName));
                 sb.appendLine(generalOptions).removeIndent();
 
                 List<Option<?>> options = new ArrayList<>(command.getOptions());
@@ -325,37 +351,33 @@ public class OptionList {
      */
     public Configuration getConfiguration() {
         final Configuration configuration = FeatJAR.createDefaultConfiguration();
+        getResult(INFO_FILE_OPTION).ifPresent(p -> logToFile(configuration, p, LOG_INFO_FILE_OPTION));
+        getResult(ERROR_FILE_OPTION).ifPresent(p -> logToFile(configuration, p, LOG_ERROR_FILE_OPTION));
+        configuration.logConfig.logToSystemOut(get(LOG_INFO_OPTION).toArray(new Log.Verbosity[0]));
+        configuration.logConfig.logToSystemErr(get(LOG_ERROR_OPTION).toArray(new Log.Verbosity[0]));
+        return configuration;
+    }
+
+    private void logToFile(Configuration configuration, Path path, Option<List<Verbosity>> verbosities) {
         try {
-            configuration.logConfig.logAtMost(
-                    get(VERBOSITY_OPTION).get(),
-                    get(LOG_FILE_OPTION).orElse(null),
-                    get(ERROR_LOG_FILE_OPTION).orElse(null));
+            configuration.logConfig.logToFile(path, get(verbosities).toArray(new Log.Verbosity[0]));
         } catch (FileNotFoundException e) {
             FeatJAR.log().error(e);
-            configuration.logConfig.logAtMost(get(VERBOSITY_OPTION).get());
         }
-        return configuration;
     }
 
     /**
      * {@return whether this option input requests help information}
      */
     public boolean isHelp() {
-        return get(HELP_OPTION).orElse(Boolean.FALSE);
+        return getResult(HELP_OPTION).orElse(Boolean.FALSE);
     }
 
     /**
      * {@return whether this option input requests version information}
      */
     public boolean isVersion() {
-        return get(VERSION_OPTION).orElse(Boolean.FALSE);
-    }
-
-    /**
-     * {@return the verbosity supplied in this option input}
-     */
-    public Log.Verbosity getVerbosity() {
-        return get(VERBOSITY_OPTION).get();
+        return getResult(VERSION_OPTION).orElse(Boolean.FALSE);
     }
 
     /**

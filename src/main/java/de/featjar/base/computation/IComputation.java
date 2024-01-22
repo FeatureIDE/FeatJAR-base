@@ -154,16 +154,18 @@ public interface IComputation<T> extends Supplier<Result<T>>, IDependent {
     }
 
     /**
-     * {@return the (cached) result of this computation or, in case of a timeout or an error, an intermediate result, if available}
+     * {@return the result of this computation or, in case of a timeout or an error, an intermediate result, if available}
      * Blocks until the computation is finished or until the timeout is reached.
-     * 
-     * @param timeout the timeout
+     *
+     * @param tryHitCache   whether the cache should be queried for the result
+     * @param tryWriteCache whether the result should be stored in the cache
+     * @param timeout       the timeout
      *
      * @see #computeFutureResult(boolean, boolean)
      */
-    default Result<T> computeResult(Duration timeout) {
+    default Result<T> computeResult(boolean tryHitCache, boolean tryWriteCache, Duration timeout) {
         try {
-            return computeFutureResult(true, true)
+            return computeFutureResult(tryHitCache, tryWriteCache)
                     .getPromise()
                     .onTimeout(() -> getIntermediateResult(), timeout, true)
                     .get();
@@ -171,6 +173,19 @@ public interface IComputation<T> extends Supplier<Result<T>>, IDependent {
             return Result.empty(e);
         }
     }
+
+    /**
+     * {@return the (cached) result of this computation or, in case of a timeout or an error, an intermediate result, if available}
+     * Blocks until the computation is finished or until the timeout is reached.
+     *
+     * @param timeout the timeout
+     *
+     * @see #computeFutureResult(boolean, boolean)
+     */
+    default Result<T> computeResult(Duration timeout) {
+        return computeResult(true, true, timeout);
+    }
+
     /**
      * {@return the (synchronous and uncached) result of this computation}
      *

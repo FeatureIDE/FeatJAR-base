@@ -76,7 +76,8 @@ class IComputationTest {
         final Configuration configuration = new Configuration();
         configuration
                 .logConfig
-                .logAtMost(Log.Verbosity.INFO)
+                .logToSystemErr(Log.Verbosity.ERROR, Log.Verbosity.WARNING)
+                .logToSystemOut(Log.Verbosity.MESSAGE, Log.Verbosity.INFO)
                 .addFormatter(new TimeStampFormatter())
                 .addFormatter(new CallerFormatter());
         configuration.cacheConfig.setCachePolicy(Cache.CachePolicy.CACHE_TOP_LEVEL);

@@ -22,7 +22,6 @@ package de.featjar.base.log;
 
 import de.featjar.base.FeatJAR;
 import de.featjar.base.data.Maps;
-import de.featjar.base.data.Result;
 import de.featjar.base.extension.IInitializer;
 import de.featjar.base.io.MultiStream;
 import de.featjar.base.io.OpenPrintStream;
@@ -149,43 +148,29 @@ public class ConfigurableLog implements Log, IInitializer {
         }
 
         public Configuration logAtMost(Verbosity verbosity) {
-            try {
-                return logAtMost(verbosity, null, null);
-            } catch (FileNotFoundException e) {
-                throw new RuntimeException(e);
-            }
-        }
-
-        public Configuration logAtMost(Verbosity verbosity, Path logFile, Path errorFile) throws FileNotFoundException {
             switch (verbosity) {
-                case NONE:
-                    break;
                 case MESSAGE:
-                    logToLog(logFile, Verbosity.MESSAGE);
+                    logToSystemOut(Verbosity.MESSAGE);
                     break;
                 case ERROR:
-                    logToError(errorFile, Verbosity.ERROR);
-                    logToLog(logFile, Verbosity.MESSAGE);
+                    logToSystemErr(Verbosity.ERROR);
+                    logToSystemOut(Verbosity.MESSAGE);
                     break;
                 case WARNING:
-                    logToError(errorFile, Verbosity.ERROR, Verbosity.WARNING);
-                    logToLog(logFile, Verbosity.MESSAGE);
+                    logToSystemErr(Verbosity.ERROR, Verbosity.WARNING);
+                    logToSystemOut(Verbosity.MESSAGE);
                     break;
                 case INFO:
-                    logToError(errorFile, Verbosity.ERROR, Verbosity.WARNING);
-                    logToLog(logFile, Verbosity.MESSAGE, Verbosity.INFO);
+                    logToSystemErr(Verbosity.ERROR, Verbosity.WARNING);
+                    logToSystemOut(Verbosity.MESSAGE, Verbosity.INFO);
                     break;
                 case DEBUG:
-                    logToError(errorFile, Verbosity.ERROR, Verbosity.WARNING);
-                    logToLog(logFile, Verbosity.MESSAGE, Verbosity.INFO, Verbosity.DEBUG);
+                    logToSystemErr(Verbosity.ERROR, Verbosity.WARNING);
+                    logToSystemOut(Verbosity.MESSAGE, Verbosity.INFO, Verbosity.DEBUG);
                     break;
                 case PROGRESS:
-                    logToError(errorFile, Verbosity.ERROR, Verbosity.WARNING);
-                    logToLog(logFile, Verbosity.MESSAGE, Verbosity.INFO, Verbosity.PROGRESS);
-                    break;
-                case ALL:
-                    logToError(errorFile, Verbosity.ERROR, Verbosity.WARNING);
-                    logToLog(logFile, Verbosity.MESSAGE, Verbosity.INFO, Verbosity.DEBUG, Verbosity.PROGRESS);
+                    logToSystemErr(Verbosity.ERROR, Verbosity.WARNING);
+                    logToSystemOut(Verbosity.MESSAGE, Verbosity.INFO, Verbosity.PROGRESS);
                     break;
                 default:
                     break;
@@ -193,20 +178,9 @@ public class ConfigurableLog implements Log, IInitializer {
             return this;
         }
 
-        private void logToLog(Path logFile, Verbosity... verbosities) throws FileNotFoundException {
-            logToSystemOut(verbosities);
-            if (logFile != null) logToFile(logFile, verbosities);
-        }
-
-        private void logToError(Path errorFile, Verbosity... verbosities) throws FileNotFoundException {
-            logToSystemErr(verbosities);
-            if (errorFile != null) logToFile(errorFile, verbosities);
-        }
-
-        public Configuration logAtMost(String verbosityString) {
-            Result<Verbosity> verbosity = Verbosity.of(verbosityString);
-            if (verbosity.isEmpty()) throw new IllegalArgumentException("invalid verbosity " + verbosityString);
-            logAtMost(verbosity.get());
+        public Configuration logAll() {
+            logToSystemErr(Verbosity.ERROR, Verbosity.WARNING);
+            logToSystemOut(Verbosity.MESSAGE, Verbosity.INFO, Verbosity.DEBUG, Verbosity.PROGRESS);
             return this;
         }
     }

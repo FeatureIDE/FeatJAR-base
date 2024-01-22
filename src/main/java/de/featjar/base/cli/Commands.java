@@ -26,7 +26,6 @@ import de.featjar.base.extension.AExtensionPoint;
 import de.featjar.base.io.IO;
 import de.featjar.base.io.format.IFormat;
 import de.featjar.base.io.format.IFormatSupplier;
-import de.featjar.base.log.Log;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -52,10 +51,6 @@ import java.util.stream.Collectors;
  * @author Elias Kuiter
  */
 public class Commands extends AExtensionPoint<ICommand> {
-    /**
-     * The default verbosity on startup, if not specified elsewhere.
-     */
-    public static final Log.Verbosity DEFAULT_VERBOSITY = Log.Verbosity.INFO;
 
     /**
      * A magic string that identifies the standard input stream.

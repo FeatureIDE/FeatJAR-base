@@ -43,10 +43,6 @@ public interface Log {
      */
     public enum Verbosity {
         /**
-         * Indicates that no messages should be logged.
-         */
-        NONE,
-        /**
          * Regular message. For explicit console output.
          */
         MESSAGE,
@@ -69,11 +65,7 @@ public interface Log {
         /**
          * Progress message. Typically used to signal progress in long-running jobs.
          */
-        PROGRESS,
-        /**
-         * Indicates that all messages should be logged.
-         */
-        ALL;
+        PROGRESS;
 
         public static boolean isValid(String verbosityString) {
             String[] verbosities = new String[] {"none", "error", "warning", "info", "debug", "progress"};

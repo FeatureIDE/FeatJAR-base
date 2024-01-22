@@ -195,7 +195,7 @@ public class Option<T> {
                 "%s <value>%s%s",
                 getArgumentName(),
                 getDescription().map(d -> ": " + d).orElse(""),
-                defaultValue != null ? String.format(" (default: %s)", defaultValue) : "");
+                getDefaultValue().map(s -> " (default: " + s + ")").orElse(""));
     }
 
     Result<T> parse(String s) {

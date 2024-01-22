@@ -42,17 +42,20 @@ class ArgumentParserTest {
 
     @Test
     void getVerbosity() {
-        // assertEquals(Log.Verbosity.DEBUG, parser("arg", "--verbosity").getVerbosity()); todo: mock System.exit
+        // assertEquals(Log.Verbosity.DEBUG, parser("arg", "--log-info").getVerbosity()); todo: mock System.exit
         assertEquals(
                 Log.Verbosity.DEBUG,
-                parser("arg", "--verbosity", "debug").parseArguments().getVerbosity());
+                parser("arg", "--log-info", "debug")
+                        .parseArguments()
+                        .get(OptionList.LOG_INFO_OPTION)
+                        .get(0));
     }
 
     @Test
     void parseOption1() {
         Option<Integer> option = new Option<>("x", Integer::valueOf);
         OptionList parser = parser("arg").addOptions(List.of(option)).parseArguments();
-        assertEquals(Result.empty(), parser.get(option));
+        assertEquals(Result.empty(), parser.getResult(option));
     }
 
     @Test
@@ -60,6 +63,6 @@ class ArgumentParserTest {
         Option<Integer> option = new Option<>("x", Integer::valueOf);
         OptionList parser =
                 parser("arg", "--x", "42").addOptions(List.of(option)).parseArguments();
-        assertEquals(Result.of(42), parser.get(option));
+        assertEquals(Result.of(42), parser.getResult(option));
     }
 }

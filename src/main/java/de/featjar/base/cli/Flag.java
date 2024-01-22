@@ -33,6 +33,7 @@ public class Flag extends Option<Boolean> {
      */
     public Flag(String name) {
         super(name, null);
+        defaultValue = Boolean.FALSE;
     }
 
     @Override

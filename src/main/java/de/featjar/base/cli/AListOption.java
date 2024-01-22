@@ -66,6 +66,9 @@ public class AListOption<T> extends Option<List<T>> {
     @Override
     public String toString() {
         return String.format(
-                "%s <value,...>%s", name, getDescription().map(d -> ": " + d).orElse(""));
+                "%s <value1,value2,...>%s%s",
+                getArgumentName(),
+                getDescription().map(d -> ": " + d).orElse(""),
+                getDefaultValue().map(s -> " (default: " + s + ")").orElse(""));
     }
 }

@@ -130,7 +130,8 @@ public final class FeatJAR extends IO implements AutoCloseable {
         final Configuration configuration = new Configuration();
         configuration
                 .logConfig
-                .logAtMost(Log.Verbosity.PROGRESS)
+                .logToSystemOut(Log.Verbosity.MESSAGE, Log.Verbosity.INFO, Log.Verbosity.PROGRESS)
+                .logToSystemErr(Log.Verbosity.ERROR)
                 .addFormatter(new TimeStampFormatter())
                 .addFormatter(new CallerFormatter());
         configuration.cacheConfig.setCachePolicy(Cache.CachePolicy.CACHE_NONE);
