@@ -20,12 +20,12 @@
  */
 package de.featjar.base.data;
 
+import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 
 /**
- * A problem that wraps an {@link Exception}.
- * Can be stored in a {@link Result}.
+ * A problem that wraps an {@link Exception}. Can be stored in a {@link Result}.
  *
  * @author Sebastian Krieter
  * @author Elias Kuiter
@@ -35,7 +35,7 @@ public class Problem {
     /**
      * Severity of a problem.
      */
-    public enum Severity {
+    public static enum Severity {
         /**
          * A warning, which does not prevent processing of an object.
          */
@@ -44,6 +44,26 @@ public class Problem {
          * A severe error, which usually prevents processing of an object.
          */
         ERROR
+    }
+
+    /**
+     * Writes all messages of the given problems to a string.
+     *
+     * @param problems the problem list
+     * @return a string containing one message per line
+     */
+    public static String printProblems(List<Problem> problems) {
+        if (!problems.isEmpty()) {
+            StringBuilder sb = new StringBuilder();
+            for (Problem problem : problems) {
+                sb.append(problem.getMessage());
+                sb.append('\n');
+            }
+            sb.deleteCharAt(sb.length() - 1);
+            return sb.toString();
+        } else {
+            return "";
+        }
     }
 
     protected final Exception exception;
@@ -70,7 +90,7 @@ public class Problem {
     /**
      * Creates an error problem with a message.
      *
-     * @param message the message
+     * @param message  the message
      * @param severity the severity
      */
     public Problem(String message, Severity severity) {
@@ -81,7 +101,7 @@ public class Problem {
      * Creates an error problem with an exception.
      *
      * @param exception the exception
-     * @param severity the severity
+     * @param severity  the severity
      */
     public Problem(Exception exception, Severity severity) {
         this.exception = Objects.requireNonNull(exception);
