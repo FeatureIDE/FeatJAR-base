@@ -25,6 +25,8 @@ import de.featjar.base.computation.IComputation;
 import de.featjar.base.io.format.IFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.Objects;
@@ -54,14 +56,16 @@ public class Result<T> implements Supplier<T> {
 
     private final T object;
 
-    private final List<Problem> problems;
+    private final List<Problem> problems = new LinkedList<>();
 
     protected Result(T object, List<Problem> problems) {
         this.object = object;
         problems = problems == null
                 ? null
                 : problems.stream().filter(Objects::nonNull).collect(Collectors.toList());
-        this.problems = problems != null && !problems.isEmpty() ? problems : null;
+        if (problems != null && !problems.isEmpty()) {
+            this.problems.addAll(problems);
+        }
     }
 
     /**
@@ -291,6 +295,18 @@ public class Result<T> implements Supplier<T> {
     }
 
     /**
+     * Consumes the problem list of this result, if the object is {@code null}.
+     * This list is guaranteed to be non-null and read-only.
+     *
+     * @param problemHandler the problem list consumer
+     */
+    public void ifEmpty(Consumer<List<Problem>> problemHandler) {
+        if (object != null) {
+            problemHandler.accept(Collections.unmodifiableList(problems));
+        }
+    }
+
+    /**
      * Maps the object in this result to another object using a mapper function.
      *
      * @param mapper the mapper function
@@ -354,6 +370,22 @@ public class Result<T> implements Supplier<T> {
     }
 
     /**
+     * {@return this result or an alternative result if this result is empty}
+     * If this result is empty, the problems of this result are added to the alternative.
+     *
+     *
+     * @param alternative the alternative result
+     */
+    public Result<T> or(Result<T> alternative) {
+        Objects.requireNonNull(alternative);
+        if (object != null) {
+            return this;
+        }
+        alternative.problems.addAll(problems);
+        return alternative;
+    }
+
+    /**
      * {@return this result's object or an alternative object}
      *
      * @param alternative the alternative object
@@ -403,16 +435,17 @@ public class Result<T> implements Supplier<T> {
 
     /**
      * {@return this result's problems}
+     * The returned list is guaranteed to be non-null and read-only.
      */
     public List<Problem> getProblems() {
-        return problems != null ? problems : List.of();
+        return Collections.unmodifiableList(problems);
     }
 
     /**
      * {@return whether this result has problems}
      */
     public boolean hasProblems() {
-        return problems != null;
+        return !problems.isEmpty();
     }
 
     /**
@@ -442,22 +475,21 @@ public class Result<T> implements Supplier<T> {
 
     @Override
     public boolean equals(Object o) {
-        // TODO the problem is ignored as it cannot be compared for equality, and it only carries metadata for the user
+        // the problem is ignored as it cannot be compared for equality, and it only carries metadata for the user
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
-        Result<?> result = (Result<?>) o;
-        return Objects.equals(object, result.object);
+        return Objects.equals(object, ((Result<?>) o).object);
     }
 
     @Override
     public int hashCode() {
-        // TODO the problem is ignored as it cannot be hashed, and it only carries metadata for the user
+        // the problem is ignored as it cannot be hashed, and it only carries metadata for the user
         return Objects.hash(object);
     }
 
     @Override
     public String toString() {
-        return "Result{" + orElse(null) + ", " + problems + "}";
+        return "Result{" + object + ", " + problems + "}";
     }
 
     /**
