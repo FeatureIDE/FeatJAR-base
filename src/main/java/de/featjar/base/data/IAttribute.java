@@ -20,9 +20,8 @@
  */
 package de.featjar.base.data;
 
-import java.util.LinkedHashMap;
-import java.util.function.BiFunction;
 import java.util.function.BiPredicate;
+import java.util.function.Function;
 
 /**
  * Describes metadata that can be attached to an object.
@@ -30,25 +29,25 @@ import java.util.function.BiPredicate;
  *
  * @author Elias Kuiter
  */
-public interface IAttribute extends BiFunction<IAttributable, LinkedHashMap<IAttribute, Object>, Result<Object>> {
+public interface IAttribute<T> extends Function<IAttributable, Result<T>> {
     String getNamespace();
 
     String getName();
 
-    Class<?> getType();
+    Class<T> getType();
 
-    default Result<Object> getDefaultValue(IAttributable attributable) {
+    default Result<T> getDefaultValue(IAttributable attributable) {
         return Result.empty();
     }
 
-    default BiPredicate<IAttributable, Object> getValidator() {
+    default BiPredicate<IAttributable, T> getValidator() {
         return (a, o) -> true;
     }
 
     @Override
-    default Result<Object> apply(IAttributable attributable, LinkedHashMap<IAttribute, Object> attributeToValueMap) {
-        Result<Object> defaultValue = getDefaultValue(attributable);
-        if (defaultValue.isPresent()) return Result.of(attributeToValueMap.getOrDefault(this, defaultValue.get()));
-        else return Result.ofNullable(attributeToValueMap.get(this));
+    default Result<T> apply(IAttributable attributable) {
+        return Result.ofNullable(attributable.getAttributes().get(this))
+                .map(getType()::cast)
+                .or(getDefaultValue(attributable));
     }
 }

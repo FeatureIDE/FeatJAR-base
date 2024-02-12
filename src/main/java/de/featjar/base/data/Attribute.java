@@ -29,22 +29,19 @@ import java.util.function.Function;
  *
  * @author Elias Kuiter
  */
-public class Attribute implements IAttribute {
+public class Attribute<T> implements IAttribute<T> {
     public static final String DEFAULT_NAMESPACE = Attribute.class.getPackageName();
 
     protected final String namespace;
     protected final String name;
-    protected final Class<?> type;
-    protected BiPredicate<IAttributable, Object> validator;
-    protected Function<IAttributable, Object> defaultValueFunction;
+    protected final Class<T> type;
+    protected BiPredicate<IAttributable, T> validator;
+    protected Function<IAttributable, T> defaultValueFunction;
 
-    public Attribute(String namespace, String name, Class<?> type) {
-        Objects.requireNonNull(namespace);
-        Objects.requireNonNull(name);
-        Objects.requireNonNull(type);
-        this.namespace = namespace;
-        this.name = name;
-        this.type = type;
+    public Attribute(String namespace, String name, Class<T> type) {
+        this.namespace = Objects.requireNonNull(namespace);
+        this.name = Objects.requireNonNull(name);
+        this.type = Objects.requireNonNull(type);
     }
 
     @Override
@@ -58,14 +55,14 @@ public class Attribute implements IAttribute {
     }
 
     @Override
-    public Class<?> getType() {
+    public Class<T> getType() {
         return type;
     }
 
     /**
      * {@return this attribute's default value function}
      */
-    public Result<Function<IAttributable, Object>> getDefaultValueFunction() {
+    public Result<Function<IAttributable, T>> getDefaultValueFunction() {
         return Result.ofNullable(defaultValueFunction);
     }
 
@@ -75,7 +72,7 @@ public class Attribute implements IAttribute {
      * @param defaultValueFunction the function
      * @return this attribute
      */
-    public Attribute setDefaultValueFunction(Function<IAttributable, Object> defaultValueFunction) {
+    public Attribute<T> setDefaultValueFunction(Function<IAttributable, T> defaultValueFunction) {
         this.defaultValueFunction = defaultValueFunction;
         return this;
     }
@@ -84,7 +81,7 @@ public class Attribute implements IAttribute {
      * {@return this attribute's default value for a given object}
      */
     @Override
-    public Result<Object> getDefaultValue(IAttributable attributable) {
+    public Result<T> getDefaultValue(IAttributable attributable) {
         return getDefaultValueFunction().flatMap(f -> Result.ofNullable(f.apply(attributable)));
     }
 
@@ -94,7 +91,7 @@ public class Attribute implements IAttribute {
      * @param defaultValue the default value
      * @return this attribute
      */
-    public Attribute setDefaultValue(Object defaultValue) {
+    public Attribute<T> setDefaultValue(T defaultValue) {
         return setDefaultValueFunction(o -> defaultValue);
     }
 
@@ -102,7 +99,7 @@ public class Attribute implements IAttribute {
      * {@return this attribute's validator}
      */
     @Override
-    public BiPredicate<IAttributable, Object> getValidator() {
+    public BiPredicate<IAttributable, T> getValidator() {
         return Result.ofNullable(validator).orElse(IAttribute.super.getValidator());
     }
 
@@ -112,7 +109,7 @@ public class Attribute implements IAttribute {
      * @param validator the validator
      * @return this attribute
      */
-    public Attribute setValidator(BiPredicate<IAttributable, Object> validator) {
+    public Attribute<T> setValidator(BiPredicate<IAttributable, T> validator) {
         this.validator = validator;
         return this;
     }
@@ -126,7 +123,7 @@ public class Attribute implements IAttribute {
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
-        Attribute attribute = (Attribute) o;
+        Attribute<?> attribute = (Attribute<?>) o;
         return namespace.equals(attribute.namespace) && name.equals(attribute.name);
     }
 

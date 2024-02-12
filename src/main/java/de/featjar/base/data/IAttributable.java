@@ -28,13 +28,13 @@ import java.util.LinkedHashMap;
  * @author Elias Kuiter
  */
 public interface IAttributable {
-    LinkedHashMap<IAttribute, Object> getAttributeValues();
+    LinkedHashMap<IAttribute<?>, Object> getAttributes();
 
-    default Result<Object> getAttributeValue(Attribute attribute) {
-        return attribute.apply(this, getAttributeValues());
+    default <T> Result<T> getAttributeValue(Attribute<T> attribute) {
+        return attribute.apply(this);
     }
 
-    default boolean hasAttributeValue(Attribute attribute) {
+    default boolean hasAttributeValue(Attribute<?> attribute) {
         return getAttributeValue(attribute).isPresent();
     }
 
@@ -45,7 +45,7 @@ public interface IAttributable {
     }
 
     interface Mutator<T extends IAttributable & IMutable<T, ?>> extends IMutator<T> {
-        default void setAttributeValue(Attribute attribute, Object value) {
+        default <S> void setAttributeValue(Attribute<S> attribute, S value) {
             if (value == null) {
                 removeAttributeValue(attribute);
                 return;
@@ -57,14 +57,15 @@ public interface IAttributable {
             if (!attribute.getValidator().test(getMutable(), value)) {
                 throw new IllegalArgumentException("failed to validate attribute " + attribute + " for value " + value);
             }
-            getMutable().getAttributeValues().put(attribute, value);
+            getMutable().getAttributes().put(attribute, value);
         }
 
-        default <U> Object removeAttributeValue(Attribute attribute) {
-            return getMutable().getAttributeValues().remove(attribute);
+        @SuppressWarnings("unchecked")
+        default <S> S removeAttributeValue(Attribute<S> attribute) {
+            return (S) getMutable().getAttributes().remove(attribute);
         }
 
-        default boolean toggleAttributeValue(Attribute attribute) {
+        default boolean toggleAttributeValue(Attribute<Boolean> attribute) {
             boolean value = (boolean) getMutable().getAttributeValue(attribute).get();
             setAttributeValue(attribute, !value);
             return !value;
