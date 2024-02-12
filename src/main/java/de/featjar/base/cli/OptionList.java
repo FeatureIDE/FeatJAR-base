@@ -350,7 +350,7 @@ public class OptionList {
      * {@return a @link Configuration} instance build from the provided options}
      */
     public Configuration getConfiguration() {
-        final Configuration configuration = FeatJAR.createDefaultConfiguration();
+        final Configuration configuration = FeatJAR.configure();
         getResult(INFO_FILE_OPTION).ifPresent(p -> logToFile(configuration, p, LOG_INFO_FILE_OPTION));
         getResult(ERROR_FILE_OPTION).ifPresent(p -> logToFile(configuration, p, LOG_ERROR_FILE_OPTION));
         configuration.logConfig.logToSystemOut(get(LOG_INFO_OPTION).toArray(new Log.Verbosity[0]));
