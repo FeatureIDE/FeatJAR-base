@@ -203,7 +203,7 @@ public class Trees {
      * @param <T> the type of tree
      */
     @SuppressWarnings("unchecked")
-    public static <T extends ITree<T>> T clone(T root) {
+    public static <T extends ITree<T>, R extends T> R clone(R root) {
         if (root == null) {
             return null;
         }
@@ -231,7 +231,7 @@ public class Trees {
                 stack.pop();
             }
         }
-        return path.get(0);
+        return (R) path.get(0);
     }
 
     /**
