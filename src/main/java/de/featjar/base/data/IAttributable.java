@@ -23,7 +23,8 @@ package de.featjar.base.data;
 import java.util.LinkedHashMap;
 
 /**
- * An object that can be annotated with {@link Attribute} values to store additional metadata.
+ * An object that can be annotated with {@link Attribute} values to store
+ * additional metadata.
  *
  * @author Elias Kuiter
  */
@@ -38,37 +39,40 @@ public interface IAttributable {
         return getAttributeValue(attribute).isPresent();
     }
 
-    // todo: somehow avoid this weird atrocity
-    @SuppressWarnings("unchecked")
-    static <T extends IAttributable & IMutable<T, ?>> Mutator<T> createMutator(IAttributable attributable) {
-        return () -> (T) attributable;
+    default IMutatableAttributable mutate() {
+        return (IMutatableAttributable) this;
     }
 
-    interface Mutator<T extends IAttributable & IMutable<T, ?>> extends IMutator<T> {
+    static interface IMutatableAttributable extends IAttributable {
         default <S> void setAttributeValue(Attribute<S> attribute, S value) {
             if (value == null) {
                 removeAttributeValue(attribute);
                 return;
             }
-            if (!attribute.getType().equals(value.getClass())) {
-                throw new IllegalArgumentException("cannot set attribute of type " + attribute.getType()
-                        + " to value of type " + value.getClass());
+            if (!attribute.getType().isInstance(value)) {
+                throw new IllegalArgumentException(String.format(
+                        "cannot set attribute of type %s to value of type %s", attribute.getType(), value.getClass()));
             }
-            if (!attribute.getValidator().test(getMutable(), value)) {
-                throw new IllegalArgumentException("failed to validate attribute " + attribute + " for value " + value);
+            if (!attribute.getValidator().test(this, value)) {
+                throw new IllegalArgumentException(
+                        String.format("failed to validate attribute %s for value %s", attribute, value));
             }
-            getMutable().getAttributes().put(attribute, value);
+            getAttributes().put(attribute, value);
+        }
+
+        default boolean toggleAttributeValue(Attribute<Boolean> attribute) {
+            Boolean value = getAttributeValue(attribute).get();
+            if (value == null) {
+                value = attribute.getDefaultValue(this).orElse(Boolean.FALSE);
+            }
+            boolean toggledValue = !value;
+            setAttributeValue(attribute, toggledValue);
+            return toggledValue;
         }
 
         @SuppressWarnings("unchecked")
         default <S> S removeAttributeValue(Attribute<S> attribute) {
-            return (S) getMutable().getAttributes().remove(attribute);
-        }
-
-        default boolean toggleAttributeValue(Attribute<Boolean> attribute) {
-            boolean value = (boolean) getMutable().getAttributeValue(attribute).get();
-            setAttributeValue(attribute, !value);
-            return !value;
+            return (S) getAttributes().remove(attribute);
         }
     }
 }
