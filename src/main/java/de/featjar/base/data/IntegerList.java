@@ -188,8 +188,10 @@ public class IntegerList {
      * @param range the range
      */
     public final int[] copyOfRange(Range range) {
+        int lowerBound = range.getLowerBound();
+        int upperBound = range.getUpperBound();
         return copyOfRange(
-                range.getLowerBound().orElse(0), range.getUpperBound().orElse(elements.length));
+                lowerBound != Range.OPEN ? lowerBound : 0, upperBound != Range.OPEN ? upperBound : elements.length);
     }
 
     /**

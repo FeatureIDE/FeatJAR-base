@@ -93,11 +93,11 @@ public class RangeMap<T> {
     }
 
     protected Result<Integer> getMinimumIndex() {
-        return getValidIndexRange().flatMap(Range::getLowerBound);
+        return getValidIndexRange().map(Range::getLowerBound);
     }
 
     protected Result<Integer> getMaximumIndex() {
-        return getValidIndexRange().flatMap(Range::getUpperBound);
+        return getValidIndexRange().map(Range::getUpperBound);
     }
 
     protected boolean isValidIndex(int index) {

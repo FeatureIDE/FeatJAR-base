@@ -21,7 +21,6 @@
 package de.featjar.base.computation;
 
 import de.featjar.base.data.Range;
-import de.featjar.base.data.Result;
 import java.util.function.Supplier;
 
 /**
@@ -49,7 +48,7 @@ public class Progress implements Supplier<Double> {
      * {@return the progress's current step}
      */
     public int getCurrentStep() {
-        return range.getLowerBound().get();
+        return range.getLowerBound();
     }
 
     /**
@@ -58,7 +57,8 @@ public class Progress implements Supplier<Double> {
      * @param currentStep the current step
      */
     public void setCurrentStep(int currentStep) {
-        if (getTotalSteps().isPresent() && getTotalSteps().get() < currentStep) range.setUpperBound(currentStep);
+        int totalSteps = getTotalSteps();
+        if (totalSteps >= 0 && totalSteps < currentStep) range.setUpperBound(currentStep);
         range.setLowerBound(currentStep);
     }
 
@@ -81,8 +81,9 @@ public class Progress implements Supplier<Double> {
     /**
      * {@return the progress's total number of steps}
      */
-    public Result<Integer> getTotalSteps() {
-        return range.getUpperBound();
+    public int getTotalSteps() {
+        int upperBound = range.getUpperBound();
+        return upperBound != Range.OPEN ? upperBound : -1;
     }
 
     /**
@@ -93,7 +94,7 @@ public class Progress implements Supplier<Double> {
      */
     public void setTotalSteps(Integer totalSteps) {
         if (totalSteps != null && totalSteps == 0) throw new IllegalArgumentException(String.valueOf(totalSteps));
-        if (totalSteps == null) range.setUpperBound(null);
+        if (totalSteps == null) range.setUpperBound(Range.OPEN);
         else range.setUpperBound(Math.max(getCurrentStep(), totalSteps));
     }
 
@@ -101,9 +102,11 @@ public class Progress implements Supplier<Double> {
      * {@return this progress' percentage (i.e., the current step divided by the total number of steps)}
      */
     public Double get() {
-        if (getCurrentStep() == 0) return 0.0;
-        if (getTotalSteps().isEmpty()) return 0.5;
-        return (double) getCurrentStep() / getTotalSteps().get();
+        int currentStep = getCurrentStep();
+        if (currentStep == 0) return 0.0;
+        int totalSteps = getTotalSteps();
+        if (totalSteps == -1) return 0.5;
+        return (double) currentStep / totalSteps;
     }
 
     @Override

@@ -31,87 +31,89 @@ import java.util.stream.IntStream;
  * @author Elias Kuiter
  */
 public class Range implements Function<Integer, Boolean> {
-    protected Integer lowerBound;
-    protected Integer upperBound;
+    public static final int OPEN = Integer.MIN_VALUE;
 
-    protected Range(Integer lowerBound, Integer upperBound) {
+    protected int lowerBound;
+    protected int upperBound;
+
+    protected Range(int lowerBound, int upperBound) {
         checkBounds(lowerBound, upperBound);
         this.lowerBound = lowerBound;
         this.upperBound = upperBound;
     }
 
-    protected static void checkBounds(Integer lowerBound, Integer upperBound) {
-        if ((lowerBound != null && lowerBound < 0)
-                || (upperBound != null && upperBound < 0)
-                || (lowerBound != null && upperBound != null && lowerBound > upperBound)) {
+    protected static void checkBounds(int lowerBound, int upperBound) {
+        if ((lowerBound < 0 && lowerBound != OPEN)
+                || (upperBound < 0 && upperBound != OPEN)
+                || (lowerBound != OPEN && upperBound != OPEN && lowerBound > upperBound)) {
             throw new IllegalArgumentException(String.format("invalid bounds %d, %d", lowerBound, upperBound));
         }
     }
 
-    public static Range of(Integer lowerBound, Integer upperBound) {
+    public static Range copy(Range range) {
+        return new Range(range.lowerBound, range.upperBound);
+    }
+
+    public static Range of(int lowerBound, int upperBound) {
         return new Range(lowerBound, upperBound);
     }
 
     public static Range open() {
-        return new Range(null, null);
+        return new Range(OPEN, OPEN);
     }
 
-    public static Range atLeast(Integer minimum) {
-        return new Range(minimum, null);
+    public static Range atLeast(int minimum) {
+        return new Range(minimum, OPEN);
     }
 
-    public static Range atMost(Integer maximum) {
-        return new Range(null, maximum);
+    public static Range atMost(int maximum) {
+        return new Range(OPEN, maximum);
     }
 
-    public static Range exactly(Integer bound) {
+    public static Range exactly(int bound) {
         return new Range(bound, bound);
     }
 
-    public Result<Integer> getLowerBound() {
-        return Result.ofNullable(lowerBound);
+    public int getLowerBound() {
+        return lowerBound;
     }
 
     public boolean isLowerBoundOpen() {
-        return lowerBound == null;
+        return lowerBound == OPEN;
     }
 
     public void setLowerBound(Integer lowerBound) {
-        checkBounds(lowerBound, this.upperBound);
+        checkBounds(lowerBound, upperBound);
         this.lowerBound = lowerBound;
     }
 
-    public Result<Integer> getUpperBound() {
-        return Result.ofNullable(upperBound);
+    public int getUpperBound() {
+        return upperBound;
     }
 
     public boolean isUpperBoundOpen() {
-        return upperBound == null;
+        return upperBound == OPEN;
     }
 
-    public void setUpperBound(Integer upperBound) {
-        checkBounds(this.lowerBound, upperBound);
+    public void setUpperBound(int upperBound) {
+        checkBounds(lowerBound, upperBound);
         this.upperBound = upperBound;
+    }
+
+    public boolean is(int lowerBound, int upperBound) {
+        return this.lowerBound == lowerBound && this.upperBound == upperBound;
     }
 
     public boolean isOpen() {
         return isLowerBoundOpen() || isUpperBoundOpen();
     }
 
-    public Result<Integer> getSmallerBound() {
-        return Result.ofNullable(getLowerBound().orElseGet(() -> getUpperBound().orElse(null)));
-    }
-
-    public Result<Integer> getLargerBound() {
-        return Result.ofNullable(getUpperBound().orElseGet(() -> getLowerBound().orElse(null)));
-    }
-
     public boolean testLowerBound(int integer) {
-        return getLowerBound().map(lowerBound -> lowerBound <= integer).orElse(true);
+        return lowerBound == OPEN || lowerBound <= integer;
     }
 
     public boolean testUpperBound(int integer) {
-        return getUpperBound().map(upperBound -> integer <= upperBound).orElse(true);
+        return upperBound == OPEN || upperBound >= integer;
     }
 
     public boolean test(int integer) {
@@ -122,7 +124,7 @@ public class Range implements Function<Integer, Boolean> {
      * {@return a finite integer stream for this range}
      */
     public Result<IntStream> stream() {
-        return lowerBound != null && upperBound != null
+        return lowerBound != OPEN && upperBound != OPEN
                 ? Result.of(IntStream.rangeClosed(lowerBound, upperBound))
                 : Result.empty();
     }
@@ -142,11 +144,15 @@ public class Range implements Function<Integer, Boolean> {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         Range range = (Range) o;
-        return Objects.equals(lowerBound, range.lowerBound) && Objects.equals(upperBound, range.upperBound);
+        return lowerBound == range.lowerBound && upperBound == range.upperBound;
     }
 
     @Override
     public int hashCode() {
         return Objects.hash(lowerBound, upperBound);
+    }
+
+    public int getLargerBound() {
+        return upperBound != OPEN ? upperBound : lowerBound;
     }
 }
