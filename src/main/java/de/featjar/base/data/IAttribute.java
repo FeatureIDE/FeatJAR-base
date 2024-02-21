@@ -40,13 +40,18 @@ public interface IAttribute<T> extends Function<IAttributable, Result<T>> {
         return Result.empty();
     }
 
+    default Result<T> copyValue(IAttributable attributable) {
+        return Result.empty();
+    }
+
     default BiPredicate<IAttributable, T> getValidator() {
         return (a, o) -> true;
     }
 
     @Override
     default Result<T> apply(IAttributable attributable) {
-        return Result.ofNullable(attributable.getAttributes().get(this))
+        return Result.ofOptional(attributable.getAttributes())
+                .map(a -> a.get(this))
                 .map(getType()::cast)
                 .or(getDefaultValue(attributable));
     }

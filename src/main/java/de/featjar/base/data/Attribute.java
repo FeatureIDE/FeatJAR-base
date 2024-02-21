@@ -37,6 +37,7 @@ public class Attribute<T> implements IAttribute<T> {
     protected final Class<T> type;
     protected BiPredicate<IAttributable, T> validator;
     protected Function<IAttributable, T> defaultValueFunction;
+    protected Function<T, T> copyValueFunction = t -> t;
 
     public Attribute(String namespace, String name, Class<T> type) {
         this.namespace = Objects.requireNonNull(namespace);
@@ -67,6 +68,13 @@ public class Attribute<T> implements IAttribute<T> {
     }
 
     /**
+     * {@return this attribute's copy value function}
+     */
+    public Result<Function<T, T>> getCopyValueFunction() {
+        return Result.ofNullable(copyValueFunction);
+    }
+
+    /**
      * Sets this attribute's default value function.
      *
      * @param defaultValueFunction the function
@@ -78,11 +86,22 @@ public class Attribute<T> implements IAttribute<T> {
     }
 
     /**
+     * Sets this attribute's copy value function.
+     *
+     * @param copyValueFunction the function
+     * @return this attribute
+     */
+    public Attribute<T> setCopyValueFunction(Function<T, T> copyValueFunction) {
+        this.copyValueFunction = copyValueFunction;
+        return this;
+    }
+
+    /**
      * {@return this attribute's default value for a given object}
      */
     @Override
     public Result<T> getDefaultValue(IAttributable attributable) {
-        return getDefaultValueFunction().flatMap(f -> Result.ofNullable(f.apply(attributable)));
+        return getDefaultValueFunction().map(f -> f.apply(attributable));
     }
 
     /**
@@ -93,6 +112,15 @@ public class Attribute<T> implements IAttribute<T> {
      */
     public Attribute<T> setDefaultValue(T defaultValue) {
         return setDefaultValueFunction(o -> defaultValue);
+    }
+
+    /**
+     * {@return a copy of this attribute's value for a given {@link IAttributable}}
+     */
+    @Override
+    public Result<T> copyValue(IAttributable attributable) {
+        return getCopyValueFunction()
+                .flatMap(f -> attributable.getAttributeValue(this).map(o -> f.apply((T) o)));
     }
 
     /**

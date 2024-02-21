@@ -148,11 +148,11 @@ public class Range implements Function<Integer, Boolean> {
     }
 
     @Override
-	public Range clone() {
-		return copy(this);
-	}
+    public Range clone() {
+        return copy(this);
+    }
 
-	@Override
+    @Override
     public int hashCode() {
         return Objects.hash(lowerBound, upperBound);
     }

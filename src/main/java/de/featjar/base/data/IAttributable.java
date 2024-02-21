@@ -21,6 +21,8 @@
 package de.featjar.base.data;
 
 import java.util.LinkedHashMap;
+import java.util.Map;
+import java.util.Optional;
 
 /**
  * An object that can be annotated with {@link Attribute} values to store
@@ -29,7 +31,7 @@ import java.util.LinkedHashMap;
  * @author Elias Kuiter
  */
 public interface IAttributable {
-    LinkedHashMap<IAttribute<?>, Object> getAttributes();
+    Optional<Map<IAttribute<?>, Object>> getAttributes();
 
     default <T> Result<T> getAttributeValue(Attribute<T> attribute) {
         return attribute.apply(this);
@@ -37,6 +39,32 @@ public interface IAttributable {
 
     default boolean hasAttributeValue(Attribute<?> attribute) {
         return getAttributeValue(attribute).isPresent();
+    }
+
+    default LinkedHashMap<IAttribute<?>, Object> cloneAttributes() {
+        Optional<Map<IAttribute<?>, Object>> attributes = getAttributes();
+        if (attributes.isEmpty()) {
+            return null;
+        }
+        LinkedHashMap<IAttribute<?>, Object> clone =
+                new LinkedHashMap<>((int) (attributes.get().size() * 1.5));
+        attributes.get().entrySet().stream()
+                .forEach(e -> clone.put(e.getKey(), e.getKey().copyValue(this)));
+        return clone;
+    }
+
+    default <S> void checkType(Attribute<S> attribute, S value) {
+        if (!attribute.getType().isInstance(value)) {
+            throw new IllegalArgumentException(String.format(
+                    "cannot set attribute of type %s to value of type %s", attribute.getType(), value.getClass()));
+        }
+    }
+
+    default <S> void validate(Attribute<S> attribute, S value) {
+        if (!attribute.getValidator().test(this, value)) {
+            throw new IllegalArgumentException(
+                    String.format("failed to validate attribute %s for value %s", attribute, value));
+        }
     }
 
     default IMutatableAttributable mutate() {
@@ -49,15 +77,9 @@ public interface IAttributable {
                 removeAttributeValue(attribute);
                 return;
             }
-            if (!attribute.getType().isInstance(value)) {
-                throw new IllegalArgumentException(String.format(
-                        "cannot set attribute of type %s to value of type %s", attribute.getType(), value.getClass()));
-            }
-            if (!attribute.getValidator().test(this, value)) {
-                throw new IllegalArgumentException(
-                        String.format("failed to validate attribute %s for value %s", attribute, value));
-            }
-            getAttributes().put(attribute, value);
+            checkType(attribute, value);
+            validate(attribute, value);
+            getAttributes().get().put(attribute, value);
         }
 
         default boolean toggleAttributeValue(Attribute<Boolean> attribute) {
@@ -72,7 +94,7 @@ public interface IAttributable {
 
         @SuppressWarnings("unchecked")
         default <S> S removeAttributeValue(Attribute<S> attribute) {
-            return (S) getAttributes().remove(attribute);
+            return (S) getAttributes().get().remove(attribute);
         }
     }
 }
