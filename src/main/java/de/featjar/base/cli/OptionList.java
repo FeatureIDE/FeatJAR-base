@@ -31,6 +31,7 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
@@ -50,16 +51,21 @@ import java.util.Properties;
  */
 public class OptionList {
 
+    static final String GENERAL_CONFIG_NAME = "general";
+
     /**
      * Option for setting the logger output.
      */
-    static Option<List<Path>> CONFIGURATION_OPTION =
-            new ListOption<>("config", Option.PathParser).setDescription("The path to a configuration file");
+    static final Option<List<String>> CONFIGURATION_OPTION =
+            new ListOption<>("config", Option.StringParser).setDescription("The names of configuration files");
+
+    static final Option<Path> CONFIGURATION_DIR_OPTION =
+            new Option<>("config_dir", Option.PathParser).setDescription("The path to the configuration files");
 
     /**
      * Option for printing usage information.
      */
-    static Option<ICommand> COMMAND_OPTION = new Option<>("command", s -> FeatJAR.extensionPoint(Commands.class)
+    static final Option<ICommand> COMMAND_OPTION = new Option<>("command", s -> FeatJAR.extensionPoint(Commands.class)
                     .getMatchingExtension(s)
                     .get())
             .setRequired(true)
@@ -68,38 +74,38 @@ public class OptionList {
     /**
      * Option for printing usage information.
      */
-    static Option<Boolean> HELP_OPTION = new Flag("help").setDescription("Print usage information");
+    static final Option<Boolean> HELP_OPTION = new Flag("help").setDescription("Print usage information");
 
     /**
      * Option for printing version information.
      */
-    static Option<Boolean> VERSION_OPTION = new Flag("version").setDescription("Print version information");
+    static final Option<Boolean> VERSION_OPTION = new Flag("version").setDescription("Print version information");
 
-    static Option<Path> INFO_FILE_OPTION =
+    static final Option<Path> INFO_FILE_OPTION =
             new Option<>("info-file", Option.PathParser).setDescription("Path to info log file");
 
-    static Option<Path> ERROR_FILE_OPTION =
+    static final Option<Path> ERROR_FILE_OPTION =
             new Option<>("error-file", Option.PathParser).setDescription("Path to error log file");
 
-    static Option<List<Log.Verbosity>> LOG_INFO_OPTION = new ListOption<>(
+    static final Option<List<Log.Verbosity>> LOG_INFO_OPTION = new ListOption<>(
                     "log-info", Option.valueOf(Log.Verbosity.class))
             .setDescription(String.format(
                     "Message types printed to the info stream (%s)", Option.possibleValues(Log.Verbosity.class)))
             .setDefaultValue(List.of(Log.Verbosity.MESSAGE, Log.Verbosity.INFO, Log.Verbosity.PROGRESS));
 
-    static Option<List<Log.Verbosity>> LOG_ERROR_OPTION = new ListOption<>(
+    static final Option<List<Log.Verbosity>> LOG_ERROR_OPTION = new ListOption<>(
                     "log-error", Option.valueOf(Log.Verbosity.class))
             .setDescription(String.format(
                     "Message types printed to the error stream (%s)", Option.possibleValues(Log.Verbosity.class)))
             .setDefaultValue(List.of(Log.Verbosity.ERROR));
 
-    static Option<List<Log.Verbosity>> LOG_INFO_FILE_OPTION = new ListOption<>(
+    static final Option<List<Log.Verbosity>> LOG_INFO_FILE_OPTION = new ListOption<>(
                     "log-info-file", Option.valueOf(Log.Verbosity.class))
             .setDescription(String.format(
                     "Message types printed to the info file (%s)", Option.possibleValues(Log.Verbosity.class)))
             .setDefaultValue(List.of(Log.Verbosity.MESSAGE, Log.Verbosity.INFO, Log.Verbosity.DEBUG));
 
-    static Option<List<Log.Verbosity>> LOG_ERROR_FILE_OPTION = new ListOption<>(
+    static final Option<List<Log.Verbosity>> LOG_ERROR_FILE_OPTION = new ListOption<>(
                     "log-error-file", Option.valueOf(Log.Verbosity.class))
             .setDescription(String.format(
                     "Message types printed to the error file (%s)", Option.possibleValues(Log.Verbosity.class)))
@@ -146,37 +152,66 @@ public class OptionList {
     public OptionList parseArguments(boolean logWarnings) {
         properties = new LinkedHashMap<>();
 
-        int indexOf = commandLineArguments.indexOf("--" + CONFIGURATION_OPTION.getName());
-        if (indexOf >= 0) {
-            if (commandLineArguments.size() > indexOf + 1) {
-                parseOption(CONFIGURATION_OPTION, commandLineArguments.get(indexOf + 1));
-                Result<List<Path>> config = getResult(CONFIGURATION_OPTION);
-                if (!config.isEmpty()) {
-                    configFileArguments.clear();
-                    List<Path> configPathList = config.get();
-                    for (ListIterator<Path> it = configPathList.listIterator(configPathList.size());
-                            it.hasPrevious(); ) {
-                        Path configPath = (Path) it.previous();
-                        final Properties properties = new Properties();
-                        try {
-                            properties.load(Files.newInputStream(configPath));
-                            for (Entry<Object, Object> propertyEntry : properties.entrySet()) {
-                                configFileArguments.add(
-                                        "--" + propertyEntry.getKey().toString());
-                                configFileArguments.add(propertyEntry.getValue().toString());
-                            }
-                        } catch (final IOException e) {
-                            FeatJAR.log().error(e);
-                            return this;
-                        }
-                    }
-                }
-            } else {
+        Path configDir = Paths.get("");
+        int configurationDirIndex = commandLineArguments.indexOf("--" + CONFIGURATION_DIR_OPTION.getName());
+        if (configurationDirIndex >= 0) {
+            int argumentIndex = configurationDirIndex + 1;
+            if (argumentIndex >= commandLineArguments.size()) {
+                FeatJAR.log()
+                        .error(
+                                "option %s is supplied without value, but a value was expected",
+                                CONFIGURATION_DIR_OPTION.getName());
+                return this;
+            }
+            parseOption(CONFIGURATION_DIR_OPTION, commandLineArguments.get(argumentIndex));
+            Result<Path> configDirValue = getResult(CONFIGURATION_DIR_OPTION);
+            if (configDirValue.isEmpty()) {
+                FeatJAR.log().problems(configDirValue.getProblems());
+                return this;
+            }
+            configDir = configDirValue.get();
+            if (!Files.isDirectory(configDir)) {
+                FeatJAR.log().error("given config dir %s is not a directory", configDir.toString());
+                return this;
+            }
+        }
+
+        int configurationNamesIndex = commandLineArguments.indexOf("--" + CONFIGURATION_OPTION.getName());
+        if (configurationNamesIndex >= 0) {
+            int argumentIndex = configurationNamesIndex + 1;
+            if (argumentIndex >= commandLineArguments.size()) {
                 FeatJAR.log()
                         .error(
                                 "option %s is supplied without value, but a value was expected",
                                 CONFIGURATION_OPTION.getName());
                 return this;
+            }
+            parseOption(CONFIGURATION_OPTION, commandLineArguments.get(argumentIndex));
+            Result<List<String>> config = getResult(CONFIGURATION_OPTION);
+            if (!config.isEmpty()) {
+                configFileArguments.clear();
+
+                List<String> configNameList = config.get();
+                ArrayList<String> reverseNameList = new ArrayList<>(configNameList.size() + 1);
+                reverseNameList.add(GENERAL_CONFIG_NAME);
+                reverseNameList.addAll(configNameList);
+                Collections.reverse(reverseNameList);
+
+                for (String name : reverseNameList) {
+                    Path configPath = configDir.resolve(name + ".properties");
+                    final Properties properties = new Properties();
+                    try {
+                        properties.load(Files.newInputStream(configPath));
+                        for (Entry<Object, Object> propertyEntry : properties.entrySet()) {
+                            configFileArguments.add(
+                                    "--" + propertyEntry.getKey().toString());
+                            configFileArguments.add(propertyEntry.getValue().toString());
+                        }
+                    } catch (final IOException e) {
+                        FeatJAR.log().error(e);
+                        return this;
+                    }
+                }
             }
         }
 
