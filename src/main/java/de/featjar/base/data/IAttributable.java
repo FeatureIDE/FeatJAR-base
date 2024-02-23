@@ -72,15 +72,7 @@ public interface IAttributable {
     }
 
     static interface IMutatableAttributable extends IAttributable {
-        default <S> void setAttributeValue(Attribute<S> attribute, S value) {
-            if (value == null) {
-                removeAttributeValue(attribute);
-                return;
-            }
-            checkType(attribute, value);
-            validate(attribute, value);
-            getAttributes().get().put(attribute, value);
-        }
+        <S> void setAttributeValue(Attribute<S> attribute, S value);
 
         default boolean toggleAttributeValue(Attribute<Boolean> attribute) {
             Boolean value = getAttributeValue(attribute).get();
@@ -92,9 +84,6 @@ public interface IAttributable {
             return toggledValue;
         }
 
-        @SuppressWarnings("unchecked")
-        default <S> S removeAttributeValue(Attribute<S> attribute) {
-            return (S) getAttributes().get().remove(attribute);
-        }
+        <S> S removeAttributeValue(Attribute<S> attribute);
     }
 }
