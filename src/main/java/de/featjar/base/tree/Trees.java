@@ -69,9 +69,8 @@ public class Trees {
     }
 
     /**
-     * Traverses a tree using depth-first search, allowing for pre- and postorder
-     * traversal. This is equivalent to using a trivial {@link IInOrderTreeVisitor},
-     * but more efficient.
+     * Traverses a tree using depth-first search, allowing for pre-, in-, and post-order
+     * traversal.
      *
      * @param node    the starting node of the tree
      * @param visitor the visitor

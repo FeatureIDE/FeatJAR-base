@@ -27,7 +27,7 @@ import java.util.List;
 /**
  * Visits each node of a tree in a depth-first search.
  * Compared with {@link ITreeVisitor}, also allows for inorder traversal.
- * The actual traversal algorithm is {@link Trees#traverse(ITree, IInOrderTreeVisitor)}.
+ * The actual traversal algorithm is {@link Trees#traverse(ITree, ITreeVisitor)}.
  *
  * @param <T> the type of tree
  * @param <U> the type of result

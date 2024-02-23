@@ -160,7 +160,7 @@ public final class FeatJAR extends IO implements AutoCloseable {
     /**
      * Initializes FeatJAR.
      *
-     * @param configuration the FeatJAR configuration
+     * @param optionInput a list with options
      */
     public static FeatJAR initialize(OptionList optionInput) {
         if (instance != null) throw new RuntimeException("FeatJAR already initialized");
