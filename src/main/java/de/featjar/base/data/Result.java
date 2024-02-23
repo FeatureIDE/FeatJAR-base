@@ -330,7 +330,7 @@ public class Result<T> implements Supplier<T> {
      * Filters the object in this result using a given {@link Predicate}
      * If the predicate evaluates to {@code false} the value of this result is set to {@code null}.
      *
-     * @param mapper the predicate
+     * @param predicate the predicate
      * @return A new result with the original object or an empty result.
      */
     public Result<T> filter(Predicate<T> predicate) {
@@ -439,6 +439,13 @@ public class Result<T> implements Supplier<T> {
      */
     public List<Problem> getProblems() {
         return Collections.unmodifiableList(problems);
+    }
+
+    /**
+     * {@return a supplier that prints all problems of this result to a string}
+     */
+    public Supplier<String> printProblems() {
+        return () -> Problem.printProblems(problems);
     }
 
     /**
