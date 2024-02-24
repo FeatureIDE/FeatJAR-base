@@ -66,7 +66,7 @@ public class Process implements Supplier<Result<List<String>>> {
     public Result<List<String>> get() {
         List<String> output = new ArrayList<>();
         Result<Void> result = run(output::add, output::add);
-        return result.flatMap(r -> Result.of(output));
+        return result.map(r -> output);
     }
 
     public Result<Void> run(Consumer<String> outConsumer, Consumer<String> errConsumer) {
@@ -74,6 +74,7 @@ public class Process implements Supplier<Result<List<String>>> {
         command.add(executablePath.toString());
         command.addAll(arguments);
         final ProcessBuilder processBuilder = new ProcessBuilder(command);
+        FeatJAR.log().debug(String.join(" ", processBuilder.command()));
         java.lang.Process process = null;
         try {
             Instant start = Instant.now();
