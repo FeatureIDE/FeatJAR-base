@@ -444,8 +444,8 @@ public class Result<T> implements Supplier<T> {
     /**
      * {@return a supplier that prints all problems of this result to a string}
      */
-    public Supplier<String> printProblems() {
-        return () -> Problem.printProblems(problems);
+    public String printProblems() {
+        return Problem.printProblems(problems);
     }
 
     /**
