@@ -89,7 +89,12 @@ public interface Log {
                 error(problem.getException());
                 break;
             case WARNING:
-                warning(problem.getException());
+                warning(problem.getMessage());
+                break;
+            case INFO:
+                info(problem.getMessage());
+                break;
+            default:
                 break;
         }
     }

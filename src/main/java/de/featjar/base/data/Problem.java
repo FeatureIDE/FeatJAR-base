@@ -37,6 +37,10 @@ public class Problem {
      */
     public static enum Severity {
         /**
+         * An info message, which does not prevent processing of an object.
+         */
+        INFO,
+        /**
          * A warning, which does not prevent processing of an object.
          */
         WARNING,
