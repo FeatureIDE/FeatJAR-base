@@ -88,23 +88,24 @@ public class Process implements Supplier<Result<List<String>>> {
             long elapsedTime = Duration.between(start, Instant.now()).toMillis();
             final int exitValue = process.exitValue();
             Result<Void> result;
-            if (exitValue == 0 && !errorOccurred) {
-                process = null;
+            if (!errorOccurred) {
                 result = Result.ofVoid();
             } else {
                 result = Result.empty(
                         new Problem(executablePath + " exited with value " + exitValue, Problem.Severity.ERROR));
             }
-            // todo: add info severity, as these are no real warnings
+            // TODO: add info severity, as these are no real warnings
             return Result.empty(
-                            new Problem("in time = " + terminatedInTime, Problem.Severity.WARNING),
-                            new Problem("elapsed time in ms = " + elapsedTime, Problem.Severity.WARNING))
+                            new Problem("exit code = " + exitValue, Problem.Severity.INFO),
+                            new Problem("in time = " + terminatedInTime, Problem.Severity.INFO),
+                            new Problem("elapsed time in ms = " + elapsedTime, Problem.Severity.INFO))
                     .merge(result);
         } catch (IOException | InterruptedException e) {
             return Result.empty(e);
         } finally {
             if (process != null) {
                 process.destroyForcibly();
+                process = null;
             }
         }
     }
