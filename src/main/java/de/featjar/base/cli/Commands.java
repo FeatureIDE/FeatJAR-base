@@ -79,7 +79,7 @@ public class Commands extends AExtensionPoint<ICommand> {
      */
     public static void run(OptionList optionInput) {
         if (optionInput.isHelp()) {
-            System.out.println(optionInput.getHelp());
+            System.out.println(OptionList.getHelp(optionInput.getCommand().orElse(null)));
         } else if (optionInput.isVersion()) {
             System.out.println(FeatJAR.LIBRARY_NAME + ", development version");
         } else {
@@ -88,7 +88,7 @@ public class Commands extends AExtensionPoint<ICommand> {
                 FeatJAR.log().problems(optionalCommand.getProblems());
             } else if (optionalCommand.isEmpty()) {
                 FeatJAR.log().error("No command provided");
-                System.out.println(optionInput.getHelp());
+                System.out.println(OptionList.getHelp());
             } else {
                 ICommand command = optionalCommand.get();
                 FeatJAR.log().debug("running command " + command.getIdentifier());

@@ -134,6 +134,13 @@ public class Result<T> implements Supplier<T> {
         return ofNullable(optional.orElse(null));
     }
 
+    public static <T> Result<T> ofOptional(
+            @SuppressWarnings("OptionalUsedAsFieldOrParameterType") Optional<T> optional,
+            Supplier<Problem> potentialProblem) {
+        T value = optional.orElse(null);
+        return value != null ? new Result<>(value, null) : ofNullable(value, potentialProblem.get());
+    }
+
     /**
      * {@return an empty result}
      *
@@ -424,9 +431,13 @@ public class Result<T> implements Supplier<T> {
             problems = problems.stream()
                     .filter(problem -> problem.getSeverity().equals(Problem.Severity.ERROR))
                     .collect(Collectors.toList());
-            if (problems.size() == 0) return new RuntimeException("an unknown error occurred");
+            if (problems.size() == 0) {
+                return new RuntimeException("an unknown error occurred");
+            }
             Problem problem = problems.get(0);
-            if (problems.size() == 1) return new RuntimeException(problem.getException());
+            if (problems.size() == 1) {
+                problem.getException();
+            }
             return new RuntimeException(
                     problem.getMessage() + " (and " + (problems.size() - 1) + " other problems)",
                     problem.getException());

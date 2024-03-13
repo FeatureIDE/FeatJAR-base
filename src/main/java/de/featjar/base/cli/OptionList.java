@@ -22,7 +22,6 @@ package de.featjar.base.cli;
 
 import de.featjar.base.FeatJAR;
 import de.featjar.base.FeatJAR.Configuration;
-import de.featjar.base.data.Problem;
 import de.featjar.base.data.Result;
 import de.featjar.base.log.IndentStringBuilder;
 import de.featjar.base.log.Log;
@@ -33,6 +32,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.LinkedHashMap;
@@ -111,7 +111,7 @@ public class OptionList {
                     "Message types printed to the error file (%s)", Option.possibleValues(Log.Verbosity.class)))
             .setDefaultValue(List.of(Log.Verbosity.ERROR, Log.Verbosity.WARNING));
 
-    private final List<Option<?>> options = new ArrayList<>(List.of(
+    private static final List<Option<?>> generalOptions = Arrays.asList(
             CONFIGURATION_OPTION,
             COMMAND_OPTION,
             HELP_OPTION,
@@ -121,7 +121,9 @@ public class OptionList {
             LOG_INFO_OPTION,
             LOG_ERROR_OPTION,
             LOG_INFO_FILE_OPTION,
-            LOG_ERROR_FILE_OPTION));
+            LOG_ERROR_FILE_OPTION);
+
+    private final List<Option<?>> options = new ArrayList<>(generalOptions);
 
     private final List<String> commandLineArguments;
     private final List<String> configFileArguments = new ArrayList<>();
@@ -299,8 +301,8 @@ public class OptionList {
         T optionValue = (T) properties.getOrDefault(option.getName(), option.defaultValue);
         return optionValue != null
                 ? Result.of(optionValue)
-                : Result.empty(
-                        new Problem(String.format("Option <%s> was not set and has no default value", option.name)));
+                : Result.empty(new IllegalArgumentException(
+                        String.format("Argument <%s> is required, but was not set", option.name)));
     }
 
     @SuppressWarnings("unchecked")
@@ -331,11 +333,21 @@ public class OptionList {
         this.options.addAll(options);
         return this;
     }
+    
+    /**
+     * {@return the general command-line interface help}
+     * 
+     * @see #getHelp(ICommand)
+     */
+    public static String getHelp() {
+        return getHelp(null);
+    }
 
     /**
      * {@return the command-line interface help}
+     * @param command print options specific to this command
      */
-    public String getHelp() {
+    public static String getHelp(ICommand command) {
         IndentStringBuilder sb = new IndentStringBuilder();
         List<ICommand> commands = FeatJAR.extensionPoint(Commands.class).getExtensions();
         sb.appendLine(String.format(
@@ -347,24 +359,21 @@ public class OptionList {
                     FeatJAR.LIBRARY_NAME));
             sb.appendLine();
         } else {
-            if (getCommand().isEmpty()) {
+            if (command == null) {
                 sb.append("The following commands are available:").appendLine().addIndent();
-                for (final ICommand command : commands) {
+                for (final ICommand c : commands) {
                     sb.appendLine(String.format(
                             "%s: %s", //
-                            command.getIdentifier(), //
-                            Result.ofNullable(command.getDescription()).orElse("")));
+                            c.getIdentifier(), //
+                            Result.ofNullable(c.getDescription()).orElse("")));
                 }
             } else {
-                final ICommand command = getCommand().get();
                 sb.appendLine(String.format("Help for %s", command.getIdentifier()))
                         .addIndent();
                 sb.appendLine(String.format(command.getDescription()));
 
                 sb.appendLine();
                 sb.appendLine("General options:").addIndent();
-                List<Option<?>> generalOptions = new ArrayList<>(getOptions());
-                Collections.sort(generalOptions, Comparator.comparing(Option::getName));
                 sb.appendLine(generalOptions).removeIndent();
 
                 List<Option<?>> options = new ArrayList<>(command.getOptions());
