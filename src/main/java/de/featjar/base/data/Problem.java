@@ -20,6 +20,7 @@
  */
 package de.featjar.base.data;
 
+import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
@@ -62,6 +63,12 @@ public class Problem {
             for (Problem problem : problems) {
                 sb.append(problem.getMessage());
                 sb.append('\n');
+                Exception exception = problem.getException();
+                if (exception != null) {
+                    Arrays.stream(exception.getStackTrace())
+                            .map(Object::toString)
+                            .forEach(s -> sb.append('\t').append(s).append('\n'));
+                }
             }
             sb.deleteCharAt(sb.length() - 1);
             return sb.toString();
