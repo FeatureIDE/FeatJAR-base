@@ -26,6 +26,7 @@ import de.featjar.base.data.Result;
 import de.featjar.base.log.IndentStringBuilder;
 import de.featjar.base.log.Log;
 import de.featjar.base.log.Log.Verbosity;
+import de.featjar.base.log.TimeStampFormatter;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.nio.file.Files;
@@ -113,6 +114,7 @@ public class OptionList {
 
     private static final List<Option<?>> generalOptions = Arrays.asList(
             CONFIGURATION_OPTION,
+            CONFIGURATION_DIR_OPTION,
             COMMAND_OPTION,
             HELP_OPTION,
             VERSION_OPTION,
@@ -333,10 +335,10 @@ public class OptionList {
         this.options.addAll(options);
         return this;
     }
-    
+
     /**
      * {@return the general command-line interface help}
-     * 
+     *
      * @see #getHelp(ICommand)
      */
     public static String getHelp() {
@@ -399,6 +401,7 @@ public class OptionList {
         getResult(ERROR_FILE_OPTION).ifPresent(p -> logToFile(configuration, p, LOG_ERROR_FILE_OPTION));
         configuration.logConfig.logToSystemOut(get(LOG_INFO_OPTION).toArray(new Log.Verbosity[0]));
         configuration.logConfig.logToSystemErr(get(LOG_ERROR_OPTION).toArray(new Log.Verbosity[0]));
+        configuration.logConfig.addFormatter(new TimeStampFormatter());
         return configuration;
     }
 
