@@ -249,6 +249,18 @@ public class ConfigurableLog implements Log, IInitializer {
         }
     }
 
+    public void print(Supplier<String> message, Verbosity verbosity) {
+        if (configuration == null) {
+            print(originalSystemErr, message.get());
+        } else {
+            OpenPrintStream multiStream = configuration.logStreams.get(verbosity);
+            if (multiStream != null) {
+                final String formattedMessage = formatMessage(message.get());
+                print(multiStream, formattedMessage);
+            }
+        }
+    }
+
     public void printProgress(Supplier<String> message) {
         if (configuration == null) {
             printProgress(originalSystemOut, message.get());
@@ -267,6 +279,17 @@ public class ConfigurableLog implements Log, IInitializer {
                 progressSize = 0;
             } else {
                 stream.println(message);
+            }
+        }
+    }
+
+    public void print(PrintStream stream, String message) {
+        synchronized (this) {
+            if (progressSize > 0) {
+                stream.print(fillBuffer(message.toCharArray()));
+                progressSize = 0;
+            } else {
+                stream.print(message);
             }
         }
     }
@@ -291,12 +314,11 @@ public class ConfigurableLog implements Log, IInitializer {
         return buffer;
     }
 
-    public void println(Throwable error, boolean isWarning) {
+    public void println(Throwable error, Verbosity verbosity) {
         if (configuration == null) {
             println(originalSystemErr, error.getMessage());
             error.printStackTrace(originalSystemErr);
         } else {
-            Verbosity verbosity = isWarning ? Verbosity.WARNING : Verbosity.ERROR;
             OpenPrintStream multiStream = configuration.logStreams.get(verbosity);
             if (multiStream != null) {
                 println(multiStream, formatMessage(error.getMessage()));

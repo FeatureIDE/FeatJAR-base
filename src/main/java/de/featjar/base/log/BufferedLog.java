@@ -39,6 +39,13 @@ public class BufferedLog implements Log {
     private final LinkedList<Pair<Verbosity, Supplier<String>>> logBuffer = new LinkedList<>();
 
     @Override
+    public void print(Supplier<String> message, Verbosity verbosity) {
+        synchronized (logBuffer) {
+            logBuffer.add(new Pair<>(verbosity, message));
+        }
+    }
+
+    @Override
     public void println(Supplier<String> message, Verbosity verbosity) {
         synchronized (logBuffer) {
             logBuffer.add(new Pair<>(verbosity, message));
@@ -46,9 +53,9 @@ public class BufferedLog implements Log {
     }
 
     @Override
-    public void println(Throwable error, boolean isWarning) {
+    public void println(Throwable error, Verbosity verbosity) {
         synchronized (logBuffer) {
-            logBuffer.add(new Pair<>(isWarning ? Verbosity.WARNING : Verbosity.ERROR, error::getMessage));
+            logBuffer.add(new Pair<>(verbosity, error::getMessage));
         }
     }
 

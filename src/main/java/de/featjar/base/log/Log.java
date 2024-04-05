@@ -22,7 +22,6 @@ package de.featjar.base.log;
 
 import de.featjar.base.data.Problem;
 import de.featjar.base.data.Result;
-import java.util.Arrays;
 import java.util.List;
 import java.util.function.Supplier;
 
@@ -67,14 +66,12 @@ public interface Log {
          */
         PROGRESS;
 
-        public static boolean isValid(String verbosityString) {
-            String[] verbosities = new String[] {"none", "error", "warning", "info", "debug", "progress"};
-            return Arrays.asList(verbosities).contains(verbosityString);
-        }
-
         public static Result<Verbosity> of(String verbosityString) {
-            if (!isValid(verbosityString)) return Result.empty();
-            return Result.of(Verbosity.valueOf(verbosityString.toUpperCase()));
+            try {
+                return Result.of(Verbosity.valueOf(verbosityString.toUpperCase()));
+            } catch (Exception e) {
+                return Result.empty(e);
+            }
         }
     }
 
@@ -84,15 +81,23 @@ public interface Log {
      * @param problem the problem
      */
     default void problem(Problem problem) {
+        problem(problem, Verbosity.ERROR);
+    }
+
+    /**
+     * Logs a problem.
+     *
+     * @param problem the problem
+     * @param verbosity the verbosity at which the problem is shown
+     */
+    default void problem(Problem problem, Verbosity verbosity) {
         switch (problem.getSeverity()) {
             case ERROR:
-                error(problem.getException());
+                println(problem.getException(), verbosity);
                 break;
             case WARNING:
-                warning(problem.getMessage());
-                break;
             case INFO:
-                info(problem.getMessage());
+                println(problem::getMessage, verbosity);
                 break;
             default:
                 break;
@@ -107,6 +112,18 @@ public interface Log {
     default void problems(List<Problem> problems) {
         for (Problem problem : problems) {
             problem(problem);
+        }
+    }
+
+    /**
+     * Logs problems.
+     *
+     * @param problems the problems
+     * @param verbosity the verbosity at which the problems are shown
+     */
+    default void problems(List<Problem> problems, Verbosity verbosity) {
+        for (Problem problem : problems) {
+            problem(problem, verbosity);
         }
     }
 
@@ -136,7 +153,7 @@ public interface Log {
      * @param error the error object
      */
     default void error(Throwable error) {
-        println(error, false);
+        println(error, Verbosity.ERROR);
     }
 
     /**
@@ -165,7 +182,7 @@ public interface Log {
      * @param warning the warning object
      */
     default void warning(Throwable warning) {
-        println(warning, true);
+        println(warning, Verbosity.WARNING);
     }
 
     /**
@@ -298,7 +315,13 @@ public interface Log {
         println(message, Verbosity.PROGRESS);
     }
 
+    default void dispose() {
+        print(() -> "", Verbosity.PROGRESS);
+    }
+
+    void print(Supplier<String> message, Verbosity verbosity);
+
     void println(Supplier<String> message, Verbosity verbosity);
 
-    void println(Throwable error, boolean isWarning);
+    void println(Throwable error, Verbosity verbosity);
 }
