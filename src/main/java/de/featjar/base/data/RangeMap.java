@@ -21,7 +21,16 @@
 package de.featjar.base.data;
 
 import de.featjar.base.log.IndentFormatter;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.NoSuchElementException;
+import java.util.Objects;
+import java.util.Random;
+import java.util.SortedSet;
+import java.util.TreeSet;
 import java.util.stream.Stream;
 
 /**
@@ -61,7 +70,7 @@ public class RangeMap<T> {
      *
      * @param rangeMap the map
      */
-    public RangeMap(RangeMap<T> rangeMap) {
+    protected RangeMap(RangeMap<T> rangeMap) {
         this(rangeMap.getObjects());
     }
 
@@ -356,6 +365,17 @@ public class RangeMap<T> {
         }
     }
 
+    /**
+     * Adds objects of another map to this map, excluding duplicates.
+     */
+    public void addAll(RangeMap<T> other) {
+        for (T variable : other.getObjects()) {
+            if (!has(variable)) {
+                add(variable);
+            }
+        }
+    }
+
     public boolean isEmpty() {
         return getValidIndexRange().isEmpty();
     }
@@ -380,5 +400,10 @@ public class RangeMap<T> {
     @Override
     public String toString() {
         return IndentFormatter.formatList("RangeMap", indexToObject.subList(1, indexToObject.size()));
+    }
+
+    @Override
+    public RangeMap<T> clone() {
+        return new RangeMap<>(this);
     }
 }
