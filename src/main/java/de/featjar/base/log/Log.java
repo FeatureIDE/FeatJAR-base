@@ -316,7 +316,7 @@ public interface Log {
     }
 
     default void dispose() {
-        print(() -> "", Verbosity.PROGRESS);
+        println(() -> "", Verbosity.PROGRESS);
     }
 
     void print(Supplier<String> message, Verbosity verbosity);
