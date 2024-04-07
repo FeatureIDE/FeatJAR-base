@@ -91,7 +91,7 @@ public class Commands extends AExtensionPoint<ICommand> {
                 System.out.println(OptionList.getHelp());
             } else {
                 ICommand command = optionalCommand.get();
-                FeatJAR.log().debug("running command " + command.getIdentifier());
+                FeatJAR.log().debug("Running command %s", command.getIdentifier());
                 command.run(optionInput.addOptions(command.getOptions()).parseArguments());
             }
         }
