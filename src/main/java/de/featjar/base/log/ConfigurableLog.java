@@ -274,44 +274,36 @@ public class ConfigurableLog implements Log, IInitializer {
 
     public void println(PrintStream stream, String message) {
         synchronized (this) {
-            if (progressSize > 0) {
-                stream.println(fillBuffer(message.toCharArray()));
-                progressSize = 0;
-            } else {
-                stream.println(message);
-            }
+            char[] charArray = message.toCharArray();
+            stream.println(fillBuffer(charArray));
         }
     }
 
     public void print(PrintStream stream, String message) {
         synchronized (this) {
-            if (progressSize > 0) {
-                stream.print(fillBuffer(message.toCharArray()));
-                progressSize = 0;
-            } else {
-                stream.print(message);
-            }
+            stream.print(fillBuffer(message.toCharArray()));
         }
     }
 
     public void printProgress(PrintStream stream, String message) {
         synchronized (this) {
             char[] charArray = message.toCharArray();
-            if (progressSize > 0) {
-                stream.print(fillBuffer(charArray));
-            } else {
-                stream.print(message);
-            }
+            stream.print(fillBuffer(charArray));
             progressSize = charArray.length;
         }
     }
 
     private char[] fillBuffer(char[] charArray) {
-        char[] buffer = new char[Math.max(progressSize, charArray.length) + 1];
-        buffer[0] = '\r';
-        System.arraycopy(charArray, 0, buffer, 1, charArray.length);
-        Arrays.fill(buffer, charArray.length + 1, buffer.length, ' ');
-        return buffer;
+        if (progressSize == 0) {
+            return charArray;
+        } else {
+            char[] buffer = new char[Math.max(progressSize, charArray.length) + 1];
+            buffer[0] = '\r';
+            System.arraycopy(charArray, 0, buffer, 1, charArray.length);
+            Arrays.fill(buffer, charArray.length + 1, buffer.length, ' ');
+            progressSize = 0;
+            return buffer;
+        }
     }
 
     public void println(Throwable error, Verbosity verbosity) {
