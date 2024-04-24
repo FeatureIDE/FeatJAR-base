@@ -37,10 +37,18 @@ public abstract class ATree<T extends ITree<T>> implements ITree<T> {
      * The children of this node.
      * Declared private to ensure correct hash code invalidation.
      */
-    private final List<T> children = new ArrayList<>();
+    private final List<T> children;
 
     protected boolean hashCodeValid;
     protected int hashCode;
+
+    public ATree() {
+        children = new ArrayList<>();
+    }
+
+    public ATree(int childrenCount) {
+        children = new ArrayList<>(childrenCount);
+    }
 
     @Override
     public List<? extends T> getChildren() {

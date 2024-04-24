@@ -33,15 +33,27 @@ import java.util.Objects;
 public class LabeledTree<T> extends ATree<LabeledTree<T>> {
     protected T label;
 
-    public LabeledTree() {}
+    public LabeledTree() {
+        super();
+    }
+
+    public LabeledTree(int childrenCount) {
+        super(childrenCount);
+    }
 
     public LabeledTree(T label) {
+        super();
+        this.label = label;
+    }
+
+    public LabeledTree(T label, int childrenCount) {
+        super(childrenCount);
         this.label = label;
     }
 
     @SafeVarargs
     public static <T> LabeledTree<T> of(T label, LabeledTree<T>... children) {
-        LabeledTree<T> labeledTree = new LabeledTree<>(label);
+        LabeledTree<T> labeledTree = new LabeledTree<>(label, children.length);
         labeledTree.setChildren(Arrays.asList(children));
         return labeledTree;
     }

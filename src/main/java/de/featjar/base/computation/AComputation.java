@@ -43,13 +43,15 @@ public abstract class AComputation<T> extends ATree<IComputation<?>> implements 
     protected Cache cache = FeatJAR.cache();
 
     protected AComputation(IComputation<?>... computations) {
-        final Integer size = Dependency.getDependencyCount(getClass());
+        super(computations.length);
+        final Integer size = Dependency.computeDependencyCount(getClass());
         assert size == computations.length;
         setChildren(List.of(computations));
     }
 
     protected AComputation(List<IComputation<?>> computations1, IComputation<?>... computations2) {
-        final Integer size = Dependency.getDependencyCount(getClass());
+        super(computations1.size() + computations2.length);
+        final Integer size = Dependency.computeDependencyCount(getClass());
         assert size == computations1.size() + computations2.length;
         ArrayList<IComputation<?>> computations = new ArrayList<>(size);
         computations.addAll(computations1);
@@ -58,7 +60,8 @@ public abstract class AComputation<T> extends ATree<IComputation<?>> implements 
     }
 
     protected AComputation(Object... computations) {
-        final Integer size = Dependency.getDependencyCount(getClass());
+        super(computations.length);
+        final Integer size = Dependency.computeDependencyCount(getClass());
         ArrayList<IComputation<?>> computationList = new ArrayList<>(size);
         for (Object computation : computations) {
             unpackComputations(computationList, computation);
@@ -83,7 +86,9 @@ public abstract class AComputation<T> extends ATree<IComputation<?>> implements 
         }
     }
 
-    protected AComputation(AComputation<T> other) {}
+    protected AComputation(AComputation<T> other) {
+        super();
+    }
 
     protected final void checkCancel() {
         if (Thread.interrupted()) {
