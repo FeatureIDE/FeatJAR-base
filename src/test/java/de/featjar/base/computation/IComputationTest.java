@@ -231,7 +231,7 @@ class IComputationTest {
         public Result<Object> compute(List<Object> dependencyList, Progress progress) {
             Object x = INPUT.get(dependencyList);
             try {
-                Thread.sleep(100);
+                Thread.sleep(200);
                 completed = true;
             } catch (InterruptedException e) {
             }
@@ -266,7 +266,7 @@ class IComputationTest {
         computeFutureResult.cancelAfter(Duration.ofMillis(10));
         assertNull(computeFutureResult.get().orElse(null));
         try {
-            Thread.sleep(300);
+            Thread.sleep(500);
         } catch (InterruptedException e) {
         }
         assertFalse(computation1.completed);
@@ -280,7 +280,7 @@ class IComputationTest {
         computeFutureResult.cancel();
         assertNull(computeFutureResult.get().orElse(null));
         try {
-            Thread.sleep(300);
+            Thread.sleep(500);
         } catch (InterruptedException e) {
         }
         assertFalse(computation1.completed);

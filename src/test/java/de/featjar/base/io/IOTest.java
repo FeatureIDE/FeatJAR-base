@@ -228,11 +228,11 @@ public class IOTest {
     @SuppressWarnings("resource")
     public void testIntegerTree(Path testPath) throws IOException {
         try {
-            LabeledTree<Integer> integerTree = new LabeledTree<>(1);
-            integerTree.addChild(new LabeledTree<>(2));
-            LabeledTree<Integer> child = new LabeledTree<>(3);
+            LabeledTree<Integer> integerTree = new LabeledTree<>(Integer.valueOf(1));
+            integerTree.addChild(new LabeledTree<>(Integer.valueOf(2)));
+            LabeledTree<Integer> child = new LabeledTree<>(Integer.valueOf(3));
             integerTree.addChild(child);
-            child.addChild(new LabeledTree<>(4));
+            child.addChild(new LabeledTree<>(Integer.valueOf(4)));
             assertDoesNotThrow(() -> IO.save(integerTree, testPath, new IntegerTreeFormat()));
 
             Result<LabeledTree<Integer>> result = IO.load(testPath, new IntegerTreeFormat());
