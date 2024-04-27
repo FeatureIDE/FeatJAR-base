@@ -26,11 +26,11 @@ import de.featjar.base.data.Result;
 import de.featjar.base.log.IndentStringBuilder;
 import de.featjar.base.log.Log;
 import de.featjar.base.log.Log.Verbosity;
+import de.featjar.base.log.TimeStampFormatter;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -114,6 +114,7 @@ public class OptionList {
 
     private static final List<Option<?>> generalOptions = Arrays.asList(
             CONFIGURATION_OPTION,
+            CONFIGURATION_DIR_OPTION,
             COMMAND_OPTION,
             HELP_OPTION,
             VERSION_OPTION,
@@ -126,8 +127,7 @@ public class OptionList {
 
     private final List<Option<?>> options = new ArrayList<>(generalOptions);
 
-    private final List<String> commandLineArguments;
-    private final List<String> configFileArguments = new ArrayList<>();
+    private final List<String> commandLineArguments, configFileArguments;
     private LinkedHashMap<String, Object> properties;
 
     /**
@@ -146,6 +146,7 @@ public class OptionList {
      */
     public OptionList(List<String> arguments) {
         this.commandLineArguments = new ArrayList<>(arguments);
+        configFileArguments = new ArrayList<>();
     }
 
     public OptionList parseArguments() {
@@ -155,6 +156,7 @@ public class OptionList {
     public OptionList parseArguments(boolean logWarnings) {
         properties = new LinkedHashMap<>();
 
+        parseConfigFile(parseConfigurationDir());
         if (!commandLineArguments.isEmpty() && !commandLineArguments.get(0).startsWith("--")) {
             String commandString = commandLineArguments.remove(0);
             List<ICommand> commands = FeatJAR.extensionPoint(Commands.class).getExtensions().stream().filter(it -> it.getShortName().equals(commandString)).collect(Collectors.toList());
@@ -243,7 +245,7 @@ public class OptionList {
         while (listIterator.hasNext()) {
             String argument = listIterator.next();
             if (!argument.matches("--\\w[-\\w]*")) {
-                if (logWarnings) FeatJAR.log().warning("ignoring unrecognized argument %s", argument);
+                if (logWarnings) FeatJAR.log().warning("Ignoring unrecognized argument %s", argument);
                 continue;
             }
 
@@ -251,7 +253,7 @@ public class OptionList {
             Optional<Option<?>> optionalOption =
                     options.stream().filter(o -> o.getName().equals(optionName)).findFirst();
             if (!optionalOption.isPresent()) {
-                if (logWarnings) FeatJAR.log().warning("ignoring unrecognized option %s", argument);
+                if (logWarnings) FeatJAR.log().warning("Ignoring unrecognized option %s", argument);
                 continue;
             }
 
@@ -262,7 +264,7 @@ public class OptionList {
             }
 
             if (properties.containsKey(optionName)) {
-                if (logWarnings) FeatJAR.log().warning("ignoring multiple occurences of argument %s", optionName);
+                if (logWarnings) FeatJAR.log().warning("Ignoring multiple occurences of argument %s", optionName);
                 if (!(option instanceof Flag) && listIterator.hasNext()) {
                     listIterator.next();
                 }
@@ -275,7 +277,7 @@ public class OptionList {
                 if (!listIterator.hasNext()) {
                     FeatJAR.log()
                             .error(
-                                    "option %s is supplied without value, but a value was expected, using default value (%s)",
+                                    "Option %s is supplied without value, but a value is required, using default value (%s)",
                                     option.getName(), String.valueOf(option.defaultValue));
                     return this;
                 }
@@ -284,7 +286,7 @@ public class OptionList {
                     listIterator.previous();
                     FeatJAR.log()
                             .error(
-                                    "option %s is supplied without value, but a value was expected, using default value (%s)",
+                                    "Option %s is supplied without value, but a value is required, using default value (%s)",
                                     option.getName(), String.valueOf(option.defaultValue));
                     return this;
                 }
@@ -294,13 +296,93 @@ public class OptionList {
         return this;
     }
 
+    private void parseConfigFile(Path configDir) {
+        int configurationNamesIndex = commandLineArguments.indexOf("--" + CONFIGURATION_OPTION.getName());
+        if (configurationNamesIndex >= 0) {
+            int argumentIndex = configurationNamesIndex + 1;
+            if (argumentIndex >= commandLineArguments.size()) {
+                FeatJAR.log()
+                        .error(
+                                "Option %s is supplied without value, but a value is required",
+                                CONFIGURATION_OPTION.getName());
+                throw illegalArguments();
+            }
+            parseOption(CONFIGURATION_OPTION, commandLineArguments.get(argumentIndex));
+            Result<List<String>> config = getResult(CONFIGURATION_OPTION);
+            if (config.isEmpty()) {
+                FeatJAR.log().problems(config.getProblems());
+                throw illegalArguments();
+            }
+            commandLineArguments
+                    .subList(configurationNamesIndex, configurationNamesIndex + 2)
+                    .clear();
+            configFileArguments.clear();
+
+            List<String> configNameList = config.get();
+            ArrayList<String> reverseNameList = new ArrayList<>(configNameList.size() + 1);
+            reverseNameList.add(GENERAL_CONFIG_NAME);
+            reverseNameList.addAll(configNameList);
+            Collections.reverse(reverseNameList);
+
+            for (String name : reverseNameList) {
+                Path configPath = configDir.resolve(name + ".properties");
+                final Properties properties = new Properties();
+                try {
+                    properties.load(Files.newInputStream(configPath));
+                    for (Entry<Object, Object> propertyEntry : properties.entrySet()) {
+                        configFileArguments.add("--" + propertyEntry.getKey().toString());
+                        configFileArguments.add(propertyEntry.getValue().toString());
+                    }
+                } catch (final IOException e) {
+                    FeatJAR.log().error(e);
+                    throw illegalArguments();
+                }
+            }
+        }
+    }
+
+    private IllegalArgumentException illegalArguments() {
+        return new IllegalArgumentException(String.format("Could not parse provided options %s", commandLineArguments));
+    }
+
+    private Path parseConfigurationDir() {
+        int configurationDirIndex = commandLineArguments.indexOf("--" + CONFIGURATION_DIR_OPTION.getName());
+        if (configurationDirIndex >= 0) {
+            int argumentIndex = configurationDirIndex + 1;
+            if (argumentIndex >= commandLineArguments.size()) {
+                FeatJAR.log()
+                        .error(
+                                "Option %s is supplied without value, but a value is required",
+                                CONFIGURATION_DIR_OPTION.getName());
+                throw illegalArguments();
+            }
+            parseOption(CONFIGURATION_DIR_OPTION, commandLineArguments.get(argumentIndex));
+            Result<Path> configDirValue = getResult(CONFIGURATION_DIR_OPTION);
+            if (configDirValue.isEmpty()) {
+                FeatJAR.log().problems(configDirValue.getProblems());
+                throw illegalArguments();
+            }
+            commandLineArguments
+                    .subList(configurationDirIndex, configurationDirIndex + 2)
+                    .clear();
+            Path configDir = configDirValue.get();
+            if (!Files.isDirectory(configDir)) {
+                FeatJAR.log().error("Specified configuration directory %s is not a directory", configDir.toString());
+                throw illegalArguments();
+            }
+            return configDir;
+        } else {
+            return Path.of("");
+        }
+    }
+
     private <T> void parseOption(Option<T> option, String nextArgument) {
         Result<T> parseResult = option.parse(nextArgument);
         if (parseResult.isEmpty()) {
             FeatJAR.log().problems(parseResult.getProblems());
             FeatJAR.log()
                     .error(
-                            "could not parse argument %s for option %s, using default value (%s)",
+                            "Could not parse argument %s for option %s, using default value (%s)",
                             nextArgument, option.getName(), String.valueOf(option.defaultValue));
             return;
         }
@@ -308,7 +390,7 @@ public class OptionList {
         if (!option.validator.test(parseResult.get())) {
             FeatJAR.log()
                     .error(
-                            "invalid argument %s for option %s, using default value (%s)",
+                            "Invalid argument %s for option %s, using default value (%s)",
                             nextArgument, option.getName(), String.valueOf(option.defaultValue));
             return;
         }
@@ -352,10 +434,10 @@ public class OptionList {
         this.options.addAll(options);
         return this;
     }
-    
+
     /**
      * {@return the general command-line interface help}
-     * 
+     *
      * @see #getHelp(ICommand)
      */
     public static String getHelp() {
@@ -418,6 +500,7 @@ public class OptionList {
         getResult(ERROR_FILE_OPTION).ifPresent(p -> logToFile(configuration, p, LOG_ERROR_FILE_OPTION));
         configuration.logConfig.logToSystemOut(get(LOG_INFO_OPTION).toArray(new Log.Verbosity[0]));
         configuration.logConfig.logToSystemErr(get(LOG_ERROR_OPTION).toArray(new Log.Verbosity[0]));
+        configuration.logConfig.addFormatter(new TimeStampFormatter());
         return configuration;
     }
 

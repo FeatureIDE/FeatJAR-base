@@ -68,7 +68,7 @@ public class Dependency<U> {
     }
 
     private static <U> Dependency<U> addDependency(Class<?> clazz, Class<U> type) {
-        final int count = getDependencyCount(clazz);
+        final int count = computeDependencyCount(clazz);
         map.put(clazz, count + 1);
         return new Dependency<>(type, count);
     }
@@ -78,13 +78,13 @@ public class Dependency<U> {
         map = null;
     }
 
-    public static int getDependencyCount(Class<?> clazz) {
+    public static int computeDependencyCount(Class<?> clazz) {
         final Integer integer = map.get(clazz);
         if (integer != null) {
             return integer;
         } else {
             final Class<?> p = clazz.getSuperclass();
-            final int curIndex = (p == null) ? 0 : getDependencyCount(p);
+            final int curIndex = (p == null) ? 0 : computeDependencyCount(p);
             map.put(clazz, curIndex);
             return curIndex;
         }

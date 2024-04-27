@@ -37,6 +37,14 @@ public abstract class ARootedTree<T extends IRootedTree<T>> extends ATree<T> imp
      */
     protected T parent = null;
 
+    public ARootedTree() {
+        super();
+    }
+
+    public ARootedTree(int childrenCount) {
+        super(childrenCount);
+    }
+
     @Override
     public Result<T> getParent() {
         return Result.ofNullable(parent);

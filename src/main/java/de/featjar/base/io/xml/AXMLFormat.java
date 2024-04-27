@@ -33,6 +33,7 @@ import java.io.IOException;
 import java.io.StringReader;
 import java.io.StringWriter;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -120,10 +121,10 @@ public abstract class AXMLFormat<T> implements IFormat<T> {
         return Result.of(elements.get(0));
     }
 
-    protected Element getDocumentElement(final Document document, final String nodeName) throws ParseException {
+    protected Element getDocumentElement(final Document document, final String... nodeNames) throws ParseException {
         final Element element = document.getDocumentElement();
-        if (element == null || !element.getNodeName().equals(nodeName)) {
-            addParseProblem("Node " + nodeName + " not defined!", element, Problem.Severity.ERROR);
+        if (element == null || Arrays.stream(nodeNames).noneMatch(element.getNodeName()::equals)) {
+            addParseProblem("Node " + Arrays.toString(nodeNames) + " not defined!", element, Problem.Severity.ERROR);
         }
         return element;
     }
