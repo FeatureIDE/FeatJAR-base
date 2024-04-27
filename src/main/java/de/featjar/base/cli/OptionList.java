@@ -42,6 +42,7 @@ import java.util.Map.Entry;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Properties;
+import java.util.stream.Collectors;
 
 /**
  * Parses a list of strings.
@@ -153,6 +154,24 @@ public class OptionList {
 
     public OptionList parseArguments(boolean logWarnings) {
         properties = new LinkedHashMap<>();
+
+        if (!commandLineArguments.isEmpty() && !commandLineArguments.get(0).startsWith("--")) {
+            String commandString = commandLineArguments.remove(0);
+            List<ICommand> commands = FeatJAR.extensionPoint(Commands.class).getExtensions().stream().filter(it -> it.getShortName().equals(commandString)).collect(Collectors.toList());
+
+            if (commands.size() > 1) {
+                FeatJAR.log().error("Command '" + commandString + "' is ambiguous!");
+                System.exit(1);
+            } else if (commands.isEmpty()) {
+                ICommand command = FeatJAR.extensionPoint(Commands.class)
+                        .getMatchingExtension(commandString)
+                        .get();
+                properties.put(COMMAND_OPTION.getName(), command);
+            } else {
+                String s = commands.get(0).getIdentifier();
+                properties.put(COMMAND_OPTION.getName(), commands.get(0));
+            }
+        }
 
         Path configDir = Paths.get("");
         int configurationDirIndex = commandLineArguments.indexOf("--" + CONFIGURATION_DIR_OPTION.getName());
@@ -353,7 +372,7 @@ public class OptionList {
         sb.appendLine(String.format(
                 "Usage: java -jar %s --command <command> [--<flag> | --<option> <value>]...", FeatJAR.LIBRARY_NAME));
         sb.appendLine();
-        if (commands.size() == 0) {
+        if (commands.isEmpty()) {
             sb.append(String.format(
                     "No commands are available. You can register commands in an extensions.xml file when building %s.",
                     FeatJAR.LIBRARY_NAME));

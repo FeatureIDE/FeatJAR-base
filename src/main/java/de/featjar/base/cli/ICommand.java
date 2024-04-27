@@ -58,6 +58,8 @@ public interface ICommand extends IExtension {
         return new ArrayList<>();
     }
 
+    String getShortName();
+
     /**
      * {@return adds new options to a given list of options}
      *
