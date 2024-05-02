@@ -42,13 +42,8 @@ public class BufferedLog implements Log {
     public void print(Supplier<String> message, Verbosity verbosity) {
         synchronized (logBuffer) {
             logBuffer.add(new Pair<>(verbosity, message));
-            switch (verbosity) {
-                case ERROR:
-                    System.err.print(message.get());
-                    break;
-                default:
-                    System.out.print(message.get());
-                    break;
+            if (verbosity == Verbosity.ERROR) {
+                System.err.print(message.get());
             }
         }
     }
@@ -57,13 +52,8 @@ public class BufferedLog implements Log {
     public void println(Supplier<String> message, Verbosity verbosity) {
         synchronized (logBuffer) {
             logBuffer.add(new Pair<>(verbosity, message));
-            switch (verbosity) {
-                case ERROR:
-                    System.err.println(message.get());
-                    break;
-                default:
-                    System.out.println(message.get());
-                    break;
+            if (verbosity == Verbosity.ERROR) {
+                System.err.print(message.get());
             }
         }
     }
@@ -72,13 +62,8 @@ public class BufferedLog implements Log {
     public void println(Throwable error, Verbosity verbosity) {
         synchronized (logBuffer) {
             logBuffer.add(new Pair<>(verbosity, error::getMessage));
-            switch (verbosity) {
-                case ERROR:
-                    System.err.println(error.getMessage());
-                    break;
-                default:
-                    System.out.println(error.getMessage());
-                    break;
+            if (verbosity == Verbosity.ERROR) {
+                System.err.println(error.getMessage());
             }
         }
     }
