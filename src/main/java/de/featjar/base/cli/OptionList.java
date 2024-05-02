@@ -31,6 +31,7 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -452,7 +453,7 @@ public class OptionList {
         IndentStringBuilder sb = new IndentStringBuilder();
         List<ICommand> commands = FeatJAR.extensionPoint(Commands.class).getExtensions();
         sb.appendLine(String.format(
-                "Usage: java -jar %s --command <command> [--<flag> | --<option> <value>]...", FeatJAR.LIBRARY_NAME));
+                "Usage: java -jar %s [--command <command> | <shortcut>] [--<flag> | --<option> <value>]...", FeatJAR.LIBRARY_NAME));
         sb.appendLine();
         if (commands.isEmpty()) {
             sb.append(String.format(
@@ -467,6 +468,14 @@ public class OptionList {
                             "%s: %s", //
                             c.getIdentifier(), //
                             Result.ofNullable(c.getDescription()).orElse("")));
+                }
+                sb.removeIndent().appendLine();
+                sb.append("The following shortcuts are available:").appendLine().addIndent();
+                for (final ICommand c : commands) {
+                    sb.appendLine(String.format(
+                            "%s: %s", //
+                            c.getShortName(), //
+                            c.getIdentifier()));
                 }
             } else {
                 sb.appendLine(String.format("Help for %s", command.getIdentifier()))

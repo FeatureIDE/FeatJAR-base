@@ -84,9 +84,7 @@ public class Commands extends AExtensionPoint<ICommand> {
             System.out.println(FeatJAR.LIBRARY_NAME + ", development version");
         } else {
             Result<ICommand> optionalCommand = optionInput.getCommand();
-            if (optionalCommand.hasProblems()) {
-                FeatJAR.log().problems(optionalCommand.getProblems());
-            } else if (optionalCommand.isEmpty()) {
+            if (optionalCommand.isEmpty()) {
                 FeatJAR.log().error("No command provided");
                 System.out.println(OptionList.getHelp());
             } else {
