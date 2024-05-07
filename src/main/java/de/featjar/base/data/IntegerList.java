@@ -472,7 +472,7 @@ public class IntegerList {
         }
         System.arraycopy(integers, 0, newArray, j, integers.length);
         assert Arrays.stream(elements).allMatch(e -> Arrays.stream(newArray).anyMatch(i -> i == e));
-        assert Arrays.stream(elements).allMatch(e -> Arrays.stream(integers).anyMatch(i -> i == e));
+        assert Arrays.stream(integers).allMatch(e -> Arrays.stream(newArray).anyMatch(i -> i == e));
         return newArray;
     }
 
