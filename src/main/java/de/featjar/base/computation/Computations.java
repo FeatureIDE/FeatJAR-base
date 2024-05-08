@@ -26,6 +26,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.function.BiFunction;
 import java.util.function.Function;
+import java.util.function.Supplier;
 
 /**
  * Utilities for creating and computing computations.
@@ -52,6 +53,10 @@ public class Computations {
      */
     public static <T> ComputeConstant<T> of(T object) {
         return new ComputeConstant<>(object);
+    }
+
+    public static <T> IComputation<T> of(Class<?> klass, String scope, Supplier<Result<T>> supplier) {
+        return new ComputeSupplier<>(klass, scope, supplier);
     }
 
     /**

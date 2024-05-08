@@ -50,7 +50,7 @@ public interface ICommand extends IExtension {
      * {@return this command's description, if any}
      */
     default String getDescription() {
-        return null;
+        return "";
     }
 
     /**

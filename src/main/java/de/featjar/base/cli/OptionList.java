@@ -330,11 +330,16 @@ public class OptionList {
                 final Properties properties = new Properties();
                 try {
                     properties.load(Files.newInputStream(configPath));
+                } catch (IOException e) {
+                    FeatJAR.log().error("Could not load configuration file %s", configPath.toString());
+                    throw new IllegalArgumentException(e);
+                }
+                try {
                     for (Entry<Object, Object> propertyEntry : properties.entrySet()) {
                         configFileArguments.add("--" + propertyEntry.getKey().toString());
                         configFileArguments.add(propertyEntry.getValue().toString());
                     }
-                } catch (final IOException e) {
+                } catch (final Exception e) {
                     FeatJAR.log().error(e);
                     throw illegalArguments();
                 }

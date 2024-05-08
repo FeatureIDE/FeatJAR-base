@@ -42,6 +42,9 @@ public class BufferedLog implements Log {
     public void print(Supplier<String> message, Verbosity verbosity) {
         synchronized (logBuffer) {
             logBuffer.add(new Pair<>(verbosity, message));
+            if (verbosity == Verbosity.ERROR) {
+                System.err.print(message.get());
+            }
         }
     }
 
@@ -49,6 +52,9 @@ public class BufferedLog implements Log {
     public void println(Supplier<String> message, Verbosity verbosity) {
         synchronized (logBuffer) {
             logBuffer.add(new Pair<>(verbosity, message));
+            if (verbosity == Verbosity.ERROR) {
+                System.err.print(message.get());
+            }
         }
     }
 
@@ -56,6 +62,9 @@ public class BufferedLog implements Log {
     public void println(Throwable error, Verbosity verbosity) {
         synchronized (logBuffer) {
             logBuffer.add(new Pair<>(verbosity, error::getMessage));
+            if (verbosity == Verbosity.ERROR) {
+                System.err.println(error.getMessage());
+            }
         }
     }
 
