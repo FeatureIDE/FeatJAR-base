@@ -33,6 +33,7 @@ import java.util.function.Supplier;
  * @param <T> the type of the mapped result
  * @author Elias Kuiter
  * @author Sebastian Krieter
+ * @author Andreas Gerasimow
  */
 public class ComputeSupplier<T> extends AComputation<T> {
     protected final Class<?> klass;
@@ -44,7 +45,7 @@ public class ComputeSupplier<T> extends AComputation<T> {
      *
      * @param klass    the calling class
      * @param scope    the calling scope
-     * @param suuplier the supplier
+     * @param supplier the supplier
      */
     public ComputeSupplier(Class<?> klass, String scope, Supplier<Result<T>> supplier) {
         super();
