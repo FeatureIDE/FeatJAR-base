@@ -160,7 +160,9 @@ public class OptionList {
         parseConfigFile(parseConfigurationDir());
         if (!commandLineArguments.isEmpty() && !commandLineArguments.get(0).startsWith("--")) {
             String commandString = commandLineArguments.remove(0);
-            List<ICommand> commands = FeatJAR.extensionPoint(Commands.class).getExtensions().stream().filter(it -> it.getShortName().equals(commandString)).collect(Collectors.toList());
+            List<ICommand> commands = FeatJAR.extensionPoint(Commands.class).getExtensions().stream()
+                    .filter(it -> it.getShortName().equals(commandString))
+                    .collect(Collectors.toList());
 
             if (commands.size() > 1) {
                 FeatJAR.log().error("Command '" + commandString + "' is ambiguous!");
@@ -458,7 +460,8 @@ public class OptionList {
         IndentStringBuilder sb = new IndentStringBuilder();
         List<ICommand> commands = FeatJAR.extensionPoint(Commands.class).getExtensions();
         sb.appendLine(String.format(
-                "Usage: java -jar %s [<command> | --command <classpath>] [--<flag> | --<option> <value>]...", FeatJAR.LIBRARY_NAME));
+                "Usage: java -jar %s [<command> | --command <classpath>] [--<flag> | --<option> <value>]...",
+                FeatJAR.LIBRARY_NAME));
         sb.appendLine();
         if (commands.isEmpty()) {
             sb.append(String.format(
@@ -469,8 +472,7 @@ public class OptionList {
             if (command == null) {
                 sb.append("The following commands are available:").appendLine().addIndent();
                 for (final ICommand c : commands) {
-                    sb
-                            .appendLine(String.format(
+                    sb.appendLine(String.format(
                                     "%s: %s", //
                                     c.getShortName(), //
                                     Result.ofNullable(c.getDescription()).orElse("")))
