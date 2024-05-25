@@ -81,7 +81,19 @@ public interface Log {
      * @param problem the problem
      */
     default void problem(Problem problem) {
-        problem(problem, Verbosity.ERROR);
+        switch (problem.getSeverity()) {
+            case ERROR:
+                println(() -> "ERROR: " + problem.getException().getMessage(), Verbosity.ERROR);
+                break;
+            case WARNING:
+                println(() -> "WARNING: " + problem.getMessage(), Verbosity.WARNING);
+                break;
+            case INFO:
+                println(() -> "INFO: " + problem.getMessage(), Verbosity.INFO);
+                break;
+            default:
+                break;
+        }
     }
 
     /**

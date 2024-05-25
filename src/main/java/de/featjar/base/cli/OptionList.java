@@ -22,6 +22,8 @@ package de.featjar.base.cli;
 
 import de.featjar.base.FeatJAR;
 import de.featjar.base.FeatJAR.Configuration;
+import de.featjar.base.data.Problem;
+import de.featjar.base.data.Problem.Severity;
 import de.featjar.base.data.Result;
 import de.featjar.base.log.IndentStringBuilder;
 import de.featjar.base.log.Log;
@@ -31,12 +33,12 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.LinkedHashMap;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.ListIterator;
 import java.util.Map.Entry;
@@ -69,7 +71,7 @@ public class OptionList {
      */
     static final Option<ICommand> COMMAND_OPTION = new Option<>("command", s -> FeatJAR.extensionPoint(Commands.class)
                     .getMatchingExtension(s)
-                    .get())
+                    .orElseThrow())
             .setRequired(true)
             .setDescription("Classpath from command to execute");
 
@@ -129,6 +131,8 @@ public class OptionList {
     private final List<Option<?>> options = new ArrayList<>(generalOptions);
 
     private final List<String> commandLineArguments, configFileArguments;
+
+    private LinkedList<String> arguments;
     private LinkedHashMap<String, Object> properties;
 
     /**
@@ -150,171 +154,107 @@ public class OptionList {
         configFileArguments = new ArrayList<>();
     }
 
-    public OptionList parseArguments() {
-        return parseArguments(true);
+    public List<Problem> parseArguments() {
+        properties = new LinkedHashMap<>();
+        arguments = new LinkedList<>();
+        List<Problem> problemList = new ArrayList<>();
+
+        parseCommand(problemList);
+        parseConfigurationFiles(problemList);
+
+        arguments.addAll(commandLineArguments);
+        arguments.addAll(configFileArguments);
+
+        parseRemainingArguments(problemList, false);
+
+        return problemList;
     }
 
-    public OptionList parseArguments(boolean logWarnings) {
-        properties = new LinkedHashMap<>();
+    public List<Problem> parseRemainingArguments() {
+        List<Problem> problemList = new ArrayList<>();
 
-        parseConfigFile(parseConfigurationDir());
+        parseRemainingArguments(problemList, true);
+
+        return problemList;
+    }
+
+    private void parseCommand(List<Problem> problemList) {
         if (!commandLineArguments.isEmpty() && !commandLineArguments.get(0).startsWith("--")) {
-            String commandString = commandLineArguments.remove(0);
-            List<ICommand> commands = FeatJAR.extensionPoint(Commands.class).getExtensions().stream()
-                    .filter(it -> it.getShortName().equals(commandString))
+            String commandString = commandLineArguments.get(0);
+            Commands commandsExentionsPoint = FeatJAR.extensionPoint(Commands.class);
+            List<ICommand> commands = commandsExentionsPoint.getExtensions().stream()
+                    .filter(it -> Objects.equals(it.getShortName(), commandString))
                     .collect(Collectors.toList());
 
             if (commands.size() > 1) {
-                FeatJAR.log().error("Command '" + commandString + "' is ambiguous!");
-                System.exit(1);
-            } else if (commands.isEmpty()) {
-                ICommand command = FeatJAR.extensionPoint(Commands.class)
-                        .getMatchingExtension(commandString)
-                        .get();
-                properties.put(COMMAND_OPTION.getName(), command);
+                addProblem(problemList, Severity.ERROR, "Command '%s' is ambiguous!", commandString);
+                return;
+            }
+
+            if (commands.isEmpty()) {
+                Result<ICommand> matchingExtension = commandsExentionsPoint.getMatchingExtension(commandString);
+                if (matchingExtension.isEmpty()) {
+                    problemList.addAll(matchingExtension.getProblems());
+                    return;
+                }
+                properties.put(COMMAND_OPTION.getName(), matchingExtension.get());
             } else {
-                String s = commands.get(0).getIdentifier();
                 properties.put(COMMAND_OPTION.getName(), commands.get(0));
             }
         }
-
-        Path configDir = Paths.get("");
-        int configurationDirIndex = commandLineArguments.indexOf("--" + CONFIGURATION_DIR_OPTION.getName());
-        if (configurationDirIndex >= 0) {
-            int argumentIndex = configurationDirIndex + 1;
-            if (argumentIndex >= commandLineArguments.size()) {
-                FeatJAR.log()
-                        .error(
-                                "option %s is supplied without value, but a value was expected",
-                                CONFIGURATION_DIR_OPTION.getName());
-                return this;
-            }
-            parseOption(CONFIGURATION_DIR_OPTION, commandLineArguments.get(argumentIndex));
-            Result<Path> configDirValue = getResult(CONFIGURATION_DIR_OPTION);
-            if (configDirValue.isEmpty()) {
-                FeatJAR.log().problems(configDirValue.getProblems());
-                return this;
-            }
-            configDir = configDirValue.get();
-            if (!Files.isDirectory(configDir)) {
-                FeatJAR.log().error("given config dir %s is not a directory", configDir.toString());
-                return this;
-            }
-        }
-
-        int configurationNamesIndex = commandLineArguments.indexOf("--" + CONFIGURATION_OPTION.getName());
-        if (configurationNamesIndex >= 0) {
-            int argumentIndex = configurationNamesIndex + 1;
-            if (argumentIndex >= commandLineArguments.size()) {
-                FeatJAR.log()
-                        .error(
-                                "option %s is supplied without value, but a value was expected",
-                                CONFIGURATION_OPTION.getName());
-                return this;
-            }
-            parseOption(CONFIGURATION_OPTION, commandLineArguments.get(argumentIndex));
-            Result<List<String>> config = getResult(CONFIGURATION_OPTION);
-            if (!config.isEmpty()) {
-                configFileArguments.clear();
-
-                List<String> configNameList = config.get();
-                ArrayList<String> reverseNameList = new ArrayList<>(configNameList.size() + 1);
-                reverseNameList.add(GENERAL_CONFIG_NAME);
-                reverseNameList.addAll(configNameList);
-                Collections.reverse(reverseNameList);
-
-                for (String name : reverseNameList) {
-                    Path configPath = configDir.resolve(name + ".properties");
-                    final Properties properties = new Properties();
-                    try {
-                        properties.load(Files.newInputStream(configPath));
-                        for (Entry<Object, Object> propertyEntry : properties.entrySet()) {
-                            configFileArguments.add(
-                                    "--" + propertyEntry.getKey().toString());
-                            configFileArguments.add(propertyEntry.getValue().toString());
-                        }
-                    } catch (final IOException e) {
-                        FeatJAR.log().error(e);
-                        return this;
-                    }
-                }
-            }
-        }
-
-        ArrayList<String> arguments = new ArrayList<>(commandLineArguments.size() + configFileArguments.size());
-        arguments.addAll(commandLineArguments);
-        arguments.addAll(configFileArguments);
-        ListIterator<String> listIterator = arguments.listIterator();
-        while (listIterator.hasNext()) {
-            String argument = listIterator.next();
-            if (!argument.matches("--\\w[-\\w]*")) {
-                if (logWarnings) FeatJAR.log().warning("Ignoring unrecognized argument %s", argument);
-                continue;
-            }
-
-            String optionName = argument.substring(2);
-            Optional<Option<?>> optionalOption =
-                    options.stream().filter(o -> o.getName().equals(optionName)).findFirst();
-            if (!optionalOption.isPresent()) {
-                if (logWarnings) FeatJAR.log().warning("Ignoring unrecognized option %s", argument);
-                continue;
-            }
-
-            Option<?> option = optionalOption.get();
-            if (option.equals(CONFIGURATION_OPTION)) {
-                listIterator.next();
-                continue;
-            }
-
-            if (properties.containsKey(optionName)) {
-                if (logWarnings) FeatJAR.log().warning("Ignoring multiple occurences of argument %s", optionName);
-                if (!(option instanceof Flag) && listIterator.hasNext()) {
-                    listIterator.next();
-                }
-                continue;
-            }
-
-            if (option instanceof Flag) {
-                properties.put(optionName, Boolean.TRUE);
-            } else {
-                if (!listIterator.hasNext()) {
-                    FeatJAR.log()
-                            .error(
-                                    "Option %s is supplied without value, but a value is required, using default value (%s)",
-                                    option.getName(), String.valueOf(option.defaultValue));
-                    return this;
-                }
-                String nextArgument = listIterator.next();
-                if (nextArgument.matches("--\\w+")) {
-                    listIterator.previous();
-                    FeatJAR.log()
-                            .error(
-                                    "Option %s is supplied without value, but a value is required, using default value (%s)",
-                                    option.getName(), String.valueOf(option.defaultValue));
-                    return this;
-                }
-                parseOption(option, nextArgument);
-            }
-        }
-        return this;
     }
 
-    private void parseConfigFile(Path configDir) {
+    private void parseConfigurationFiles(List<Problem> problemList) {
+        final Path configDir;
+        int configurationDirIndex = commandLineArguments.indexOf("--" + CONFIGURATION_DIR_OPTION.getName());
+        if (configurationDirIndex < 0) {
+            configDir = Path.of("");
+        } else {
+            int argumentIndex = configurationDirIndex + 1;
+            if (argumentIndex >= commandLineArguments.size()) {
+                addProblem(
+                        problemList,
+                        Severity.ERROR,
+                        "Option %s is supplied without value, but a value is required",
+                        CONFIGURATION_DIR_OPTION.getName());
+                return;
+            }
+            parseOption(CONFIGURATION_DIR_OPTION, commandLineArguments.get(argumentIndex), problemList);
+            Result<Path> configDirValue = getResult(CONFIGURATION_DIR_OPTION);
+            if (configDirValue.isEmpty()) {
+                problemList.addAll(configDirValue.getProblems());
+                return;
+            }
+            commandLineArguments
+                    .subList(configurationDirIndex, configurationDirIndex + 2)
+                    .clear();
+            configDir = configDirValue.get();
+            if (!Files.isDirectory(configDir)) {
+                addProblem(
+                        problemList,
+                        Severity.ERROR,
+                        "Specified configuration directory %s is not a directory",
+                        configDir.toString());
+                return;
+            }
+        }
+
         int configurationNamesIndex = commandLineArguments.indexOf("--" + CONFIGURATION_OPTION.getName());
         if (configurationNamesIndex >= 0) {
             int argumentIndex = configurationNamesIndex + 1;
             if (argumentIndex >= commandLineArguments.size()) {
-                FeatJAR.log()
-                        .error(
-                                "Option %s is supplied without value, but a value is required",
-                                CONFIGURATION_OPTION.getName());
-                throw illegalArguments();
+                addProblem(
+                        problemList,
+                        Severity.ERROR,
+                        "Option %s is supplied without value, but a value is required",
+                        CONFIGURATION_OPTION.getName());
+                return;
             }
-            parseOption(CONFIGURATION_OPTION, commandLineArguments.get(argumentIndex));
+            parseOption(CONFIGURATION_OPTION, commandLineArguments.get(argumentIndex), problemList);
             Result<List<String>> config = getResult(CONFIGURATION_OPTION);
             if (config.isEmpty()) {
-                FeatJAR.log().problems(config.getProblems());
-                throw illegalArguments();
+                problemList.addAll(config.getProblems());
+                return;
             }
             commandLineArguments
                     .subList(configurationNamesIndex, configurationNamesIndex + 2)
@@ -333,8 +273,9 @@ public class OptionList {
                 try {
                     properties.load(Files.newInputStream(configPath));
                 } catch (IOException e) {
-                    FeatJAR.log().error("Could not load configuration file %s", configPath.toString());
-                    throw new IllegalArgumentException(e);
+                    addProblem(
+                            problemList, Severity.ERROR, "Could not load configuration file %s", configPath.toString());
+                    continue;
                 }
                 try {
                     for (Entry<Object, Object> propertyEntry : properties.entrySet()) {
@@ -342,64 +283,108 @@ public class OptionList {
                         configFileArguments.add(propertyEntry.getValue().toString());
                     }
                 } catch (final Exception e) {
-                    FeatJAR.log().error(e);
-                    throw illegalArguments();
+                    problemList.add(new Problem(e));
+                    continue;
                 }
             }
         }
     }
 
-    private IllegalArgumentException illegalArguments() {
-        return new IllegalArgumentException(String.format("Could not parse provided options %s", commandLineArguments));
-    }
+    private void parseRemainingArguments(List<Problem> problemList, boolean logUnrecognized) {
+        ListIterator<String> listIterator = arguments.listIterator();
+        while (listIterator.hasNext()) {
+            String argument = listIterator.next();
+            if (!argument.matches("--\\w[-\\w]*")) {
+                if (logUnrecognized)
+                    addProblem(problemList, Severity.WARNING, "Ignoring unrecognized argument %s", argument);
+                continue;
+            }
 
-    private Path parseConfigurationDir() {
-        int configurationDirIndex = commandLineArguments.indexOf("--" + CONFIGURATION_DIR_OPTION.getName());
-        if (configurationDirIndex >= 0) {
-            int argumentIndex = configurationDirIndex + 1;
-            if (argumentIndex >= commandLineArguments.size()) {
-                FeatJAR.log()
-                        .error(
-                                "Option %s is supplied without value, but a value is required",
-                                CONFIGURATION_DIR_OPTION.getName());
-                throw illegalArguments();
+            String optionName = argument.substring(2);
+            Optional<Option<?>> optionalOption =
+                    options.stream().filter(o -> o.getName().equals(optionName)).findFirst();
+            if (!optionalOption.isPresent()) {
+                if (logUnrecognized)
+                    addProblem(problemList, Severity.WARNING, "Ignoring unrecognized option %s", argument);
+                continue;
             }
-            parseOption(CONFIGURATION_DIR_OPTION, commandLineArguments.get(argumentIndex));
-            Result<Path> configDirValue = getResult(CONFIGURATION_DIR_OPTION);
-            if (configDirValue.isEmpty()) {
-                FeatJAR.log().problems(configDirValue.getProblems());
-                throw illegalArguments();
+
+            Option<?> option = optionalOption.get();
+            if (option.equals(CONFIGURATION_OPTION)) {
+                listIterator.remove();
+                listIterator.next();
+                listIterator.remove();
+                continue;
             }
-            commandLineArguments
-                    .subList(configurationDirIndex, configurationDirIndex + 2)
-                    .clear();
-            Path configDir = configDirValue.get();
-            if (!Files.isDirectory(configDir)) {
-                FeatJAR.log().error("Specified configuration directory %s is not a directory", configDir.toString());
-                throw illegalArguments();
+
+            if (properties.containsKey(optionName)) {
+                addProblem(problemList, Severity.WARNING, "Ignoring multiple occurences of argument %s", optionName);
+                listIterator.remove();
+                if (!(option instanceof Flag) && listIterator.hasNext()) {
+                    listIterator.next();
+                    listIterator.remove();
+                }
+                continue;
             }
-            return configDir;
-        } else {
-            return Path.of("");
+
+            if (option instanceof Flag) {
+                properties.put(optionName, Boolean.TRUE);
+                listIterator.remove();
+                continue;
+            }
+
+            listIterator.remove();
+            if (!listIterator.hasNext()) {
+                addProblem(
+                        problemList,
+                        Severity.WARNING,
+                        "Option %s is supplied without value, but a value is required, using default value (%s)",
+                        option.getName(),
+                        String.valueOf(option.defaultValue));
+                continue;
+            }
+            String nextArgument = listIterator.next();
+            if (nextArgument.matches("--\\w+")) {
+                listIterator.previous();
+                addProblem(
+                        problemList,
+                        Severity.WARNING,
+                        "Option %s is supplied without value, but a value is required, using default value (%s)",
+                        option.getName(),
+                        String.valueOf(option.defaultValue));
+                continue;
+            }
+            listIterator.remove();
+            parseOption(option, nextArgument, problemList);
         }
     }
 
-    private <T> void parseOption(Option<T> option, String nextArgument) {
+    private boolean addProblem(List<Problem> problemList, Severity severity, String message, Object... arguments) {
+        return problemList.add(new Problem(String.format(message, arguments), severity));
+    }
+
+    private <T> void parseOption(Option<T> option, String nextArgument, List<Problem> problemList) {
         Result<T> parseResult = option.parse(nextArgument);
         if (parseResult.isEmpty()) {
-            FeatJAR.log().problems(parseResult.getProblems());
-            FeatJAR.log()
-                    .error(
-                            "Could not parse argument %s for option %s, using default value (%s)",
-                            nextArgument, option.getName(), String.valueOf(option.defaultValue));
+            problemList.addAll(parseResult.getProblems());
+            addProblem(
+                    problemList,
+                    Severity.WARNING,
+                    "Could not parse argument %s for option %s, using default value (%s)",
+                    nextArgument,
+                    option.getName(),
+                    String.valueOf(option.defaultValue));
             return;
         }
 
         if (!option.validator.test(parseResult.get())) {
-            FeatJAR.log()
-                    .error(
-                            "Invalid argument %s for option %s, using default value (%s)",
-                            nextArgument, option.getName(), String.valueOf(option.defaultValue));
+            addProblem(
+                    problemList,
+                    Severity.WARNING,
+                    "Invalid argument %s for option %s, using default value (%s)",
+                    nextArgument,
+                    option.getName(),
+                    String.valueOf(option.defaultValue));
             return;
         }
         properties.put(option.getName(), parseResult.get());

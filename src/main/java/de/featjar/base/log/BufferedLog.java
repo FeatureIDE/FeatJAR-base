@@ -27,9 +27,7 @@ import java.util.function.Supplier;
 
 /**
  * Logs messages to standard output and files. Formats log messages with
- * {@link IFormatter formatters}. TODO: instead of logging values directly, only
- * pass suppliers that are called if some log target is configured. this saves
- * time for creating log strings
+ * {@link IFormatter formatters}.
  *
  * @author Sebastian Krieter
  * @author Elias Kuiter
@@ -42,29 +40,20 @@ public class BufferedLog implements Log {
     public void print(Supplier<String> message, Verbosity verbosity) {
         synchronized (logBuffer) {
             logBuffer.add(new Pair<>(verbosity, message));
-            if (verbosity == Verbosity.ERROR) {
-                System.err.print(message.get());
-            }
         }
     }
 
     @Override
     public void println(Supplier<String> message, Verbosity verbosity) {
         synchronized (logBuffer) {
-            logBuffer.add(new Pair<>(verbosity, message));
-            if (verbosity == Verbosity.ERROR) {
-                System.err.print(message.get());
-            }
+            logBuffer.add(new Pair<>(verbosity, () -> message.get() + "\n"));
         }
     }
 
     @Override
     public void println(Throwable error, Verbosity verbosity) {
         synchronized (logBuffer) {
-            logBuffer.add(new Pair<>(verbosity, error::getMessage));
-            if (verbosity == Verbosity.ERROR) {
-                System.err.println(error.getMessage());
-            }
+            logBuffer.add(new Pair<>(verbosity, () -> error.getMessage() + "\n"));
         }
     }
 

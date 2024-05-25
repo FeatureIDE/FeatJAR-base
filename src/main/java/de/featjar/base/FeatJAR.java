@@ -20,10 +20,11 @@
  */
 package de.featjar.base;
 
-import de.featjar.base.cli.Commands;
+import de.featjar.base.cli.ICommand;
 import de.featjar.base.cli.OptionList;
 import de.featjar.base.computation.Cache;
 import de.featjar.base.computation.FallbackCache;
+import de.featjar.base.data.Problem;
 import de.featjar.base.data.Result;
 import de.featjar.base.extension.AExtensionPoint;
 import de.featjar.base.extension.ExtensionManager;
@@ -34,6 +35,7 @@ import de.featjar.base.log.CallerFormatter;
 import de.featjar.base.log.ConfigurableLog;
 import de.featjar.base.log.Log;
 import de.featjar.base.log.TimeStampFormatter;
+import java.util.List;
 import java.util.function.Consumer;
 import java.util.function.Function;
 
@@ -145,6 +147,16 @@ public final class FeatJAR extends IO implements AutoCloseable {
         return configuration;
     }
 
+    public static Configuration createPanicConfiguration() {
+        final Configuration configuration = new Configuration();
+        configuration
+                .logConfig
+                .logToSystemOut(Log.Verbosity.MESSAGE)
+                .logToSystemErr(Log.Verbosity.ERROR, Log.Verbosity.WARNING);
+        configuration.cacheConfig.setCachePolicy(Cache.CachePolicy.CACHE_NONE);
+        return configuration;
+    }
+
     /**
      * Initializes FeatJAR.
      *
@@ -165,8 +177,13 @@ public final class FeatJAR extends IO implements AutoCloseable {
     public static FeatJAR initialize(OptionList optionInput) {
         if (instance != null) throw new RuntimeException("FeatJAR already initialized");
         instance = new FeatJAR();
-        optionInput.parseArguments(false);
+        List<Problem> problems = optionInput.parseArguments();
+        if (Problem.containsError(problems)) {
+            FeatJAR.log().problems(problems);
+            return null;
+        }
         instance.setConfiguration(optionInput.getConfiguration());
+        FeatJAR.log().problems(problems);
         return instance;
     }
 
@@ -175,8 +192,12 @@ public final class FeatJAR extends IO implements AutoCloseable {
      */
     public static void deinitialize() {
         if (instance != null) {
-            instance.log.debug("de-initializing FeatJAR");
-            instance.extensionManager.close();
+            if (instance.log != null) {
+                instance.log.debug("de-initializing FeatJAR");
+            }
+            if (instance.extensionManager != null) {
+                instance.extensionManager.close();
+            }
             instance.extensionManager = null;
             instance.log = null;
             instance.cache = null;
@@ -350,15 +371,65 @@ public final class FeatJAR extends IO implements AutoCloseable {
      * @param arguments command-line arguments
      */
     public static void main(String[] arguments) {
+        if (instance != null) {
+            throw new RuntimeException("FeatJAR is already initialized");
+        }
+        instance = new FeatJAR();
         try {
             OptionList optionInput = new OptionList(arguments);
-            try (FeatJAR featJAR = FeatJAR.initialize(optionInput)) {
-                Commands.run(optionInput);
+
+            List<Problem> problems = optionInput.parseArguments();
+            if (Problem.containsError(problems)) {
+                FeatJAR.log().problems(problems);
+                FeatJAR.log()
+                        .message(OptionList.getHelp(optionInput.getCommand().orElse(null)));
+                panic();
+            }
+
+            if (optionInput.isHelp()) {
+                System.out.println("This is FeatJAR!");
+                System.out.println(OptionList.getHelp(optionInput.getCommand().orElse(null)));
+            } else if (optionInput.isVersion()) {
+                System.out.println(FeatJAR.LIBRARY_NAME + ", development version");
+            } else {
+                FeatJAR.log().problems(problems);
+                Result<ICommand> optionalCommand = optionInput.getCommand();
+                if (optionalCommand.isEmpty()) {
+                    FeatJAR.log().error("ERROR: No command provided");
+                    FeatJAR.log().message(OptionList.getHelp());
+                    panic();
+                } else {
+                    ICommand command = optionalCommand.get();
+                    FeatJAR.log().debug("Running command %s", command.getIdentifier());
+                    List<Problem> commandProblems =
+                            optionInput.addOptions(command.getOptions()).parseRemainingArguments();
+                    FeatJAR.log().problems(commandProblems);
+                    if (Problem.containsError(commandProblems)) {
+                        FeatJAR.log()
+                                .message(OptionList.getHelp(
+                                        optionInput.getCommand().orElse(command)));
+                        panic();
+                    }
+                    instance.setConfiguration(optionInput.getConfiguration());
+                    command.run(optionInput);
+                }
             }
         } catch (Exception e) {
-            e.printStackTrace();
-            System.exit(1);
+            FeatJAR.log().error(e);
+            panic();
+        } finally {
+            instance.close();
         }
         System.exit(0);
+    }
+
+    private static void panic() {
+        Log log = FeatJAR.log();
+        if (log instanceof BufferedLog) {
+            ConfigurableLog newLog = new ConfigurableLog();
+            newLog.setConfiguration(createPanicConfiguration().logConfig);
+            ((BufferedLog) log).flush(m -> newLog.print(m.getValue(), m.getKey()));
+        }
+        System.exit(1);
     }
 }

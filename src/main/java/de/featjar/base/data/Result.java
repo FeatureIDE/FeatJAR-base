@@ -436,11 +436,12 @@ public class Result<T> implements Supplier<T> {
             }
             Problem problem = problems.get(0);
             if (problems.size() == 1) {
-                problem.getException();
+                return new RuntimeException(problem.getMessage(), problem.getException());
+            } else {
+                return new RuntimeException(
+                        problem.getMessage() + " (and " + (problems.size() - 1) + " other problems)",
+                        problem.getException());
             }
-            return new RuntimeException(
-                    problem.getMessage() + " (and " + (problems.size() - 1) + " other problems)",
-                    problem.getException());
         });
     }
 

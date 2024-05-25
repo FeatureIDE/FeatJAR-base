@@ -73,29 +73,6 @@ public class Commands extends AExtensionPoint<ICommand> {
     public static final Pattern STANDARD_INPUT_PATTERN = Pattern.compile(STANDARD_INPUT + "(\\.(.+))?");
 
     /**
-     * Runs the command supplied in the given option input.
-     *
-     * @param optionInput the option input
-     */
-    public static void run(OptionList optionInput) {
-        if (optionInput.isHelp()) {
-            System.out.println(OptionList.getHelp(optionInput.getCommand().orElse(null)));
-        } else if (optionInput.isVersion()) {
-            System.out.println(FeatJAR.LIBRARY_NAME + ", development version");
-        } else {
-            Result<ICommand> optionalCommand = optionInput.getCommand();
-            if (optionalCommand.isEmpty()) {
-                FeatJAR.log().error("No command provided");
-                System.out.println(OptionList.getHelp());
-            } else {
-                ICommand command = optionalCommand.get();
-                FeatJAR.log().debug("Running command %s", command.getIdentifier());
-                command.run(optionInput.addOptions(command.getOptions()).parseArguments());
-            }
-        }
-    }
-
-    /**
      * Runs a given function in a new thread, aborting it when it is not done after a timeout expires.
      * If the entire process should be stopped afterwards, {@link System#exit(int)} must be called explicitly.
      *
@@ -176,7 +153,7 @@ public class Commands extends AExtensionPoint<ICommand> {
                 || Files.exists(Paths.get(pathOrStdin));
     }
 
-    // todo: allow to load many files
+    // TODO: allow to load many files
 
     /**
      * Saves the given object to the given path or the standard output stream.

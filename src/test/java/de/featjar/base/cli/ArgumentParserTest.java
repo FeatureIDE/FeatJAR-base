@@ -22,6 +22,7 @@ package de.featjar.base.cli;
 
 import static org.junit.jupiter.api.Assertions.*;
 
+import de.featjar.base.data.Problem;
 import de.featjar.base.data.Result;
 import de.featjar.base.log.Log;
 import java.util.List;
@@ -31,7 +32,8 @@ class ArgumentParserTest {
 
     OptionList parser(String... args) {
         OptionList optionList = new OptionList(args);
-        optionList.parseArguments();
+        List<Problem> problems = optionList.parseArguments();
+        assertTrue(problems.isEmpty());
         return optionList;
     }
 
@@ -42,27 +44,25 @@ class ArgumentParserTest {
 
     @Test
     void getVerbosity() {
-        // assertEquals(Log.Verbosity.DEBUG, parser("arg", "--log-info").getVerbosity()); todo: mock System.exit
-        assertEquals(
-                Log.Verbosity.DEBUG,
-                parser("arg", "--log-info", "debug")
-                        .parseArguments()
-                        .get(OptionList.LOG_INFO_OPTION)
-                        .get(0));
+        // assertEquals(Log.Verbosity.DEBUG, parser("arg", "--log-info").getVerbosity()); TODO: mock System.exit
+        OptionList parser = parser("arg", "--log-info", "debug");
+        parser.parseArguments();
+        assertEquals(Log.Verbosity.DEBUG, parser.get(OptionList.LOG_INFO_OPTION).get(0));
     }
 
     @Test
     void parseOption1() {
         Option<Integer> option = new Option<>("x", Integer::valueOf);
-        OptionList parser = parser("arg").addOptions(List.of(option)).parseArguments();
+        OptionList parser = parser("arg");
+        parser.addOptions(List.of(option)).parseArguments();
         assertEquals(Result.empty(), parser.getResult(option));
     }
 
     @Test
     void parseOption2() {
         Option<Integer> option = new Option<>("x", Integer::valueOf);
-        OptionList parser =
-                parser("arg", "--x", "42").addOptions(List.of(option)).parseArguments();
+        OptionList parser = parser("arg", "--x", "42");
+        parser.addOptions(List.of(option)).parseArguments();
         assertEquals(Result.of(42), parser.getResult(option));
     }
 }

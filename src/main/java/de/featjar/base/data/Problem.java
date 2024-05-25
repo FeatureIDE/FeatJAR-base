@@ -52,6 +52,18 @@ public class Problem {
     }
 
     /**
+     * Checks whether a list of {@link Problem problems} contains at least one problem classified as {@link Severity#ERROR}.
+     * @param problemList the list of problems
+     * @return {@code true} if list contains at least one error, {@code false} otherwise
+     */
+    public static boolean containsError(List<Problem> problemList) {
+        return problemList.stream()
+                .filter(p -> p.getSeverity() == Severity.ERROR)
+                .findAny()
+                .isPresent();
+    }
+
+    /**
      * Writes all messages of the given problems to a string.
      *
      * @param problems the problem list
