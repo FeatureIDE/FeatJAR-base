@@ -183,11 +183,18 @@ public class OptionList {
             String commandString = commandLineArguments.get(0);
             Commands commandsExentionsPoint = FeatJAR.extensionPoint(Commands.class);
             List<ICommand> commands = commandsExentionsPoint.getExtensions().stream()
-                    .filter(it -> Objects.equals(it.getShortName(), commandString))
+                    .filter(command -> command.getShortName()
+                            .map(name -> Objects.equals(name, commandString))
+                            .orElse(Boolean.FALSE))
                     .collect(Collectors.toList());
 
             if (commands.size() > 1) {
-                addProblem(problemList, Severity.ERROR, "Command '%s' is ambiguous!", commandString);
+                addProblem(
+                        problemList,
+                        Severity.ERROR,
+                        "Command name '%s' is ambiguous! It matches the following commands: \n%s",
+                        commandString,
+                        commands.stream().map(ICommand::getIdentifier).collect(Collectors.joining("\n")));
                 return;
             }
 
@@ -195,6 +202,7 @@ public class OptionList {
                 Result<ICommand> matchingExtension = commandsExentionsPoint.getMatchingExtension(commandString);
                 if (matchingExtension.isEmpty()) {
                     problemList.addAll(matchingExtension.getProblems());
+                    addProblem(problemList, Severity.ERROR, "No command matched the name '%s'!", commandString);
                     return;
                 }
                 properties.put(COMMAND_OPTION.getName(), matchingExtension.get());
@@ -460,7 +468,7 @@ public class OptionList {
                     sb.appendLine(String.format(
                                     "%s: %s", //
                                     c.getShortName(), //
-                                    Result.ofNullable(c.getDescription()).orElse("")))
+                                    c.getDescription().orElse("")))
                             .addIndent()
                             .appendLine(String.format("(Classpath: %s)", c.getIdentifier()))
                             .removeIndent();
@@ -468,7 +476,7 @@ public class OptionList {
             } else {
                 sb.appendLine(String.format("Help for %s", command.getIdentifier()))
                         .addIndent();
-                sb.appendLine(String.format(command.getDescription()));
+                sb.appendLine(command.getDescription().orElse(""));
 
                 sb.appendLine();
                 sb.appendLine("General options:").addIndent();

@@ -24,6 +24,7 @@ import de.featjar.base.extension.IExtension;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 /**
  * A command run within a {@link Commands}.
@@ -49,8 +50,8 @@ public interface ICommand extends IExtension {
     /**
      * {@return this command's description, if any}
      */
-    default String getDescription() {
-        return "";
+    default Optional<String> getDescription() {
+        return Optional.empty();
     }
 
     /**
@@ -60,7 +61,9 @@ public interface ICommand extends IExtension {
         return new ArrayList<>();
     }
 
-    String getShortName();
+    default Optional<String> getShortName() {
+        return Optional.empty();
+    }
 
     /**
      * {@return adds new options to a given list of options}
