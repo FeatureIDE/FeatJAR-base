@@ -308,12 +308,12 @@ public class ConfigurableLog implements Log, IInitializer {
 
     public void println(Throwable error, Verbosity verbosity) {
         if (configuration == null) {
-            println(originalSystemErr, error.getMessage());
+            println(originalSystemErr, Log.getErrorMessage(error));
             error.printStackTrace(originalSystemErr);
         } else {
             OpenPrintStream multiStream = configuration.logStreams.get(verbosity);
             if (multiStream != null) {
-                println(multiStream, formatMessage(error.getMessage()));
+                println(multiStream, formatMessage(Log.getErrorMessage(error)));
                 error.printStackTrace(multiStream);
             }
         }

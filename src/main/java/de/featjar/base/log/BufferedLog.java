@@ -53,7 +53,7 @@ public class BufferedLog implements Log {
     @Override
     public void println(Throwable error, Verbosity verbosity) {
         synchronized (logBuffer) {
-            logBuffer.add(new Pair<>(verbosity, () -> error.getMessage() + "\n"));
+            logBuffer.add(new Pair<>(verbosity, () -> Log.getErrorMessage(error) + "\n"));
         }
     }
 

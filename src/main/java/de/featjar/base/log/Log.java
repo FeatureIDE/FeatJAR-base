@@ -75,6 +75,23 @@ public interface Log {
         }
     }
 
+    static String getErrorMessage(Throwable error) {
+        StringBuilder sb = new StringBuilder();
+        Throwable e = error;
+        while (e != null) {
+            StackTraceElement stackTrace = e.getStackTrace()[0];
+            sb.append(String.format(
+                    "%s.%s:%d %s\n",
+                    stackTrace.getClassName(), stackTrace.getMethodName(), stackTrace.getLineNumber(), e.getMessage()));
+            e = e.getCause();
+        }
+        int length = sb.length();
+        if (length > 0) {
+            sb.setLength(length - 1);
+        }
+        return sb.toString();
+    }
+
     /**
      * Logs a problem.
      *
