@@ -31,6 +31,15 @@ import de.featjar.base.env.StackTrace;
  * @author Elias Kuiter
  */
 public class CallerFormatter implements IFormatter {
+
+    private boolean includeLineNumber;
+
+    public CallerFormatter() {}
+
+    public CallerFormatter(boolean includeLineNumber) {
+        this.includeLineNumber = includeLineNumber;
+    }
+
     @Override
     public String getPrefix() {
         return String.format(
@@ -39,9 +48,17 @@ public class CallerFormatter implements IFormatter {
                         .removeTop()
                         .removeClassNamePrefix(getClass().getPackageName())
                         .getTop()
-                        .map(stackTraceElement -> shorten(String.format(
-                                "%s.%s", stackTraceElement.getClassName(), stackTraceElement.getMethodName())))
+                        .map(this::getName)
                         .orElse(""));
+    }
+
+    private String getName(StackTraceElement stackTraceElement) {
+        String shortName =
+                shorten(String.format("%s.%s", stackTraceElement.getClassName(), stackTraceElement.getMethodName()));
+        if (includeLineNumber) {
+            shortName += ":" + stackTraceElement.getLineNumber();
+        }
+        return shortName;
     }
 
     private static String shorten(String s) {
