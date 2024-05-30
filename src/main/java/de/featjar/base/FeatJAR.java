@@ -34,10 +34,12 @@ import de.featjar.base.log.BufferedLog;
 import de.featjar.base.log.CallerFormatter;
 import de.featjar.base.log.ConfigurableLog;
 import de.featjar.base.log.Log;
+import de.featjar.base.log.Log.Verbosity;
 import de.featjar.base.log.TimeStampFormatter;
 import java.util.List;
 import java.util.function.Consumer;
 import java.util.function.Function;
+import java.util.function.Supplier;
 
 /**
  * Configures, initializes, and runs FeatJAR. To use FeatJAR, create a
@@ -395,7 +397,7 @@ public final class FeatJAR extends IO implements AutoCloseable {
                 FeatJAR.log().problems(problems);
                 Result<ICommand> optionalCommand = optionInput.getCommand();
                 if (optionalCommand.isEmpty()) {
-                    FeatJAR.log().error("ERROR: No command provided");
+                    FeatJAR.log().error("No command provided");
                     FeatJAR.log().message(OptionList.getHelp());
                     panic();
                 } else {
@@ -428,7 +430,34 @@ public final class FeatJAR extends IO implements AutoCloseable {
         if (log instanceof BufferedLog) {
             ConfigurableLog newLog = new ConfigurableLog();
             newLog.setConfiguration(createPanicConfiguration().logConfig);
-            ((BufferedLog) log).flush(m -> newLog.print(m.getValue(), m.getKey()));
+            ((BufferedLog) log).flush(m -> {
+                Supplier<String> originalMessage = m.getValue();
+                Supplier<String> message;
+                Verbosity verbosity = m.getKey();
+                switch (verbosity) {
+                    case DEBUG:
+                        message = () -> "DEBUG: " + originalMessage.get();
+                        break;
+                    case ERROR:
+                        message = () -> "ERROR: " + originalMessage.get();
+                        break;
+                    case INFO:
+                        message = () -> "INFO: " + originalMessage.get();
+                        break;
+                    case MESSAGE:
+                        message = m.getValue();
+                        break;
+                    case PROGRESS:
+                        message = () -> "PROGRESS: " + originalMessage.get();
+                        break;
+                    case WARNING:
+                        message = () -> "WARNING: " + originalMessage.get();
+                        break;
+                    default:
+                        throw new IllegalStateException(String.valueOf(verbosity));
+                }
+                newLog.print(message, verbosity);
+            });
         }
         System.exit(1);
     }
