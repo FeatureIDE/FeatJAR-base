@@ -32,7 +32,9 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
 import java.time.Duration;
 import java.time.Instant;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Objects;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
@@ -69,16 +71,20 @@ public class Process implements Supplier<Result<List<String>>> {
         return result.map(r -> output);
     }
 
-    public Result<Void> run(Consumer<String> outConsumer, Consumer<String> errConsumer) {
+    public Result<Void> run(String input, Consumer<String> outConsumer, Consumer<String> errConsumer) {
         List<String> command = new ArrayList<>();
         command.add(executablePath.toString());
         command.addAll(arguments);
+        FeatJAR.log().debug(String.join(" ", command));
         final ProcessBuilder processBuilder = new ProcessBuilder(command);
-        FeatJAR.log().debug(String.join(" ", processBuilder.command()));
         java.lang.Process process = null;
         try {
             Instant start = Instant.now();
             process = processBuilder.start();
+            if (input != null) {
+                process.getOutputStream().write(input.getBytes(StandardCharsets.UTF_8));
+                process.getOutputStream().close();
+            }
             consumeInputStream(process.getInputStream(), outConsumer, false);
             consumeInputStream(process.getErrorStream(), errConsumer, true);
             boolean terminatedInTime = true;
@@ -108,6 +114,10 @@ public class Process implements Supplier<Result<List<String>>> {
                 process = null;
             }
         }
+    }
+
+    public Result<Void> run(Consumer<String> outConsumer, Consumer<String> errConsumer) {
+        return run(null, outConsumer, errConsumer);
     }
 
     protected void consumeInputStream(InputStream inputStream, Consumer<String> consumer, boolean isError) {
