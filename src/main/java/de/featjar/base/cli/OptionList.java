@@ -467,7 +467,7 @@ public class OptionList {
                 for (final ICommand c : commands) {
                     sb.appendLine(String.format(
                                     "%s: %s", //
-                                    c.getShortName(), //
+                                    c.getShortName().orElse(c.getIdentifier()), //
                                     c.getDescription().orElse("")))
                             .addIndent()
                             .appendLine(String.format("(Classpath: %s)", c.getIdentifier()))
