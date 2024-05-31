@@ -66,6 +66,7 @@ public interface ITreeVisitor<T extends ITree<?>, U> {
      * {@return the currently visited node}
      *
      * @param path the current traversal path, guaranteed to contain at least one node
+     * @param <T> the type of node
      */
     static <T> T getCurrentNode(List<T> path) {
         return path.get(path.size() - 1);
@@ -75,6 +76,7 @@ public interface ITreeVisitor<T extends ITree<?>, U> {
      * {@return the parent of the currently visited node}
      *
      * @param path the current traversal path, guaranteed to contain at least one node
+     * @param <T> the type of node
      */
     static <T> Result<T> getParentNode(List<T> path) {
         return (path.size() > 1) ? Result.of(path.get(path.size() - 2)) : Result.empty();
@@ -85,6 +87,8 @@ public interface ITreeVisitor<T extends ITree<?>, U> {
      *
      * @param path the path to the visited node
      * @param predicate the predicate
+     * @param message the message shown if the condition is {@code false}
+     * @param <T> the type of node
      */
     static <T> Result<Void> rootValidator(List<T> path, Function<T, Boolean> predicate, String message) {
         return path.size() != 1 || predicate.apply(path.get(0))
@@ -147,7 +151,7 @@ public interface ITreeVisitor<T extends ITree<?>, U> {
     default void reset() {}
 
     /**
-     * {@return} the result of the traversal, if any
+     * {@return the result of the traversal, if any}
      */
     default Result<U> getResult() {
         return Result.empty();

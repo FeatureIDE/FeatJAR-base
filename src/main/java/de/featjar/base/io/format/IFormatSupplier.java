@@ -36,6 +36,7 @@ public interface IFormatSupplier<T> {
      * {@return a constant format}
      *
      * @param format the format
+     * @param <T> the type of object parsed by the format
      */
     static <T> IFormatSupplier<T> of(IFormat<T> format) {
         return inputHeader -> Result.of(format);

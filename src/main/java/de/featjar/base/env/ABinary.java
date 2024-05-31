@@ -48,6 +48,8 @@ public abstract class ABinary implements IExtension {
 
     /**
      * Initializes a native binary by extracting all its resources into the binary directory.
+     * 
+     * @throws IOException if binary cannot be found or moved
      */
     public ABinary() throws IOException {
         extractResources(getResourceNames());
@@ -77,9 +79,10 @@ public abstract class ABinary implements IExtension {
 
     /**
      * Executes this binary's executable with the given arguments.
-     * Creates a process and waits until it exits.
+     * Creates a process and waits until it exits or a timeout occurs.
      *
      * @param arguments the arguments passed to this binary's executable
+     * @param timeout the timeout 
      * @return the output of the process as a line stream, if any
      */
     public Process getProcess(List<String> arguments, Duration timeout) {
@@ -100,6 +103,9 @@ public abstract class ABinary implements IExtension {
     /**
      * Extracts this binary's resources into the binary directory.
      * Each resource is set to be executable.
+     * 
+     * @param resourceNames the names of the available resources, where the binary can be found
+     * @throws IOException if binary cannot be found or moved
      */
     @SuppressWarnings("ResultOfMethodCallIgnored")
     protected void extractResources(LinkedHashSet<String> resourceNames) throws IOException {

@@ -85,6 +85,7 @@ public class Option<T> {
      *
      * @param name   the name of the option
      * @param parser the parser for the option's value
+     * @param defaultValue the default value in case no other is provided or can be parsed
      */
     public Option(String name, Function<String, T> parser, T defaultValue) {
         this.name = name;

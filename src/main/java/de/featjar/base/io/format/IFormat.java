@@ -76,10 +76,12 @@ public interface IFormat<T> extends IExtension {
      *
      * @param object the object
      * @param outputMapper  the output mapper
+     * 
+     * @throws IOException if an error occurs during writing
      */
     default void write(T object, AOutputMapper outputMapper) throws IOException {
         String string = serialize(object)
-                // todo: improve exception handling - this should maybe be a Result instead
+                // TODO: improve exception handling - this should maybe be a Result instead
                 .orElseThrow();
         outputMapper.get().write(string);
     }

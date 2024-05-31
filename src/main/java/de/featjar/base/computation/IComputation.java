@@ -257,6 +257,7 @@ public interface IComputation<T> extends Supplier<Result<T>>, IDependent {
      * Typically, this returns a new computation composed with this computation.
      *
      * @param fn the function
+     * @param <U> the return type of the given function
      */
     default <U> U map(Function<IComputation<T>, U> fn) {
         return fn.apply(this);
@@ -266,6 +267,7 @@ public interface IComputation<T> extends Supplier<Result<T>>, IDependent {
      * {@return peeks at this computation with a given function}
      *
      * @param fn this computation
+     * @param <U> the return type of the given function
      */
     @SuppressWarnings("unchecked")
     default <U extends IComputation<T>> IComputation<T> peek(Consumer<U> fn) {
@@ -317,7 +319,9 @@ public interface IComputation<T> extends Supplier<Result<T>>, IDependent {
     /**
      * {@return a computation that peeks at the result of this computation with a given function}
      *
-     * @param fn the function
+     * @param klass the calling class
+     * @param scope the calling scope
+     * @param fn the consumer function
      */
     default IComputation<T> peekResult(Class<?> klass, String scope, Consumer<T> fn) {
         return mapResult(klass, scope, t -> {
@@ -326,7 +330,7 @@ public interface IComputation<T> extends Supplier<Result<T>>, IDependent {
         });
     }
 
-    // todo: serialization scheme. may require that all inputs (all dependencies) implement Serializable.
+    // TODO: serialization scheme. may require that all inputs (all dependencies) implement Serializable.
     default byte[] serialize() {
         return new byte[] {};
     }

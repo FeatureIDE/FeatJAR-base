@@ -68,6 +68,8 @@ public interface IDependent extends ITree<IComputation<?>> {
      * @param dependency  the dependency
      * @param computation the computation
      * @param <U>         the type of the computation result
+     * 
+     * @return this instance
      */
     // TODO rename to setDependencyComputation
     default <U> IDependent setDependencyComputation(Dependency<U> dependency, IComputation<? extends U> computation) {
