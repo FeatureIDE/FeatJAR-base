@@ -43,9 +43,7 @@ public interface ICommand extends IExtension {
     /**
      * Output option for saving files.
      */
-    Option<Path> OUTPUT_OPTION = new Option<>("output", Option.PathParser)
-            .setDescription("Path to output file(s)")
-            .setDefaultValue(Path.of("results"));
+    Option<Path> OUTPUT_OPTION = new Option<>("output", Option.PathParser).setDescription("Path to output file(s)");
 
     /**
      * {@return this command's description, if any}
