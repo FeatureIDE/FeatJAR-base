@@ -85,6 +85,12 @@ public class OptionList {
      */
     static final Option<Boolean> VERSION_OPTION = new Flag("version").setDescription("Print version information");
 
+    /**
+     * Option for printing version information.
+     */
+    static final Option<Boolean> QUIET_OPTION = new Flag("quiet")
+            .setDescription("Suppress all unnecessary output. (Overwrites --log-info and --log-error options)");
+
     static final Option<Path> INFO_FILE_OPTION =
             new Option<>("info-file", Option.PathParser).setDescription("Path to info log file");
 
@@ -121,6 +127,7 @@ public class OptionList {
             COMMAND_OPTION,
             HELP_OPTION,
             VERSION_OPTION,
+            QUIET_OPTION,
             INFO_FILE_OPTION,
             ERROR_FILE_OPTION,
             LOG_INFO_OPTION,
@@ -198,6 +205,7 @@ public class OptionList {
                 return;
             }
 
+            final ICommand command;
             if (commands.isEmpty()) {
                 Result<ICommand> matchingExtension = commandsExentionsPoint.getMatchingExtension(commandString);
                 if (matchingExtension.isEmpty()) {
@@ -205,10 +213,12 @@ public class OptionList {
                     addProblem(problemList, Severity.ERROR, "No command matched the name '%s'!", commandString);
                     return;
                 }
-                properties.put(COMMAND_OPTION.getName(), matchingExtension.get());
+                command = matchingExtension.get();
             } else {
-                properties.put(COMMAND_OPTION.getName(), commands.get(0));
+                command = commands.get(0);
             }
+            commandLineArguments.remove(0);
+            properties.put(COMMAND_OPTION.getName(), command);
         }
     }
 
@@ -503,9 +513,13 @@ public class OptionList {
         final Configuration configuration = FeatJAR.configure();
         getResult(INFO_FILE_OPTION).ifPresent(p -> logToFile(configuration, p, LOG_INFO_FILE_OPTION));
         getResult(ERROR_FILE_OPTION).ifPresent(p -> logToFile(configuration, p, LOG_ERROR_FILE_OPTION));
-        configuration.logConfig.logToSystemOut(get(LOG_INFO_OPTION).toArray(new Log.Verbosity[0]));
-        configuration.logConfig.logToSystemErr(get(LOG_ERROR_OPTION).toArray(new Log.Verbosity[0]));
-        configuration.logConfig.addFormatter(new TimeStampFormatter());
+        if (get(QUIET_OPTION)) {
+            configuration.logConfig.logToSystemOut(Log.Verbosity.MESSAGE);
+        } else {
+            configuration.logConfig.logToSystemOut(get(LOG_INFO_OPTION).toArray(new Log.Verbosity[0]));
+            configuration.logConfig.logToSystemErr(get(LOG_ERROR_OPTION).toArray(new Log.Verbosity[0]));
+            configuration.logConfig.addFormatter(new TimeStampFormatter());
+        }
         return configuration;
     }
 
