@@ -76,7 +76,7 @@ public interface IFormat<T> extends IExtension {
      *
      * @param object the object
      * @param outputMapper  the output mapper
-     * 
+     *
      * @throws IOException if an error occurs during writing
      */
     default void write(T object, AOutputMapper outputMapper) throws IOException {
