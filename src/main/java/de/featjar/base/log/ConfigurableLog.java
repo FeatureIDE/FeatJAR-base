@@ -314,7 +314,6 @@ public class ConfigurableLog implements Log, IInitializer {
             OpenPrintStream multiStream = configuration.logStreams.get(verbosity);
             if (multiStream != null) {
                 println(multiStream, formatMessage(Log.getErrorMessage(error)));
-                error.printStackTrace(multiStream);
             }
         }
     }

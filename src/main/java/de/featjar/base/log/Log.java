@@ -80,9 +80,7 @@ public interface Log {
         Throwable e = error;
         while (e != null) {
             StackTraceElement stackTrace = e.getStackTrace()[0];
-            sb.append(String.format(
-                    "%s.%s:%d %s\n",
-                    stackTrace.getClassName(), stackTrace.getMethodName(), stackTrace.getLineNumber(), e.getMessage()));
+            sb.append(String.format("%s:%d %s\n", stackTrace.getClassName(), stackTrace.getLineNumber(), e.toString()));
             e = e.getCause();
         }
         int length = sb.length();
@@ -100,7 +98,12 @@ public interface Log {
     default void problem(Problem problem) {
         switch (problem.getSeverity()) {
             case ERROR:
-                println(() -> "ERROR: " + problem.getException().getMessage(), Verbosity.ERROR);
+                Exception exception = problem.getException();
+                if (exception == null) {
+                    println(() -> "ERROR: " + problem.getMessage(), Verbosity.ERROR);
+                } else {
+                    println(exception, Verbosity.ERROR);
+                }
                 break;
             case WARNING:
                 println(() -> "WARNING: " + problem.getMessage(), Verbosity.WARNING);
