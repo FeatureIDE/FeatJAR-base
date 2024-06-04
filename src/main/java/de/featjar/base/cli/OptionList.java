@@ -474,7 +474,10 @@ public class OptionList {
         } else {
             if (command == null) {
                 sb.append("The following commands are available:").appendLine().addIndent();
-                for (final ICommand c : commands) {
+                ArrayList<ICommand> commandList = new ArrayList<>(commands);
+                Collections.sort(
+                        commandList, Comparator.comparing(c -> c.getShortName().orElse("") + c.getIdentifier()));
+                for (final ICommand c : commandList) {
                     sb.appendLine(String.format(
                                     "%s: %s", //
                                     c.getShortName().orElse(c.getIdentifier()), //
