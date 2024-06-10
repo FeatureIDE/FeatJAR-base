@@ -263,9 +263,11 @@ public class Trees {
             if (!entry.remainingChildren.isEmpty()) {
                 stack.push(new StackEntry<>(entry.remainingChildren.remove(0)));
             } else {
-                final ArrayList<T> children = new ArrayList<>(node.getChildren());
-                children.sort(comparator);
-                node.setChildren(children);
+                if (node.hasChildren()) {
+                    final ArrayList<T> children = new ArrayList<>(node.getChildren());
+                    children.sort(comparator);
+                    node.setChildren(children);
+                }
                 stack.pop();
             }
         }
