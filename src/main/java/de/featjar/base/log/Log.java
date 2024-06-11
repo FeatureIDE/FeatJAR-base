@@ -100,16 +100,16 @@ public interface Log {
             case ERROR:
                 Exception exception = problem.getException();
                 if (exception == null) {
-                    println(() -> "ERROR: " + problem.getMessage(), Verbosity.ERROR);
+                    error(problem::getMessage);
                 } else {
-                    println(exception, Verbosity.ERROR);
+                    error(exception);
                 }
                 break;
             case WARNING:
-                println(() -> "WARNING: " + problem.getMessage(), Verbosity.WARNING);
+                warning(problem::getMessage);
                 break;
             case INFO:
-                println(() -> "INFO: " + problem.getMessage(), Verbosity.INFO);
+                info(problem::getMessage);
                 break;
             default:
                 break;

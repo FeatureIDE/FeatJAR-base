@@ -122,8 +122,8 @@ public class OptionList {
             .setDefaultValue(List.of(Log.Verbosity.ERROR, Log.Verbosity.WARNING));
 
     private static final List<Option<?>> generalOptions = Arrays.asList(
-            CONFIGURATION_OPTION,
             CONFIGURATION_DIR_OPTION,
+            CONFIGURATION_OPTION,
             COMMAND_OPTION,
             HELP_OPTION,
             VERSION_OPTION,
@@ -461,52 +461,66 @@ public class OptionList {
      */
     public static String getHelp(ICommand command) {
         IndentStringBuilder sb = new IndentStringBuilder();
+        printGeneralOptions(sb);
+
         List<ICommand> commands = FeatJAR.extensionPoint(Commands.class).getExtensions();
+        sb.appendLine();
+        if (commands.isEmpty()) {
+            printNoCommandsAvailable(sb);
+        } else {
+            if (command == null) {
+                printAvailableCommands(sb, commands);
+            } else {
+                printCommandHelp(sb, command);
+            }
+        }
+        return sb.toString();
+    }
+
+    private static void printNoCommandsAvailable(IndentStringBuilder sb) {
+        sb.append(String.format(
+                "No commands are available. You can register commands in an extensions.xml file when building %s.",
+                FeatJAR.LIBRARY_NAME));
+        sb.appendLine();
+    }
+
+    private static void printGeneralOptions(IndentStringBuilder sb) {
         sb.appendLine(String.format(
                 "Usage: java -jar %s [<command> | --command <classpath>] [--<flag> | --<option> <value>]...",
                 FeatJAR.LIBRARY_NAME));
         sb.appendLine();
-        if (commands.isEmpty()) {
-            sb.append(String.format(
-                    "No commands are available. You can register commands in an extensions.xml file when building %s.",
-                    FeatJAR.LIBRARY_NAME));
+        sb.appendLine("General options:").addIndent();
+        sb.appendLine(generalOptions).removeIndent();
+    }
+
+    private static void printCommandHelp(IndentStringBuilder sb, ICommand command) {
+        sb.appendLine(String.format("Help for %s", command.getIdentifier())).addIndent();
+        sb.appendLine(command.getDescription().orElse(""));
+
+        List<Option<?>> options = new ArrayList<>(command.getOptions());
+        if (!options.isEmpty()) {
+            Collections.sort(options, Comparator.comparing(Option::getArgumentName));
             sb.appendLine();
-        } else {
-            if (command == null) {
-                sb.append("The following commands are available:").appendLine().addIndent();
-                ArrayList<ICommand> commandList = new ArrayList<>(commands);
-                Collections.sort(
-                        commandList, Comparator.comparing(c -> c.getShortName().orElse("") + c.getIdentifier()));
-                for (final ICommand c : commandList) {
-                    sb.appendLine(String.format(
-                                    "%s: %s", //
-                                    c.getShortName().orElse(c.getIdentifier()), //
-                                    c.getDescription().orElse("")))
-                            .addIndent()
-                            .appendLine(String.format("(Classpath: %s)", c.getIdentifier()))
-                            .removeIndent();
-                }
-            } else {
-                sb.appendLine(String.format("Help for %s", command.getIdentifier()))
-                        .addIndent();
-                sb.appendLine(command.getDescription().orElse(""));
-
-                sb.appendLine();
-                sb.appendLine("General options:").addIndent();
-                sb.appendLine(generalOptions).removeIndent();
-
-                List<Option<?>> options = new ArrayList<>(command.getOptions());
-                if (!options.isEmpty()) {
-                    Collections.sort(options, Comparator.comparing(Option::getArgumentName));
-                    sb.appendLine();
-                    sb.appendLine(String.format("Options of command %s:", command.getIdentifier()));
-                    sb.addIndent();
-                    sb.appendLine(options);
-                    sb.removeIndent();
-                }
-            }
+            sb.appendLine(String.format("Options of command %s:", command.getIdentifier()));
+            sb.addIndent();
+            sb.appendLine(options);
+            sb.removeIndent();
         }
-        return sb.toString();
+    }
+
+    private static void printAvailableCommands(IndentStringBuilder sb, List<ICommand> commands) {
+        sb.append("The following commands are available:").appendLine().addIndent();
+        ArrayList<ICommand> commandList = new ArrayList<>(commands);
+        Collections.sort(commandList, Comparator.comparing(c -> c.getShortName().orElse("") + c.getIdentifier()));
+        for (final ICommand c : commandList) {
+            sb.appendLine(String.format(
+                            "%s: %s", //
+                            c.getShortName().orElse(c.getIdentifier()), //
+                            c.getDescription().orElse("")))
+                    .addIndent()
+                    .appendLine(String.format("(Classpath: %s)", c.getIdentifier()))
+                    .removeIndent();
+        }
     }
 
     /**

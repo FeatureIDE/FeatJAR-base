@@ -383,6 +383,7 @@ public final class FeatJAR extends IO implements AutoCloseable {
             List<Problem> problems = optionInput.parseArguments();
             if (Problem.containsError(problems)) {
                 FeatJAR.log().problems(problems);
+                FeatJAR.log().problems(optionInput.parseRemainingArguments());
                 FeatJAR.log()
                         .message(OptionList.getHelp(optionInput.getCommand().orElse(null)));
                 panic();
