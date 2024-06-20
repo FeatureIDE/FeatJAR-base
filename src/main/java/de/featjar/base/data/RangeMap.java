@@ -324,13 +324,17 @@ public class RangeMap<T> {
     }
 
     private void updateObjectToIndex() {
-        if (!isEmpty())
-            for (int i = getMinimumIndex().get(); i <= getMaximumIndex().get(); i++) {
+        if (!isEmpty()) {
+            int min = getMinimumIndex().get();
+            int max = getMaximumIndex().get();
+            objectToIndex.clear();
+            for (int i = min; i <= max; i++) {
                 T object = indexToObject.get(i);
                 if (object != null) {
                     objectToIndex.put(object, i);
                 }
             }
+        }
     }
 
     /**
@@ -353,8 +357,8 @@ public class RangeMap<T> {
      */
     public void normalize() {
         if (!isEmpty()) {
-            int normalizedIndex = 0;
-            for (int i = 0; i < indexToObject.size(); i++) {
+            int normalizedIndex = 1;
+            for (int i = 1; i < indexToObject.size(); i++) {
                 T o = indexToObject.get(i);
                 if (o != null) {
                     indexToObject.set(normalizedIndex, o);
