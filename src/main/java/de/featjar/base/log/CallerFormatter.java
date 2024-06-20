@@ -22,6 +22,7 @@ package de.featjar.base.log;
 
 import de.featjar.base.FeatJAR;
 import de.featjar.base.env.StackTrace;
+import de.featjar.base.log.Log.Verbosity;
 
 /**
  * Prepends a log message with the location of the logging code.
@@ -41,7 +42,7 @@ public class CallerFormatter implements IFormatter {
     }
 
     @Override
-    public String getPrefix() {
+    public String getPrefix(String message, Verbosity verbosity) {
         return String.format(
                 "[%s] ",
                 new StackTrace()

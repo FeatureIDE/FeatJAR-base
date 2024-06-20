@@ -18,27 +18,19 @@
  *
  * See <https://github.com/FeatureIDE/FeatJAR-base> for further information.
  */
-package de.featjar.base.cli;
+package de.featjar.base.log;
+
+import de.featjar.base.log.Log.Verbosity;
 
 /**
- * A Boolean flag option, which can either be present or not.
+ * Prepends the verbosity level of a message.
  *
- * @author Elias Kuiter
+ * @author Sebastian Krieter
  */
-public class Flag extends Option<Boolean> {
-    /**
-     * Creates a flag option.
-     *
-     * @param name the name of the flag option
-     */
-    public Flag(String name) {
-        super(name, BooleanParser);
-        defaultValue = Boolean.FALSE;
-    }
+public class VerbosityFormatter implements IFormatter {
 
     @Override
-    public String toString() {
-        return String.format(
-                "%s%s", getArgumentName(), getDescription().map(d -> ": " + d).orElse(""));
+    public String getPrefix(String message, Verbosity verbosity) {
+        return "[" + verbosity.name() + "] ";
     }
 }

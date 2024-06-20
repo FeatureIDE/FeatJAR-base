@@ -28,26 +28,26 @@ class IndentFormatterTest {
     @Test
     void getPrefix() {
         IndentFormatter indentFormatter = new IndentFormatter();
-        assertEquals("", indentFormatter.getPrefix());
+        assertEquals("", indentFormatter.getPrefix(null, null));
         indentFormatter.addIndent();
-        assertEquals("\t", indentFormatter.getPrefix());
+        assertEquals("\t", indentFormatter.getPrefix(null, null));
         indentFormatter.addIndent();
-        assertEquals("\t\t", indentFormatter.getPrefix());
+        assertEquals("\t\t", indentFormatter.getPrefix(null, null));
         indentFormatter.removeIndent();
         indentFormatter.removeIndent();
-        assertEquals("", indentFormatter.getPrefix());
+        assertEquals("", indentFormatter.getPrefix(null, null));
         indentFormatter.removeIndent();
-        assertEquals("", indentFormatter.getPrefix());
+        assertEquals("", indentFormatter.getPrefix(null, null));
         indentFormatter.setLevel(2);
-        assertEquals("\t\t", indentFormatter.getPrefix());
+        assertEquals("\t\t", indentFormatter.getPrefix(null, null));
         indentFormatter.setLevel(0);
-        assertEquals("", indentFormatter.getPrefix());
+        assertEquals("", indentFormatter.getPrefix(null, null));
         indentFormatter.setLevel(-1);
-        assertEquals("", indentFormatter.getPrefix());
+        assertEquals("", indentFormatter.getPrefix(null, null));
         indentFormatter.setSymbol("  ");
         indentFormatter.setLevel(2);
-        assertEquals("    ", indentFormatter.getPrefix());
+        assertEquals("    ", indentFormatter.getPrefix(null, null));
         indentFormatter.setLevel(0);
-        assertEquals("", indentFormatter.getPrefix());
+        assertEquals("", indentFormatter.getPrefix(null, null));
     }
 }

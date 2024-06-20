@@ -33,6 +33,7 @@ import de.featjar.base.data.Result;
 import de.featjar.base.log.CallerFormatter;
 import de.featjar.base.log.Log;
 import de.featjar.base.log.TimeStampFormatter;
+import de.featjar.base.log.VerbosityFormatter;
 import de.featjar.base.tree.structure.ITree;
 import java.time.Duration;
 import java.util.List;
@@ -79,6 +80,7 @@ class IComputationTest {
                 .logToSystemErr(Log.Verbosity.ERROR, Log.Verbosity.WARNING)
                 .logToSystemOut(Log.Verbosity.MESSAGE, Log.Verbosity.INFO)
                 .addFormatter(new TimeStampFormatter())
+                .addFormatter(new VerbosityFormatter())
                 .addFormatter(new CallerFormatter());
         configuration.cacheConfig.setCachePolicy(Cache.CachePolicy.CACHE_TOP_LEVEL);
 

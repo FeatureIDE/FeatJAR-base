@@ -60,9 +60,19 @@ public class ConfigurableLog implements Log, IInitializer {
         // log to anything supported by an OutputMapper (even a ZIP file).
         protected final LinkedHashMap<Verbosity, OpenPrintStream> logStreams = Maps.empty();
         protected final LinkedList<IFormatter> formatters = new LinkedList<>();
+        protected boolean printStacktrace = false;
 
         public Configuration() {
             resetLogStreams();
+        }
+
+        public boolean isPrintStacktrace() {
+            return printStacktrace;
+        }
+
+        public Configuration setPrintStacktrace(boolean printStacktrace) {
+            this.printStacktrace = printStacktrace;
+            return this;
         }
 
         public Configuration resetLogStreams() {
@@ -243,7 +253,7 @@ public class ConfigurableLog implements Log, IInitializer {
         } else {
             OpenPrintStream multiStream = configuration.logStreams.get(verbosity);
             if (multiStream != null) {
-                final String formattedMessage = formatMessage(message.get());
+                final String formattedMessage = formatMessage(message.get(), verbosity);
                 println(multiStream, formattedMessage);
             }
         }
@@ -255,7 +265,7 @@ public class ConfigurableLog implements Log, IInitializer {
         } else {
             OpenPrintStream multiStream = configuration.logStreams.get(verbosity);
             if (multiStream != null) {
-                final String formattedMessage = formatMessage(message.get());
+                final String formattedMessage = formatMessage(message.get(), verbosity);
                 print(multiStream, formattedMessage);
             }
         }
@@ -267,7 +277,7 @@ public class ConfigurableLog implements Log, IInitializer {
         } else {
             OpenPrintStream multiStream = configuration.logStreams.get(Verbosity.PROGRESS);
             if (multiStream != null) {
-                printProgress(multiStream, formatMessage(message.get()));
+                printProgress(multiStream, formatMessage(message.get(), Verbosity.PROGRESS));
             }
         }
     }
@@ -308,28 +318,29 @@ public class ConfigurableLog implements Log, IInitializer {
 
     public void println(Throwable error, Verbosity verbosity) {
         if (configuration == null) {
-            println(originalSystemErr, Log.getErrorMessage(error));
-            error.printStackTrace(originalSystemErr);
+            println(originalSystemErr, Log.getErrorMessage(error, configuration.printStacktrace));
         } else {
             OpenPrintStream multiStream = configuration.logStreams.get(verbosity);
             if (multiStream != null) {
-                println(multiStream, formatMessage(Log.getErrorMessage(error)));
+                println(
+                        multiStream,
+                        formatMessage(Log.getErrorMessage(error, configuration.printStacktrace), verbosity));
             }
         }
     }
 
-    private String formatMessage(String message) {
+    private String formatMessage(String message, Verbosity verbosity) {
         if (configuration.formatters.isEmpty()) {
             return message != null ? message : "null";
         } else {
             final StringBuilder sb = new StringBuilder();
             final ListIterator<IFormatter> it = configuration.formatters.listIterator();
             while (it.hasNext()) {
-                sb.append(it.next().getPrefix());
+                sb.append(it.next().getPrefix(message, verbosity));
             }
             sb.append(message != null ? message : "null");
             while (it.hasPrevious()) {
-                sb.append(it.previous().getSuffix());
+                sb.append(it.previous().getSuffix(message, verbosity));
             }
             return sb.toString();
         }

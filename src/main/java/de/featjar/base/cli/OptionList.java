@@ -29,6 +29,7 @@ import de.featjar.base.log.IndentStringBuilder;
 import de.featjar.base.log.Log;
 import de.featjar.base.log.Log.Verbosity;
 import de.featjar.base.log.TimeStampFormatter;
+import de.featjar.base.log.VerbosityFormatter;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.nio.file.Files;
@@ -88,6 +89,12 @@ public class OptionList {
     /**
      * Option for printing version information.
      */
+    static final Option<Boolean> STACKTRACE_OPTION =
+            new Flag("print-stacktrace").setDescription("Print a stacktrace for all logged exceptions");
+
+    /**
+     * Option for printing version information.
+     */
     static final Option<Boolean> QUIET_OPTION = new Flag("quiet")
             .setDescription("Suppress all unnecessary output. (Overwrites --log-info and --log-error options)");
 
@@ -128,6 +135,7 @@ public class OptionList {
             HELP_OPTION,
             VERSION_OPTION,
             QUIET_OPTION,
+            STACKTRACE_OPTION,
             INFO_FILE_OPTION,
             ERROR_FILE_OPTION,
             LOG_INFO_OPTION,
@@ -338,16 +346,35 @@ public class OptionList {
             if (properties.containsKey(optionName)) {
                 addProblem(problemList, Severity.WARNING, "Ignoring multiple occurences of argument %s", optionName);
                 listIterator.remove();
-                if (!(option instanceof Flag) && listIterator.hasNext()) {
-                    listIterator.next();
-                    listIterator.remove();
+                if (listIterator.hasNext()) {
+                    String next = listIterator.next();
+                    if (option instanceof Flag) {
+                        if (option.parse(next).isPresent()) {
+                            listIterator.remove();
+                        } else {
+                            listIterator.previous();
+                        }
+                    } else {
+                        listIterator.remove();
+                    }
                 }
                 continue;
             }
 
             if (option instanceof Flag) {
-                properties.put(optionName, Boolean.TRUE);
                 listIterator.remove();
+                if (listIterator.hasNext()) {
+                    Result<Boolean> parse = ((Flag) option).parse(listIterator.next());
+                    if (parse.isPresent()) {
+                        properties.put(optionName, parse.get());
+                        listIterator.remove();
+                    } else {
+                        properties.put(optionName, Boolean.TRUE);
+                        listIterator.previous();
+                    }
+                } else {
+                    properties.put(optionName, Boolean.TRUE);
+                }
                 continue;
             }
 
@@ -533,9 +560,13 @@ public class OptionList {
         if (get(QUIET_OPTION)) {
             configuration.logConfig.logToSystemOut(Log.Verbosity.MESSAGE);
         } else {
-            configuration.logConfig.logToSystemOut(get(LOG_INFO_OPTION).toArray(new Log.Verbosity[0]));
-            configuration.logConfig.logToSystemErr(get(LOG_ERROR_OPTION).toArray(new Log.Verbosity[0]));
-            configuration.logConfig.addFormatter(new TimeStampFormatter());
+            configuration
+                    .logConfig
+                    .logToSystemOut(get(LOG_INFO_OPTION).toArray(new Log.Verbosity[0]))
+                    .logToSystemErr(get(LOG_ERROR_OPTION).toArray(new Log.Verbosity[0]))
+                    .setPrintStacktrace(get(STACKTRACE_OPTION))
+                    .addFormatter(new TimeStampFormatter())
+                    .addFormatter(new VerbosityFormatter());
         }
         return configuration;
     }

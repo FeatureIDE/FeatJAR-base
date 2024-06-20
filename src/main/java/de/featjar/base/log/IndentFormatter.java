@@ -20,6 +20,7 @@
  */
 package de.featjar.base.log;
 
+import de.featjar.base.log.Log.Verbosity;
 import java.util.Collection;
 import java.util.Objects;
 import java.util.stream.Collectors;
@@ -59,7 +60,7 @@ public class IndentFormatter implements IFormatter {
     }
 
     @Override
-    public String getPrefix() {
+    public String getPrefix(String message, Verbosity verbosity) {
         return String.valueOf(symbol).repeat(Math.max(0, level));
     }
 

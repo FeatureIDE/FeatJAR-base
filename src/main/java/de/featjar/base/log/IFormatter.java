@@ -20,6 +20,8 @@
  */
 package de.featjar.base.log;
 
+import de.featjar.base.log.Log.Verbosity;
+
 /**
  * Formats a log message.
  *
@@ -29,15 +31,19 @@ package de.featjar.base.log;
 public interface IFormatter {
     /**
      * {@return a prefix to a log message}
+     * @param message the message
+     * @param verbosity the verbosity level of the message
      */
-    default String getPrefix() {
+    default String getPrefix(String message, Verbosity verbosity) {
         return "";
     }
 
     /**
      * {@return a suffix to a log message}
+     * @param message the message
+     * @param verbosity the verbosity level of the message
      */
-    default String getSuffix() {
+    default String getSuffix(String message, Verbosity verbosity) {
         return "";
     }
 }

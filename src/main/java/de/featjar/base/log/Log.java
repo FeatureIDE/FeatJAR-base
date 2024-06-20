@@ -22,6 +22,8 @@ package de.featjar.base.log;
 
 import de.featjar.base.data.Problem;
 import de.featjar.base.data.Result;
+import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.util.List;
 import java.util.function.Supplier;
 
@@ -75,19 +77,26 @@ public interface Log {
         }
     }
 
-    static String getErrorMessage(Throwable error) {
+    static String getErrorMessage(Throwable error, boolean printStacktrace) {
         StringBuilder sb = new StringBuilder();
-        Throwable e = error;
-        while (e != null) {
-            StackTraceElement stackTrace = e.getStackTrace()[0];
-            sb.append(String.format("%s:%d %s\n", stackTrace.getClassName(), stackTrace.getLineNumber(), e.toString()));
-            e = e.getCause();
+        if (printStacktrace) {
+            StringWriter errorWriter = new StringWriter();
+            error.printStackTrace(new PrintWriter(errorWriter));
+            return errorWriter.toString();
+        } else {
+            Throwable e = error;
+            while (e != null) {
+                StackTraceElement stackTrace = e.getStackTrace()[0];
+                sb.append(String.format(
+                        "%s:%d %s\n", stackTrace.getClassName(), stackTrace.getLineNumber(), e.toString()));
+                e = e.getCause();
+            }
+            int length = sb.length();
+            if (length > 0) {
+                sb.setLength(length - 1);
+            }
+            return sb.toString();
         }
-        int length = sb.length();
-        if (length > 0) {
-            sb.setLength(length - 1);
-        }
-        return sb.toString();
     }
 
     /**

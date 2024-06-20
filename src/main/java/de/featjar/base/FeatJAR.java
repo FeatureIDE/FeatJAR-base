@@ -36,6 +36,7 @@ import de.featjar.base.log.ConfigurableLog;
 import de.featjar.base.log.Log;
 import de.featjar.base.log.Log.Verbosity;
 import de.featjar.base.log.TimeStampFormatter;
+import de.featjar.base.log.VerbosityFormatter;
 import java.util.List;
 import java.util.function.Consumer;
 import java.util.function.Function;
@@ -144,6 +145,7 @@ public final class FeatJAR extends IO implements AutoCloseable {
                 .logToSystemOut(Log.Verbosity.MESSAGE, Log.Verbosity.INFO, Log.Verbosity.PROGRESS)
                 .logToSystemErr(Log.Verbosity.ERROR)
                 .addFormatter(new TimeStampFormatter())
+                .addFormatter(new VerbosityFormatter())
                 .addFormatter(new CallerFormatter());
         configuration.cacheConfig.setCachePolicy(Cache.CachePolicy.CACHE_NONE);
         return configuration;
@@ -230,7 +232,7 @@ public final class FeatJAR extends IO implements AutoCloseable {
         ConfigurableLog newLog = getExtension(ConfigurableLog.class).orElseGet(ConfigurableLog::new);
         newLog.setConfiguration(configuration.logConfig);
         log = newLog;
-        fallbackLog.flush(m -> log.log(m.getValue(), m.getKey()));
+        fallbackLog.flush(m -> log.print(m.getValue(), m.getKey()));
 
         cache = getExtension(Cache.class).orElseGet(Cache::new);
         cache.setConfiguration(configuration.cacheConfig);

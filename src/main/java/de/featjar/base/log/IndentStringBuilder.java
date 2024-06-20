@@ -49,7 +49,7 @@ public class IndentStringBuilder {
     }
 
     public IndentStringBuilder append(String string) {
-        stringBuilder.append(indentFormatter.getPrefix()).append(string);
+        stringBuilder.append(indentFormatter.getPrefix(string, null)).append(string);
         return this;
     }
 

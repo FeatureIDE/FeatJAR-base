@@ -20,6 +20,7 @@
  */
 package de.featjar.base.log;
 
+import de.featjar.base.log.Log.Verbosity;
 import java.time.Instant;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
@@ -48,7 +49,7 @@ public class TimeStampFormatter implements IFormatter {
     }
 
     @Override
-    public String getPrefix() {
+    public String getPrefix(String message, Verbosity verbosity) {
         return "[" + formatter.format(getInstant()) + "] ";
     }
 

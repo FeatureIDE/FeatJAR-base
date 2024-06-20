@@ -20,8 +20,10 @@
  */
 package de.featjar.base.cli;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import de.featjar.base.FeatJAR;
 import de.featjar.base.data.Problem;
 import de.featjar.base.data.Result;
 import de.featjar.base.log.Log;
@@ -30,10 +32,14 @@ import org.junit.jupiter.api.Test;
 
 class ArgumentParserTest {
 
+    static {
+        FeatJAR.initialize();
+    }
+
     OptionList parser(String... args) {
         OptionList optionList = new OptionList(args);
         List<Problem> problems = optionList.parseArguments();
-        assertTrue(problems.isEmpty());
+        assertTrue(problems.isEmpty(), Problem.printProblems(problems));
         return optionList;
     }
 
@@ -45,24 +51,18 @@ class ArgumentParserTest {
     @Test
     void getVerbosity() {
         // assertEquals(Log.Verbosity.DEBUG, parser("arg", "--log-info").getVerbosity()); TODO: mock System.exit
-        OptionList parser = parser("arg", "--log-info", "debug");
+        OptionList parser = parser("--log-info", "debug");
         parser.parseArguments();
         assertEquals(Log.Verbosity.DEBUG, parser.get(OptionList.LOG_INFO_OPTION).get(0));
     }
 
     @Test
-    void parseOption1() {
-        Option<Integer> option = new Option<>("x", Integer::valueOf);
-        OptionList parser = parser("arg");
-        parser.addOptions(List.of(option)).parseArguments();
-        assertEquals(Result.empty(), parser.getResult(option));
-    }
-
-    @Test
-    void parseOption2() {
-        Option<Integer> option = new Option<>("x", Integer::valueOf);
-        OptionList parser = parser("arg", "--x", "42");
-        parser.addOptions(List.of(option)).parseArguments();
-        assertEquals(Result.of(42), parser.getResult(option));
+    void parseOption() {
+        Option<Integer> option1 = new Option<>("x", Integer::valueOf);
+        Option<Integer> option2 = new Option<>("y", Integer::valueOf);
+        OptionList parser = parser("--x", "42");
+        parser.addOptions(List.of(option1, option2)).parseArguments();
+        assertEquals(Result.of(42), parser.getResult(option1));
+        assertEquals(Result.empty(), parser.getResult(option2));
     }
 }
