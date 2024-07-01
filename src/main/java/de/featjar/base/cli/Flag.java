@@ -31,7 +31,7 @@ public class Flag extends Option<Boolean> {
      *
      * @param name the name of the flag option
      */
-    public Flag(String name) {
+    protected Flag(String name) {
         super(name, BooleanParser);
         defaultValue = Boolean.FALSE;
     }

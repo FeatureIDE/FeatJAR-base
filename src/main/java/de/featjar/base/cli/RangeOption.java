@@ -35,7 +35,7 @@ public class RangeOption extends AListOption<Integer> {
      *
      * @param name the name
      */
-    public RangeOption(String name) {
+    protected RangeOption(String name) {
         super(name, s -> IntStream.rangeClosed(1, Integer.parseInt(s)).boxed().collect(Collectors.toList()), 1);
     }
 }

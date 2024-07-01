@@ -30,7 +30,7 @@ import java.util.function.Function;
  * @author Sebastian Krieter
  * @param <T> the type of the option value
  */
-public class AListOption<T> extends Option<List<T>> {
+public abstract class AListOption<T> extends Option<List<T>> {
 
     /**
      * Creates a list option with an empty default list.
@@ -38,7 +38,7 @@ public class AListOption<T> extends Option<List<T>> {
      * @param name the name
      * @param parser the parser
      */
-    public AListOption(String name, Function<String, List<T>> parser) {
+    protected AListOption(String name, Function<String, List<T>> parser) {
         this(name, parser, List.of());
     }
     /**
@@ -48,7 +48,7 @@ public class AListOption<T> extends Option<List<T>> {
      * @param parser the parser
      * @param defaultValue the value for the default list
      */
-    public AListOption(String name, Function<String, List<T>> parser, T defaultValue) {
+    protected AListOption(String name, Function<String, List<T>> parser, T defaultValue) {
         this(name, parser, List.of(defaultValue));
     }
 
@@ -59,7 +59,7 @@ public class AListOption<T> extends Option<List<T>> {
      * @param parser the parser
      * @param defaultValue a default list
      */
-    public AListOption(String name, Function<String, List<T>> parser, List<T> defaultValue) {
+    protected AListOption(String name, Function<String, List<T>> parser, List<T> defaultValue) {
         super(name, parser, defaultValue);
     }
 

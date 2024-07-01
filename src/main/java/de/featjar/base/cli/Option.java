@@ -20,10 +20,14 @@
  */
 package de.featjar.base.cli;
 
+import de.featjar.base.FeatJAR;
+import de.featjar.base.data.Pair;
 import de.featjar.base.data.Result;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 import java.util.Objects;
 import java.util.function.Function;
 import java.util.function.Predicate;
@@ -47,6 +51,59 @@ public class Option<T> {
     public static final Function<String, Path> PathParser = Path::of;
 
     public static final Predicate<Path> PathValidator = Files::exists;
+
+    private static List<Pair<Class<?>, Option<?>>> list = new ArrayList<>();
+
+    public static <U> Option<U> newOption(String name, Function<String, U> parser, U defaultValue) {
+        Option<U> option = new Option<>(name, parser, defaultValue);
+        list.add(new Pair<>(getCallingClass(), option));
+        return option;
+    }
+
+    public static <U> Option<U> newOption(String name, Function<String, U> parser) {
+        Option<U> option = new Option<>(name, parser);
+        list.add(new Pair<>(getCallingClass(), option));
+        return option;
+    }
+
+    public static <U> ListOption<U> newListOption(String name, Function<String, U> parser) {
+        ListOption<U> option = new ListOption<>(name, parser);
+        list.add(new Pair<>(getCallingClass(), option));
+        return option;
+    }
+
+    public static <U> RangeOption newRangeOption(String name) {
+        RangeOption option = new RangeOption(name);
+        list.add(new Pair<>(getCallingClass(), option));
+        return option;
+    }
+
+    public static <U> Flag newFlag(String name) {
+        Flag option = new Flag(name);
+        list.add(new Pair<>(getCallingClass(), option));
+        return option;
+    }
+
+    public static List<Option<?>> getAllOptions(Class<?> clazz) {
+        return list.stream()
+                .filter(e -> e.getKey().isAssignableFrom(clazz))
+                .map(e -> e.getValue())
+                .collect(Collectors.toList());
+    }
+
+    public static void deleteAllDependencies() {
+        list.clear();
+        list = null;
+    }
+
+    private static Class<?> getCallingClass() {
+        try {
+            return Class.forName(Thread.currentThread().getStackTrace()[3].getClassName());
+        } catch (ClassNotFoundException e) {
+            FeatJAR.log().error(e);
+            throw new RuntimeException(e);
+        }
+    }
 
     protected final String name;
     protected final Function<String, T> parser;
@@ -75,7 +132,7 @@ public class Option<T> {
      * @param name   the name of the option
      * @param parser the parser for the option's value
      */
-    public Option(String name, Function<String, T> parser) {
+    protected Option(String name, Function<String, T> parser) {
         this.name = name;
         this.parser = parser;
     }
@@ -87,7 +144,7 @@ public class Option<T> {
      * @param parser the parser for the option's value
      * @param defaultValue the default value in case no other is provided or can be parsed
      */
-    public Option(String name, Function<String, T> parser, T defaultValue) {
+    protected Option(String name, Function<String, T> parser, T defaultValue) {
         this.name = name;
         this.parser = parser;
         this.defaultValue = defaultValue;

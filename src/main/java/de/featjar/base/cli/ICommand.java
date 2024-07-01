@@ -21,7 +21,6 @@
 package de.featjar.base.cli;
 
 import de.featjar.base.extension.IExtension;
-import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -33,17 +32,6 @@ import java.util.Optional;
  * @author Elias Kuiter
  */
 public interface ICommand extends IExtension {
-    /**
-     * Input option for loading files.
-     */
-    Option<Path> INPUT_OPTION = new Option<>("input", Option.PathParser)
-            .setDescription("Path to input file(s)")
-            .setValidator(Option.PathValidator);
-
-    /**
-     * Output option for saving files.
-     */
-    Option<Path> OUTPUT_OPTION = new Option<>("output", Option.PathParser).setDescription("Path to output file(s)");
 
     /**
      * {@return this command's description, if any}
@@ -59,20 +47,11 @@ public interface ICommand extends IExtension {
         return new ArrayList<>();
     }
 
+    /**
+     * {@return this command's short name, if any} The short name can be used to call this command from the CLI.
+     */
     default Optional<String> getShortName() {
         return Optional.empty();
-    }
-
-    /**
-     * {@return adds new options to a given list of options}
-     *
-     * @param options the options
-     * @param newOptions the new options
-     */
-    static List<Option<?>> addOptions(List<Option<?>> options, Option<?>... newOptions) {
-        options = new ArrayList<>(options);
-        options.addAll(List.of(newOptions));
-        return options;
     }
 
     /**

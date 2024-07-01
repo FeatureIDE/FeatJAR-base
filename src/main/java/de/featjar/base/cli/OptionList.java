@@ -35,7 +35,6 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.LinkedHashMap;
@@ -62,88 +61,74 @@ public class OptionList {
      * Option for setting the logger output.
      */
     static final Option<List<String>> CONFIGURATION_OPTION =
-            new ListOption<>("config", Option.StringParser).setDescription("The names of configuration files");
+            Option.newListOption("config", Option.StringParser).setDescription("The names of configuration files");
 
     static final Option<Path> CONFIGURATION_DIR_OPTION =
-            new Option<>("config_dir", Option.PathParser).setDescription("The path to the configuration files");
+            Option.newOption("config_dir", Option.PathParser).setDescription("The path to the configuration files");
 
     /**
      * Option for printing usage information.
      */
-    static final Option<ICommand> COMMAND_OPTION = new Option<>("command", s -> FeatJAR.extensionPoint(Commands.class)
-                    .getMatchingExtension(s)
-                    .orElseThrow())
+    static final Option<ICommand> COMMAND_OPTION = Option.newOption(
+                    "command", s -> FeatJAR.extensionPoint(Commands.class)
+                            .getMatchingExtension(s)
+                            .orElseThrow())
             .setRequired(true)
             .setDescription("Classpath from command to execute");
 
     /**
      * Option for printing usage information.
      */
-    static final Option<Boolean> HELP_OPTION = new Flag("help").setDescription("Print usage information");
+    static final Option<Boolean> HELP_OPTION = Option.newFlag("help").setDescription("Print usage information");
 
     /**
      * Option for printing version information.
      */
-    static final Option<Boolean> VERSION_OPTION = new Flag("version").setDescription("Print version information");
+    static final Option<Boolean> VERSION_OPTION = Option.newFlag("version").setDescription("Print version information");
 
     /**
      * Option for printing version information.
      */
     static final Option<Boolean> STACKTRACE_OPTION =
-            new Flag("print-stacktrace").setDescription("Print a stacktrace for all logged exceptions");
+            Option.newFlag("print-stacktrace").setDescription("Print a stacktrace for all logged exceptions");
 
     /**
      * Option for printing version information.
      */
-    static final Option<Boolean> QUIET_OPTION = new Flag("quiet")
+    static final Option<Boolean> QUIET_OPTION = Option.newFlag("quiet")
             .setDescription("Suppress all unnecessary output. (Overwrites --log-info and --log-error options)");
 
     static final Option<Path> INFO_FILE_OPTION =
-            new Option<>("info-file", Option.PathParser).setDescription("Path to info log file");
+            Option.newOption("info-file", Option.PathParser).setDescription("Path to info log file");
 
     static final Option<Path> ERROR_FILE_OPTION =
-            new Option<>("error-file", Option.PathParser).setDescription("Path to error log file");
+            Option.newOption("error-file", Option.PathParser).setDescription("Path to error log file");
 
-    static final Option<List<Log.Verbosity>> LOG_INFO_OPTION = new ListOption<>(
+    static final Option<List<Log.Verbosity>> LOG_INFO_OPTION = Option.newListOption(
                     "log-info", Option.valueOf(Log.Verbosity.class))
             .setDescription(String.format(
                     "Message types printed to the info stream (%s)", Option.possibleValues(Log.Verbosity.class)))
             .setDefaultValue(List.of(Log.Verbosity.MESSAGE, Log.Verbosity.INFO, Log.Verbosity.PROGRESS));
 
-    static final Option<List<Log.Verbosity>> LOG_ERROR_OPTION = new ListOption<>(
+    static final Option<List<Log.Verbosity>> LOG_ERROR_OPTION = Option.newListOption(
                     "log-error", Option.valueOf(Log.Verbosity.class))
             .setDescription(String.format(
                     "Message types printed to the error stream (%s)", Option.possibleValues(Log.Verbosity.class)))
             .setDefaultValue(List.of(Log.Verbosity.ERROR));
 
-    static final Option<List<Log.Verbosity>> LOG_INFO_FILE_OPTION = new ListOption<>(
+    static final Option<List<Log.Verbosity>> LOG_INFO_FILE_OPTION = Option.newListOption(
                     "log-info-file", Option.valueOf(Log.Verbosity.class))
             .setDescription(String.format(
                     "Message types printed to the info file (%s)", Option.possibleValues(Log.Verbosity.class)))
             .setDefaultValue(List.of(Log.Verbosity.MESSAGE, Log.Verbosity.INFO, Log.Verbosity.DEBUG));
 
-    static final Option<List<Log.Verbosity>> LOG_ERROR_FILE_OPTION = new ListOption<>(
+    static final Option<List<Log.Verbosity>> LOG_ERROR_FILE_OPTION = Option.newListOption(
                     "log-error-file", Option.valueOf(Log.Verbosity.class))
             .setDescription(String.format(
                     "Message types printed to the error file (%s)", Option.possibleValues(Log.Verbosity.class)))
             .setDefaultValue(List.of(Log.Verbosity.ERROR, Log.Verbosity.WARNING));
 
-    private static final List<Option<?>> generalOptions = Arrays.asList(
-            CONFIGURATION_DIR_OPTION,
-            CONFIGURATION_OPTION,
-            COMMAND_OPTION,
-            HELP_OPTION,
-            VERSION_OPTION,
-            QUIET_OPTION,
-            STACKTRACE_OPTION,
-            INFO_FILE_OPTION,
-            ERROR_FILE_OPTION,
-            LOG_INFO_OPTION,
-            LOG_ERROR_OPTION,
-            LOG_INFO_FILE_OPTION,
-            LOG_ERROR_FILE_OPTION);
-
-    private final List<Option<?>> options = new ArrayList<>(generalOptions);
+    private final List<Option<?>> options = new ArrayList<>(Option.getAllOptions(getClass()));
 
     private final List<String> commandLineArguments, configFileArguments;
 
@@ -517,7 +502,7 @@ public class OptionList {
                 FeatJAR.LIBRARY_NAME));
         sb.appendLine();
         sb.appendLine("General options:").addIndent();
-        sb.appendLine(generalOptions).removeIndent();
+        sb.appendLine(Option.getAllOptions(OptionList.class)).removeIndent();
     }
 
     private static void printCommandHelp(IndentStringBuilder sb, ICommand command) {

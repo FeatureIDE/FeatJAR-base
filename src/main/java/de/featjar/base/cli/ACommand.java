@@ -20,26 +20,30 @@
  */
 package de.featjar.base.cli;
 
-import java.util.Arrays;
-import java.util.function.Function;
-import java.util.stream.Collectors;
+import java.nio.file.Path;
+import java.util.List;
 
 /**
- * A list option, which is parsed as a list of values.
- *
- * @author Elias Kuiter
- * @author Sebastian Krieter
- * @param <T> the type of the option value
+ * The abstract class for any command.
  */
-public class ListOption<T> extends AListOption<T> {
+public abstract class ACommand implements ICommand {
 
     /**
-     * Creates a list option.
-     *
-     * @param name the name
-     * @param parser the parser
+     * Input option for loading files.
      */
-    protected ListOption(String name, Function<String, T> parser) {
-        super(name, s -> Arrays.stream(s.split("[,\n]")).map(parser).collect(Collectors.toList()));
+    public static final Option<Path> INPUT_OPTION = Option.newOption("input", Option.PathParser)
+            .setDescription("Path to input file(s)")
+            .setValidator(Option.PathValidator);
+
+    /**
+     * Output option for saving files.
+     */
+    public static final Option<Path> OUTPUT_OPTION =
+            Option.newOption("output", Option.PathParser).setDescription("Path to output file(s)");
+
+    public final List<Option<?>> getOptions() {
+        return Option.getAllOptions(getClass());
     }
+
+    protected OptionList optionParser;
 }
