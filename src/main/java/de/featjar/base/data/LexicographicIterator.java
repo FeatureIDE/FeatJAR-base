@@ -47,7 +47,7 @@ public final class LexicographicIterator<T>
 
         private Combination(int t, Function<Combination<U>, U> environmentCreator) {
             spliteratorId = 0;
-            combinationIndex = -1;
+            combinationIndex = 0;
             elementIndices = new int[t];
             elementIndices[0] = -1;
             for (int i = 1; i < t; i++) {
@@ -141,13 +141,13 @@ public final class LexicographicIterator<T>
 
         binomialCalculator = it.binomialCalculator;
         final long diff = it.end - it.combination.combinationIndex;
-        it.setC(it.combination.combinationIndex + (diff / 2) - 1);
+        it.setC(it.combination.combinationIndex + (diff / 2));
         end = it.combination.combinationIndex;
     }
 
     private void setC(long start) {
         combination.combinationIndex = start;
-        long tempIndex = start;
+        long tempIndex = start - 1;
         for (int i = t; i > 0; i--) {
             if (tempIndex <= 0) {
                 combination.elementIndices[i - 1] = i - 1;
@@ -186,8 +186,6 @@ public final class LexicographicIterator<T>
             return false;
         }
 
-        combination.combinationIndex++;
-
         int i = 0;
         for (; i < t - 1; i++) {
             if (combination.elementIndices[i] + 1 < combination.elementIndices[i + 1]) {
@@ -201,6 +199,7 @@ public final class LexicographicIterator<T>
         if (i == t - 1) {
             int lastIndex = combination.elementIndices[i] + 1;
             if (lastIndex == n) {
+                combination.combinationIndex = end;
                 return false;
             }
             combination.elementIndices[i] = lastIndex;
@@ -210,6 +209,7 @@ public final class LexicographicIterator<T>
         }
 
         action.accept(combination);
+        combination.combinationIndex++;
         return true;
     }
 }
