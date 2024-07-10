@@ -281,19 +281,28 @@ public class RangeMap<T> {
     }
 
     /**
-     * {@return all objects mapped by this range map}
-     */
-    public Stream<Pair<Integer, T>> stream() {
-        return objectToIndex.entrySet().stream().map(Pair::of).map(Pair::flip);
-    }
-
-    /**
      * {@return the object an index is mapped to by this range map}
      *
      * @param index the index
      */
     public Result<T> get(int index) {
         return isValidIndex(index) ? Result.ofNullable(indexToObject.get(index)) : Result.empty();
+    }
+
+    /**
+     * {@return the index an object is mapped to by this range map}
+     *
+     * @param object the object
+     */
+    public Result<Integer> get(T object) {
+        return Result.ofNullable(objectToIndex.get(object));
+    }
+
+    /**
+     * {@return all objects mapped by this range map}
+     */
+    public Stream<Pair<Integer, T>> stream() {
+        return objectToIndex.entrySet().stream().map(Pair::of).map(Pair::flip);
     }
 
     /**
@@ -306,12 +315,12 @@ public class RangeMap<T> {
     }
 
     /**
-     * {@return the index an object is mapped to by this range map}
+     * {@return a stream of indices that are mapped to the given objects}
      *
-     * @param object the object
+     * @param objects a list of objects
      */
-    public Result<Integer> get(T object) {
-        return Result.ofNullable(objectToIndex.get(object));
+    public Stream<Integer> stream(List<T> objects) {
+        return objects.stream().map(objectToIndex::get);
     }
 
     /**

@@ -218,14 +218,7 @@ public class IntegerList {
      * array may be modified.
      */
     public int[] getPositiveValues() {
-        int[] positiveIntegers = new int[countPositives()];
-        int i = 0;
-        for (final int integer : elements) {
-            if (integer > 0) {
-                positiveIntegers[i++] = integer;
-            }
-        }
-        return positiveIntegers;
+        return Arrays.stream(elements).filter(integer -> integer > 0).toArray();
     }
 
     /**
@@ -233,14 +226,7 @@ public class IntegerList {
      * array may be modified.
      */
     public int[] getNegativeValues() {
-        int[] negativeIntegers = new int[countNegatives()];
-        int i = 0;
-        for (final int integer : elements) {
-            if (integer < 0) {
-                negativeIntegers[i++] = integer;
-            }
-        }
-        return negativeIntegers;
+        return Arrays.stream(elements).filter(integer -> integer < 0).toArray();
     }
 
     /**
@@ -248,14 +234,7 @@ public class IntegerList {
      * array may be modified.
      */
     public int[] getNonZeroValues() {
-        int[] nonZeroIntegers = new int[countNonZero()];
-        int i = 0;
-        for (final int integer : elements) {
-            if (integer != 0) {
-                nonZeroIntegers[i++] = integer;
-            }
-        }
-        return nonZeroIntegers;
+        return Arrays.stream(elements).filter(integer -> integer != 0).toArray();
     }
 
     public final boolean contains(int element) {
@@ -580,11 +559,7 @@ public class IntegerList {
      * list}
      */
     public final int[] negate() {
-        int[] inverseLiterals = new int[elements.length];
-        for (int i = 0; i < elements.length; i++) {
-            inverseLiterals[i] = -elements[i];
-        }
-        return inverseLiterals;
+        return Arrays.stream(elements).map(integer -> -integer).toArray();
     }
 
     @Override
