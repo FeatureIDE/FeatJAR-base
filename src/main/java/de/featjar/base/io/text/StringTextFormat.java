@@ -25,7 +25,7 @@ import de.featjar.base.io.format.IFormat;
 import de.featjar.base.io.input.AInputMapper;
 
 /**
- * Parses and serializes a list of strings line-by-line, skipping comment and empty lines.
+ * Parses and serializes a text as a string.
  *
  * @author Sebastian Krieter
  */

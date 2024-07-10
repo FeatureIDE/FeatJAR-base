@@ -71,7 +71,7 @@ public class LexicographicIteratorTest {
                 .map(Combination::toString) //
                 .collect(Collectors.toList());
 
-        assertEquals(pSet.size(), sSet.size());
+        assertEquals(sSet.size(), pSet.size());
         assertTrue(new HashSet<>(pSet).containsAll(sSet));
         assertTrue(new HashSet<>(sSet).containsAll(pSet));
     }

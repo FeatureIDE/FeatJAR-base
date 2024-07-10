@@ -30,6 +30,7 @@ import de.featjar.base.io.input.InputHeader;
  *
  * @author Sebastian Krieter
  */
+@FunctionalInterface
 public interface IFormatSupplier<T> {
 
     /**
