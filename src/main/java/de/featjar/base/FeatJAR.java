@@ -375,6 +375,15 @@ public final class FeatJAR extends IO implements AutoCloseable {
      * @param arguments command-line arguments
      */
     public static void main(String[] arguments) {
+        System.exit(run(arguments));
+    }
+
+    /**
+     * Interpret arguments and run the specified command.
+     *
+     * @param arguments command-line arguments
+     */
+    public static int run(String[] arguments) {
         if (instance != null) {
             throw new RuntimeException("FeatJAR is already initialized");
         }
@@ -388,7 +397,7 @@ public final class FeatJAR extends IO implements AutoCloseable {
                 FeatJAR.log().problems(optionInput.parseRemainingArguments());
                 FeatJAR.log()
                         .message(OptionList.getHelp(optionInput.getCommand().orElse(null)));
-                panic();
+                return panic();
             }
 
             if (optionInput.isHelp()) {
@@ -402,7 +411,7 @@ public final class FeatJAR extends IO implements AutoCloseable {
                 if (optionalCommand.isEmpty()) {
                     FeatJAR.log().error("No command provided");
                     FeatJAR.log().message(OptionList.getHelp());
-                    panic();
+                    return panic();
                 } else {
                     ICommand command = optionalCommand.get();
                     FeatJAR.log().debug("Running command %s", command.getIdentifier());
@@ -413,7 +422,7 @@ public final class FeatJAR extends IO implements AutoCloseable {
                         FeatJAR.log()
                                 .message(OptionList.getHelp(
                                         optionInput.getCommand().orElse(command)));
-                        panic();
+                        return panic();
                     }
                     instance.setConfiguration(optionInput.getConfiguration());
                     command.run(optionInput);
@@ -421,14 +430,14 @@ public final class FeatJAR extends IO implements AutoCloseable {
             }
         } catch (Exception e) {
             FeatJAR.log().error(e);
-            panic();
+            return panic();
         } finally {
             instance.close();
         }
-        System.exit(0);
+        return 0;
     }
 
-    private static void panic() {
+    private static int panic() {
         Log log = FeatJAR.log();
         if (log instanceof BufferedLog) {
             ConfigurableLog newLog = new ConfigurableLog();
@@ -462,6 +471,6 @@ public final class FeatJAR extends IO implements AutoCloseable {
                 newLog.print(message, verbosity);
             });
         }
-        System.exit(1);
+        return 1;
     }
 }
