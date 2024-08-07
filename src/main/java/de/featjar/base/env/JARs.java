@@ -40,17 +40,18 @@ public class JARs {
      * @throws IOException if an I/O exception occurs
      */
     public static void extractResource(String resourceName, Path outputPath) throws IOException {
-        URL url = ClassLoader.getSystemClassLoader().getResource(resourceName);
-        if (url == null) throw new IOException("no resource found at " + resourceName);
-        try (InputStream in = url.openStream()) {
+        try (InputStream in = getResource(resourceName).openStream()) {
             Files.copy(in, outputPath);
         }
     }
 
     public static long getLastModificationDate(String resourceName) throws IOException {
-        return ClassLoader.getSystemClassLoader()
-                .getResource(resourceName)
-                .openConnection()
-                .getLastModified();
+        return getResource(resourceName).openConnection().getLastModified();
+    }
+
+    private static URL getResource(String resourceName) throws IOException {
+        URL url = ClassLoader.getSystemClassLoader().getResource(resourceName);
+        if (url == null) throw new IOException("no resource found at " + resourceName);
+        return url;
     }
 }
