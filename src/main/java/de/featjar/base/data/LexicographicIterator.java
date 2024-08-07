@@ -25,6 +25,7 @@ import java.util.List;
 import java.util.Spliterator;
 import java.util.function.Consumer;
 import java.util.function.Function;
+import java.util.stream.IntStream;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
@@ -107,6 +108,14 @@ public final class LexicographicIterator<T>
     public static <V> Stream<Combination<V>> parallelStream(
             int t, int size, Function<Combination<V>, V> environmentCreator) {
         return StreamSupport.stream(new LexicographicIterator<>(t, size, environmentCreator), true);
+    }
+
+    public static int[] grayCode(int t) {
+        final int[] gray = IntStream.rangeClosed(1, 1 << t)
+                .map(Integer::numberOfTrailingZeros)
+                .toArray();
+        gray[gray.length - 1] = 0;
+        return gray;
     }
 
     private static final int MINIMUM_SPLIT_SIZE = 10;
