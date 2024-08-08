@@ -118,6 +118,14 @@ public final class LexicographicIterator<T>
         return gray;
     }
 
+    public static int[] filteredList(final int size, IntegerList filter) {
+        int[] list = IntStream.rangeClosed(1, size).toArray();
+        for (int e : filter.elements) {
+            list[Math.abs(e) - 1] = 0;
+        }
+        return IntStream.of(list).filter(i -> i != 0).toArray();
+    }
+
     private static final int MINIMUM_SPLIT_SIZE = 10;
 
     private final int t, n;
