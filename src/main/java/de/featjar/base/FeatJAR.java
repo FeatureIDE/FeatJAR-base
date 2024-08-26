@@ -383,7 +383,7 @@ public final class FeatJAR extends IO implements AutoCloseable {
      *
      * @param arguments command-line arguments
      */
-    public static int run(String[] arguments) {
+    public static int run(String... arguments) {
         if (instance != null) {
             throw new RuntimeException("FeatJAR is already initialized");
         }
