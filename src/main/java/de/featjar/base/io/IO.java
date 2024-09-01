@@ -62,7 +62,8 @@ public class IO {
      * @param file the file path
      */
     public static String getFileExtension(Path file) {
-        return getFileExtension(file.getFileName().toString());
+        Path fileName = file.getFileName();
+        return fileName != null ? getFileExtension(fileName.toString()) : "";
     }
 
     /**
@@ -79,7 +80,8 @@ public class IO {
      * @param file the file path
      */
     public static String getFileNameWithoutExtension(Path file) {
-        return getFileNameWithoutExtension(file.getFileName().toString());
+        Path fileName = file.getFileName();
+        return fileName != null ? getFileNameWithoutExtension(fileName.toString()) : "";
     }
 
     /**

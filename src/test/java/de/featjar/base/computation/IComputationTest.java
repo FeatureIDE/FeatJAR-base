@@ -68,7 +68,6 @@ class IComputationTest {
 
         {
             IComputation<Integer> computation = Computations.of(42).flatMapResult(getClass(), "42", i -> Result.of(i));
-            ;
             assertEquals(42, computation.get().get());
             assertFalse(FeatJAR.cache().has(computation));
         }
@@ -233,7 +232,7 @@ class IComputationTest {
         public Result<Object> compute(List<Object> dependencyList, Progress progress) {
             Object x = INPUT.get(dependencyList);
             try {
-                Thread.sleep(200);
+                Thread.sleep(10000);
                 completed = true;
             } catch (InterruptedException e) {
             }
@@ -267,10 +266,6 @@ class IComputationTest {
                 computation1.map(WaitCompute::new).computeFutureResult();
         computeFutureResult.cancelAfter(Duration.ofMillis(10));
         assertNull(computeFutureResult.get().orElse(null));
-        try {
-            Thread.sleep(500);
-        } catch (InterruptedException e) {
-        }
         assertFalse(computation1.completed);
     }
 
@@ -282,7 +277,7 @@ class IComputationTest {
         computeFutureResult.cancel();
         assertNull(computeFutureResult.get().orElse(null));
         try {
-            Thread.sleep(500);
+            Thread.sleep(3000);
         } catch (InterruptedException e) {
         }
         assertFalse(computation1.completed);

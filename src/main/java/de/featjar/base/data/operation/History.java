@@ -29,8 +29,8 @@ import java.util.ArrayDeque;
  */
 public class History {
 
-    private ArrayDeque<IOperation> appliedOperations;
-    private ArrayDeque<IOperation> undoneOperations;
+    private ArrayDeque<IOperation> appliedOperations = new ArrayDeque<>();
+    private ArrayDeque<IOperation> undoneOperations = new ArrayDeque<>();
 
     private int limit = Integer.MAX_VALUE;
 

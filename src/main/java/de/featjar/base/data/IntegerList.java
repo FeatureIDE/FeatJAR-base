@@ -21,6 +21,7 @@
 package de.featjar.base.data;
 
 import de.featjar.base.FeatJAR;
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -42,16 +43,22 @@ import java.util.stream.IntStream;
  * @author Sebastian Krieter
  * @author Elias Kuiter
  */
-public class IntegerList {
+public class IntegerList implements Serializable {
 
-    public static final class DescendingLengthComparator implements Comparator<IntegerList> {
+    private static final long serialVersionUID = -8440039489675429479L;
+
+    public static final class DescendingLengthComparator implements Comparator<IntegerList>, Serializable {
+        private static final long serialVersionUID = -6244438443507884424L;
+
         @Override
         public int compare(IntegerList o1, IntegerList o2) {
             return o2.elements.length - o1.elements.length;
         }
     }
 
-    public static final class AscendingLengthComparator implements Comparator<IntegerList> {
+    public static final class AscendingLengthComparator implements Comparator<IntegerList>, Serializable {
+        private static final long serialVersionUID = 2117836682884275173L;
+
         @Override
         public int compare(IntegerList o1, IntegerList o2) {
             return o1.elements.length - o2.elements.length;

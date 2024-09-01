@@ -30,7 +30,7 @@ import java.util.stream.IntStream;
  *
  * @author Elias Kuiter
  */
-public class Range implements Function<Integer, Boolean> {
+public class Range implements Function<Integer, Boolean>, Cloneable {
     public static final int OPEN = Integer.MIN_VALUE;
 
     protected int lowerBound;

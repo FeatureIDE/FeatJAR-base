@@ -28,12 +28,20 @@ import de.featjar.base.data.Problem;
 import de.featjar.base.data.Result;
 import de.featjar.base.log.Log;
 import java.util.List;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 class ArgumentParserTest {
 
-    static {
+    @BeforeEach
+    public void init() {
         FeatJAR.initialize();
+    }
+
+    @AfterEach
+    public void deinit() {
+        FeatJAR.deinitialize();
     }
 
     OptionList parser(String... args) {
@@ -45,7 +53,7 @@ class ArgumentParserTest {
 
     @Test
     void parseCommand() {
-        // todo: needs mocking of extension points
+        // TODO: needs mocking of extension points
     }
 
     @Test

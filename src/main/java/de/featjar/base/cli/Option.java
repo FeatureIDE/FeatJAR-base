@@ -183,6 +183,13 @@ public class Option<T> {
     }
 
     /**
+     * {@return whether this option is required}
+     */
+    public boolean isRequired() {
+        return isRequired;
+    }
+
+    /**
      * {@return this option's description}
      */
     public Result<String> getDescription() {

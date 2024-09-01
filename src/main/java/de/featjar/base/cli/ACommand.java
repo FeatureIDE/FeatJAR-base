@@ -44,6 +44,4 @@ public abstract class ACommand implements ICommand {
     public final List<Option<?>> getOptions() {
         return Option.getAllOptions(getClass());
     }
-
-    protected OptionList optionParser;
 }

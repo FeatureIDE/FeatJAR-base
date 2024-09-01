@@ -88,7 +88,7 @@ public interface Log {
             while (e != null) {
                 StackTraceElement stackTrace = e.getStackTrace()[0];
                 sb.append(String.format(
-                        "%s:%d %s\n", stackTrace.getClassName(), stackTrace.getLineNumber(), e.toString()));
+                        "%s:%d %s%n", stackTrace.getClassName(), stackTrace.getLineNumber(), e.toString()));
                 e = e.getCause();
             }
             int length = sb.length();

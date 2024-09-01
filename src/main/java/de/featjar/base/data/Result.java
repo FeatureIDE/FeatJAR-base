@@ -138,7 +138,7 @@ public class Result<T> implements Supplier<T> {
             @SuppressWarnings("OptionalUsedAsFieldOrParameterType") Optional<T> optional,
             Supplier<Problem> potentialProblem) {
         T value = optional.orElse(null);
-        return value != null ? new Result<>(value, null) : ofNullable(value, potentialProblem.get());
+        return value != null ? new Result<>(value, null) : empty(potentialProblem.get());
     }
 
     /**
@@ -388,6 +388,22 @@ public class Result<T> implements Supplier<T> {
         if (object != null) {
             return this;
         }
+        alternative.problems.addAll(problems);
+        return alternative;
+    }
+
+    /**
+     * {@return this result or an alternative result if this result is empty}
+     * If this result is empty, the problems of this result are added to the alternative.
+     *
+     *
+     * @param alternative the alternative result
+     */
+    public Result<T> orGet(Supplier<? extends Result<T>> alternativeSupplier) {
+        if (object != null) {
+            return this;
+        }
+        Result<T> alternative = alternativeSupplier.get();
         alternative.problems.addAll(problems);
         return alternative;
     }

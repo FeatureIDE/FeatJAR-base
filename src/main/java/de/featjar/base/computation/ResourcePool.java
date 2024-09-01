@@ -39,7 +39,7 @@ public class ResourcePool<T> {
         maxObjectsToCreate = size;
     }
 
-    public <R> Result<R> use(Function<T, R> funtion) {
+    public <R> Result<R> use(Function<T, R> function) {
         if (maxObjectsToCreate > 0) {
             synchronized (pool) {
                 if (maxObjectsToCreate > 0) {
@@ -53,12 +53,13 @@ public class ResourcePool<T> {
         T resource = null;
         try {
             resource = pool.take();
-            return Result.ofNullable(funtion.apply(resource));
+            return Result.ofNullable(function.apply(resource));
         } catch (Exception e) {
             return Result.empty(e);
         } finally {
             if (resource != null) {
-                pool.offer(resource);
+                boolean success = pool.offer(resource);
+                assert success;
             }
         }
     }

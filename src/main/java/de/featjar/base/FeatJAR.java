@@ -114,24 +114,12 @@ public final class FeatJAR extends IO implements AutoCloseable {
     private static FallbackCache fallbackCache = new FallbackCache();
 
     /**
-     * {@return the current FeatJAR instance}
+     * Main entry point of FeatJAR.
+     *
+     * @param arguments command-line arguments
      */
-    public static FeatJAR getInstance() {
-        return instance;
-    }
-
-    /**
-     * {@return {@code true} if FeatJAR is initialized, {@code false} otherwise}
-     */
-    public static boolean isInitialized() {
-        return instance != null;
-    }
-
-    /**
-     * Initializes FeatJAR with a default configuration.
-     */
-    public static FeatJAR initialize() {
-        return initialize(createDefaultConfiguration());
+    public static void main(String[] arguments) {
+        System.exit(run(arguments));
     }
 
     public static Configuration configure() {
@@ -162,58 +150,256 @@ public final class FeatJAR extends IO implements AutoCloseable {
     }
 
     /**
-     * Initializes FeatJAR.
-     *
-     * @param configuration the FeatJAR configuration
+     * {@return the current FeatJAR instance}
      */
-    public static FeatJAR initialize(Configuration configuration) {
-        if (instance != null) throw new RuntimeException("FeatJAR already initialized");
-        instance = new FeatJAR();
-        instance.setConfiguration(configuration);
+    public static FeatJAR getInstance() {
         return instance;
+    }
+
+    /**
+     * {@return {@code true} if FeatJAR is initialized, {@code false} otherwise}
+     */
+    public static boolean isInitialized() {
+        return instance != null;
+    }
+
+    /**
+     * Initializes FeatJAR with a default configuration.
+     */
+    public static FeatJAR initialize() {
+        return initialize(createDefaultConfiguration());
     }
 
     /**
      * Initializes FeatJAR.
      *
-     * @param optionInput a list with options
+     * @param configuration the FeatJAR configuration
      */
-    public static FeatJAR initialize(OptionList optionInput) {
-        if (instance != null) throw new RuntimeException("FeatJAR already initialized");
-        instance = new FeatJAR();
-        List<Problem> problems = optionInput.parseArguments();
-        if (Problem.containsError(problems)) {
-            FeatJAR.log().problems(problems);
-            return null;
+    public static synchronized FeatJAR initialize(Configuration configuration) {
+        if (instance != null) {
+            throw new RuntimeException("FeatJAR already initialized");
         }
-        instance.setConfiguration(optionInput.getConfiguration());
-        FeatJAR.log().problems(problems);
+        instance = new FeatJAR();
+        if (configuration != null) {
+            instance.setConfiguration(configuration);
+        }
         return instance;
     }
 
     /**
      * De-initializes FeatJAR.
      */
-    public static void deinitialize() {
+    public static synchronized void deinitialize() {
         if (instance != null) {
-            if (instance.log != null) {
-                instance.log.debug("de-initializing FeatJAR");
-            }
+            FeatJAR.log().debug("de-initializing FeatJAR");
+
             if (instance.extensionManager != null) {
                 instance.extensionManager.close();
             }
-            instance.extensionManager = null;
-            instance.log = null;
+
+            if (instance.cache != null) {
+                instance.cache.close();
+            }
             instance.cache = null;
+
+            instance.log = null;
             instance = null;
         }
+    }
+
+    /**
+     * Runs some function in a temporary FeatJAR instance.
+     *
+     * @param configuration the FeatJAR configuration
+     * @param fn            the function
+     */
+    public static void run(Configuration configuration, Consumer<FeatJAR> fn) {
+        try (FeatJAR featJAR = FeatJAR.initialize(configuration)) {
+            fn.accept(featJAR);
+        }
+    }
+
+    /**
+     * Runs some function in a temporary FeatJAR instance.
+     *
+     * @param fn the function
+     */
+    public static void run(Consumer<FeatJAR> fn) {
+        try (FeatJAR featJAR = FeatJAR.initialize()) {
+            fn.accept(featJAR);
+        }
+    }
+
+    /**
+     * Runs some function in a temporary FeatJAR instance.
+     *
+     * @param configuration the FeatJAR configuration
+     * @param fn            the function
+     * @return the supplied object
+     */
+    public static <T> T apply(Configuration configuration, Function<FeatJAR, T> fn) {
+        try (FeatJAR featJAR = FeatJAR.initialize(configuration)) {
+            return fn.apply(featJAR);
+        }
+    }
+
+    /**
+     * Runs some function in a temporary FeatJAR instance.
+     *
+     * @param fn the function
+     * @return the supplied object
+     */
+    public static <T> T apply(Function<FeatJAR, T> fn) {
+        try (FeatJAR featJAR = FeatJAR.initialize()) {
+            return fn.apply(featJAR);
+        }
+    }
+
+    /**
+     * Interpret arguments and run the specified command.
+     *
+     * @param arguments command-line arguments
+     */
+    public static int run(String... arguments) {
+        try (FeatJAR featJAR = FeatJAR.initialize(null)) {
+            OptionList optionInput = new OptionList(arguments);
+
+            List<Problem> problems = optionInput.parseArguments();
+            if (Problem.containsError(problems)) {
+                FeatJAR.log().problems(problems);
+                FeatJAR.log().problems(optionInput.parseRemainingArguments());
+                FeatJAR.log()
+                        .message(OptionList.getHelp(optionInput.getCommand().orElse(null)));
+                return panic();
+            }
+
+            if (optionInput.isHelp()) {
+                System.out.println("This is FeatJAR!");
+                System.out.println(OptionList.getHelp(optionInput.getCommand().orElse(null)));
+            } else if (optionInput.isVersion()) {
+                System.out.println(FeatJAR.LIBRARY_NAME + ", development version");
+            } else {
+                FeatJAR.log().problems(problems);
+                Result<ICommand> optionalCommand = optionInput.getCommand();
+                if (optionalCommand.isEmpty()) {
+                    FeatJAR.log().error("No command provided");
+                    FeatJAR.log().message(OptionList.getHelp());
+                    return panic();
+                } else {
+                    ICommand command = optionalCommand.get();
+                    FeatJAR.log().debug("Running command %s", command.getIdentifier());
+                    List<Problem> commandProblems =
+                            optionInput.addOptions(command.getOptions()).parseRemainingArguments();
+                    FeatJAR.log().problems(commandProblems);
+                    if (Problem.containsError(commandProblems)) {
+                        FeatJAR.log()
+                                .message(OptionList.getHelp(
+                                        optionInput.getCommand().orElse(command)));
+                        return panic();
+                    }
+                    featJAR.setConfiguration(optionInput.getConfiguration());
+                    command.run(optionInput);
+                }
+            }
+        } catch (Exception e) {
+            FeatJAR.log().error(e);
+            return panic();
+        }
+        return 0;
+    }
+
+    private static int panic() {
+        Log log = FeatJAR.log();
+        if (log instanceof BufferedLog) {
+            ConfigurableLog newLog = new ConfigurableLog();
+            newLog.setConfiguration(createPanicConfiguration().logConfig);
+            ((BufferedLog) log).flush(m -> {
+                Supplier<String> originalMessage = m.getValue();
+                Supplier<String> message;
+                Verbosity verbosity = m.getKey();
+                switch (verbosity) {
+                    case DEBUG:
+                        message = () -> "DEBUG: " + originalMessage.get();
+                        break;
+                    case ERROR:
+                        message = () -> "ERROR: " + originalMessage.get();
+                        break;
+                    case INFO:
+                        message = () -> "INFO: " + originalMessage.get();
+                        break;
+                    case MESSAGE:
+                        message = m.getValue();
+                        break;
+                    case PROGRESS:
+                        message = () -> "PROGRESS: " + originalMessage.get();
+                        break;
+                    case WARNING:
+                        message = () -> "WARNING: " + originalMessage.get();
+                        break;
+                    default:
+                        throw new IllegalStateException(String.valueOf(verbosity));
+                }
+                newLog.print(message, verbosity);
+            });
+        }
+        return 1;
+    }
+
+    /**
+     * {@return the extension point for a given class installed in the current
+     * FeatJAR instance's extension manager}
+     *
+     * @param <T>   the type of the extension point's class
+     * @param klass the extension point's class
+     */
+    public static <T extends AExtensionPoint<?>> T extensionPoint(Class<T> klass) {
+        FeatJAR instance = FeatJAR.instance;
+        if (instance == null) throw new IllegalStateException("FeatJAR not initialized yet");
+        Result<T> extensionPoint = instance.getExtensionPoint(klass);
+        if (extensionPoint.isEmpty())
+            throw new RuntimeException("extension point " + klass + " not currently installed in FeatJAR");
+        return extensionPoint.get();
+    }
+
+    /**
+     * {@return the extension point for a given class installed in the current
+     * FeatJAR instance's extension manager}
+     *
+     * @param <T>   the type of the extension point's class
+     * @param klass the extension point's class
+     */
+    public static <T extends IExtension> T extension(Class<T> klass) {
+        FeatJAR instance = FeatJAR.instance;
+        if (instance == null) throw new IllegalStateException("FeatJAR not initialized yet");
+        Result<T> extension = instance.getExtension(klass);
+        if (extension.isEmpty())
+            throw new RuntimeException("extension " + klass + " not currently installed in FeatJAR");
+        return extension.get();
+    }
+
+    /**
+     * {@return the current FeatJAR instance's log, or a fallback log if
+     * uninitialized}
+     */
+    public static Log log() {
+        FeatJAR instance = FeatJAR.instance;
+        return instance == null || instance.log == null ? fallbackLog : instance.log;
+    }
+
+    /**
+     * {@return the current FeatJAR instance's cache, or a fallback cache if
+     * uninitialized}
+     */
+    public static Cache cache() {
+        FeatJAR instance = FeatJAR.instance;
+        return instance == null || instance.cache == null ? fallbackCache : instance.cache;
     }
 
     /**
      * This FeatJAR instance's extension manager. Holds references to all loaded
      * extension points and extensions.
      */
-    private ExtensionManager extensionManager;
+    private final ExtensionManager extensionManager;
 
     private ConfigurableLog log;
     private Cache cache;
@@ -273,204 +459,5 @@ public final class FeatJAR extends IO implements AutoCloseable {
      */
     public <T extends IExtension> Result<T> getExtension(Class<T> klass) {
         return extensionManager.getExtension(klass);
-    }
-
-    /**
-     * Runs some function in a temporary FeatJAR instance.
-     *
-     * @param configuration the FeatJAR configuration
-     * @param fn            the function
-     */
-    public static void run(Configuration configuration, Consumer<FeatJAR> fn) {
-        try (FeatJAR featJAR = FeatJAR.initialize(configuration)) {
-            fn.accept(featJAR);
-        }
-    }
-
-    /**
-     * Runs some function in a temporary FeatJAR instance.
-     *
-     * @param fn the function
-     */
-    public static void run(Consumer<FeatJAR> fn) {
-        try (FeatJAR featJAR = FeatJAR.initialize()) {
-            fn.accept(featJAR);
-        }
-    }
-
-    /**
-     * Runs some function in a temporary FeatJAR instance.
-     *
-     * @param configuration the FeatJAR configuration
-     * @param fn            the function
-     * @return the supplied object
-     */
-    public static <T> T apply(Configuration configuration, Function<FeatJAR, T> fn) {
-        try (FeatJAR featJAR = FeatJAR.initialize(configuration)) {
-            return fn.apply(featJAR);
-        }
-    }
-
-    /**
-     * Runs some function in a temporary FeatJAR instance.
-     *
-     * @param fn the function
-     * @return the supplied object
-     */
-    public static <T> T apply(Function<FeatJAR, T> fn) {
-        try (FeatJAR featJAR = FeatJAR.initialize()) {
-            return fn.apply(featJAR);
-        }
-    }
-
-    /**
-     * {@return the extension point for a given class installed in the current
-     * FeatJAR instance's extension manager}
-     *
-     * @param <T>   the type of the extension point's class
-     * @param klass the extension point's class
-     */
-    public static <T extends AExtensionPoint<?>> T extensionPoint(Class<T> klass) {
-        if (instance == null) throw new IllegalStateException("FeatJAR not initialized yet");
-        Result<T> extensionPoint = instance.getExtensionPoint(klass);
-        if (extensionPoint.isEmpty())
-            throw new RuntimeException("extension point " + klass + " not currently installed in FeatJAR");
-        return extensionPoint.get();
-    }
-
-    /**
-     * {@return the extension point for a given class installed in the current
-     * FeatJAR instance's extension manager}
-     *
-     * @param <T>   the type of the extension point's class
-     * @param klass the extension point's class
-     */
-    public static <T extends IExtension> T extension(Class<T> klass) {
-        if (instance == null) throw new IllegalStateException("FeatJAR not initialized yet");
-        Result<T> extension = instance.getExtension(klass);
-        if (extension.isEmpty())
-            throw new RuntimeException("extension " + klass + " not currently installed in FeatJAR");
-        return extension.get();
-    }
-
-    /**
-     * {@return the current FeatJAR instance's log, or a fallback log if
-     * uninitialized}
-     */
-    public static Log log() {
-        return instance == null || instance.log == null ? fallbackLog : instance.log;
-    }
-
-    /**
-     * {@return the current FeatJAR instance's cache, or a fallback cache if
-     * uninitialized}
-     */
-    public static Cache cache() {
-        return instance == null || instance.cache == null ? fallbackCache : instance.cache;
-    }
-
-    /**
-     * Main entry point of FeatJAR.
-     *
-     * @param arguments command-line arguments
-     */
-    public static void main(String[] arguments) {
-        System.exit(run(arguments));
-    }
-
-    /**
-     * Interpret arguments and run the specified command.
-     *
-     * @param arguments command-line arguments
-     */
-    public static int run(String... arguments) {
-        if (instance != null) {
-            throw new RuntimeException("FeatJAR is already initialized");
-        }
-        instance = new FeatJAR();
-        try {
-            OptionList optionInput = new OptionList(arguments);
-
-            List<Problem> problems = optionInput.parseArguments();
-            if (Problem.containsError(problems)) {
-                FeatJAR.log().problems(problems);
-                FeatJAR.log().problems(optionInput.parseRemainingArguments());
-                FeatJAR.log()
-                        .message(OptionList.getHelp(optionInput.getCommand().orElse(null)));
-                return panic();
-            }
-
-            if (optionInput.isHelp()) {
-                System.out.println("This is FeatJAR!");
-                System.out.println(OptionList.getHelp(optionInput.getCommand().orElse(null)));
-            } else if (optionInput.isVersion()) {
-                System.out.println(FeatJAR.LIBRARY_NAME + ", development version");
-            } else {
-                FeatJAR.log().problems(problems);
-                Result<ICommand> optionalCommand = optionInput.getCommand();
-                if (optionalCommand.isEmpty()) {
-                    FeatJAR.log().error("No command provided");
-                    FeatJAR.log().message(OptionList.getHelp());
-                    return panic();
-                } else {
-                    ICommand command = optionalCommand.get();
-                    FeatJAR.log().debug("Running command %s", command.getIdentifier());
-                    List<Problem> commandProblems =
-                            optionInput.addOptions(command.getOptions()).parseRemainingArguments();
-                    FeatJAR.log().problems(commandProblems);
-                    if (Problem.containsError(commandProblems)) {
-                        FeatJAR.log()
-                                .message(OptionList.getHelp(
-                                        optionInput.getCommand().orElse(command)));
-                        return panic();
-                    }
-                    instance.setConfiguration(optionInput.getConfiguration());
-                    command.run(optionInput);
-                }
-            }
-        } catch (Exception e) {
-            FeatJAR.log().error(e);
-            return panic();
-        } finally {
-            instance.close();
-        }
-        return 0;
-    }
-
-    private static int panic() {
-        Log log = FeatJAR.log();
-        if (log instanceof BufferedLog) {
-            ConfigurableLog newLog = new ConfigurableLog();
-            newLog.setConfiguration(createPanicConfiguration().logConfig);
-            ((BufferedLog) log).flush(m -> {
-                Supplier<String> originalMessage = m.getValue();
-                Supplier<String> message;
-                Verbosity verbosity = m.getKey();
-                switch (verbosity) {
-                    case DEBUG:
-                        message = () -> "DEBUG: " + originalMessage.get();
-                        break;
-                    case ERROR:
-                        message = () -> "ERROR: " + originalMessage.get();
-                        break;
-                    case INFO:
-                        message = () -> "INFO: " + originalMessage.get();
-                        break;
-                    case MESSAGE:
-                        message = m.getValue();
-                        break;
-                    case PROGRESS:
-                        message = () -> "PROGRESS: " + originalMessage.get();
-                        break;
-                    case WARNING:
-                        message = () -> "WARNING: " + originalMessage.get();
-                        break;
-                    default:
-                        throw new IllegalStateException(String.valueOf(verbosity));
-                }
-                newLog.print(message, verbosity);
-            });
-        }
-        return 1;
     }
 }

@@ -75,11 +75,9 @@ public interface IAttributable {
         <S> void setAttributeValue(Attribute<S> attribute, S value);
 
         default boolean toggleAttributeValue(Attribute<Boolean> attribute) {
-            Boolean value = getAttributeValue(attribute).get();
-            if (value == null) {
-                value = attribute.getDefaultValue(this).orElse(Boolean.FALSE);
-            }
-            boolean toggledValue = !value;
+            boolean toggledValue = !getAttributeValue(attribute)
+                    .orGet(() -> attribute.getDefaultValue(this))
+                    .orElse(Boolean.FALSE);
             setAttributeValue(attribute, toggledValue);
             return toggledValue;
         }
