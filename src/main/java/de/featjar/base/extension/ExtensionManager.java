@@ -114,7 +114,8 @@ public class ExtensionManager implements AutoCloseable {
     private static boolean filterByFileName(String pathName) {
         try {
             if (pathName != null) {
-                return Paths.get(pathName).getFileName().toString().matches("extensions(-.*)?[.]xml");
+                Path fileName = Paths.get(pathName).getFileName();
+                return fileName != null && fileName.toString().matches("extensions(-.*)?[.]xml");
             }
             return false;
         } catch (final Exception e) {

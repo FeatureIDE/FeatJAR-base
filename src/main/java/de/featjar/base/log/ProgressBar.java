@@ -36,15 +36,10 @@ public final class ProgressBar {
 
         private boolean running = true;
 
-        public ProgressThread(Supplier<Double> relativeProgress) {
-            this(relativeProgress, 1000);
-        }
-
-        public ProgressThread(Supplier<Double> relativeProgress, int refreshRate) {
+        private ProgressThread(Supplier<Double> relativeProgress, int refreshRate) {
             super();
             this.relativeProgress = relativeProgress;
             this.refreshRate = refreshRate;
-            start();
         }
 
         @Override
@@ -72,6 +67,16 @@ public final class ProgressBar {
         public void close() throws Exception {
             shutdown();
         }
+    }
+
+    public static ProgressThread startProgressThread(Supplier<Double> relativeProgress) {
+        return startProgressThread(relativeProgress, 1000);
+    }
+
+    public static ProgressThread startProgressThread(Supplier<Double> relativeProgress, int refreshRate) {
+        ProgressThread thread = new ProgressThread(relativeProgress, refreshRate);
+        thread.start();
+        return thread;
     }
 
     private static final int slidingWindowSize = 60;

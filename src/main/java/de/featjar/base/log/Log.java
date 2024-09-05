@@ -21,7 +21,6 @@
 package de.featjar.base.log;
 
 import de.featjar.base.data.Problem;
-import de.featjar.base.data.Result;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.util.List;
@@ -67,14 +66,6 @@ public interface Log {
          * Progress message. Typically used to signal progress in long-running jobs.
          */
         PROGRESS;
-
-        public static Result<Verbosity> of(String verbosityString) {
-            try {
-                return Result.of(Verbosity.valueOf(verbosityString.toUpperCase()));
-            } catch (Exception e) {
-                return Result.empty(e);
-            }
-        }
     }
 
     static String getErrorMessage(Throwable error, boolean printStacktrace) {

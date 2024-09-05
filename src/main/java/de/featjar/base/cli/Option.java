@@ -28,6 +28,7 @@ import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Locale;
 import java.util.Objects;
 import java.util.function.Function;
 import java.util.function.Predicate;
@@ -123,7 +124,7 @@ public class Option<T> {
     }
 
     public static <E extends Enum<E>> Function<String, E> valueOf(Class<E> enumClass) {
-        return s -> Enum.valueOf(enumClass, s.toUpperCase());
+        return s -> Enum.valueOf(enumClass, s.toUpperCase(Locale.ENGLISH));
     }
 
     /**

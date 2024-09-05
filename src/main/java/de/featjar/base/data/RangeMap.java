@@ -51,7 +51,7 @@ public class RangeMap<T> implements Cloneable {
      * Creates an empty range map.
      */
     public RangeMap() {
-        clear();
+        indexToObject.add(null);
     }
 
     /**
@@ -60,7 +60,7 @@ public class RangeMap<T> implements Cloneable {
      * @param collection the collection
      */
     public RangeMap(Collection<T> collection) {
-        clear();
+        indexToObject.add(null);
         indexToObject.addAll(collection);
         updateObjectToIndex();
     }
@@ -85,7 +85,7 @@ public class RangeMap<T> implements Cloneable {
     public RangeMap(RangeMap<T> rangeMap1, RangeMap<T> rangeMap2) {
         SortedSet<T> objects = new TreeSet<>(rangeMap1.getObjects());
         objects.addAll(rangeMap2.getObjects());
-        clear();
+        indexToObject.add(null);
         indexToObject.addAll(objects);
         updateObjectToIndex();
     }

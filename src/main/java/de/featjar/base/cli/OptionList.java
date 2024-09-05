@@ -32,6 +32,7 @@ import de.featjar.base.log.TimeStampFormatter;
 import de.featjar.base.log.VerbosityFormatter;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
@@ -281,8 +282,8 @@ public class OptionList {
             for (String name : reverseNameList) {
                 Path configPath = configDir.resolve(name + ".properties");
                 final Properties properties = new Properties();
-                try {
-                    properties.load(Files.newInputStream(configPath));
+                try (InputStream input = Files.newInputStream(configPath)) {
+                    properties.load(input);
                 } catch (IOException e) {
                     addProblem(
                             problemList, Severity.ERROR, "Could not load configuration file %s", configPath.toString());

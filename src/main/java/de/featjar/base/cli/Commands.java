@@ -131,7 +131,7 @@ public class Commands extends AExtensionPoint<ICommand> {
      * @param <T>            the type of the result
      */
     public static <T> Result<T> loadFile(String pathOrStdin, IFormatSupplier<T> formatSupplier) {
-        Matcher matcher = STANDARD_INPUT_PATTERN.matcher(pathOrStdin.toLowerCase());
+        Matcher matcher = STANDARD_INPUT_PATTERN.matcher(pathOrStdin);
         if (matcher.matches()) {
             Path path = Paths.get(matcher.group(2) != null ? "stdin." + matcher.group(2) : "stdin");
             String content = new BufferedReader(new InputStreamReader(System.in, IO.DEFAULT_CHARSET))
@@ -149,8 +149,7 @@ public class Commands extends AExtensionPoint<ICommand> {
      * @param pathOrStdin the path or reference to the standard input stream
      */
     public static boolean isValidInput(String pathOrStdin) {
-        return STANDARD_INPUT_PATTERN.matcher(pathOrStdin.toLowerCase()).matches()
-                || Files.exists(Paths.get(pathOrStdin));
+        return STANDARD_INPUT_PATTERN.matcher(pathOrStdin).matches() || Files.exists(Paths.get(pathOrStdin));
     }
 
     // TODO: allow to load many files

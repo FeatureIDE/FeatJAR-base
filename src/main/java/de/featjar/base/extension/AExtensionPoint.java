@@ -31,6 +31,7 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.regex.Pattern;
 
 /**
  * An extension point installs {@link IExtension extensions} of a given type.
@@ -131,8 +132,9 @@ public abstract class AExtensionPoint<T extends IExtension> {
      * @param partOfIdentifier the part of the extension's identifier
      */
     public Result<T> getMatchingExtension(String partOfIdentifier) {
+        final String identifierPart = partOfIdentifier.toLowerCase();
         LinkedHashSet<String> matchingIdentifiers = indexMap.keySet().stream()
-                .filter(identifier -> identifier.toLowerCase().contains(partOfIdentifier.toLowerCase()))
+                .filter(identifier -> identifier.toLowerCase().contains(identifierPart))
                 .collect(Sets.toSet());
         if (matchingIdentifiers.isEmpty())
             return Result.empty(
@@ -154,7 +156,7 @@ public abstract class AExtensionPoint<T extends IExtension> {
      */
     public LinkedHashSet<T> getMatchingExtensions(String regex) {
         LinkedHashSet<String> matchingIdentifiers = indexMap.keySet().stream()
-                .filter(identifier -> identifier.toLowerCase().matches(String.format(".*%s.*", regex.toLowerCase())))
+                .filter(Pattern.compile(regex).asPredicate())
                 .collect(Sets.toSet());
         return matchingIdentifiers.stream()
                 .map(this::getExtension)

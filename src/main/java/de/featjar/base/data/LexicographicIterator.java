@@ -40,14 +40,12 @@ public final class LexicographicIterator<T>
 
     public static final class Combination<U> {
 
-        public final int spliteratorId;
         public final U environment;
 
         public final int[] elementIndices;
         public long combinationIndex;
 
         private Combination(int t, Function<Combination<U>, U> environmentCreator) {
-            spliteratorId = 0;
             combinationIndex = 0;
             elementIndices = new int[t];
             elementIndices[0] = -1;
@@ -57,14 +55,9 @@ public final class LexicographicIterator<T>
             environment = environmentCreator.apply(this);
         }
 
-        private Combination(
-                Combination<U> other, int[] nextSpliteratorId, Function<Combination<U>, U> environmentCreator) {
+        private Combination(Combination<U> other, Function<Combination<U>, U> environmentCreator) {
             combinationIndex = other.combinationIndex;
             elementIndices = Arrays.copyOf(other.elementIndices, other.elementIndices.length);
-
-            synchronized (nextSpliteratorId) {
-                spliteratorId = nextSpliteratorId[0]++;
-            }
             environment = environmentCreator.apply(this);
         }
 
@@ -133,7 +126,6 @@ public final class LexicographicIterator<T>
     private final BinomialCalculator binomialCalculator;
     private final Combination<T> combination;
 
-    private final int[] nextSpliteratorId = {1};
     private final Function<Combination<T>, T> environmentCreator;
 
     public LexicographicIterator(int t, int n, Function<Combination<T>, T> environmentCreator) {
@@ -154,7 +146,7 @@ public final class LexicographicIterator<T>
         t = it.t;
         n = it.n;
         environmentCreator = it.environmentCreator;
-        combination = new Combination<>(it.combination, nextSpliteratorId, environmentCreator);
+        combination = new Combination<>(it.combination, environmentCreator);
 
         binomialCalculator = it.binomialCalculator;
         final long diff = it.end - it.combination.combinationIndex;

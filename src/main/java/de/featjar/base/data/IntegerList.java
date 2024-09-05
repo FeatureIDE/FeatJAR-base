@@ -20,19 +20,10 @@
  */
 package de.featjar.base.data;
 
-import de.featjar.base.FeatJAR;
 import java.io.Serializable;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Comparator;
-import java.util.Iterator;
-import java.util.List;
-import java.util.concurrent.Callable;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.Future;
 import java.util.stream.IntStream;
 
 /**
@@ -111,61 +102,6 @@ public class IntegerList implements Serializable {
                 .flatMapToInt(l -> Arrays.stream(l))
                 .distinct()
                 .toArray();
-    }
-
-    private static int[] mergeParallel(Collection<int[]> integerLists) {
-        final int p = Runtime.getRuntime().availableProcessors();
-
-        final int size = integerLists.size() / p;
-        final int largerGroupIndex = integerLists.size() % p;
-        List<List<int[]>> partitions = new ArrayList<>(p);
-        Iterator<int[]> iterator = integerLists.iterator();
-        for (int i = 0; i < p; i++) {
-            final int end = i < largerGroupIndex ? size + 1 : size;
-            final ArrayList<int[]> partition = new ArrayList<>(end);
-            for (int j = 0; j < end; j++) {
-                partition.add(iterator.next());
-            }
-            partitions.add(partition);
-        }
-
-        int max = integerLists.stream()
-                .flatMapToInt(l -> Arrays.stream(l))
-                .map(Math::abs)
-                .max()
-                .orElse(0);
-        final ArrayList<Callable<int[]>> mergers = new ArrayList<>(p);
-        for (int i = 0; i < p; i++) {
-            List<int[]> partition = partitions.get(i);
-            mergers.add(() -> {
-                final int[] literals = new int[max];
-                partition.stream().flatMapToInt(l -> Arrays.stream(l)).forEach(l -> literals[Math.abs(l) - 1] = l);
-                return literals;
-            });
-        }
-        ExecutorService newCachedThreadPool = Executors.newCachedThreadPool();
-        try {
-            List<Future<int[]>> invokeAll = newCachedThreadPool.invokeAll(mergers);
-            int[] merge = null;
-            for (Future<int[]> future : invokeAll) {
-                int[] result = future.get();
-                if (merge == null) {
-                    merge = result;
-                } else {
-                    for (int i = 0; i < result.length; i++) {
-                        if (merge[i] == 0) {
-                            merge[i] = result[i];
-                        }
-                    }
-                }
-            }
-            return Arrays.stream(merge).filter(e -> e != 0).toArray();
-        } catch (InterruptedException | ExecutionException e) {
-            FeatJAR.log().error(e);
-        } finally {
-            newCachedThreadPool.shutdown();
-        }
-        return null;
     }
 
     /**

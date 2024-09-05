@@ -20,6 +20,8 @@
  */
 package de.featjar.base.env;
 
+import java.util.Locale;
+
 /**
  * Utilities for host-specific operations and information.
  *
@@ -42,7 +44,7 @@ public class HostEnvironment {
     public static final OperatingSystem OPERATING_SYSTEM;
 
     static {
-        final String osName = System.getProperty("os.name").toLowerCase();
+        final String osName = System.getProperty("os.name").toLowerCase(Locale.ENGLISH);
         OPERATING_SYSTEM = osName.matches(".*(win).*")
                 ? OperatingSystem.WINDOWS
                 : osName.matches(".*(mac).*")
