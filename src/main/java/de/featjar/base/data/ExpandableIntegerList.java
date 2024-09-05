@@ -25,7 +25,7 @@ import java.util.Arrays;
 import java.util.stream.IntStream;
 
 /**
- * TODO add Javadoc
+ * A dynamic array of integer values.
  *
  * @author Sebastian Krieter
  */

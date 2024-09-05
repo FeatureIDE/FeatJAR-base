@@ -100,7 +100,6 @@ public class Process implements Supplier<Result<List<String>>> {
                 result = Result.empty(
                         new Problem(executablePath + " exited with value " + exitValue, Problem.Severity.ERROR));
             }
-            // TODO: add info severity, as these are no real warnings
             return Result.empty(
                             new Problem("exit code = " + exitValue, Problem.Severity.INFO),
                             new Problem("in time = " + terminatedInTime, Problem.Severity.INFO),

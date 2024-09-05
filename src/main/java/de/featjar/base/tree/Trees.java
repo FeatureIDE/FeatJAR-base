@@ -143,14 +143,14 @@ public class Trees {
     }
 
     /**
-     * Creates a parallel stream of the descendents of a tree. Does not make any
-     * guarantees regarding the order of the descendents.
+     * Creates a parallel stream of the descendants of a tree. Does not make any
+     * guarantees regarding the order of the descendants.
      *
      * @param node the starting node of the tree
      * @return the stream
      * @param <T> the type of tree
      */
-    // todo: does not work currently!
+    // FIXME: does not work currently!
     public static <T extends ITree<T>> Stream<T> parallelStream(T node) {
         return StreamSupport.stream(new ParallelSpliterator<>(node), true);
     }

@@ -397,7 +397,7 @@ public class Result<T> implements Supplier<T> {
      * If this result is empty, the problems of this result are added to the alternative.
      *
      *
-     * @param alternative the alternative result
+     * @param alternativeSupplier the supplier for the alternative result
      */
     public Result<T> orGet(Supplier<? extends Result<T>> alternativeSupplier) {
         if (object != null) {

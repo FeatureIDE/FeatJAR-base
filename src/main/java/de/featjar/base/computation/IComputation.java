@@ -23,6 +23,7 @@ package de.featjar.base.computation;
 import de.featjar.base.FeatJAR;
 import de.featjar.base.data.Problem;
 import de.featjar.base.data.Result;
+import de.featjar.base.tree.structure.ITree;
 import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
@@ -60,7 +61,7 @@ import java.util.stream.Stream;
  * @author Elias Kuiter
  * @author Sebastian Krieter
  */
-public interface IComputation<T> extends Supplier<Result<T>>, IDependent {
+public interface IComputation<T> extends Supplier<Result<T>>, ITree<IComputation<?>> {
     /**
      * {@return the result of this computation for the given list of dependencies}
      * Implementations must be deterministic to guarantee proper caching:
@@ -291,6 +292,11 @@ public interface IComputation<T> extends Supplier<Result<T>>, IDependent {
 
     default <U> IComputation<U> cast(Class<U> newType) {
         return mapResult(newType, "castTo", i -> newType.cast(i));
+    }
+
+    @SuppressWarnings("unchecked")
+    default <U> Result<IComputation<U>> getDependencyComputation(Dependency<U> dependency) {
+        return getChild(dependency.getIndex()).map(c -> (IComputation<U>) c);
     }
 
     default <U> IComputation<T> setDependencyComputation(

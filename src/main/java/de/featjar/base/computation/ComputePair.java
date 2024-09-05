@@ -44,7 +44,7 @@ public class ComputePair<T, U> extends AComputation<Pair<T, U>> {
 
     @SuppressWarnings("unchecked")
     public IComputation<T> getKeyComputation() {
-        return getDependency((Dependency<T>) KEY_COMPUTATION).get();
+        return getDependencyComputation((Dependency<T>) KEY_COMPUTATION).get();
     }
 
     @SuppressWarnings("unchecked")
@@ -54,7 +54,7 @@ public class ComputePair<T, U> extends AComputation<Pair<T, U>> {
 
     @SuppressWarnings("unchecked")
     public IComputation<U> getValueComputation() {
-        return getDependency((Dependency<U>) VALUE_COMPUTATION).get();
+        return getDependencyComputation((Dependency<U>) VALUE_COMPUTATION).get();
     }
 
     @SuppressWarnings("unchecked")
