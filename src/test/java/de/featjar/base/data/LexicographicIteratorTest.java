@@ -23,7 +23,6 @@ package de.featjar.base.data;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-import de.featjar.base.data.LexicographicIterator.Combination;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Random;
@@ -59,7 +58,7 @@ public class LexicographicIteratorTest {
             }
         });
         for (int i = 0; i < counts.length; i++) {
-            assertEquals(1, counts[i], i);
+            assertEquals(1, counts[i], String.valueOf(i));
         }
     }
 
@@ -71,8 +70,8 @@ public class LexicographicIteratorTest {
                 .map(Combination::toString) //
                 .collect(Collectors.toList());
 
-        assertEquals(sSet.size(), pSet.size());
-        assertTrue(new HashSet<>(pSet).containsAll(sSet));
-        assertTrue(new HashSet<>(sSet).containsAll(pSet));
+        assertEquals(sSet.size(), pSet.size(), sSet + "\n!=\n" + pSet);
+        assertTrue(new HashSet<>(pSet).containsAll(sSet), sSet + "\n!=\n" + pSet);
+        assertTrue(new HashSet<>(sSet).containsAll(pSet), sSet + "\n!=\n" + pSet);
     }
 }

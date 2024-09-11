@@ -32,45 +32,51 @@ import java.util.stream.StreamSupport;
  *
  * @author Sebastian Krieter
  */
-public final class LexicographicIterator<E> implements Spliterator<Combination<E>> {
+public final class SingleLexicographicIterator<E> implements Spliterator<ICombination<E, int[]>> {
 
-    public static Stream<Combination<Void>> stream(int t, int size) {
-        return StreamSupport.stream(new LexicographicIterator<>(t, size, () -> null), false);
+    public static Stream<ICombination<Void, int[]>> stream(int[] items, int t) {
+        return StreamSupport.stream(new SingleLexicographicIterator<>(items, t, null), false);
     }
 
-    public static Stream<Combination<Void>> parallelStream(int t, int size) {
-        return StreamSupport.stream(new LexicographicIterator<>(t, size, () -> null), true);
+    public static Stream<ICombination<Void, int[]>> parallelStream(int[] items, int t) {
+        return StreamSupport.stream(new SingleLexicographicIterator<Void>(items, t, null), true);
     }
 
-    public static <V> Stream<Combination<V>> stream(int t, int size, Supplier<V> environmentCreator) {
-        return StreamSupport.stream(new LexicographicIterator<>(t, size, environmentCreator), false);
+    public static <V> Stream<ICombination<V, int[]>> stream(int[] items, int t, Supplier<V> environmentCreator) {
+        return StreamSupport.stream(new SingleLexicographicIterator<>(items, t, environmentCreator), false);
     }
 
-    public static <V> Stream<Combination<V>> parallelStream(int t, int size, Supplier<V> environmentCreator) {
-        return StreamSupport.stream(new LexicographicIterator<>(t, size, environmentCreator), true);
+    public static <V> Stream<ICombination<V, int[]>> parallelStream(
+            int[] items, int t, Supplier<V> environmentCreator) {
+        return StreamSupport.stream(new SingleLexicographicIterator<>(items, t, environmentCreator), true);
+    }
+
+    public static void main(String[] args) {
+        int[] i2 = new int[] {1, 2, 3, 4, 5};
+        stream(i2, 2).forEach(System.out::println);
     }
 
     private static final int MINIMUM_SPLIT_SIZE = 10;
 
-    private final Combination<E> combination;
+    private final SingleLiteralCombination<E> combination;
     private long end;
     private final Supplier<E> environmentCreator;
 
-    public LexicographicIterator(int t, int n, Supplier<E> environmentCreator) {
+    public SingleLexicographicIterator(int[] items, int t, Supplier<E> environmentCreator) {
         this.environmentCreator = environmentCreator;
-        combination = new Combination<>(t, n, environmentCreator);
+        combination = new SingleLiteralCombination<>(items, t, environmentCreator);
         end = combination.maxIndex();
     }
 
-    private LexicographicIterator(LexicographicIterator<E> other) {
+    private SingleLexicographicIterator(SingleLexicographicIterator<E> other) {
         this.environmentCreator = other.environmentCreator;
-        combination = new Combination<E>(other.combination, other.environmentCreator);
+        combination = new SingleLiteralCombination<E>(other.combination, other.environmentCreator);
+        end = other.end;
 
         long currentIndex = other.combination.index();
-        //        end = other.end;
         long start = currentIndex + ((other.end - currentIndex) / 2);
-        other.combination.setIndex(start);
-        end = start;
+        combination.setIndex(start);
+        other.end = start - 1;
     }
 
     @Override
@@ -84,13 +90,13 @@ public final class LexicographicIterator<E> implements Spliterator<Combination<E
     }
 
     @Override
-    public Spliterator<Combination<E>> trySplit() {
-        return (estimateSize() < MINIMUM_SPLIT_SIZE) ? null : new LexicographicIterator<>(this);
+    public Spliterator<ICombination<E, int[]>> trySplit() {
+        return (estimateSize() < MINIMUM_SPLIT_SIZE) ? null : new SingleLexicographicIterator<>(this);
     }
 
     @Override
-    public boolean tryAdvance(Consumer<? super Combination<E>> action) {
-        if (end == combination.index()) {
+    public boolean tryAdvance(Consumer<? super ICombination<E, int[]>> action) {
+        if (combination.maxIndex() == combination.index()) {
             return false;
         }
         action.accept(combination);

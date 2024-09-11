@@ -109,4 +109,12 @@ public class BinomialCalculator {
         }
         return b;
     }
+
+    public static long computeFactorial(int k) {
+        long f = 1;
+        for (int i = 2; i <= k; i++) {
+            f *= i;
+        }
+        return f;
+    }
 }
