@@ -20,6 +20,7 @@
  */
 package de.featjar.base.data;
 
+import java.util.Arrays;
 import java.util.Objects;
 import java.util.function.Supplier;
 
@@ -47,7 +48,8 @@ public final class SingleLiteralCombination<E> extends ACombination<E, int[]> {
         this.items = items;
         binomialCalculator = new BinomialCalculator(t, items.length);
         maxIndex = binomialCalculator.binomial();
-
+        selection = new int[t];
+        
         elementIndices[0] = 0;
         for (int i = 1; i < t; i++) {
             elementIndices[i] = i;
@@ -60,6 +62,7 @@ public final class SingleLiteralCombination<E> extends ACombination<E, int[]> {
         items = other.items;
         binomialCalculator = other.binomialCalculator;
         maxIndex = other.maxIndex;
+        selection = Arrays.copyOf(other.selection, other.selection.length);
     }
 
     @Override

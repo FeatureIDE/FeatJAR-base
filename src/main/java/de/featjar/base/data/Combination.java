@@ -20,6 +20,7 @@
  */
 package de.featjar.base.data;
 
+import java.util.Arrays;
 import java.util.function.Supplier;
 
 /**
@@ -43,6 +44,7 @@ public final class Combination<E> extends ACombination<E, int[]> {
         this.n = n;
         binomialCalculator = new BinomialCalculator(t, n);
         maxIndex = binomialCalculator.binomial();
+        selection = new int[t];
 
         elementIndices[0] = 0;
         for (int i = 1; i < t; i++) {
@@ -56,6 +58,7 @@ public final class Combination<E> extends ACombination<E, int[]> {
         n = other.n;
         binomialCalculator = other.binomialCalculator;
         maxIndex = other.maxIndex;
+        selection = Arrays.copyOf(other.selection, other.selection.length);
     }
 
     @Override

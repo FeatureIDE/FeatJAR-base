@@ -82,7 +82,11 @@ public abstract class AComputation<T> extends ATree<IComputation<?>> implements 
                 unpackComputations(computationList, computation);
             }
         } else {
-            throw new RuntimeException("Argument is not a computation: " + element.getClass());
+        	if (element == null) {
+        		throw new RuntimeException("Argument is null");
+        	} else {
+        		throw new RuntimeException("Argument is not a computation: " + element.getClass());
+        	}
         }
     }
 
