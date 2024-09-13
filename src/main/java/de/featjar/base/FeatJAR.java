@@ -179,7 +179,9 @@ public final class FeatJAR extends IO implements AutoCloseable {
         if (instance != null) {
             throw new RuntimeException("FeatJAR already initialized");
         }
+        log().debug("initializing FeatJAR");
         instance = new FeatJAR();
+        instance.extensionManager = new ExtensionManager();
         if (configuration != null) {
             instance.setConfiguration(configuration);
         }
@@ -262,48 +264,56 @@ public final class FeatJAR extends IO implements AutoCloseable {
      */
     public static int run(String... arguments) {
         try (FeatJAR featJAR = FeatJAR.initialize(null)) {
-            OptionList optionInput = new OptionList(arguments);
-
-            List<Problem> problems = optionInput.parseArguments();
-            if (Problem.containsError(problems)) {
-                FeatJAR.log().problems(problems);
-                FeatJAR.log().problems(optionInput.parseRemainingArguments());
-                FeatJAR.log()
-                        .message(OptionList.getHelp(optionInput.getCommand().orElse(null)));
-                return panic();
-            }
-
-            if (optionInput.isHelp()) {
-                System.out.println("This is FeatJAR!");
-                System.out.println(OptionList.getHelp(optionInput.getCommand().orElse(null)));
-            } else if (optionInput.isVersion()) {
-                System.out.println(FeatJAR.LIBRARY_NAME + ", development version");
-            } else {
-                FeatJAR.log().problems(problems);
-                Result<ICommand> optionalCommand = optionInput.getCommand();
-                if (optionalCommand.isEmpty()) {
-                    FeatJAR.log().error("No command provided");
-                    FeatJAR.log().message(OptionList.getHelp());
-                    return panic();
-                } else {
-                    ICommand command = optionalCommand.get();
-                    FeatJAR.log().debug("Running command %s", command.getIdentifier());
-                    List<Problem> commandProblems =
-                            optionInput.addOptions(command.getOptions()).parseRemainingArguments();
-                    FeatJAR.log().problems(commandProblems);
-                    if (Problem.containsError(commandProblems)) {
-                        FeatJAR.log()
-                                .message(OptionList.getHelp(
-                                        optionInput.getCommand().orElse(command)));
-                        return panic();
-                    }
-                    featJAR.setConfiguration(optionInput.getConfiguration());
-                    command.run(optionInput);
-                }
-            }
+            return runAfterInitialization(true, arguments);
         } catch (Exception e) {
             FeatJAR.log().error(e);
             return panic();
+        }
+    }
+
+    public static int runInternally(String... arguments) {
+        return runAfterInitialization(false, arguments);
+    }
+
+    private static int runAfterInitialization(boolean configure, String... arguments) {
+        OptionList optionInput = new OptionList(arguments);
+
+        List<Problem> problems = optionInput.parseArguments();
+        if (Problem.containsError(problems)) {
+            FeatJAR.log().problems(problems);
+            FeatJAR.log().problems(optionInput.parseRemainingArguments());
+            FeatJAR.log().message(OptionList.getHelp(optionInput.getCommand().orElse(null)));
+            return panic();
+        }
+
+        if (optionInput.isHelp()) {
+            System.out.println("This is FeatJAR!");
+            System.out.println(OptionList.getHelp(optionInput.getCommand().orElse(null)));
+        } else if (optionInput.isVersion()) {
+            System.out.println(FeatJAR.LIBRARY_NAME + ", development version");
+        } else {
+            FeatJAR.log().problems(problems);
+            Result<ICommand> optionalCommand = optionInput.getCommand();
+            if (optionalCommand.isEmpty()) {
+                FeatJAR.log().error("No command provided");
+                FeatJAR.log().message(OptionList.getHelp());
+                return panic();
+            } else {
+                ICommand command = optionalCommand.get();
+                FeatJAR.log().debug("Running command %s", command.getIdentifier());
+                List<Problem> commandProblems =
+                        optionInput.addOptions(command.getOptions()).parseRemainingArguments();
+                FeatJAR.log().problems(commandProblems);
+                if (Problem.containsError(commandProblems)) {
+                    FeatJAR.log()
+                            .message(OptionList.getHelp(optionInput.getCommand().orElse(command)));
+                    return panic();
+                }
+                if (configure) {
+                    FeatJAR.getInstance().setConfiguration(optionInput.getConfiguration());
+                }
+                command.run(optionInput);
+            }
         }
         return 0;
     }
@@ -399,20 +409,10 @@ public final class FeatJAR extends IO implements AutoCloseable {
      * This FeatJAR instance's extension manager. Holds references to all loaded
      * extension points and extensions.
      */
-    private final ExtensionManager extensionManager;
+    private ExtensionManager extensionManager;
 
     private ConfigurableLog log;
     private Cache cache;
-
-    /**
-     * Initializes FeatJAR.
-     *
-     * @param configuration the FeatJAR configuration
-     */
-    private FeatJAR() {
-        log().debug("initializing FeatJAR");
-        extensionManager = new ExtensionManager();
-    }
 
     private void setConfiguration(Configuration configuration) {
         ConfigurableLog newLog = getExtension(ConfigurableLog.class).orElseGet(ConfigurableLog::new);
@@ -447,7 +447,7 @@ public final class FeatJAR extends IO implements AutoCloseable {
      * @param klass the extension point's class
      */
     public <T extends AExtensionPoint<?>> Result<T> getExtensionPoint(Class<T> klass) {
-        return extensionManager.getExtensionPoint(klass);
+        return extensionManager != null ? extensionManager.getExtensionPoint(klass) : Result.empty();
     }
 
     /**
@@ -458,6 +458,6 @@ public final class FeatJAR extends IO implements AutoCloseable {
      * @param klass the extension's class
      */
     public <T extends IExtension> Result<T> getExtension(Class<T> klass) {
-        return extensionManager.getExtension(klass);
+        return extensionManager != null ? extensionManager.getExtension(klass) : Result.empty();
     }
 }
