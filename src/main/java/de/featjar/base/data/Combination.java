@@ -63,21 +63,37 @@ public final class Combination<E> extends ACombination<E, int[]> {
 
     @Override
     public int[] select() {
-        return selection;
+        throw new UnsupportedOperationException();
     }
 
-    public int[] select(int[] items) {
+    public int[] getSelection(int[] items) {
         for (int i = 0; i < elementIndices.length; i++) {
             selection[i] = items[elementIndices[i]];
         }
         return selection;
     }
 
-    public int[] select(int[][] items) {
+    public int[] getSelection(int[][] items) {
         for (int i = 0; i < elementIndices.length; i++) {
             selection[i] = items[i][elementIndices[i]];
         }
         return selection;
+    }
+
+    public int[] createSelection(int[] items) {
+        int[] newSelection = new int[elementIndices.length];
+        for (int i = 0; i < elementIndices.length; i++) {
+            newSelection[i] = items[elementIndices[i]];
+        }
+        return newSelection;
+    }
+
+    public int[] createSelection(int[][] items) {
+        int[] newSelection = new int[elementIndices.length];
+        for (int i = 0; i < elementIndices.length; i++) {
+            newSelection[i] = items[i][elementIndices[i]];
+        }
+        return newSelection;
     }
 
     @Override
