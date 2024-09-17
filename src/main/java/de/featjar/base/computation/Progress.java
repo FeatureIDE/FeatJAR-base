@@ -20,7 +20,6 @@
  */
 package de.featjar.base.computation;
 
-import de.featjar.base.data.Range;
 import java.util.function.Supplier;
 
 /**
@@ -30,25 +29,29 @@ import java.util.function.Supplier;
  * @author Elias Kuiter
  */
 public class Progress implements Supplier<Double> {
-    protected final Range range;
+    protected long totalSteps;
+    protected long currentSteps = 0;
 
     public Progress() {
-        this(Range.atLeast(0));
+        this(Long.MAX_VALUE);
     }
 
-    protected Progress(Range range) {
-        this.range = range;
+    protected Progress(long totalSteps) {
+        if (totalSteps < 1) {
+            throw new IndexOutOfBoundsException(totalSteps);
+        }
+        this.totalSteps = totalSteps;
     }
 
     public static Progress completed(int steps) {
-        return new Progress(Range.exactly(steps == 0 ? 1 : steps));
+        return new Progress(steps == 0 ? 1 : steps);
     }
 
     /**
      * {@return the progress's current step}
      */
-    public int getCurrentStep() {
-        return range.getLowerBound();
+    public long getCurrentStep() {
+        return currentSteps;
     }
 
     /**
@@ -56,10 +59,8 @@ public class Progress implements Supplier<Double> {
      *
      * @param currentStep the current step
      */
-    public void setCurrentStep(int currentStep) {
-        int totalSteps = getTotalSteps();
-        if (totalSteps >= 0 && totalSteps < currentStep) range.setUpperBound(currentStep);
-        range.setLowerBound(currentStep);
+    public void setCurrentStep(long currentStep) {
+        this.currentSteps = (totalSteps < currentStep) ? totalSteps : currentStep;
     }
 
     /**
@@ -74,16 +75,15 @@ public class Progress implements Supplier<Double> {
      *
      * @param steps the steps
      */
-    public void addCurrentSteps(int steps) {
-        setCurrentStep(getCurrentStep() + steps);
+    public void addCurrentSteps(long steps) {
+        setCurrentStep(currentSteps + steps);
     }
 
     /**
      * {@return the progress's total number of steps}
      */
-    public int getTotalSteps() {
-        int upperBound = range.getUpperBound();
-        return upperBound != Range.OPEN ? upperBound : -1;
+    public long getTotalSteps() {
+        return totalSteps;
     }
 
     /**
@@ -92,41 +92,35 @@ public class Progress implements Supplier<Double> {
      *
      * @param totalSteps the total steps
      */
-    public void setTotalSteps(Integer totalSteps) {
-        if (totalSteps != null && totalSteps == 0) throw new IllegalArgumentException(String.valueOf(totalSteps));
-        if (totalSteps == null) range.setUpperBound(Range.OPEN);
-        else range.setUpperBound(Math.max(getCurrentStep(), totalSteps));
+    public void setTotalSteps(long totalSteps) {
+        this.totalSteps = (totalSteps < currentSteps) ? currentSteps : totalSteps;
     }
 
     /**
      * {@return this progress' percentage (i.e., the current step divided by the total number of steps)}
      */
     public Double get() {
-        int currentStep = getCurrentStep();
-        if (currentStep == 0) return 0.0;
-        int totalSteps = getTotalSteps();
-        if (totalSteps == -1) return 0.5;
-        return (double) currentStep / totalSteps;
+        return (double) currentSteps / totalSteps;
     }
 
     @Override
     public String toString() {
-        return range.toString();
+        return String.format("%d / %d", currentSteps, totalSteps);
     }
 
     public static class Null extends Progress {
         public static final Null NULL = new Null();
 
         @Override
-        public void setCurrentStep(int currentStep) {}
+        public void setCurrentStep(long currentStep) {}
 
         @Override
         public void incrementCurrentStep() {}
 
         @Override
-        public void addCurrentSteps(int steps) {}
+        public void addCurrentSteps(long steps) {}
 
         @Override
-        public void setTotalSteps(Integer totalSteps) {}
+        public void setTotalSteps(long totalSteps) {}
     }
 }

@@ -31,8 +31,9 @@ import java.util.stream.IntStream;
  * @author Elias Kuiter
  */
 public class Range implements Function<Integer, Boolean>, Cloneable {
-    public static final int OPEN = Integer.MIN_VALUE;
+    public static final int OPEN = -1;
 
+    // TODO store as one int
     protected int lowerBound;
     protected int upperBound;
 
@@ -43,10 +44,13 @@ public class Range implements Function<Integer, Boolean>, Cloneable {
     }
 
     protected static void checkBounds(int lowerBound, int upperBound) {
-        if ((lowerBound < 0 && lowerBound != OPEN)
-                || (upperBound < 0 && upperBound != OPEN)
-                || (lowerBound != OPEN && upperBound != OPEN && lowerBound > upperBound)) {
-            throw new IllegalArgumentException(String.format("invalid bounds %d, %d", lowerBound, upperBound));
+        if ((lowerBound < OPEN) || (upperBound < OPEN)) {
+            throw new IllegalArgumentException(
+                    String.format("invalid bounds %d, %d, negative values are not allowed", lowerBound, upperBound));
+        }
+        if (upperBound != OPEN && lowerBound > upperBound) {
+            throw new IllegalArgumentException(
+                    String.format("invalid bounds %d, %d, lower bound > upper bound", lowerBound, upperBound));
         }
     }
 
