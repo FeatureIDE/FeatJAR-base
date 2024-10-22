@@ -49,7 +49,7 @@ public final class SingleLiteralCombination<E> extends ACombination<E, int[]> {
         binomialCalculator = new BinomialCalculator(t, items.length);
         maxIndex = binomialCalculator.binomial();
         selection = new int[t];
-        
+
         elementIndices[0] = 0;
         for (int i = 1; i < t; i++) {
             elementIndices[i] = i;

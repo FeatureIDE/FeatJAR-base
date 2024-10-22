@@ -43,7 +43,7 @@ public class Progress implements Supplier<Double> {
         this.totalSteps = totalSteps;
     }
 
-    public static Progress completed(int steps) {
+    public static Progress completed(long steps) {
         return new Progress(steps == 0 ? 1 : steps);
     }
 

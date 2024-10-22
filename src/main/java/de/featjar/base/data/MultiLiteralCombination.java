@@ -50,7 +50,7 @@ public final class MultiLiteralCombination<E> extends ACombination<E, int[]> {
         this.t = t;
         this.items = new int[elementIndices.length][];
         selection = new int[IntStream.of(t).sum()];
-        
+
         int index = 0;
         for (int k = 0; k < t.length; k++) {
             int tk = t[k];
