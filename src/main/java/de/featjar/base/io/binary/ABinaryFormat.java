@@ -66,9 +66,9 @@ public abstract class ABinaryFormat<T> implements IFormat<T> {
 
     protected byte[] readBytes(InputStream in, int size) throws IOException {
         final byte[] bytes = new byte[size];
-        final int byteCount = in.read(bytes, 0, bytes.length);
+        final int byteCount = in.readNBytes(bytes, 0, bytes.length);
         if (byteCount != bytes.length) {
-            throw new IOException();
+            throw new IOException("Stream ended before expected end!");
         }
         return bytes;
     }
@@ -83,9 +83,9 @@ public abstract class ABinaryFormat<T> implements IFormat<T> {
 
     protected int readInt(InputStream in) throws IOException {
         final byte[] integerBytes = new byte[Integer.BYTES];
-        final int byteCount = in.read(integerBytes, 0, integerBytes.length);
+        final int byteCount = in.readNBytes(integerBytes, 0, integerBytes.length);
         if (byteCount != integerBytes.length) {
-            throw new IOException();
+            throw new IOException("Stream ended before expected end!");
         }
         return ((integerBytes[0] & 0xff) << 24)
                 | ((integerBytes[1] & 0xff) << 16)
@@ -96,7 +96,7 @@ public abstract class ABinaryFormat<T> implements IFormat<T> {
     protected byte readByte(InputStream in) throws IOException {
         final int readByte = in.read();
         if (readByte < 0) {
-            throw new IOException();
+            throw new IOException("Stream ended before expected end!");
         }
         return (byte) readByte;
     }
@@ -104,7 +104,7 @@ public abstract class ABinaryFormat<T> implements IFormat<T> {
     protected boolean readBool(InputStream in) throws IOException {
         final int boolByte = in.read();
         if (boolByte < 0) {
-            throw new IOException();
+            throw new IOException("Stream ended before expected end!");
         }
         return boolByte == 1;
     }

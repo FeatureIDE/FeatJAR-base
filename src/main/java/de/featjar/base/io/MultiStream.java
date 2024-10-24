@@ -39,7 +39,7 @@ public class MultiStream extends OutputStream {
         this(Sets.of(streams));
     }
 
-    public MultiStream(LinkedHashSet<OutputStream> streams) {
+    public MultiStream(LinkedHashSet<? extends OutputStream> streams) {
         this.streams.addAll(streams);
     }
 

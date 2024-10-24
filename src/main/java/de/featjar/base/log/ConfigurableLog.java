@@ -22,17 +22,17 @@ package de.featjar.base.log;
 
 import de.featjar.base.FeatJAR;
 import de.featjar.base.data.Maps;
+import de.featjar.base.data.Sets;
 import de.featjar.base.extension.IInitializer;
 import de.featjar.base.io.MultiStream;
-import de.featjar.base.io.OpenPrintStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
-import java.io.OutputStream;
 import java.io.PrintStream;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
 import java.util.Arrays;
 import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
 import java.util.LinkedList;
 import java.util.ListIterator;
 import java.util.Objects;
@@ -51,6 +51,24 @@ public class ConfigurableLog implements Log, IInitializer {
 
     private static final PrintStream originalSystemOut = System.out;
     private static final PrintStream originalSystemErr = System.err;
+    private static final StreamCollection originalOutStreamCollection = new StreamCollection(originalSystemOut);
+    private static final StreamCollection originalErrStreamCollection = new StreamCollection(originalSystemErr);
+
+    private static class StreamCollection {
+        private final LinkedHashSet<PrintStream> streams = Sets.empty();
+
+        public StreamCollection(PrintStream... streams) {
+            this.streams.addAll(Arrays.asList(streams));
+        }
+
+        public void addStream(PrintStream stream) {
+            streams.add(stream);
+        }
+
+        public LinkedHashSet<PrintStream> getStreams() {
+            return streams;
+        }
+    }
 
     /**
      * Configures a log.
@@ -58,9 +76,11 @@ public class ConfigurableLog implements Log, IInitializer {
     public static class Configuration {
         // TODO: to make this more general, we could use an OutputMapper here to
         // log to anything supported by an OutputMapper (even a ZIP file).
-        protected final LinkedHashMap<Verbosity, OpenPrintStream> logStreams = Maps.empty();
+        protected final LinkedHashMap<Verbosity, StreamCollection> logStreams = Maps.empty();
         protected final LinkedList<IFormatter> formatters = new LinkedList<>();
         protected boolean printStacktrace = false;
+
+        protected final LinkedHashMap<PrintStream, Integer> progressCharactersPerStream = Maps.empty();
 
         public Configuration() {
             resetLogStreams();
@@ -80,14 +100,14 @@ public class ConfigurableLog implements Log, IInitializer {
             return this;
         }
 
-        private void addStream(OutputStream stream, Verbosity verbostiy) {
-            OpenPrintStream multiStream = logStreams.get(verbostiy);
+        private void addStream(PrintStream stream, Verbosity verbostiy) {
+            StreamCollection multiStream = logStreams.get(verbostiy);
             if (multiStream == null) {
-                multiStream = new OpenPrintStream(new MultiStream(stream));
+                multiStream = new StreamCollection();
                 logStreams.put(verbostiy, multiStream);
-            } else {
-                ((MultiStream) multiStream.getOutputStream()).addStream(stream);
             }
+            multiStream.addStream(stream);
+            progressCharactersPerStream.put(stream, 0);
         }
 
         /**
@@ -196,7 +216,6 @@ public class ConfigurableLog implements Log, IInitializer {
     }
 
     private Configuration configuration;
-    private int progressSize;
     /**
      * Creates a log based on the default configuration.
      */
@@ -242,68 +261,82 @@ public class ConfigurableLog implements Log, IInitializer {
         FeatJAR.log().debug("setting new log configuration");
         this.configuration = configuration;
         if (configuration != null) {
-            System.setOut(configuration.logStreams.get(Verbosity.MESSAGE));
-            System.setErr(configuration.logStreams.get(Verbosity.ERROR));
+            System.setOut(new PrintStream(new MultiStream(
+                    configuration.logStreams.get(Verbosity.MESSAGE).getStreams())));
+            System.setErr(new PrintStream(new MultiStream(
+                    configuration.logStreams.get(Verbosity.ERROR).getStreams())));
         }
     }
 
     public void println(Supplier<String> message, Verbosity verbosity) {
         if (configuration == null) {
-            println(originalSystemErr, message.get());
+            println(originalErrStreamCollection, message.get());
         } else {
-            OpenPrintStream multiStream = configuration.logStreams.get(verbosity);
-            if (multiStream != null) {
+            StreamCollection streamCollection = configuration.logStreams.get(verbosity);
+            if (streamCollection != null) {
                 final String formattedMessage = formatMessage(message.get(), verbosity);
-                println(multiStream, formattedMessage);
+                println(streamCollection, formattedMessage);
             }
         }
     }
 
     public void print(Supplier<String> message, Verbosity verbosity) {
         if (configuration == null) {
-            print(originalSystemErr, message.get());
+            print(originalErrStreamCollection, message.get());
         } else {
-            OpenPrintStream multiStream = configuration.logStreams.get(verbosity);
-            if (multiStream != null) {
+            StreamCollection streamCollection = configuration.logStreams.get(verbosity);
+            if (streamCollection != null) {
                 final String formattedMessage = formatMessage(message.get(), verbosity);
-                print(multiStream, formattedMessage);
+                print(streamCollection, formattedMessage);
             }
         }
     }
 
     public void printProgress(Supplier<String> message) {
         if (configuration == null) {
-            printProgress(originalSystemOut, message.get());
+            printProgress(originalOutStreamCollection, message.get());
         } else {
-            OpenPrintStream multiStream = configuration.logStreams.get(Verbosity.PROGRESS);
-            if (multiStream != null) {
-                printProgress(multiStream, formatMessage(message.get(), Verbosity.PROGRESS));
+            StreamCollection streamCollection = configuration.logStreams.get(Verbosity.PROGRESS);
+            if (streamCollection != null) {
+                printProgress(streamCollection, formatMessage(message.get(), Verbosity.PROGRESS));
             }
         }
     }
 
-    public void println(PrintStream stream, String message) {
+    private void println(StreamCollection streamCollection, String message) {
+        char[] charArray = message.toCharArray();
         synchronized (this) {
-            char[] charArray = message.toCharArray();
-            stream.println(fillBuffer(charArray));
+            for (PrintStream stream : streamCollection.getStreams()) {
+                Integer progressSize = configuration.progressCharactersPerStream.get(stream);
+                stream.println(fillBuffer(charArray, progressSize != null ? progressSize : 0));
+                configuration.progressCharactersPerStream.put(stream, 0);
+            }
         }
     }
 
-    public void print(PrintStream stream, String message) {
+    private void print(StreamCollection streamCollection, String message) {
+        char[] charArray = message.toCharArray();
         synchronized (this) {
-            stream.print(fillBuffer(message.toCharArray()));
+            for (PrintStream stream : streamCollection.getStreams()) {
+                Integer progressSize = configuration.progressCharactersPerStream.get(stream);
+                stream.print(fillBuffer(charArray, progressSize != null ? progressSize : 0));
+                configuration.progressCharactersPerStream.put(stream, 0);
+            }
         }
     }
 
-    public void printProgress(PrintStream stream, String message) {
+    private void printProgress(StreamCollection streamCollection, String message) {
+        char[] charArray = message.toCharArray();
         synchronized (this) {
-            char[] charArray = message.toCharArray();
-            stream.print(fillBuffer(charArray));
-            progressSize = charArray.length;
+            for (PrintStream stream : streamCollection.getStreams()) {
+                Integer progressSize = configuration.progressCharactersPerStream.get(stream);
+                stream.print(fillBuffer(charArray, progressSize != null ? progressSize : 0));
+                configuration.progressCharactersPerStream.put(stream, charArray.length);
+            }
         }
     }
 
-    private char[] fillBuffer(char[] charArray) {
+    private char[] fillBuffer(char[] charArray, int progressSize) {
         if (progressSize == 0) {
             return charArray;
         } else {
@@ -311,19 +344,18 @@ public class ConfigurableLog implements Log, IInitializer {
             buffer[0] = '\r';
             System.arraycopy(charArray, 0, buffer, 1, charArray.length);
             Arrays.fill(buffer, charArray.length + 1, buffer.length, ' ');
-            progressSize = 0;
             return buffer;
         }
     }
 
     public void println(Throwable error, Verbosity verbosity) {
         if (configuration == null) {
-            println(originalSystemErr, Log.getErrorMessage(error, true));
+            println(originalErrStreamCollection, Log.getErrorMessage(error, true));
         } else {
-            OpenPrintStream multiStream = configuration.logStreams.get(verbosity);
-            if (multiStream != null) {
+            StreamCollection streamCollection = configuration.logStreams.get(verbosity);
+            if (streamCollection != null) {
                 println(
-                        multiStream,
+                        streamCollection,
                         formatMessage(Log.getErrorMessage(error, configuration.printStacktrace), verbosity));
             }
         }
