@@ -38,7 +38,7 @@ public class Progress implements Supplier<Double> {
 
     protected Progress(long totalSteps) {
         if (totalSteps < 1) {
-            throw new IndexOutOfBoundsException(totalSteps);
+            throw new IndexOutOfBoundsException(String.valueOf(totalSteps));
         }
         this.totalSteps = totalSteps;
     }
