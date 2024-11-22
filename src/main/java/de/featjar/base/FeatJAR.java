@@ -63,6 +63,10 @@ public final class FeatJAR extends IO implements AutoCloseable {
     public static final String ROOT_PACKAGE_NAME = "de.featjar";
     public static final String LIBRARY_NAME = "feat.jar";
 
+    public static final int ERROR_COMPUTING_RESULT = 1;
+    public static final int ERROR_TIMEOUT = 1;
+    public static final int ERROR_WRITING_RESULT = 1;
+
     /**
      * Configures FeatJAR.
      */
@@ -280,7 +284,7 @@ public final class FeatJAR extends IO implements AutoCloseable {
 
         List<Problem> problems = optionInput.parseArguments();
         if (Problem.containsError(problems)) {
-            FeatJAR.log().problems(problems);
+            FeatJAR.log().problems(problems, Verbosity.ERROR);
             FeatJAR.log().problems(optionInput.parseRemainingArguments());
             FeatJAR.log().message(OptionList.getHelp(optionInput.getCommand().orElse(null)));
             return panic();
@@ -312,7 +316,7 @@ public final class FeatJAR extends IO implements AutoCloseable {
                 if (configure) {
                     FeatJAR.getInstance().setConfiguration(optionInput.getConfiguration());
                 }
-                command.run(optionInput);
+                return command.run(optionInput);
             }
         }
         return 0;
@@ -352,7 +356,7 @@ public final class FeatJAR extends IO implements AutoCloseable {
                 newLog.print(message, verbosity);
             });
         }
-        return 1;
+        return FeatJAR.ERROR_COMPUTING_RESULT;
     }
 
     /**

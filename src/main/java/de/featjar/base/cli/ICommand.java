@@ -58,6 +58,8 @@ public interface ICommand extends IExtension {
      * Runs this command with some given options.
      *
      * @param optionParser the option parser
+     *
+     * @return exit code
      */
-    void run(OptionList optionParser);
+    int run(OptionList optionParser);
 }
