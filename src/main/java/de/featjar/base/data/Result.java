@@ -451,12 +451,16 @@ public class Result<T> implements Supplier<T> {
                 return new RuntimeException("an unknown error occurred");
             }
             Problem problem = problems.get(0);
+            Exception e = problem.getException();
             if (problems.size() == 1) {
-                return new RuntimeException(problem.getMessage(), problem.getException());
+                if (e instanceof RuntimeException) {
+                    return (RuntimeException) e;
+                } else {
+                    return new RuntimeException(problem.getMessage(), e);
+                }
             } else {
                 return new RuntimeException(
-                        problem.getMessage() + " (and " + (problems.size() - 1) + " other problems)",
-                        problem.getException());
+                        problem.getMessage() + " (and " + (problems.size() - 1) + " other problems)", e);
             }
         });
     }

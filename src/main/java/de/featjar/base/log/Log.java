@@ -69,24 +69,25 @@ public interface Log {
     }
 
     static String getErrorMessage(Throwable error, boolean printStacktrace) {
-        StringBuilder sb = new StringBuilder();
         if (printStacktrace) {
             StringWriter errorWriter = new StringWriter();
             error.printStackTrace(new PrintWriter(errorWriter));
             return errorWriter.toString();
         } else {
+            StringBuilder errorStringBuilder = new StringBuilder();
             Throwable e = error;
             while (e != null) {
                 StackTraceElement stackTrace = e.getStackTrace()[0];
-                sb.append(String.format(
-                        "%s:%d %s%n", stackTrace.getClassName(), stackTrace.getLineNumber(), e.toString()));
+                errorStringBuilder.append(String.format(
+                        "%s (%s @ %s:%d)%n\t",
+                        e.getMessage(), e.getClass().getName(), stackTrace.getClassName(), stackTrace.getLineNumber()));
                 e = e.getCause();
             }
-            int length = sb.length();
+            int length = errorStringBuilder.length();
             if (length > 0) {
-                sb.setLength(length - 1);
+                errorStringBuilder.setLength(length - 2);
             }
-            return sb.toString();
+            return errorStringBuilder.toString();
         }
     }
 
