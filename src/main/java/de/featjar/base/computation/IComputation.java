@@ -27,6 +27,7 @@ import de.featjar.base.tree.structure.ITree;
 import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.TimeoutException;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Supplier;
@@ -168,7 +169,12 @@ public interface IComputation<T> extends Supplier<Result<T>>, ITree<IComputation
         try {
             return computeFutureResult(tryHitCache, tryWriteCache)
                     .getPromise()
-                    .onTimeout(() -> getIntermediateResult(), timeout, true)
+                    .onTimeout(
+                            () -> Result.empty(new TimeoutException(
+                                            String.format("Timeout of %ss was reached.", timeout.getSeconds())))
+                                    .merge(getIntermediateResult()),
+                            timeout,
+                            true)
                     .get();
         } catch (Exception e) {
             return Result.empty(e);
