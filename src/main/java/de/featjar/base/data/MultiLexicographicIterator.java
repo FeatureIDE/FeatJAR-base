@@ -36,14 +36,13 @@ public final class MultiLexicographicIterator<E> implements Spliterator<ICombina
 
     private final ICombination<E, int[]> combination;
 
-    public static void main(String[] args) {
-        int[] i1 = new int[] {1, 2, 3, 4, 5};
-        int[] i2 = new int[] {1, 2, 3, 4, 5};
-        stream(new int[][] {i1, i1, i2, i2}, new int[] {2, 2}).forEach(System.out::println);
-    }
-
     public static Stream<ICombination<Void, int[]>> stream(int[][] items, int[] t) {
         return StreamSupport.stream(new MultiLexicographicIterator<>(items, t, null), false);
+    }
+
+    public static <V> Stream<ICombination<V, int[]>> parallelStream(
+            int[][] items, int[] t, Supplier<V> environmentCreator) {
+        return StreamSupport.stream(new MultiLexicographicIterator<>(items, t, environmentCreator), true);
     }
 
     public MultiLexicographicIterator(int[][] items, int[] t, Supplier<E> environmentCreator) {
