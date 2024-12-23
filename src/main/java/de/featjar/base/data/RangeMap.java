@@ -26,6 +26,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map.Entry;
 import java.util.NoSuchElementException;
 import java.util.Objects;
 import java.util.Random;
@@ -302,11 +303,15 @@ public class RangeMap<T> implements Cloneable {
         return Result.ofNullable(objectToIndex.get(object));
     }
 
+    protected Stream<Entry<T, Integer>> entryStream() {
+        return objectToIndex.entrySet().stream();
+    }
+
     /**
      * {@return all objects mapped by this range map}
      */
     public Stream<Pair<Integer, T>> stream() {
-        return objectToIndex.entrySet().stream().map(Pair::of).map(Pair::flip);
+        return entryStream().map(Pair::of).map(Pair::flip);
     }
 
     /**
