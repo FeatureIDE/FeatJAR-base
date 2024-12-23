@@ -44,7 +44,16 @@ import java.util.stream.Collectors;
  */
 public class Option<T> {
 
-    public static final Function<String, Boolean> BooleanParser = Boolean::parseBoolean;
+    public static final Function<String, Boolean> BooleanParser = s -> {
+        switch (s) {
+            case "true":
+                return Boolean.TRUE;
+            case "false":
+                return Boolean.FALSE;
+            default:
+                throw new RuntimeException(String.format("%s is not a boolean", s));
+        }
+    };
     public static final Function<String, Integer> IntegerParser = Integer::parseInt;
     public static final Function<String, Double> DoubleParser = Double::parseDouble;
     public static final Function<String, Long> LongParser = Long::parseLong;
