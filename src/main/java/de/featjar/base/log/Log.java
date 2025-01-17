@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2024 FeatJAR-Development-Team
+ * Copyright (C) 2025 FeatJAR-Development-Team
  *
  * This file is part of FeatJAR-base.
  *
@@ -20,9 +20,11 @@
  */
 package de.featjar.base.log;
 
+import de.featjar.base.computation.Progress;
 import de.featjar.base.data.Problem;
 import java.io.PrintWriter;
 import java.io.StringWriter;
+import java.util.Arrays;
 import java.util.List;
 import java.util.function.Supplier;
 
@@ -89,6 +91,27 @@ public interface Log {
             }
             return errorStringBuilder.toString();
         }
+    }
+
+    static ProgressThread startProgressThread(Progress progress) {
+        return startProgressThread(
+                1000,
+                new ActivityMessage(),
+                new ProgressMessage(progress),
+                new PassedTimeMessage(),
+                new UsedMemoryMessage());
+    }
+
+    @SafeVarargs
+    static ProgressThread startProgressThread(Supplier<String>... messageSuppliers) {
+        return startProgressThread(1000, messageSuppliers);
+    }
+
+    @SafeVarargs
+    static ProgressThread startProgressThread(int refreshRate, Supplier<String>... messageSuppliers) {
+        ProgressThread thread = new ProgressThread(Arrays.asList(messageSuppliers), refreshRate);
+        thread.start();
+        return thread;
     }
 
     /**
