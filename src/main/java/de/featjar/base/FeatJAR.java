@@ -451,7 +451,9 @@ public final class FeatJAR extends IO implements AutoCloseable {
      * @param klass the extension point's class
      */
     public <T extends AExtensionPoint<?>> Result<T> getExtensionPoint(Class<T> klass) {
-        return extensionManager != null ? extensionManager.getExtensionPoint(klass) : Result.empty();
+        return extensionManager != null
+                ? extensionManager.getExtensionPoint(klass)
+                : Result.empty(new IllegalStateException("FeatJAR not initialized yet"));
     }
 
     /**
