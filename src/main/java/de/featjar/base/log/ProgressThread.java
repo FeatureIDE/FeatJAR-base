@@ -21,6 +21,7 @@
 package de.featjar.base.log;
 
 import de.featjar.base.FeatJAR;
+import de.featjar.base.computation.Progress;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Supplier;
@@ -32,19 +33,21 @@ import java.util.function.Supplier;
 public final class ProgressThread extends Thread implements AutoCloseable {
     private final List<Supplier<String>> messageSuppliers;
     private final int refreshRate;
+    private Progress progress;
 
     private boolean running = true;
 
-    public ProgressThread(List<Supplier<String>> messageSuppliers, int refreshRate) {
+    public ProgressThread(Progress progress, List<Supplier<String>> messageSuppliers, int refreshRate) {
         super();
         this.messageSuppliers = messageSuppliers != null ? new ArrayList<>(messageSuppliers) : List.of();
         this.refreshRate = refreshRate;
+        this.progress = progress;
     }
 
     @Override
     public void run() {
         try {
-            while (running) {
+            while (running && progress.get() < 1.0) {
                 StringBuilder sb = new StringBuilder();
                 for (Supplier<String> m : messageSuppliers) {
                     sb.append(m.get());

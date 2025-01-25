@@ -89,6 +89,10 @@ public interface IComputation<T> extends Supplier<Result<T>>, ITree<IComputation
         return computeResult().orElseThrow();
     }
 
+    default T compute(Supplier<Progress> progressSupplier) {
+        return computeResult(progressSupplier).orElseThrow();
+    }
+
     /**
      * {@return the (asynchronous) future result of this computation}
      * Implements an asynchronous mode of computation that does or does not use the {@link Cache}.
@@ -191,6 +195,17 @@ public interface IComputation<T> extends Supplier<Result<T>>, ITree<IComputation
      */
     default Result<T> computeResult(Duration timeout) {
         return computeResult(true, true, timeout);
+    }
+
+    /**
+     * {@return the (cached) result of this computation. Uses the given progress supplier to create {@link Progress} instances for each computation.
+     *
+     * @param progressSupplier the progress supplier
+     *
+     * @see #computeResult(boolean, boolean, Supplier)
+     */
+    default Result<T> computeResult(Supplier<Progress> progressSupplier) {
+        return computeResult(true, true, progressSupplier);
     }
 
     /**

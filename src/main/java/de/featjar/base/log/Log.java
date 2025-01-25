@@ -95,6 +95,7 @@ public interface Log {
 
     static ProgressThread startProgressThread(Progress progress) {
         return startProgressThread(
+                progress,
                 1000,
                 new ActivityMessage(),
                 new ProgressMessage(progress),
@@ -103,13 +104,14 @@ public interface Log {
     }
 
     @SafeVarargs
-    static ProgressThread startProgressThread(Supplier<String>... messageSuppliers) {
-        return startProgressThread(1000, messageSuppliers);
+    static ProgressThread startProgressThread(Progress progress, Supplier<String>... messageSuppliers) {
+        return startProgressThread(progress, 1000, messageSuppliers);
     }
 
     @SafeVarargs
-    static ProgressThread startProgressThread(int refreshRate, Supplier<String>... messageSuppliers) {
-        ProgressThread thread = new ProgressThread(Arrays.asList(messageSuppliers), refreshRate);
+    static ProgressThread startProgressThread(
+            Progress progress, int refreshRate, Supplier<String>... messageSuppliers) {
+        ProgressThread thread = new ProgressThread(progress, Arrays.asList(messageSuppliers), refreshRate);
         thread.start();
         return thread;
     }
