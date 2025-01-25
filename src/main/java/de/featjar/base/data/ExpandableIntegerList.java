@@ -188,6 +188,9 @@ public class ExpandableIntegerList implements Serializable {
         return sb.toString();
     }
 
+    /**
+     *{@return The number of elements in this list}
+     */
     public int size() {
         return size;
     }
@@ -196,10 +199,42 @@ public class ExpandableIntegerList implements Serializable {
         return size == 0;
     }
 
-    public int[] toArray() {
+    /**
+     * The internal array used to store the elements of this list.
+     * Modifications will affect this instance.
+     * Maybe larger than {@link #size()}.
+     *
+     * @return The internal array used to store the elements
+     *
+     * @see #toArray()
+     * @see #toIntStream()
+     */
+    public int[] getInternalArray() {
         return elements;
     }
 
+    /**
+     * Creates an array containing all elements of this list.
+     * Modifications will not affect this instance.
+     * The array will be as large as {@link size()}.
+     * <br><br>
+     * If modification is not necessary, but performance is important, consider using {@link #getInternalArray()}.
+     *
+     * @return An array containing all elements
+     *
+     * @see #getInternalArray()
+     * @see #toIntStream()
+     */
+    public int[] toArray() {
+        return Arrays.copyOf(elements, size);
+    }
+
+    /**
+     * {@return A stream over all elements in this list}
+     *
+     * @see #getInternalArray()
+     * @see #toArray()
+     */
     public IntStream toIntStream() {
         return IntStream.range(0, size).map(i -> elements[i]);
     }
