@@ -328,7 +328,7 @@ public class RangeMap<T> implements Cloneable {
      *
      * @param objects a list of objects
      */
-    public Stream<Integer> stream(List<T> objects) {
+    public Stream<Integer> stream(Collection<T> objects) {
         return objects.stream().map(objectToIndex::get);
     }
 
