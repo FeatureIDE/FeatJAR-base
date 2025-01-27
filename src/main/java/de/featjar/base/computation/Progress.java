@@ -29,6 +29,7 @@ import java.util.function.Supplier;
  * @author Elias Kuiter
  */
 public class Progress implements Supplier<Double> {
+    protected String name;
     protected long totalSteps;
     protected long currentSteps = 0;
 
@@ -45,6 +46,14 @@ public class Progress implements Supplier<Double> {
 
     public static Progress completed(long steps) {
         return new Progress(steps == 0 ? 1 : steps);
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
     }
 
     /**
@@ -68,6 +77,14 @@ public class Progress implements Supplier<Double> {
      */
     public void incrementCurrentStep() {
         addCurrentSteps(1);
+    }
+
+    public void finish() {
+        currentSteps = totalSteps;
+    }
+
+    public boolean isFinished() {
+        return currentSteps >= totalSteps;
     }
 
     /**

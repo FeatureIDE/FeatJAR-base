@@ -20,6 +20,7 @@
  */
 package de.featjar.base.log;
 
+import de.featjar.base.computation.Progress;
 import java.util.function.Supplier;
 
 /**
@@ -28,19 +29,19 @@ import java.util.function.Supplier;
  */
 public final class ProgressMessage implements Supplier<String> {
 
-    private Supplier<Double> progressSupplier;
+    private final Progress progress;
 
-    public ProgressMessage(Supplier<Double> progressSupplier) {
-        this.progressSupplier = progressSupplier;
+    public ProgressMessage(Progress progress) {
+        this.progress = progress;
     }
 
     public String get() {
-        double relativeProgress = progressSupplier.get();
+        double relativeProgress = progress.get();
         if (relativeProgress < 0) {
             relativeProgress = 0;
         } else if (relativeProgress > 1) {
             relativeProgress = 1;
         }
-        return String.format("%5.1f %%", ((Math.floor(relativeProgress * 1000)) / 10.0));
+        return String.format("%5.1f %% (%s)", relativeProgress * 100, progress.getName());
     }
 }

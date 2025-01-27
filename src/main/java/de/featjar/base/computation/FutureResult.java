@@ -80,7 +80,9 @@ public class FutureResult<T> implements Supplier<Result<T>> {
         if (Thread.interrupted()) {
             throw new CancellationException();
         }
-        return computation.compute(args, progress);
+        Result<T> value = computation.compute(args, progress);
+        progress.finish();
+        return value;
     }
 
     /**
@@ -98,6 +100,7 @@ public class FutureResult<T> implements Supplier<Result<T>> {
             boolean tryWriteCache,
             Supplier<Progress> progressSupplier) {
         Progress progress = progressSupplier.get();
+        progress.setName(computation.toString());
 
         if (computation instanceof ComputeConstant) {
             return new FutureResult<>(

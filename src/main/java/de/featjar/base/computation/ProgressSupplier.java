@@ -20,7 +20,10 @@
  */
 package de.featjar.base.computation;
 
+import de.featjar.base.log.ActivityMessage;
 import de.featjar.base.log.Log;
+import de.featjar.base.log.PassedTimeMessage;
+import de.featjar.base.log.ProgressMessage;
 import de.featjar.base.log.ProgressThread;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
@@ -43,7 +46,8 @@ public class ProgressSupplier implements Supplier<Progress> {
             if (currentThread != null) {
                 currentThread.shutdown();
             }
-            currentThread = Log.startProgressThread(progress);
+            currentThread = Log.startProgressThread(
+                    progress, 1000, new ActivityMessage(), new PassedTimeMessage(), new ProgressMessage(progress));
         }
     }
 

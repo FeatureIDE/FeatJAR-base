@@ -47,7 +47,7 @@ public final class ProgressThread extends Thread implements AutoCloseable {
     @Override
     public void run() {
         try {
-            while (running && progress.get() < 1.0) {
+            while (running && !progress.isFinished()) {
                 StringBuilder sb = new StringBuilder();
                 for (Supplier<String> m : messageSuppliers) {
                     sb.append(m.get());
