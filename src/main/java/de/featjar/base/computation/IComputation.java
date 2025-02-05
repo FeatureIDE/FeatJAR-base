@@ -198,7 +198,7 @@ public interface IComputation<T> extends Supplier<Result<T>>, ITree<IComputation
     }
 
     /**
-     * {@return the (cached) result of this computation. Uses the given progress supplier to create {@link Progress} instances for each computation.
+     * {@return the (cached) result of this computation. Uses the given progress supplier to create {@link Progress} instances for each computation.}
      *
      * @param progressSupplier the progress supplier
      *
