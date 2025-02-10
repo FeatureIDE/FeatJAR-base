@@ -261,10 +261,14 @@ public class ConfigurableLog implements Log, IInitializer {
         FeatJAR.log().debug("setting new log configuration");
         this.configuration = configuration;
         if (configuration != null) {
-            System.setOut(new PrintStream(new MultiStream(
-                    configuration.logStreams.get(Verbosity.MESSAGE).getStreams())));
-            System.setErr(new PrintStream(new MultiStream(
-                    configuration.logStreams.get(Verbosity.ERROR).getStreams())));
+            if (configuration.logStreams.get(Verbosity.MESSAGE) != null) {
+                System.setOut(new PrintStream(new MultiStream(
+                        configuration.logStreams.get(Verbosity.MESSAGE).getStreams())));
+            }
+            if (configuration.logStreams.get(Verbosity.ERROR) != null) {
+                System.setErr(new PrintStream(new MultiStream(
+                        configuration.logStreams.get(Verbosity.ERROR).getStreams())));
+            }
         }
     }
 
