@@ -34,6 +34,7 @@ import java.time.Duration;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
@@ -46,6 +47,7 @@ import java.util.function.Supplier;
  */
 public class Process implements Supplier<Result<List<String>>> {
     protected final Path executablePath;
+    protected final Map<String, String> environmentVariables;
     protected final List<String> arguments;
     protected final Duration timeout;
     protected boolean errorOccurred;
@@ -55,12 +57,26 @@ public class Process implements Supplier<Result<List<String>>> {
     }
 
     public Process(Path executablePath, List<String> arguments) {
-        this(executablePath, arguments, null);
+        this(executablePath, arguments, null, null);
     }
 
     public Process(Path executablePath, List<String> arguments, Duration timeout) {
+        this(executablePath, arguments, null, timeout);
+    }
+
+    public Process(Path executablePath, List<String> arguments, Map<String, String> environmentVariables) {
+        this(executablePath, arguments, environmentVariables, null);
+    }
+
+    public Process(Path executablePath, Map<String, String> environmentVariables, Duration timeout) {
+        this(executablePath, null, environmentVariables, timeout);
+    }
+
+    public Process(
+            Path executablePath, List<String> arguments, Map<String, String> environmentVariables, Duration timeout) {
         this.executablePath = Objects.requireNonNull(executablePath);
         this.arguments = arguments == null ? List.of() : arguments;
+        this.environmentVariables = environmentVariables == null ? Map.of() : environmentVariables;
         this.timeout = timeout;
     }
 
@@ -75,8 +91,13 @@ public class Process implements Supplier<Result<List<String>>> {
         List<String> command = new ArrayList<>();
         command.add(executablePath.toString());
         command.addAll(arguments);
+
         FeatJAR.log().debug(String.join(" ", command));
+        FeatJAR.log().debug(environmentVariables);
+
         final ProcessBuilder processBuilder = new ProcessBuilder(command);
+        processBuilder.environment().putAll(environmentVariables);
+
         java.lang.Process process = null;
         try {
             Instant start = Instant.now();
@@ -117,6 +138,10 @@ public class Process implements Supplier<Result<List<String>>> {
 
     public Result<Void> run(Consumer<String> outConsumer, Consumer<String> errConsumer) {
         return run(null, outConsumer, errConsumer);
+    }
+
+    public Result<Void> run() {
+        return run(null, null, null);
     }
 
     protected void consumeInputStream(InputStream inputStream, Consumer<String> consumer, boolean isError) {

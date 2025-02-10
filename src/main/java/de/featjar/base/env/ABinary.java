@@ -73,7 +73,7 @@ public abstract class ABinary implements IExtension {
      * {@return the path to this binary's executable, if any}
      * Returns {@code null} if this binary has no executable (i.e., it only provides library files).
      */
-    public Path getExecutablePath() {
+    public final Path getExecutablePath() {
         return getExecutableName() != null ? BINARY_DIRECTORY.resolve(getExecutableName()) : null;
     }
 
@@ -96,8 +96,8 @@ public abstract class ABinary implements IExtension {
      * @param arguments the arguments passed to this binary's executable
      * @return the output of the process as a line stream, if any
      */
-    public Process getProcess(String... arguments) {
-        return new Process(getExecutablePath(), arguments);
+    public final Process getProcess(String... arguments) {
+        return getProcess(List.of(arguments), null);
     }
 
     /**
