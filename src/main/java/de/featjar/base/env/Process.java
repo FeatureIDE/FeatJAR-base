@@ -88,20 +88,10 @@ public class Process implements Supplier<Result<List<String>>> {
     }
 
     public Result<Void> run(String input, Consumer<String> outConsumer, Consumer<String> errConsumer) {
-        List<String> command = new ArrayList<>();
-        command.add(executablePath.toString());
-        command.addAll(arguments);
-
-        FeatJAR.log().debug(String.join(" ", command));
-        FeatJAR.log().debug(environmentVariables);
-
-        final ProcessBuilder processBuilder = new ProcessBuilder(command);
-        processBuilder.environment().putAll(environmentVariables);
-
         java.lang.Process process = null;
         try {
             Instant start = Instant.now();
-            process = processBuilder.start();
+            process = start();
             if (input != null) {
                 process.getOutputStream().write(input.getBytes(StandardCharsets.UTF_8));
                 process.getOutputStream().close();
@@ -134,6 +124,20 @@ public class Process implements Supplier<Result<List<String>>> {
                 process = null;
             }
         }
+    }
+
+    public java.lang.Process start() throws IOException {
+        List<String> command = new ArrayList<>();
+        command.add(executablePath.toString());
+        command.addAll(arguments);
+
+        FeatJAR.log().debug(String.join(" ", command));
+        FeatJAR.log().debug(environmentVariables);
+
+        final ProcessBuilder processBuilder = new ProcessBuilder(command);
+        processBuilder.environment().putAll(environmentVariables);
+
+        return processBuilder.start();
     }
 
     public Result<Void> run(Consumer<String> outConsumer, Consumer<String> errConsumer) {
