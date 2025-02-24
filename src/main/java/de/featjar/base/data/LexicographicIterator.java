@@ -50,16 +50,15 @@ public final class LexicographicIterator<E> implements Spliterator<Combination<E
         return StreamSupport.stream(new LexicographicIterator<>(t, size, environmentCreator), true);
     }
 
-    private static final int MINIMUM_SPLIT_SIZE = 10;
-
     private final Combination<E> combination;
-    private long end;
+    private final long end, minimumSplitSize;
     private final Supplier<E> environmentCreator;
 
     public LexicographicIterator(int t, int n, Supplier<E> environmentCreator) {
         this.environmentCreator = environmentCreator;
         combination = new Combination<>(t, n, environmentCreator);
         end = combination.maxIndex();
+        minimumSplitSize = end / Runtime.getRuntime().availableProcessors();
     }
 
     private LexicographicIterator(LexicographicIterator<E> other) {
@@ -71,6 +70,7 @@ public final class LexicographicIterator<E> implements Spliterator<Combination<E
         long start = currentIndex + ((other.end - currentIndex) / 2);
         other.combination.setIndex(start);
         end = start;
+        minimumSplitSize = other.minimumSplitSize;
     }
 
     @Override
@@ -85,7 +85,7 @@ public final class LexicographicIterator<E> implements Spliterator<Combination<E
 
     @Override
     public Spliterator<Combination<E>> trySplit() {
-        return (estimateSize() < MINIMUM_SPLIT_SIZE) ? null : new LexicographicIterator<>(this);
+        return (estimateSize() < minimumSplitSize) ? null : new LexicographicIterator<>(this);
     }
 
     @Override
