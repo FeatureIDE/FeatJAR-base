@@ -160,10 +160,6 @@ public abstract class AComputation<T> extends ATree<IComputation<?>> implements 
         return this;
     }
 
-    public <U> AComputation<T> set(Dependency<U> dependency, U value) {
-        return setDependencyComputation(dependency, Computations.of(value));
-    }
-
     @Override
     public String toString() {
         return getClass().getSimpleName();

@@ -320,13 +320,62 @@ public interface IComputation<T> extends Supplier<Result<T>>, ITree<IComputation
         return getChild(dependency.getIndex()).map(c -> (IComputation<U>) c);
     }
 
+    /**
+     * Adds a computation as a dependency of this computation.
+     *
+     * @param <U> The type of the dependency
+     * @param dependency The dependency identifier
+     * @param computation The computation to compute the actual value of the dependency
+     *
+     * @return This computation
+     *
+     * @see #set(Dependency, IComputation)
+     */
     default <U> IComputation<T> setDependencyComputation(
             Dependency<U> dependency, IComputation<? extends U> computation) {
         throw new UnsupportedOperationException();
     }
 
+    /**
+     * Adds a value as a dependency of this computation.<p>
+     * This value is wrapped as a constant computation. Thus it behaves exactly as {@code setDependencyComputation(dependency, Computations.of(value))} would.
+     *
+     * @param <U> The type of the dependency
+     * @param dependency The dependency identifier
+     * @param value The value of the dependency
+     *
+     * @return This computation
+     *
+     * @see #set(Dependency, Object)
+     */
+    default <U> IComputation<T> setDependency(Dependency<U> dependency, U value) {
+        return setDependencyComputation(dependency, Computations.of(value));
+    }
+
+    /**
+     * Adds a value as a dependency of this computation.
+     *
+     * @param <U> The type of the dependency
+     * @param dependency The dependency identifier
+     * @param value The value of the dependency
+     *
+     * @return This computation
+     */
     default <U> IComputation<T> set(Dependency<U> dependency, U value) {
-        throw new UnsupportedOperationException();
+        return setDependency(dependency, value);
+    }
+
+    /**
+     * Adds a computation as a dependency of this computation.
+     *
+     * @param <U> The type of the dependency
+     * @param dependency The dependency identifier
+     * @param computation The computation to compute the actual value of the dependency
+     *
+     * @return This computation
+     */
+    default <U> IComputation<T> set(Dependency<U> dependency, IComputation<U> computation) {
+        return setDependencyComputation(dependency, computation);
     }
 
     /**
