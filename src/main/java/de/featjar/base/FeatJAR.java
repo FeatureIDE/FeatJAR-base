@@ -33,8 +33,11 @@ import de.featjar.base.io.IO;
 import de.featjar.base.log.BufferedLog;
 import de.featjar.base.log.CallerFormatter;
 import de.featjar.base.log.ConfigurableLog;
+import de.featjar.base.log.EmptyProgressBar;
+import de.featjar.base.log.IProgressBar;
 import de.featjar.base.log.Log;
 import de.featjar.base.log.Log.Verbosity;
+import de.featjar.base.log.ProgressThread;
 import de.featjar.base.log.TimeStampFormatter;
 import de.featjar.base.log.VerbosityFormatter;
 import java.util.List;
@@ -81,6 +84,8 @@ public final class FeatJAR extends IO implements AutoCloseable {
          * This configuration's cache sub-configuration.
          */
         public final Cache.Configuration cacheConfig = new Cache.Configuration();
+
+        public boolean useProgressThread = false;
 
         /**
          * Configures this configuration's log sub-configuration.
@@ -208,6 +213,11 @@ public final class FeatJAR extends IO implements AutoCloseable {
             }
             instance.cache = null;
 
+            if (instance.progressThread != null) {
+                instance.progressThread.close();
+            }
+            instance.progressThread = null;
+
             instance.log = null;
             instance = null;
         }
@@ -314,7 +324,7 @@ public final class FeatJAR extends IO implements AutoCloseable {
                     return panic();
                 }
                 if (configure) {
-                    FeatJAR.getInstance().setConfiguration(optionInput.getConfiguration());
+                    instance.setConfiguration(optionInput.getConfiguration());
                 }
                 return command.run(optionInput);
             }
@@ -410,6 +420,15 @@ public final class FeatJAR extends IO implements AutoCloseable {
     }
 
     /**
+     * {@return the current FeatJAR instance's progress bar, or an progress bar if
+     * uninitialized or --progress option was not provided}
+     */
+    public static IProgressBar progress() {
+        FeatJAR instance = FeatJAR.instance;
+        return instance == null || instance.progressThread == null ? new EmptyProgressBar() : instance.progressThread;
+    }
+
+    /**
      * This FeatJAR instance's extension manager. Holds references to all loaded
      * extension points and extensions.
      */
@@ -417,6 +436,7 @@ public final class FeatJAR extends IO implements AutoCloseable {
 
     private ConfigurableLog log;
     private Cache cache;
+    private ProgressThread progressThread;
 
     private void setConfiguration(Configuration configuration) {
         ConfigurableLog newLog = getExtension(ConfigurableLog.class).orElseGet(ConfigurableLog::new);
@@ -426,6 +446,8 @@ public final class FeatJAR extends IO implements AutoCloseable {
 
         cache = getExtension(Cache.class).orElseGet(Cache::new);
         cache.setConfiguration(configuration.cacheConfig);
+
+        progressThread = configuration.useProgressThread ? new ProgressThread(1000) : null;
     }
 
     /**

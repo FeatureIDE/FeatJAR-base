@@ -21,13 +21,12 @@
 package de.featjar.base.log;
 
 import de.featjar.base.computation.Progress;
-import java.util.function.Supplier;
 
 /**
  *
  * @author Sebastian Krieter
  */
-public final class ProgressMessage implements Supplier<String> {
+public final class ProgressMessage implements IMessage {
 
     private final Progress progress;
 

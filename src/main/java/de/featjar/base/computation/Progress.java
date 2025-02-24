@@ -31,7 +31,7 @@ import java.util.function.Supplier;
 public class Progress implements Supplier<Double> {
     protected String name;
     protected long totalSteps;
-    protected long currentSteps = 0;
+    protected long currentSteps = -1;
 
     public Progress() {
         this(Long.MAX_VALUE);
@@ -117,7 +117,7 @@ public class Progress implements Supplier<Double> {
      * {@return this progress' percentage (i.e., the current step divided by the total number of steps)}
      */
     public Double get() {
-        return (double) currentSteps / totalSteps;
+        return currentSteps < 0 ? 0 : (double) currentSteps / totalSteps;
     }
 
     @Override

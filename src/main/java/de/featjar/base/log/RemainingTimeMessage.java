@@ -27,7 +27,7 @@ import java.util.function.Supplier;
  *
  * @author Sebastian Krieter
  */
-public final class RemainingTimeMessage implements Supplier<String> {
+public final class RemainingTimeMessage implements IMessage {
 
     private static final int slidingWindowSize = 60;
 

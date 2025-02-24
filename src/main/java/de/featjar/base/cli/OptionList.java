@@ -94,10 +94,16 @@ public class OptionList {
             Option.newFlag("print-stacktrace").setDescription("Print a stacktrace for all logged exceptions");
 
     /**
-     * Option for printing version information.
+     * Option for writing less output to the console.
      */
     static final Option<Boolean> QUIET_OPTION = Option.newFlag("quiet")
             .setDescription("Suppress all unnecessary output. (Overwrites --log-info and --log-error options)");
+
+    /**
+     * Option for writing progress regularly to the console.
+     */
+    static final Option<Boolean> PROGRESS_OPTION =
+            Option.newFlag("progress").setDescription("Shows progress regularly.");
 
     static final Option<Path> INFO_FILE_OPTION =
             Option.newOption("info-file", Option.PathParser).setDescription("Path to info log file");
@@ -546,8 +552,14 @@ public class OptionList {
         getResult(INFO_FILE_OPTION).ifPresent(p -> logToFile(configuration, p, LOG_INFO_FILE_OPTION));
         getResult(ERROR_FILE_OPTION).ifPresent(p -> logToFile(configuration, p, LOG_ERROR_FILE_OPTION));
         if (get(QUIET_OPTION)) {
-            configuration.logConfig.logToSystemOut(Log.Verbosity.MESSAGE);
+            if (get(PROGRESS_OPTION)) {
+                configuration.useProgressThread = true;
+                configuration.logConfig.logToSystemOut(Log.Verbosity.MESSAGE, Log.Verbosity.PROGRESS);
+            } else {
+                configuration.logConfig.logToSystemOut(Log.Verbosity.MESSAGE);
+            }
         } else {
+            configuration.useProgressThread = get(PROGRESS_OPTION);
             configuration
                     .logConfig
                     .logToSystemOut(get(LOG_INFO_OPTION).toArray(new Log.Verbosity[0]))

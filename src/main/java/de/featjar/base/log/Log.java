@@ -20,11 +20,9 @@
  */
 package de.featjar.base.log;
 
-import de.featjar.base.computation.Progress;
 import de.featjar.base.data.Problem;
 import java.io.PrintWriter;
 import java.io.StringWriter;
-import java.util.Arrays;
 import java.util.List;
 import java.util.function.Supplier;
 
@@ -91,29 +89,6 @@ public interface Log {
             }
             return errorStringBuilder.toString();
         }
-    }
-
-    static ProgressThread startProgressThread(Progress progress) {
-        return startProgressThread(
-                progress,
-                1000,
-                new ActivityMessage(),
-                new ProgressMessage(progress),
-                new PassedTimeMessage(),
-                new UsedMemoryMessage());
-    }
-
-    @SafeVarargs
-    static ProgressThread startProgressThread(Progress progress, Supplier<String>... messageSuppliers) {
-        return startProgressThread(progress, 1000, messageSuppliers);
-    }
-
-    @SafeVarargs
-    static ProgressThread startProgressThread(
-            Progress progress, int refreshRate, Supplier<String>... messageSuppliers) {
-        ProgressThread thread = new ProgressThread(progress, Arrays.asList(messageSuppliers), refreshRate);
-        thread.start();
-        return thread;
     }
 
     /**

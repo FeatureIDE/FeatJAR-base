@@ -20,31 +20,10 @@
  */
 package de.featjar.base.log;
 
+import java.util.function.Supplier;
+
 /**
- * Returns the used memory since creating in a human-readable format.
  *
  * @author Sebastian Krieter
  */
-public final class UsedMemoryMessage implements IMessage {
-
-    private long startFreeMemory;
-
-    public UsedMemoryMessage() {
-        System.gc();
-        startFreeMemory = getFreeMemory();
-    }
-
-    private long getFreeMemory() {
-        Runtime runtime = Runtime.getRuntime();
-        return runtime.maxMemory() - runtime.totalMemory() + runtime.freeMemory();
-    }
-
-    private long getUsedMemory() {
-        Runtime runtime = Runtime.getRuntime();
-        return runtime.totalMemory() - runtime.freeMemory();
-    }
-
-    public String get() {
-        return String.format("%.3f GB", ((getUsedMemory()) / 1_000_000) / 1000.0);
-    }
-}
+public interface IMessage extends Supplier<String> {}

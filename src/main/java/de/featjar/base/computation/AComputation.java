@@ -116,6 +116,7 @@ public abstract class AComputation<T> extends ATree<IComputation<?>> implements 
         checkCancel();
         try {
             Result<T> result = mergeResults(results).flatMap(r -> {
+                FeatJAR.progress().track(progress);
                 Result<T> value = compute(r, progress);
                 progress.finish();
                 return value;

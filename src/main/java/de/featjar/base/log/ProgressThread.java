@@ -23,40 +23,87 @@ package de.featjar.base.log;
 import de.featjar.base.FeatJAR;
 import de.featjar.base.computation.Progress;
 import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.function.Supplier;
 
 /**
+ * Prints a progress message at regular intervals.
  *
  * @author Sebastian Krieter
  */
-public final class ProgressThread extends Thread implements AutoCloseable {
-    private final List<Supplier<String>> messageSuppliers;
-    private final int refreshRate;
-    private Progress progress;
+public final class ProgressThread extends Thread implements IProgressBar, AutoCloseable {
+
+    private static class Tracking {
+        private final Progress progress;
+        private final List<Supplier<String>> messageSupplier;
+
+        public Tracking(Progress progress, List<Supplier<String>> messageSupplier) {
+            this.progress = progress;
+            this.messageSupplier = messageSupplier;
+        }
+    }
+
+    private final LinkedList<Tracking> trackingStack = new LinkedList<>();
+
+    private int refreshRate;
 
     private boolean running = true;
 
-    public ProgressThread(Progress progress, List<Supplier<String>> messageSuppliers, int refreshRate) {
+    public ProgressThread(int refreshRate) {
         super();
-        this.messageSuppliers = messageSuppliers != null ? new ArrayList<>(messageSuppliers) : List.of();
         this.refreshRate = refreshRate;
-        this.progress = progress;
+        start();
+    }
+
+    public void setRefreshRate(int refreshRate) {
+        this.refreshRate = refreshRate;
+    }
+
+    @Override
+    public void track(Progress progress, List<IMessage> messageSuppliers) {
+        synchronized (this) {
+            trackingStack.push(
+                    new Tracking(progress, messageSuppliers != null ? new ArrayList<>(messageSuppliers) : List.of()));
+        }
+    }
+
+    @Override
+    public void untrack() {
+        synchronized (this) {
+            trackingStack.pop();
+        }
     }
 
     @Override
     public void run() {
         try {
-            while (running && !progress.isFinished()) {
-                StringBuilder sb = new StringBuilder();
-                for (Supplier<String> m : messageSuppliers) {
-                    sb.append(m.get());
-                    sb.append(" | ");
+            while (running) {
+                try {
+                    StringBuilder sb = null;
+                    synchronized (this) {
+                        Tracking tracking = trackingStack.peek();
+                        if (tracking != null) {
+                            if (tracking.progress.isFinished()) {
+                                untrack();
+                            } else {
+                                sb = new StringBuilder();
+                                for (Supplier<String> m : tracking.messageSupplier) {
+                                    sb.append(m.get());
+                                    sb.append(" | ");
+                                }
+                            }
+                        }
+                    }
+                    if (sb != null) {
+                        if (sb.length() > 0) {
+                            sb.delete(sb.length() - 3, sb.length());
+                        }
+                        FeatJAR.log().progress(sb.toString());
+                    }
+                } catch (Exception e) {
+                    untrack();
                 }
-                if (sb.length() > 0) {
-                    sb.delete(sb.length() - 3, sb.length());
-                }
-                FeatJAR.log().progress(sb.toString());
                 Thread.sleep(refreshRate);
             }
         } catch (InterruptedException e) {
@@ -73,7 +120,7 @@ public final class ProgressThread extends Thread implements AutoCloseable {
     }
 
     @Override
-    public void close() throws Exception {
+    public void close() {
         shutdown();
     }
 }

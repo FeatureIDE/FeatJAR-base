@@ -20,31 +20,24 @@
  */
 package de.featjar.base.log;
 
+import de.featjar.base.computation.Progress;
+import java.util.List;
+
 /**
- * Returns the used memory since creating in a human-readable format.
+ * Progress bar that does nothing.
  *
  * @author Sebastian Krieter
  */
-public final class UsedMemoryMessage implements IMessage {
+public class EmptyProgressBar implements IProgressBar {
+    @Override
+    public void track(Progress progress) {}
 
-    private long startFreeMemory;
+    @Override
+    public void track(Progress progress, IMessage... messages) {}
 
-    public UsedMemoryMessage() {
-        System.gc();
-        startFreeMemory = getFreeMemory();
-    }
+    @Override
+    public void track(Progress progress, List<IMessage> messageSuppliers) {}
 
-    private long getFreeMemory() {
-        Runtime runtime = Runtime.getRuntime();
-        return runtime.maxMemory() - runtime.totalMemory() + runtime.freeMemory();
-    }
-
-    private long getUsedMemory() {
-        Runtime runtime = Runtime.getRuntime();
-        return runtime.totalMemory() - runtime.freeMemory();
-    }
-
-    public String get() {
-        return String.format("%.3f GB", ((getUsedMemory()) / 1_000_000) / 1000.0);
-    }
+    @Override
+    public void untrack() {}
 }

@@ -20,31 +20,29 @@
  */
 package de.featjar.base.log;
 
+import de.featjar.base.FeatJAR;
+import de.featjar.base.computation.IComputation;
+import de.featjar.base.computation.Progress;
+import java.util.List;
+
 /**
- * Returns the used memory since creating in a human-readable format.
+ * Provides a way to track the progress of a {@link IComputation computation}.
+ *
+ * @see FeatJAR#progress()
  *
  * @author Sebastian Krieter
  */
-public final class UsedMemoryMessage implements IMessage {
+public interface IProgressBar {
 
-    private long startFreeMemory;
-
-    public UsedMemoryMessage() {
-        System.gc();
-        startFreeMemory = getFreeMemory();
+    default void track(Progress progress) {
+        track(progress, new ActivityMessage(), new ProgressMessage(progress), new PassedTimeMessage());
     }
 
-    private long getFreeMemory() {
-        Runtime runtime = Runtime.getRuntime();
-        return runtime.maxMemory() - runtime.totalMemory() + runtime.freeMemory();
+    default void track(Progress progress, IMessage... messageSuppliers) {
+        track(progress, List.of(messageSuppliers));
     }
 
-    private long getUsedMemory() {
-        Runtime runtime = Runtime.getRuntime();
-        return runtime.totalMemory() - runtime.freeMemory();
-    }
+    void track(Progress progress, List<IMessage> messageSuppliers);
 
-    public String get() {
-        return String.format("%.3f GB", ((getUsedMemory()) / 1_000_000) / 1000.0);
-    }
+    void untrack();
 }

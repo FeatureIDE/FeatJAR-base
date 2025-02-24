@@ -20,14 +20,12 @@
  */
 package de.featjar.base.log;
 
-import java.util.function.Supplier;
-
 /**
  * Returns a changing symbol, indicating a running computation.
  *
  * @author Sebastian Krieter
  */
-public final class ActivityMessage implements Supplier<String> {
+public final class ActivityMessage implements IMessage {
 
     private static String[] runningIndicator =
             new String[] {"\u28F7", "\u28EF", "\u28DF", "\u287F", "\u28BF", "\u28FB", "\u28FD", "\u28FE"};

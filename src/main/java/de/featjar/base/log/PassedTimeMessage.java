@@ -20,14 +20,12 @@
  */
 package de.featjar.base.log;
 
-import java.util.function.Supplier;
-
 /**
  * Returns the passed time since creating in a human-readable format.
  *
  * @author Sebastian Krieter
  */
-public final class PassedTimeMessage implements Supplier<String> {
+public final class PassedTimeMessage implements IMessage {
 
     private long startTime;
 
