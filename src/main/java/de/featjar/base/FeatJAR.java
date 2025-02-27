@@ -135,7 +135,7 @@ public final class FeatJAR extends IO implements AutoCloseable {
         return new Configuration();
     }
 
-    public static Configuration createDefaultConfiguration() {
+    public static Configuration defaultConfiguration() {
         final Configuration configuration = new Configuration();
         configuration
                 .logConfig
@@ -148,12 +148,25 @@ public final class FeatJAR extends IO implements AutoCloseable {
         return configuration;
     }
 
-    public static Configuration createPanicConfiguration() {
+    public static Configuration panicConfiguration() {
         final Configuration configuration = new Configuration();
         configuration
                 .logConfig
                 .logToSystemOut(Log.Verbosity.MESSAGE)
                 .logToSystemErr(Log.Verbosity.ERROR, Log.Verbosity.WARNING);
+        configuration.cacheConfig.setCachePolicy(Cache.CachePolicy.CACHE_NONE);
+        return configuration;
+    }
+
+    public static Configuration testConfiguration() {
+        final Configuration configuration = new Configuration();
+        configuration
+                .logConfig
+                .logToSystemOut(Log.Verbosity.INFO, Log.Verbosity.DEBUG)
+                .logToSystemErr(Log.Verbosity.ERROR, Log.Verbosity.WARNING)
+                .addFormatter(new TimeStampFormatter())
+                .addFormatter(new VerbosityFormatter())
+                .addFormatter(new CallerFormatter());
         configuration.cacheConfig.setCachePolicy(Cache.CachePolicy.CACHE_NONE);
         return configuration;
     }
@@ -176,7 +189,7 @@ public final class FeatJAR extends IO implements AutoCloseable {
      * Initializes FeatJAR with a default configuration.
      */
     public static FeatJAR initialize() {
-        return initialize(createDefaultConfiguration());
+        return initialize(defaultConfiguration());
     }
 
     /**
@@ -336,7 +349,7 @@ public final class FeatJAR extends IO implements AutoCloseable {
         Log log = FeatJAR.log();
         if (log instanceof BufferedLog) {
             ConfigurableLog newLog = new ConfigurableLog();
-            newLog.setConfiguration(createPanicConfiguration().logConfig);
+            newLog.setConfiguration(panicConfiguration().logConfig);
             ((BufferedLog) log).flush(m -> {
                 Supplier<String> originalMessage = m.getValue();
                 Supplier<String> message;
