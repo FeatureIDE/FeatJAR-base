@@ -28,10 +28,27 @@ import java.util.function.Supplier;
  *
  * @author Elias Kuiter
  */
-public class Progress implements Supplier<Double> {
+public class Progress implements Supplier<Double>, AutoCloseable {
+
+    public static class Null extends Progress {
+        public static final Null NULL = new Null();
+
+        @Override
+        public void setCurrentStep(long currentStep) {}
+
+        @Override
+        public void incrementCurrentStep() {}
+
+        @Override
+        public void addCurrentSteps(long steps) {}
+
+        @Override
+        public void setTotalSteps(long totalSteps) {}
+    }
+
     protected String name;
-    protected long totalSteps;
-    protected long currentSteps = -1;
+    protected long totalSteps, currentSteps;
+    protected boolean finished;
 
     public Progress() {
         this(Long.MAX_VALUE);
@@ -80,11 +97,12 @@ public class Progress implements Supplier<Double> {
     }
 
     public void finish() {
+        finished = true;
         currentSteps = totalSteps;
     }
 
     public boolean isFinished() {
-        return currentSteps >= totalSteps;
+        return finished;
     }
 
     /**
@@ -125,19 +143,8 @@ public class Progress implements Supplier<Double> {
         return String.format("%d / %d", currentSteps, totalSteps);
     }
 
-    public static class Null extends Progress {
-        public static final Null NULL = new Null();
-
-        @Override
-        public void setCurrentStep(long currentStep) {}
-
-        @Override
-        public void incrementCurrentStep() {}
-
-        @Override
-        public void addCurrentSteps(long steps) {}
-
-        @Override
-        public void setTotalSteps(long totalSteps) {}
+    @Override
+    public void close() {
+        finish();
     }
 }

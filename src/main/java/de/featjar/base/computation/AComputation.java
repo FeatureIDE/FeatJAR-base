@@ -112,14 +112,14 @@ public abstract class AComputation<T> extends ATree<IComputation<?>> implements 
                 .map(computation -> computation.computeResult(tryHitCache, tryWriteCache, progressSupplier))
                 .collect(Collectors.toList());
         Progress progress = progressSupplier.get();
-        progress.setName(this.toString());
+        progress.setName(toString());
         checkCancel();
         try {
             Result<T> result = mergeResults(results).flatMap(r -> {
-                FeatJAR.progress().track(progress);
-                Result<T> value = compute(r, progress);
-                progress.finish();
-                return value;
+                try (progress) {
+                    FeatJAR.progress().track(progress);
+                    return compute(r, progress);
+                }
             });
             if (tryWriteCache) {
                 getCache().tryWrite(this, new FutureResult<>(result, progress));

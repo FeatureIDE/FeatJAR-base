@@ -80,10 +80,10 @@ public class FutureResult<T> implements Supplier<Result<T>> {
         if (Thread.interrupted()) {
             throw new CancellationException();
         }
-        FeatJAR.progress().track(progress);
-        Result<T> value = computation.compute(args, progress);
-        progress.finish();
-        return value;
+        try (progress) {
+            FeatJAR.progress().track(progress);
+            return computation.compute(args, progress);
+        }
     }
 
     /**
