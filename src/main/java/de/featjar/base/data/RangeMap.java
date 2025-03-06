@@ -32,6 +32,7 @@ import java.util.Objects;
 import java.util.Random;
 import java.util.SortedSet;
 import java.util.TreeSet;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 /**
@@ -72,7 +73,7 @@ public class RangeMap<T> implements Cloneable {
      * @param rangeMap the map
      */
     protected RangeMap(RangeMap<T> rangeMap) {
-        this(rangeMap.getObjects());
+        this(rangeMap.getObjects(true));
     }
 
     /**
@@ -84,8 +85,8 @@ public class RangeMap<T> implements Cloneable {
      * @param rangeMap2 the second map
      */
     public RangeMap(RangeMap<T> rangeMap1, RangeMap<T> rangeMap2) {
-        SortedSet<T> objects = new TreeSet<>(rangeMap1.getObjects());
-        objects.addAll(rangeMap2.getObjects());
+        SortedSet<T> objects = new TreeSet<>(rangeMap1.getObjects(false));
+        objects.addAll(rangeMap2.getObjects(false));
         indexToObject.add(null);
         indexToObject.addAll(objects);
         updateObjectToIndex();
@@ -129,8 +130,7 @@ public class RangeMap<T> implements Cloneable {
      * @param object the object
      */
     public boolean has(T object) {
-        Objects.requireNonNull(object);
-        return objectToIndex.containsKey(object);
+        return object != null && objectToIndex.containsKey(object);
     }
 
     /**
@@ -277,12 +277,23 @@ public class RangeMap<T> implements Cloneable {
 
     /**
      * {@return all objects mapped by this range map}
+     *
+     * If the map has gaps, the return list does not contain {@code null} objects.
+     *
+     * @see #getObjects(boolean)
      */
     public List<T> getObjects() {
-        return !isEmpty()
-                ? indexToObject.subList(
-                        getMinimumIndex().get(), getMaximumIndex().get() + 1)
-                : new ArrayList<>();
+        return getObjects(false);
+    }
+
+    /**
+     * {@return all objects mapped by this range map}
+     * @param includeGaps if {@code true} and this map has gaps, the returned list contains {@code null} if there is no mapped object.
+     */
+    public List<T> getObjects(boolean includeGaps) {
+        return includeGaps
+                ? Collections.unmodifiableList(indexToObject.subList(1, indexToObject.size()))
+                : indexToObject.stream().filter(Objects::nonNull).collect(Collectors.toList());
     }
 
     /**
@@ -391,7 +402,7 @@ public class RangeMap<T> implements Cloneable {
      * Adds objects of another map to this map, excluding duplicates.
      */
     public void addAll(RangeMap<T> other) {
-        for (T variable : other.getObjects()) {
+        for (T variable : other.getObjects(true)) {
             if (!has(variable)) {
                 add(variable);
             }
