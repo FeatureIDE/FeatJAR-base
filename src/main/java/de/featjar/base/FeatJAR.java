@@ -162,6 +162,7 @@ public final class FeatJAR extends IO implements AutoCloseable {
         final Configuration configuration = new Configuration();
         configuration
                 .logConfig
+                .setPrintStacktrace(true)
                 .logToSystemOut(Log.Verbosity.INFO, Log.Verbosity.DEBUG)
                 .logToSystemErr(Log.Verbosity.ERROR, Log.Verbosity.WARNING)
                 .addFormatter(new TimeStampFormatter())
@@ -291,6 +292,20 @@ public final class FeatJAR extends IO implements AutoCloseable {
      */
     public static int run(String... arguments) {
         try (FeatJAR featJAR = FeatJAR.initialize(null)) {
+            return runAfterInitialization(true, arguments);
+        } catch (Exception e) {
+            FeatJAR.log().error(e);
+            return panic();
+        }
+    }
+
+    /**
+     * Interpret arguments and run the specified command.
+     *
+     * @param arguments command-line arguments
+     */
+    public static int runTest(String... arguments) {
+        try (FeatJAR featJAR = FeatJAR.initialize(testConfiguration())) {
             return runAfterInitialization(true, arguments);
         } catch (Exception e) {
             FeatJAR.log().error(e);
