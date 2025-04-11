@@ -21,10 +21,10 @@
 package de.featjar.base.io.list;
 
 import de.featjar.base.data.Result;
-import de.featjar.base.data.Sets;
 import de.featjar.base.io.format.IFormat;
 import de.featjar.base.io.input.AInputMapper;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
@@ -35,13 +35,6 @@ import java.util.stream.Collectors;
  * @author Elias Kuiter
  */
 public class StringListFormat implements IFormat<List<String>> {
-    private static final String MULTILINE_COMMENT = "###";
-    private static final LinkedHashSet<String> COMMENTS = Sets.empty();
-
-    static {
-        COMMENTS.add("#");
-        COMMENTS.add("\t");
-    }
 
     @Override
     public String getName() {
@@ -60,29 +53,12 @@ public class StringListFormat implements IFormat<List<String>> {
 
     @Override
     public Result<List<String>> parse(AInputMapper inputMapper) {
-        final List<String> lines = inputMapper.get().readLines();
-        return parse(inputMapper.get().readLines(), new ArrayList<>(lines.size()));
+        return new StringListParser().parse(inputMapper, new ArrayList<>());
     }
 
     @Override
     public Result<List<String>> parse(AInputMapper inputMapper, Supplier<List<String>> supplier) {
-        return parse(inputMapper.get().readLines(), supplier.get());
-    }
-
-    private Result<List<String>> parse(final List<String> lines, final List<String> entries) {
-        boolean pause = false;
-        for (final String line : lines) {
-            if (!line.isBlank()) {
-                if (COMMENTS.stream().anyMatch(line::startsWith)) {
-                    if (line.equals(MULTILINE_COMMENT)) {
-                        pause = !pause;
-                    }
-                } else if (!pause) {
-                    entries.add(line.trim());
-                }
-            }
-        }
-        return Result.of(entries);
+        return new StringListParser().parse(inputMapper, supplier.get());
     }
 
     @Override
