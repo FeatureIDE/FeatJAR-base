@@ -128,12 +128,30 @@ public class ExpandableIntegerList implements Serializable {
         return -1;
     }
 
+    /**
+     * Removes the given element
+     * @param element the element to remove
+     */
+    public void remove(int element) {
+        int index = indexOf(element);
+        if (index >= 0) {
+            removeAt(index);
+        }
+    }
+
+    /**
+     * Removes the last element
+     */
     public void removeLast() {
         size--;
     }
 
-    public void removeAt(int i) {
-        System.arraycopy(elements, i, elements, i - 1, size - i);
+    /**
+     * Removes the element at the given index.
+     * @param index the index to remove
+     */
+    public void removeAt(int index) {
+        System.arraycopy(elements, index, elements, index - 1, size - index);
         size--;
     }
 

@@ -21,6 +21,7 @@
 package de.featjar.base.log;
 
 import de.featjar.base.data.Problem;
+import de.featjar.base.data.Result;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.util.List;
@@ -149,6 +150,17 @@ public interface Log {
     }
 
     /**
+     * Logs problems of the result.
+     *
+     * @param result the result
+     */
+    default void problems(Result<?> result) {
+        for (Problem problem : result.getProblems()) {
+            problem(problem);
+        }
+    }
+
+    /**
      * Logs problems.
      *
      * @param problems the problems
@@ -156,6 +168,18 @@ public interface Log {
      */
     default void problems(List<Problem> problems, Verbosity verbosity) {
         for (Problem problem : problems) {
+            problem(problem, verbosity);
+        }
+    }
+
+    /**
+     * Logs problems of the result.
+     *
+     * @param result the result
+     * @param verbosity the verbosity at which the problems are shown
+     */
+    default void problems(Result<?> result, Verbosity verbosity) {
+        for (Problem problem : result.getProblems()) {
             problem(problem, verbosity);
         }
     }

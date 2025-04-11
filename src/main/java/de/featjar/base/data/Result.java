@@ -20,9 +20,11 @@
  */
 package de.featjar.base.data;
 
+import de.featjar.base.FeatJAR;
 import de.featjar.base.computation.Computations;
 import de.featjar.base.computation.IComputation;
 import de.featjar.base.io.format.IFormat;
+import de.featjar.base.log.Log.Verbosity;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -424,6 +426,20 @@ public class Result<T> implements Supplier<T> {
      */
     public T orElseGet(Supplier<? extends T> alternativeSupplier) {
         return object != null ? object : alternativeSupplier.get();
+    }
+
+    /**
+     * {@return this result's object or logs this result's problems and returns null}
+     *
+     * @param verbosity the verbosity with which to log the problems
+     */
+    public T orElseLog(Verbosity verbosity) {
+        if (object != null) {
+            return object;
+        } else {
+            FeatJAR.log().problems(problems, verbosity);
+            return null;
+        }
     }
 
     /**

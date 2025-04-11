@@ -77,16 +77,16 @@ public class RangeMap<T> implements Cloneable {
     }
 
     /**
-     * Merges two range maps into this range map. Joins on common objects and does
-     * not necessarily preserve indices. If one map is empty, creates a clone of the
-     * other.
+     * Merges two or more range maps into this range map. Joins on common objects and does
+     * not necessarily preserve indices.
      *
-     * @param rangeMap1 the first map
-     * @param rangeMap2 the second map
+     * @param rangeMapList the list of maps to merge
      */
-    public RangeMap(RangeMap<T> rangeMap1, RangeMap<T> rangeMap2) {
-        SortedSet<T> objects = new TreeSet<>(rangeMap1.getObjects(false));
-        objects.addAll(rangeMap2.getObjects(false));
+    public RangeMap(List<? extends RangeMap<T>> rangeMapList) {
+        SortedSet<T> objects = new TreeSet<>();
+        for (RangeMap<T> m : rangeMapList) {
+            objects.addAll(m.getObjects(false));
+        }
         indexToObject.add(null);
         indexToObject.addAll(objects);
         updateObjectToIndex();
@@ -211,6 +211,17 @@ public class RangeMap<T> implements Cloneable {
      */
     public int add(T object) {
         return add(-1, object);
+    }
+
+    /**
+     * Adds objects of another map to this map, excluding duplicates.
+     */
+    public void addAll(RangeMap<T> other) {
+        for (T variable : other.getObjects(true)) {
+            if (!has(variable)) {
+                add(variable);
+            }
+        }
     }
 
     /**
@@ -395,17 +406,6 @@ public class RangeMap<T> implements Cloneable {
                 }
             }
             updateObjectToIndex();
-        }
-    }
-
-    /**
-     * Adds objects of another map to this map, excluding duplicates.
-     */
-    public void addAll(RangeMap<T> other) {
-        for (T variable : other.getObjects(true)) {
-            if (!has(variable)) {
-                add(variable);
-            }
         }
     }
 
