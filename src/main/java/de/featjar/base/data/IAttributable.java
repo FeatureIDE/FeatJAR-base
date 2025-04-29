@@ -49,7 +49,7 @@ public interface IAttributable {
         LinkedHashMap<IAttribute<?>, Object> clone =
                 new LinkedHashMap<>((int) (attributes.get().size() * 1.5));
         attributes.get().entrySet().stream()
-                .forEach(e -> clone.put(e.getKey(), e.getKey().copyValue(this)));
+                .forEach(e -> clone.put(e.getKey(), e.getKey().copyValue(this).get()));
         return clone;
     }
 
