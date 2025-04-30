@@ -66,7 +66,6 @@ public final class LexicographicIterator<E> implements Spliterator<Combination<E
         combination = new Combination<E>(other.combination, other.environmentCreator);
 
         long currentIndex = other.combination.index();
-        //        end = other.end;
         long start = currentIndex + ((other.end - currentIndex) / 2);
         other.combination.setIndex(start);
         end = start;

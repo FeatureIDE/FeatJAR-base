@@ -104,7 +104,7 @@ public final class SingleLiteralCombination<E> extends ACombination<E, int[]> {
     @Override
     public void setIndex(long start) {
         combinationIndex = start;
-        long tempIndex = start - 1;
+        long tempIndex = start;
         for (int i = t; i > 0; i--) {
             if (tempIndex <= 0) {
                 elementIndices[i - 1] = i - 1;

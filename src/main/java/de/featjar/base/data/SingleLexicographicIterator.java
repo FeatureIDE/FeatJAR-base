@@ -51,11 +51,6 @@ public final class SingleLexicographicIterator<E> implements Spliterator<ICombin
         return StreamSupport.stream(new SingleLexicographicIterator<>(items, t, environmentCreator), true);
     }
 
-    public static void main(String[] args) {
-        int[] i2 = new int[] {1, 2, 3, 4, 5};
-        stream(i2, 2).forEach(System.out::println);
-    }
-
     private static final int MINIMUM_SPLIT_SIZE = 10;
 
     private final SingleLiteralCombination<E> combination;
@@ -71,12 +66,11 @@ public final class SingleLexicographicIterator<E> implements Spliterator<ICombin
     private SingleLexicographicIterator(SingleLexicographicIterator<E> other) {
         this.environmentCreator = other.environmentCreator;
         combination = new SingleLiteralCombination<E>(other.combination, other.environmentCreator);
-        end = other.end;
 
         long currentIndex = other.combination.index();
-        long start = currentIndex + ((other.end - currentIndex) / 2);
-        combination.setIndex(start);
-        other.end = start - 1;
+        long newStart = currentIndex + ((other.end - currentIndex) / 2);
+        other.combination.setIndex(newStart);
+        end = newStart;
     }
 
     @Override
@@ -96,7 +90,7 @@ public final class SingleLexicographicIterator<E> implements Spliterator<ICombin
 
     @Override
     public boolean tryAdvance(Consumer<? super ICombination<E, int[]>> action) {
-        if (combination.maxIndex() == combination.index()) {
+        if (end == combination.index()) {
             return false;
         }
         action.accept(combination);
