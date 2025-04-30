@@ -96,6 +96,15 @@ public class Progress implements Supplier<Double>, AutoCloseable {
         addCurrentSteps(1);
     }
 
+    /**
+     * Increases the progress's current step by one and checks for cancellation.
+     */
+    public void incrementCurrentStepSynchronized() {
+        synchronized (this) {
+            addCurrentSteps(1);
+        }
+    }
+
     public void finish() {
         finished = true;
         currentSteps = totalSteps;
