@@ -40,6 +40,10 @@ public final class MultiLexicographicIterator<E> implements Spliterator<ICombina
         return StreamSupport.stream(new MultiLexicographicIterator<>(items, t, null), false);
     }
 
+    public static <V> Stream<ICombination<V, int[]>> stream(int[][] items, int[] t, Supplier<V> environmentCreator) {
+        return StreamSupport.stream(new MultiLexicographicIterator<>(items, t, environmentCreator), false);
+    }
+
     public static <V> Stream<ICombination<V, int[]>> parallelStream(
             int[][] items, int[] t, Supplier<V> environmentCreator) {
         return StreamSupport.stream(new MultiLexicographicIterator<>(items, t, environmentCreator), true);
