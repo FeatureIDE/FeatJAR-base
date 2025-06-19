@@ -107,10 +107,20 @@ public class Dependency<U> {
     }
 
     public U getValue(List<?> values) {
-        return type.cast(values.get(index));
+        final Object obj = values.get(index);
+        assert obj == null || type.isInstance(obj)
+                : String.format(
+                        "Value for dependency %s is of type %s",
+                        toString(), obj.getClass().toString());
+        return type.cast(obj);
     }
 
     public U get(List<?> values) {
         return getValue(values);
+    }
+
+    @Override
+    public String toString() {
+        return "Dependency [type=" + type + ", index=" + index + "]";
     }
 }
