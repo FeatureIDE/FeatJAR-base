@@ -54,7 +54,7 @@ public class GraphVizTreeFormat<T extends ITree<T>> implements IFormat<T> {
     }
 
     @Override
-    public boolean supportsSerialize() {
+    public boolean supportsWrite() {
         return true;
     }
 

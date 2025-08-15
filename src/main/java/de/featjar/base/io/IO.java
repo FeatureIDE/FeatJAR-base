@@ -638,7 +638,7 @@ public class IO {
     public static <T> void save(
             T object, Path path, IFormat<T> format, Charset charset, IOMapperOptions... ioMapperOptions)
             throws IOException {
-        if (format.supportsSerialize()) {
+        if (format.supportsWrite()) {
             try (AOutputMapper outputMapper = AOutputMapper.of(path, charset, ioMapperOptions)) {
                 format.getInstance().write(object, outputMapper);
             }
@@ -668,7 +668,7 @@ public class IO {
      */
     public static <T> void save(T object, OutputStream outStream, IFormat<T> format, Charset charset)
             throws IOException {
-        if (format.supportsSerialize()) {
+        if (format.supportsWrite()) {
             try (AOutputMapper outputMapper = new StreamOutputMapper(outStream, charset)) {
                 format.getInstance().write(object, outputMapper);
             }
@@ -684,7 +684,7 @@ public class IO {
      * @param <T>    the type of the object
      */
     public static <T> String print(T object, IFormat<T> format) throws IOException {
-        if (format.supportsSerialize()) {
+        if (format.supportsWrite()) {
             try (AOutputMapper outputMapper = new StringOutputMapper(DEFAULT_CHARSET)) {
                 format.getInstance().write(object, outputMapper);
                 return outputMapper.get().getOutputStream().toString();
@@ -701,7 +701,7 @@ public class IO {
      * @param <T>    the type of the object
      */
     public static <T> LinkedHashMap<Path, String> printHierarchy(T object, IFormat<T> format) throws IOException {
-        if (format.supportsSerialize()) {
+        if (format.supportsWrite()) {
             try (StringOutputMapper outputMapper = new StringOutputMapper(DEFAULT_CHARSET)) {
                 format.getInstance().write(object, outputMapper);
                 return outputMapper.getOutputStrings();

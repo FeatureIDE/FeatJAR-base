@@ -112,7 +112,7 @@ public interface IFormat<T> extends IExtension {
     }
 
     /**
-     * {@return whether this format supports {@link #serialize(Object)}}
+     * {@return whether this format supports {@link #parse(AInputMapper)}}
      */
     default boolean supportsParse() {
         return false;
@@ -121,7 +121,7 @@ public interface IFormat<T> extends IExtension {
     /**
      * {@return whether this format supports {@link #write(Object, AOutputMapper)}}}
      */
-    default boolean supportsSerialize() {
+    default boolean supportsWrite() {
         return false;
     }
 
@@ -132,5 +132,12 @@ public interface IFormat<T> extends IExtension {
      */
     default boolean supportsContent(InputHeader inputHeader) {
         return supportsParse();
+    }
+
+    /**
+     * {@return whether this format uses a textual rather than a binary representation}
+     */
+    default boolean isTextual() {
+        return true;
     }
 }

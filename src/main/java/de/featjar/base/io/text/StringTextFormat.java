@@ -25,7 +25,7 @@ import de.featjar.base.io.format.IFormat;
 import de.featjar.base.io.input.AInputMapper;
 
 /**
- * Parses and serializes a text as a string.
+ * Parses and serializes a string from/to a text.
  *
  * @author Sebastian Krieter
  */
@@ -37,12 +37,17 @@ public class StringTextFormat implements IFormat<String> {
     }
 
     @Override
+    public String getFileExtension() {
+        return "txt";
+    }
+
+    @Override
     public boolean supportsParse() {
         return true;
     }
 
     @Override
-    public boolean supportsSerialize() {
+    public boolean supportsWrite() {
         return true;
     }
 

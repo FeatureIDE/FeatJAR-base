@@ -34,6 +34,11 @@ import java.nio.charset.StandardCharsets;
  */
 public abstract class ABinaryFormat<T> implements IFormat<T> {
 
+    @Override
+    public boolean isTextual() {
+        return false;
+    }
+
     protected void writeBytes(OutputStream out, byte[] bytes) throws IOException {
         out.write(bytes);
     }

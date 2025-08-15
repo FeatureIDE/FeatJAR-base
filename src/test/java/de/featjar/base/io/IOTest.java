@@ -63,7 +63,7 @@ public class IOTest {
         }
 
         @Override
-        public boolean supportsSerialize() {
+        public boolean supportsWrite() {
             return true;
         }
 
@@ -95,7 +95,7 @@ public class IOTest {
         }
 
         @Override
-        public boolean supportsSerialize() {
+        public boolean supportsWrite() {
             return true;
         }
 
@@ -154,7 +154,7 @@ public class IOTest {
         }
 
         @Override
-        public boolean supportsSerialize() {
+        public boolean supportsWrite() {
             return true;
         }
 

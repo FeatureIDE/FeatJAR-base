@@ -48,7 +48,7 @@ public class SerializableObjectFormat<T extends Serializable> implements IFormat
     }
 
     @Override
-    public boolean supportsSerialize() {
+    public boolean supportsWrite() {
         return true;
     }
 
