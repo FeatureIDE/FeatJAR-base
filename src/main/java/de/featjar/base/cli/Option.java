@@ -82,14 +82,20 @@ public class Option<T> {
         return option;
     }
 
-    public static <U> RangeOption newRangeOption(String name) {
+    public static RangeOption newRangeOption(String name) {
         RangeOption option = new RangeOption(name);
         list.add(new Pair<>(getCallingClass(), option));
         return option;
     }
 
-    public static <U> Flag newFlag(String name) {
+    public static Flag newFlag(String name) {
         Flag option = new Flag(name);
+        list.add(new Pair<>(getCallingClass(), option));
+        return option;
+    }
+
+    public static EnumOption newEnumOption(String name, String... possibleValues) {
+        EnumOption option = new EnumOption(name, possibleValues);
         list.add(new Pair<>(getCallingClass(), option));
         return option;
     }
