@@ -111,13 +111,13 @@ public class Range implements Function<Integer, Boolean>, Cloneable {
     public boolean isOpen() {
         return isLowerBoundOpen() || isUpperBoundOpen();
     }
-    
+
     public void setBounds(int lowerBound, int upperBound) {
         checkBounds(lowerBound, upperBound);
         this.lowerBound = lowerBound;
         this.upperBound = upperBound;
     }
-    
+
     public void setBounds(Range range) {
         this.lowerBound = range.lowerBound;
         this.upperBound = range.upperBound;
