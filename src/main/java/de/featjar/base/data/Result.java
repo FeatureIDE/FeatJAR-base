@@ -20,11 +20,6 @@
  */
 package de.featjar.base.data;
 
-import de.featjar.base.FeatJAR;
-import de.featjar.base.computation.Computations;
-import de.featjar.base.computation.IComputation;
-import de.featjar.base.io.format.IFormat;
-import de.featjar.base.log.Log.Verbosity;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -39,6 +34,12 @@ import java.util.function.Predicate;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+
+import de.featjar.base.FeatJAR;
+import de.featjar.base.computation.Computations;
+import de.featjar.base.computation.IComputation;
+import de.featjar.base.io.format.IFormat;
+import de.featjar.base.log.Log.Verbosity;
 
 /**
  * An optional object that may be present with or without a problem,
@@ -460,15 +461,15 @@ public class Result<T> implements Supplier<T> {
      */
     public T orElseThrow() {
         return orElseThrow(problems -> {
-            problems = problems.stream()
+            List<Problem> errorProblems = problems.stream()
                     .filter(problem -> problem.getSeverity().equals(Problem.Severity.ERROR))
                     .collect(Collectors.toList());
-            if (problems.size() == 0) {
+            if (errorProblems.size() == 0) {
                 return new RuntimeException("an unknown error occurred");
             }
-            Problem problem = problems.get(0);
+            Problem problem = errorProblems.get(0);
             Exception e = problem.getException();
-            if (problems.size() == 1) {
+            if (errorProblems.size() == 1) {
                 if (e instanceof RuntimeException) {
                     return (RuntimeException) e;
                 } else {
@@ -476,7 +477,7 @@ public class Result<T> implements Supplier<T> {
                 }
             } else {
                 return new RuntimeException(
-                        problem.getMessage() + " (and " + (problems.size() - 1) + " other problems)", e);
+                        problem.getMessage() + " (and " + (errorProblems.size() - 1) + " other problems)", e);
             }
         });
     }
