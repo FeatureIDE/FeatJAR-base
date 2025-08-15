@@ -20,6 +20,11 @@
  */
 package de.featjar.base.data;
 
+import de.featjar.base.FeatJAR;
+import de.featjar.base.computation.Computations;
+import de.featjar.base.computation.IComputation;
+import de.featjar.base.io.format.IFormat;
+import de.featjar.base.log.Log.Verbosity;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -34,12 +39,6 @@ import java.util.function.Predicate;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
-
-import de.featjar.base.FeatJAR;
-import de.featjar.base.computation.Computations;
-import de.featjar.base.computation.IComputation;
-import de.featjar.base.io.format.IFormat;
-import de.featjar.base.log.Log.Verbosity;
 
 /**
  * An optional object that may be present with or without a problem,
@@ -298,10 +297,11 @@ public class Result<T> implements Supplier<T> {
      *
      * @param resultHandler the object consumer
      */
-    public void ifPresent(Consumer<T> resultHandler) {
+    public Result<T> ifPresent(Consumer<T> resultHandler) {
         if (object != null) {
             resultHandler.accept(object);
         }
+        return this;
     }
 
     /**
@@ -310,10 +310,11 @@ public class Result<T> implements Supplier<T> {
      *
      * @param problemHandler the problem list consumer
      */
-    public void ifEmpty(Consumer<List<Problem>> problemHandler) {
+    public Result<T> ifEmpty(Consumer<List<Problem>> problemHandler) {
         if (object != null) {
             problemHandler.accept(Collections.unmodifiableList(problems));
         }
+        return this;
     }
 
     /**
