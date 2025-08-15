@@ -1,6 +1,6 @@
-<?xml version="1.0"?>
+<?xml version="1.0" encoding="utf-8"?>
 <extensions>
-    <point id="de.featjar.base.extension.Initializers">
+    <point id="de.featjar.base.extension.Initializers" priority="100">
         <extension id="de.featjar.base.log.ConfigurableLog" />
         <extension id="de.featjar.base.computation.Cache" />
     </point>

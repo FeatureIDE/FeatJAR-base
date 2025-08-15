@@ -131,7 +131,7 @@ public interface Log {
                 break;
             case WARNING:
             case INFO:
-                println(problem::getMessage, verbosity);
+                println(problem::getMessage, verbosity, true);
                 break;
             default:
                 break;
@@ -190,7 +190,7 @@ public interface Log {
      * @param message the error message
      */
     default void error(Supplier<String> message) {
-        println(message, Verbosity.ERROR);
+        println(message, Verbosity.ERROR, true);
     }
 
     /**
@@ -219,7 +219,7 @@ public interface Log {
      * @param message the warning message
      */
     default void warning(Supplier<String> message) {
-        println(message, Verbosity.WARNING);
+        println(message, Verbosity.WARNING, true);
     }
 
     /**
@@ -248,7 +248,7 @@ public interface Log {
      * @param message the message
      */
     default void info(Supplier<String> message) {
-        println(message, Verbosity.INFO);
+        println(message, Verbosity.INFO, true);
     }
 
     /**
@@ -277,7 +277,16 @@ public interface Log {
      * @param message the message
      */
     default void message(Supplier<String> message) {
-        println(message, Verbosity.MESSAGE);
+        println(message, Verbosity.MESSAGE, true);
+    }
+
+    /**
+     * Logs a regular message without any formatters.
+     *
+     * @param message the message
+     */
+    default void plainMessage(Supplier<String> message) {
+        println(message, Verbosity.MESSAGE, false);
     }
 
     /**
@@ -301,12 +310,21 @@ public interface Log {
     }
 
     /**
+     * Logs a regular message without any formatters.
+     *
+     * @param messageObject the message object
+     */
+    default void plainMessage(Object messageObject) {
+        plainMessage(() -> String.valueOf(messageObject));
+    }
+
+    /**
      * Logs a debug message.
      *
      * @param message the message
      */
     default void debug(Supplier<String> message) {
-        println(message, Verbosity.DEBUG);
+        println(message, Verbosity.DEBUG, true);
     }
 
     /**
@@ -364,21 +382,21 @@ public interface Log {
      * @param message   the message
      * @param verbosity the verbosities
      */
-    default void log(Supplier<String> message, Verbosity verbosity) {
-        println(message, verbosity);
+    default void log(Supplier<String> message, Verbosity verbosity, boolean format) {
+        println(message, verbosity, format);
     }
 
     default void printProgress(Supplier<String> message) {
-        println(message, Verbosity.PROGRESS);
+        println(message, Verbosity.PROGRESS, false);
     }
 
     default void dispose() {
-        println(() -> "", Verbosity.PROGRESS);
+        println(() -> "", Verbosity.PROGRESS, false);
     }
 
-    void print(Supplier<String> message, Verbosity verbosity);
+    void print(Supplier<String> message, Verbosity verbosity, boolean format);
 
-    void println(Supplier<String> message, Verbosity verbosity);
+    void println(Supplier<String> message, Verbosity verbosity, boolean format);
 
     void println(Throwable error, Verbosity verbosity);
 }

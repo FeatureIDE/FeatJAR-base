@@ -31,11 +31,12 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.Enumeration;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
-import java.util.Map.Entry;
 import java.util.Objects;
 import java.util.stream.Stream;
 import java.util.zip.ZipEntry;
@@ -57,7 +58,22 @@ import org.w3c.dom.NodeList;
  * @author Elias Kuiter
  */
 public class ExtensionManager implements AutoCloseable {
-    private final LinkedHashMap<String, List<String>> extensionMap = Maps.empty();
+
+    private static class ExtensionPointEntry {
+        private final String id;
+        private int priority;
+        private final LinkedHashSet<String> extensions = new LinkedHashSet<>();
+
+        public ExtensionPointEntry(String id, int priority) {
+            this.id = id;
+            this.priority = priority;
+        }
+
+        public int priority() {
+            return priority;
+        }
+    }
+
     private final LinkedHashMap<String, AExtensionPoint<?>> extensionPoints = Maps.empty();
     private final LinkedHashMap<String, IExtension> extensions = Maps.empty();
 
@@ -67,19 +83,26 @@ public class ExtensionManager implements AutoCloseable {
      * definition files, and loads each of them.
      */
     @SuppressWarnings({"unchecked", "rawtypes"})
-    public ExtensionManager() {
+    public void install() {
         FeatJAR.log().debug("initializing extension manager");
-        getResources().stream().filter(ExtensionManager::filterByFileName).forEach(this::loadExtensionDefinitionFile);
+        final LinkedHashMap<String, ExtensionPointEntry> extensionMap = new LinkedHashMap();
+        getResources().stream()
+                .filter(ExtensionManager::filterByFileName)
+                .forEach(f -> loadExtensionDefinitionFile(f, extensionMap));
+        List<ExtensionPointEntry> extensionPointEntries = new ArrayList<>(extensionMap.values());
+        Collections.sort(
+                extensionPointEntries,
+                Comparator.comparing(ExtensionPointEntry::priority).reversed());
         final ClassLoader systemClassLoader = ClassLoader.getSystemClassLoader();
-        for (final Entry<String, List<String>> entry : extensionMap.entrySet()) {
-            final String extensionPointId = entry.getKey();
+        for (final ExtensionPointEntry entry : extensionPointEntries) {
+            final String extensionPointId = entry.id;
             try {
                 final Class<AExtensionPoint<?>> extensionPointClass =
                         (Class<AExtensionPoint<?>>) systemClassLoader.loadClass(extensionPointId);
                 FeatJAR.log().debug("installing extension point " + extensionPointClass.getName());
                 final AExtensionPoint ep = extensionPointClass.getConstructor().newInstance();
                 extensionPoints.put(ep.getIdentifier(), ep);
-                for (final String extensionId : entry.getValue()) {
+                for (final String extensionId : entry.extensions) {
                     try {
                         final Class<IExtension> extensionClass =
                                 (Class<IExtension>) systemClassLoader.loadClass(extensionId);
@@ -95,6 +118,7 @@ public class ExtensionManager implements AutoCloseable {
                 FeatJAR.log().error(e);
             }
         }
+        extensionMap.clear();
     }
 
     /**
@@ -129,7 +153,7 @@ public class ExtensionManager implements AutoCloseable {
      *
      * @param file the extension definition file
      */
-    protected void loadExtensionDefinitionFile(String file) {
+    protected void loadExtensionDefinitionFile(String file, LinkedHashMap<String, ExtensionPointEntry> extensionMap) {
         FeatJAR.log().debug("loading extension definition file " + file);
         try {
             final Enumeration<URL> systemResources =
@@ -144,21 +168,33 @@ public class ExtensionManager implements AutoCloseable {
 
                     final NodeList points = document.getElementsByTagName("point");
                     for (int i = 0; i < points.getLength(); i++) {
-                        final Node point = points.item(i);
-                        if (point.getNodeType() == Node.ELEMENT_NODE) {
-                            final Element pointElement = (Element) point;
-                            final String extensionPointId = pointElement.getAttribute("id");
-                            List<String> extensionPoint =
-                                    extensionMap.computeIfAbsent(extensionPointId, k -> new ArrayList<>());
-                            final NodeList extensions = pointElement.getChildNodes();
-                            for (int j = 0; j < extensions.getLength(); j++) {
-                                final Node extension = extensions.item(j);
-                                if (extension.getNodeType() == Node.ELEMENT_NODE) {
-                                    final Element extensionElement = (Element) extension;
-                                    final String extensionId = extensionElement.getAttribute("id");
-                                    extensionPoint.add(extensionId);
+                        try {
+                            final Node point = points.item(i);
+                            if (point.getNodeType() == Node.ELEMENT_NODE) {
+                                final Element pointElement = (Element) point;
+                                final String extensionPointId = pointElement.getAttribute("id");
+                                String extensionPointPriorityString = pointElement.getAttribute("priority");
+                                final int extensionPointPriority = extensionPointPriorityString.isEmpty()
+                                        ? 0
+                                        : Integer.parseInt(extensionPointPriorityString);
+                                ExtensionPointEntry extensionPoint = extensionMap.computeIfAbsent(
+                                        extensionPointId,
+                                        k -> new ExtensionPointEntry(extensionPointId, extensionPointPriority));
+                                if (extensionPoint.priority < extensionPointPriority)
+                                    extensionPoint.priority = extensionPointPriority;
+                                final NodeList extensions = pointElement.getChildNodes();
+                                for (int j = 0; j < extensions.getLength(); j++) {
+                                    final Node extension = extensions.item(j);
+                                    if (extension.getNodeType() == Node.ELEMENT_NODE) {
+                                        final Element extensionElement = (Element) extension;
+                                        final String extensionId = extensionElement.getAttribute("id");
+                                        extensionPoint.extensions.add(extensionId);
+                                    }
                                 }
                             }
+                        } catch (Exception e) {
+                            FeatJAR.log().error(e);
+                            continue;
                         }
                     }
                 } catch (final Exception e) {

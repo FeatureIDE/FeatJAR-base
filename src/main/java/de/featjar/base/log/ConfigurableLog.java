@@ -272,26 +272,32 @@ public class ConfigurableLog implements Log, IInitializer {
         }
     }
 
-    public void println(Supplier<String> message, Verbosity verbosity) {
+    public void println(Supplier<String> message, Verbosity verbosity, boolean format) {
         if (configuration == null) {
             println(originalErrStreamCollection, message.get());
         } else {
             StreamCollection streamCollection = configuration.logStreams.get(verbosity);
             if (streamCollection != null) {
-                final String formattedMessage = formatMessage(message.get(), verbosity);
-                println(streamCollection, formattedMessage);
+                if (format) {
+                    println(streamCollection, formatMessage(message.get(), verbosity));
+                } else {
+                    println(streamCollection, message.get());
+                }
             }
         }
     }
 
-    public void print(Supplier<String> message, Verbosity verbosity) {
+    public void print(Supplier<String> message, Verbosity verbosity, boolean format) {
         if (configuration == null) {
             print(originalErrStreamCollection, message.get());
         } else {
             StreamCollection streamCollection = configuration.logStreams.get(verbosity);
             if (streamCollection != null) {
-                final String formattedMessage = formatMessage(message.get(), verbosity);
-                print(streamCollection, formattedMessage);
+                if (format) {
+                    print(streamCollection, formatMessage(message.get(), verbosity));
+                } else {
+                    print(streamCollection, message.get());
+                }
             }
         }
     }

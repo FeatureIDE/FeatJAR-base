@@ -20,7 +20,6 @@
  */
 package de.featjar.base.log;
 
-import de.featjar.base.data.Pair;
 import java.util.LinkedList;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
@@ -34,32 +33,56 @@ import java.util.function.Supplier;
  */
 public class BufferedLog implements Log {
 
-    private final LinkedList<Pair<Verbosity, Supplier<String>>> logBuffer = new LinkedList<>();
+    public static class Message {
+        private final Supplier<String> message;
+        private final Verbosity verbosity;
+        private final boolean format;
+
+        public Message(Supplier<String> message, Verbosity verbosity, boolean format) {
+            this.message = message;
+            this.verbosity = verbosity;
+            this.format = format;
+        }
+
+        public Supplier<String> getMessage() {
+            return message;
+        }
+
+        public Verbosity getVerbosity() {
+            return verbosity;
+        }
+
+        public boolean isFormat() {
+            return format;
+        }
+    }
+
+    private final LinkedList<Message> logBuffer = new LinkedList<>();
 
     @Override
-    public void print(Supplier<String> message, Verbosity verbosity) {
+    public void print(Supplier<String> message, Verbosity verbosity, boolean format) {
         synchronized (logBuffer) {
-            logBuffer.add(new Pair<>(verbosity, message));
+            logBuffer.add(new Message(message, verbosity, format));
         }
     }
 
     @Override
-    public void println(Supplier<String> message, Verbosity verbosity) {
+    public void println(Supplier<String> message, Verbosity verbosity, boolean format) {
         synchronized (logBuffer) {
-            logBuffer.add(new Pair<>(verbosity, () -> message.get() + "\n"));
+            logBuffer.add(new Message(() -> message.get() + "\n", verbosity, format));
         }
     }
 
     @Override
     public void println(Throwable error, Verbosity verbosity) {
         synchronized (logBuffer) {
-            logBuffer.add(new Pair<>(verbosity, () -> Log.getErrorMessage(error, false) + "\n"));
+            logBuffer.add(new Message(() -> Log.getErrorMessage(error, false) + "\n", verbosity, false));
         }
     }
 
-    public void flush(Consumer<Pair<Verbosity, Supplier<String>>> messageConsumer) {
+    public void flush(Consumer<Message> messageConsumer) {
         synchronized (logBuffer) {
-            for (Pair<Verbosity, Supplier<String>> message : logBuffer) {
+            for (Message message : logBuffer) {
                 messageConsumer.accept(message);
             }
             logBuffer.clear();

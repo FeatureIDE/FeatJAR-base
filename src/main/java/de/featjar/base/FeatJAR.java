@@ -204,6 +204,7 @@ public final class FeatJAR extends IO implements AutoCloseable {
         log().debug("initializing FeatJAR");
         instance = new FeatJAR();
         instance.extensionManager = new ExtensionManager();
+        instance.extensionManager.install();
         if (configuration != null) {
             instance.setConfiguration(configuration);
         }
@@ -365,9 +366,9 @@ public final class FeatJAR extends IO implements AutoCloseable {
             ConfigurableLog newLog = new ConfigurableLog();
             newLog.setConfiguration(panicConfiguration().logConfig);
             ((BufferedLog) log).flush(m -> {
-                Supplier<String> originalMessage = m.getValue();
+                Supplier<String> originalMessage = m.getMessage();
                 Supplier<String> message;
-                Verbosity verbosity = m.getKey();
+                Verbosity verbosity = m.getVerbosity();
                 switch (verbosity) {
                     case DEBUG:
                         message = () -> "DEBUG: " + originalMessage.get();
@@ -379,7 +380,7 @@ public final class FeatJAR extends IO implements AutoCloseable {
                         message = () -> "INFO: " + originalMessage.get();
                         break;
                     case MESSAGE:
-                        message = m.getValue();
+                        message = m.getMessage();
                         break;
                     case PROGRESS:
                         message = () -> "PROGRESS: " + originalMessage.get();
@@ -390,7 +391,7 @@ public final class FeatJAR extends IO implements AutoCloseable {
                     default:
                         throw new IllegalStateException(String.valueOf(verbosity));
                 }
-                newLog.print(message, verbosity);
+                newLog.print(message, verbosity, m.isFormat());
             });
         }
         return FeatJAR.ERROR_COMPUTING_RESULT;
@@ -469,7 +470,7 @@ public final class FeatJAR extends IO implements AutoCloseable {
         ConfigurableLog newLog = getExtension(ConfigurableLog.class).orElseGet(ConfigurableLog::new);
         newLog.setConfiguration(configuration.logConfig);
         log = newLog;
-        fallbackLog.flush(m -> log.print(m.getValue(), m.getKey()));
+        fallbackLog.flush(m -> log.print(m.getMessage(), m.getVerbosity(), m.isFormat()));
 
         cache = getExtension(Cache.class).orElseGet(Cache::new);
         cache.setConfiguration(configuration.cacheConfig);
