@@ -18,45 +18,27 @@
  *
  * See <https://github.com/FeatureIDE/FeatJAR-base> for further information.
  */
-package de.featjar.base.io.output;
+package de.featjar.base.io.input;
 
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.nio.charset.Charset;
 import java.nio.file.Path;
-import java.util.zip.ZipOutputStream;
 
 /**
- * Maps virtual paths to a ZIP file output.
+ * Maps physical paths to physical file inputs.
  *
  * @author Elias Kuiter
  */
-public class ZIPFileOutputMapper extends AOutputMapper {
-    protected final ZipOutputStream zipOutputStream;
-    protected final Charset charset;
+public class ZIPFileInputMapper extends AInputMapper {
 
     /**
-     * Creates a ZIP file output mapper.
+     * Creates a file input mapper for a single file or file hierarchy.
      *
-     * @param zipPath  the ZIP file path
      * @param mainPath the main path
      * @param charset  the charset
      */
-    public ZIPFileOutputMapper(Path zipPath, Path mainPath, Charset charset) throws IOException {
+    public ZIPFileInputMapper(Path mainPath, Charset charset) throws IOException {
         super(mainPath);
-        this.zipOutputStream = new ZipOutputStream(new FileOutputStream(zipPath.toString()));
-        this.charset = charset;
-        ioMap.put(mainPath, new ZIPEntryOutput(mainPath, zipOutputStream, charset));
-    }
-
-    @Override
-    protected AOutput newOutput(Path path) throws IOException {
-        return new ZIPEntryOutput(path, zipOutputStream, charset);
-    }
-
-    @Override
-    public void close() throws IOException {
-        super.close();
-        zipOutputStream.close();
+        ioMap.put(mainPath, new ZIPEntryInput(mainPath, charset));
     }
 }

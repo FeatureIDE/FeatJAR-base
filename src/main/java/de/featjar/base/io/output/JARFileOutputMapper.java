@@ -54,7 +54,7 @@ public class JARFileOutputMapper extends AOutputMapper {
     }
 
     @Override
-    protected AOutput newOutput(Path path) {
+    protected AOutput newOutput(Path path) throws IOException {
         return new JAREntryOutput(path, jarOutputStream, charset);
     }
 

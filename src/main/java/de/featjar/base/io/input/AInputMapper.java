@@ -23,9 +23,14 @@ package de.featjar.base.io.input;
 import de.featjar.base.data.Problem;
 import de.featjar.base.data.Result;
 import de.featjar.base.io.AIOMapper;
+import de.featjar.base.io.IOMapperOptions;
 import de.featjar.base.io.format.IFormat;
+import java.io.IOException;
+import java.nio.charset.Charset;
 import java.nio.file.Path;
+import java.util.Arrays;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.function.Supplier;
 
 /**
@@ -62,5 +67,17 @@ public abstract class AInputMapper extends AIOMapper<AInput> {
         Result<T> result = supplier.get();
         mainPath = oldMainPath;
         return result;
+    }
+
+    public static AInputMapper of(Path mainPath, Charset charset, IOMapperOptions... options) throws IOException {
+        return (Arrays.asList(options).contains(IOMapperOptions.ZIP_COMPRESSION))
+                ? new ZIPFileInputMapper(mainPath, charset)
+                : new FileInputMapper(
+                        Arrays.asList(options).contains(IOMapperOptions.INPUT_FILE_HIERARCHY)
+                                ? getFilePathsInDirectory(mainPath.getParent())
+                                : List.of(mainPath),
+                        mainPath.getParent(),
+                        mainPath,
+                        charset);
     }
 }

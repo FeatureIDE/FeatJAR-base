@@ -34,6 +34,7 @@ import java.nio.file.Paths;
  * @author Elias Kuiter
  */
 public interface IIOObject extends AutoCloseable {
+
     @Override
     void close() throws IOException;
 
@@ -118,5 +119,36 @@ public interface IIOObject extends AutoCloseable {
      */
     static Path getPathWithNewExtension(String fileName, String fileExtension) {
         return Paths.get(getFileNameWithNewExtension(fileName, fileExtension));
+    }
+
+    /**
+     * {@return a file name with an added file extension}
+     *
+     * @param fileName the file name
+     * @param fileExtension the new file extension
+     */
+    static String getFileNameWithExtraExtension(String fileName, String fileExtension) {
+        if (fileExtension == null) return fileName;
+        return String.format("%s.%s", fileName, fileExtension);
+    }
+
+    /**
+     * {@return a path with an added file extension}
+     *
+     * @param path the path
+     * @param fileExtension the new file extension
+     */
+    static Path getPathWithExtraExtension(Path path, String fileExtension) {
+        return path.resolveSibling(getFileNameWithExtraExtension(getFileName(path), fileExtension));
+    }
+
+    /**
+     * {@return a path with an added file extension}
+     *
+     * @param fileName the file name
+     * @param fileExtension the new file extension
+     */
+    static Path getPathWithExtraExtension(String fileName, String fileExtension) {
+        return Paths.get(getFileNameWithExtraExtension(fileName, fileExtension));
     }
 }

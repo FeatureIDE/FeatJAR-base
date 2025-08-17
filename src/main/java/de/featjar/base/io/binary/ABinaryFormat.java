@@ -21,10 +21,9 @@
 package de.featjar.base.io.binary;
 
 import de.featjar.base.io.format.IFormat;
+import de.featjar.base.io.input.AInput;
+import de.featjar.base.io.output.AOutput;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.nio.charset.StandardCharsets;
 
 /**
  * Helpers for parsing and writing an object from and into a binary file.
@@ -39,78 +38,20 @@ public abstract class ABinaryFormat<T> implements IFormat<T> {
         return false;
     }
 
-    protected void writeBytes(OutputStream out, byte[] bytes) throws IOException {
-        out.write(bytes);
+    protected void writeByteArray(AOutput out, byte[] bytes) throws IOException {
+        out.writeInt(bytes.length);
+        out.writeBytes(bytes);
     }
 
-    protected void writeByteArray(OutputStream out, byte[] bytes) throws IOException {
-        writeInt(out, bytes.length);
-        writeBytes(out, bytes);
+    protected void writeString(AOutput out, String text) throws IOException {
+        writeByteArray(out, text.getBytes(out.getCharset()));
     }
 
-    protected void writeString(OutputStream out, String string) throws IOException {
-        writeByteArray(out, string.getBytes(StandardCharsets.UTF_8));
+    protected byte[] readByteArray(AInput in) throws IOException {
+        return in.readBytes(in.readInt());
     }
 
-    protected void writeInt(OutputStream out, int value) throws IOException {
-        final byte[] integerBytes = new byte[Integer.BYTES];
-        integerBytes[0] = (byte) ((value >>> 24) & 0xff);
-        integerBytes[1] = (byte) ((value >>> 16) & 0xff);
-        integerBytes[2] = (byte) ((value >>> 8) & 0xff);
-        integerBytes[3] = (byte) (value & 0xff);
-        out.write(integerBytes);
-    }
-
-    protected void writeByte(OutputStream out, byte value) throws IOException {
-        out.write(value);
-    }
-
-    protected void writeBool(OutputStream out, boolean value) throws IOException {
-        out.write((byte) (value ? 1 : 0));
-    }
-
-    protected byte[] readBytes(InputStream in, int size) throws IOException {
-        final byte[] bytes = new byte[size];
-        final int byteCount = in.readNBytes(bytes, 0, bytes.length);
-        if (byteCount != bytes.length) {
-            throw new IOException("Stream ended before expected end!");
-        }
-        return bytes;
-    }
-
-    protected byte[] readByteArray(InputStream in) throws IOException {
-        return readBytes(in, readInt(in));
-    }
-
-    protected String readString(InputStream in) throws IOException {
-        return new String(readByteArray(in), StandardCharsets.UTF_8);
-    }
-
-    protected int readInt(InputStream in) throws IOException {
-        final byte[] integerBytes = new byte[Integer.BYTES];
-        final int byteCount = in.readNBytes(integerBytes, 0, integerBytes.length);
-        if (byteCount != integerBytes.length) {
-            throw new IOException("Stream ended before expected end!");
-        }
-        return ((integerBytes[0] & 0xff) << 24)
-                | ((integerBytes[1] & 0xff) << 16)
-                | ((integerBytes[2] & 0xff) << 8)
-                | ((integerBytes[3] & 0xff));
-    }
-
-    protected byte readByte(InputStream in) throws IOException {
-        final int readByte = in.read();
-        if (readByte < 0) {
-            throw new IOException("Stream ended before expected end!");
-        }
-        return (byte) readByte;
-    }
-
-    protected boolean readBool(InputStream in) throws IOException {
-        final int boolByte = in.read();
-        if (boolByte < 0) {
-            throw new IOException("Stream ended before expected end!");
-        }
-        return boolByte == 1;
+    protected String readString(AInput in) throws IOException {
+        return new String(readByteArray(in), in.getCharset());
     }
 }

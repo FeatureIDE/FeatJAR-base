@@ -41,17 +41,16 @@ public class ZIPEntryOutput extends AOutput {
      * @param path            the path
      * @param zipOutputStream the ZIP output stream
      * @param charset         the charset
+     * @throws IOException
      */
-    public ZIPEntryOutput(Path path, ZipOutputStream zipOutputStream, Charset charset) {
+    public ZIPEntryOutput(Path path, ZipOutputStream zipOutputStream, Charset charset) throws IOException {
         super(zipOutputStream, charset);
         this.path = path;
+        zipOutputStream.putNextEntry(new ZipEntry(path.toString()));
     }
 
     @Override
-    public void write(String string) throws IOException {
-        ZipEntry zipEntry = new ZipEntry(path.toString());
-        ((ZipOutputStream) outputStream).putNextEntry(zipEntry);
-        super.write(string);
+    public void close() throws IOException {
         ((ZipOutputStream) outputStream).closeEntry();
     }
 }

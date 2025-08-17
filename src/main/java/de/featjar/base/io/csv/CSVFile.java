@@ -304,11 +304,11 @@ public class CSVFile {
         if (output != null) {
             try {
                 if (headerFields != null && !headerFieldsFlushed) {
-                    output.write(printLine(headerFields));
+                    output.writeText(printLine(headerFields));
                     headerFieldsFlushed = true;
                 }
                 for (List<String> line : values) {
-                    output.write(printLine(line));
+                    output.writeText(printLine(line));
                 }
                 values.clear();
             } catch (final IOException e) {

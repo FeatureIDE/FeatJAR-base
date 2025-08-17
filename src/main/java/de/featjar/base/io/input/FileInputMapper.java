@@ -20,12 +20,9 @@
  */
 package de.featjar.base.io.input;
 
-import de.featjar.base.io.AIOMapper;
-import de.featjar.base.io.IOMapperOptions;
 import java.io.IOException;
 import java.nio.charset.Charset;
 import java.nio.file.Path;
-import java.util.Arrays;
 import java.util.List;
 
 /**
@@ -55,15 +52,9 @@ public class FileInputMapper extends AInputMapper {
      *
      * @param mainPath the main path
      * @param charset  the charset
-     * @param options  the {@link AIOMapper} options
      */
-    public FileInputMapper(Path mainPath, Charset charset, IOMapperOptions... options) throws IOException {
-        this(
-                Arrays.asList(options).contains(IOMapperOptions.INPUT_FILE_HIERARCHY)
-                        ? getFilePathsInDirectory(mainPath.getParent())
-                        : List.of(mainPath),
-                mainPath.getParent(),
-                mainPath,
-                charset);
+    public FileInputMapper(Path mainPath, Charset charset) throws IOException {
+        super(mainPath);
+        ioMap.put(mainPath, new FileInput(mainPath, charset));
     }
 }

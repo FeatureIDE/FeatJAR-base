@@ -41,17 +41,16 @@ public class JAREntryOutput extends AOutput {
      * @param path            the path
      * @param jarOutputStream the JAR output stream
      * @param charset         the charset
+     * @throws IOException
      */
-    public JAREntryOutput(Path path, JarOutputStream jarOutputStream, Charset charset) {
+    public JAREntryOutput(Path path, JarOutputStream jarOutputStream, Charset charset) throws IOException {
         super(jarOutputStream, charset);
         this.path = path;
+        jarOutputStream.putNextEntry(new JarEntry(path.toString()));
     }
 
     @Override
-    public void write(java.lang.String string) throws IOException {
-        JarEntry jarEntry = new JarEntry(path.toString());
-        ((JarOutputStream) outputStream).putNextEntry(jarEntry);
-        super.write(string);
+    public void close() throws IOException {
         ((JarOutputStream) outputStream).closeEntry();
     }
 }

@@ -129,7 +129,7 @@ public class IOTest {
         public void write(LabeledTree<Integer> object, AOutputMapper outputMapper) throws IOException {
             outputMapper
                     .get()
-                    .write(serialize(object).get() + "\n"
+                    .writeText(serialize(object).get() + "\n"
                             + object.getChildren().stream()
                                     .map(Object::hashCode)
                                     .map(Objects::toString)
@@ -253,7 +253,7 @@ public class IOTest {
             assertTrue(stringMap.get(Paths.get("__main__")).startsWith("1"));
 
             assertDoesNotThrow(
-                    () -> IO.save(integerTree, testPath, new IntegerTreeFormat(), IOMapperOptions.OUTPUT_FILE_ZIP));
+                    () -> IO.save(integerTree, testPath, new IntegerTreeFormat(), IOMapperOptions.ZIP_COMPRESSION));
             assertDoesNotThrow(
                     () -> IO.save(integerTree, testPath, new IntegerTreeFormat(), IOMapperOptions.OUTPUT_FILE_JAR));
         } finally {

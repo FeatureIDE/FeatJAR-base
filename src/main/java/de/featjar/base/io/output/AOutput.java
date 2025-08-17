@@ -53,17 +53,6 @@ public abstract class AOutput implements IIOObject {
     }
 
     /**
-     * Writes a string to this output.
-     *
-     * @param string the string
-     * @throws IOException if an I/O error occurs
-     */
-    public void write(java.lang.String string) throws IOException {
-        outputStream.write(string.getBytes(charset));
-        outputStream.flush();
-    }
-
-    /**
      * {@return this output's stream}
      */
     public OutputStream getOutputStream() {
@@ -73,5 +62,40 @@ public abstract class AOutput implements IIOObject {
     @Override
     public void close() throws IOException {
         outputStream.close();
+    }
+
+    public void flush() throws IOException {
+        outputStream.flush();
+    }
+
+    public void writeBytes(byte[] bytes) throws IOException {
+        outputStream.write(bytes);
+    }
+
+    /**
+     * Writes a text with the given encoding to this output.
+     *
+     * @param text the string
+     * @throws IOException if an I/O error occurs
+     */
+    public void writeText(String text) throws IOException {
+        outputStream.write(text.getBytes(charset));
+    }
+
+    public void writeInt(int value) throws IOException {
+        final byte[] integerBytes = new byte[Integer.BYTES];
+        integerBytes[0] = (byte) ((value >>> 24) & 0xff);
+        integerBytes[1] = (byte) ((value >>> 16) & 0xff);
+        integerBytes[2] = (byte) ((value >>> 8) & 0xff);
+        integerBytes[3] = (byte) (value & 0xff);
+        outputStream.write(integerBytes);
+    }
+
+    public void writeByte(byte value) throws IOException {
+        outputStream.write(value);
+    }
+
+    public void writeBool(boolean value) throws IOException {
+        outputStream.write((byte) (value ? 1 : 0));
     }
 }

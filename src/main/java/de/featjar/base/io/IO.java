@@ -340,7 +340,7 @@ public class IO {
      */
     public static <T> Result<T> load(
             Path path, IFormat<T> format, Charset charset, IOMapperOptions... ioMapperOptions) {
-        try (AInputMapper inputMapper = new FileInputMapper(path, charset, ioMapperOptions)) {
+        try (AInputMapper inputMapper = AInputMapper.of(path, charset, ioMapperOptions)) {
             return parse(inputMapper, format);
         } catch (final IOException e) {
             return Result.empty(e);
@@ -360,7 +360,7 @@ public class IO {
      */
     public static <T> Result<T> load(
             Path path, IFormat<T> format, Supplier<T> factory, Charset charset, IOMapperOptions... ioMapperOptions) {
-        try (AInputMapper inputMapper = new FileInputMapper(path, charset, ioMapperOptions)) {
+        try (AInputMapper inputMapper = AInputMapper.of(path, charset, ioMapperOptions)) {
             return parse(inputMapper, format, factory);
         } catch (final IOException e) {
             return Result.empty(e);
@@ -384,7 +384,7 @@ public class IO {
             Supplier<T> factory,
             Charset charset,
             IOMapperOptions... ioMapperOptions) {
-        try (AInputMapper inputMapper = new FileInputMapper(path, charset, ioMapperOptions)) {
+        try (AInputMapper inputMapper = AInputMapper.of(path, charset, ioMapperOptions)) {
             return parse(inputMapper, formatSupplier, factory);
         } catch (final IOException e) {
             return Result.empty(e);
@@ -403,7 +403,7 @@ public class IO {
      */
     public static <T> Result<T> load(
             Path path, IFormatSupplier<T> formatSupplier, Charset charset, IOMapperOptions... ioMapperOptions) {
-        try (AInputMapper inputMapper = new FileInputMapper(path, charset, ioMapperOptions)) {
+        try (AInputMapper inputMapper = AInputMapper.of(path, charset, ioMapperOptions)) {
             return parse(inputMapper, formatSupplier);
         } catch (final IOException e) {
             return Result.empty(e);
@@ -427,7 +427,7 @@ public class IO {
             IFactorySupplier<T> factorySupplier,
             Charset charset,
             IOMapperOptions... ioMapperOptions) {
-        try (AInputMapper inputMapper = new FileInputMapper(path, charset, ioMapperOptions)) {
+        try (AInputMapper inputMapper = AInputMapper.of(path, charset, ioMapperOptions)) {
             return parse(path, inputMapper, formatSupplier, factorySupplier);
         } catch (final IOException e) {
             return Result.empty(e);

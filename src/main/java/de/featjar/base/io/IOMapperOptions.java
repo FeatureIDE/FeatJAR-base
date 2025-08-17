@@ -37,10 +37,9 @@ public enum IOMapperOptions {
      */
     INPUT_FILE_HIERARCHY,
     /**
-     * Whether to create a single ZIP archive instead of (several) physical files.
-     * Only supported for writing with {@link AOutputMapper#of(Path, Charset, IOMapperOptions...)}.
+     * Whether to use a single ZIP archive instead of (several) physical files.
      */
-    OUTPUT_FILE_ZIP,
+    ZIP_COMPRESSION,
     /**
      * Whether to create a single JAR archive instead of (several) physical files.
      * Only supported for writing with {@link AOutputMapper#of(Path, Charset, IOMapperOptions...)}.

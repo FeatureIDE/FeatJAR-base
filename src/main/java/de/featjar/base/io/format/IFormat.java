@@ -20,6 +20,7 @@
  */
 package de.featjar.base.io.format;
 
+import de.featjar.base.data.Problem;
 import de.featjar.base.data.Result;
 import de.featjar.base.extension.IExtension;
 import de.featjar.base.io.input.AInput;
@@ -80,10 +81,11 @@ public interface IFormat<T> extends IExtension {
      * @throws IOException if an error occurs during writing
      */
     default void write(T object, AOutputMapper outputMapper) throws IOException {
-        String string = serialize(object)
-                // TODO: improve exception handling - this should maybe be a Result instead
-                .orElseThrow();
-        outputMapper.get().write(string);
+        outputMapper
+                .get()
+                .writeText(serialize(object)
+                        .orElseThrow(p ->
+                                new IOException(Problem.getFirstException(p).orElse(null))));
     }
 
     /**

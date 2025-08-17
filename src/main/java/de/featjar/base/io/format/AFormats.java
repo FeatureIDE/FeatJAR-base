@@ -26,8 +26,10 @@ import de.featjar.base.extension.AExtensionPoint;
 import de.featjar.base.io.IIOObject;
 import de.featjar.base.io.input.InputHeader;
 import java.nio.file.Path;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 /**
@@ -60,6 +62,22 @@ public abstract class AFormats<T> extends AExtensionPoint<IFormat<T>> implements
         return getFormatList(IIOObject.getFileExtension(path).orElse(null));
     }
 
+    /**
+     * {@return an array of the names of all installed formats for BooleanAssignmentGroup}.
+     */
+    public String[] getNames() {
+        return getExtensions().stream().map(IFormat::getName).toArray(String[]::new);
+    }
+
+    /**
+     * {@return an array of the names of all installed formats for BooleanAssignmentGroup}.
+     */
+    public Optional<IFormat<T>> getFormatByName(String name) {
+        return getExtensions().stream()
+                .filter(f -> Objects.equals(name, f.getName()))
+                .findFirst();
+    }
+
     @Override
     public Result<IFormat<T>> getFormat(InputHeader inputHeader) {
         return getExtensions().stream()
@@ -69,8 +87,7 @@ public abstract class AFormats<T> extends AExtensionPoint<IFormat<T>> implements
                 .findFirst()
                 .map(Result::of)
                 .orElseGet(() -> Result.empty(new Problem(
-                        "No suitable format found for file extension \"." + inputHeader.getFileExtension()
-                                + "\". Possible formats: " + getExtensions(),
+                        String.format("No suitable format found. Possible formats: %s", Arrays.toString(getNames())),
                         Problem.Severity.ERROR)));
     }
 }

@@ -76,6 +76,43 @@ public abstract class AInput implements IIOObject {
         }
     }
 
+    public byte[] readBytes(int size) throws IOException {
+        final byte[] bytes = new byte[size];
+        final int byteCount = inputStream.readNBytes(bytes, 0, bytes.length);
+        if (byteCount != bytes.length) {
+            throw new IOException("Stream ended before expected end!");
+        }
+        return bytes;
+    }
+
+    public int readInt() throws IOException {
+        final byte[] integerBytes = new byte[Integer.BYTES];
+        final int byteCount = inputStream.readNBytes(integerBytes, 0, integerBytes.length);
+        if (byteCount != integerBytes.length) {
+            throw new IOException("Stream ended before expected end!");
+        }
+        return ((integerBytes[0] & 0xff) << 24)
+                | ((integerBytes[1] & 0xff) << 16)
+                | ((integerBytes[2] & 0xff) << 8)
+                | ((integerBytes[3] & 0xff));
+    }
+
+    public byte readByte() throws IOException {
+        final int readByte = inputStream.read();
+        if (readByte < 0) {
+            throw new IOException("Stream ended before expected end!");
+        }
+        return (byte) readByte;
+    }
+
+    public boolean readBool() throws IOException {
+        final int boolByte = inputStream.read();
+        if (boolByte < 0) {
+            throw new IOException("Stream ended before expected end!");
+        }
+        return boolByte == 1;
+    }
+
     /**
      * {@return a reader for this input}
      */
@@ -127,7 +164,7 @@ public abstract class AInput implements IIOObject {
             try {
                 inputStream.mark(InputHeader.MAX_HEADER_SIZE);
                 final int byteCount = inputStream.read(bytes, 0, InputHeader.MAX_HEADER_SIZE);
-                if (byteCount == -1) return Result.empty();
+                if (byteCount == -1) return Result.empty(new IOException("Could not read input stream."));
                 return Result.of(new InputHeader(
                         fileExtension, //
                         byteCount == InputHeader.MAX_HEADER_SIZE ? bytes : Arrays.copyOf(bytes, byteCount), //
