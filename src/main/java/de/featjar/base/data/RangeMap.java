@@ -313,7 +313,9 @@ public class RangeMap<T> implements Cloneable {
      * @param index the index
      */
     public Result<T> get(int index) {
-        return isValidIndex(index) ? Result.ofNullable(indexToObject.get(index)) : Result.empty();
+        return isValidIndex(index)
+                ? Result.ofNullable(indexToObject.get(index))
+                : Result.empty(new IndexOutOfBoundsException(index));
     }
 
     /**
