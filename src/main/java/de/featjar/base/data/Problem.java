@@ -64,6 +64,29 @@ public class Problem {
     }
 
     /**
+     * Returns the first problem in a list of {@link Problem problems} that is at least classified as {@link Severity#ERROR}.
+     * @param problemList the list of problems
+     * @return the {@link Problem} wrapped in an {@link Optional}
+     */
+    public static Optional<Problem> getFirstError(List<Problem> problemList) {
+        return problemList.stream()
+                .filter(p -> p.getSeverity() == Severity.ERROR)
+                .findFirst();
+    }
+
+    /**
+     * Returns the exception represented by the first problem in a list of {@link Problem problems} that is at least classified as {@link Severity#ERROR}.
+     * @param problemList the list of problems
+     * @return the {@link Exception} wrapped in an {@link Optional}
+     */
+    public static Optional<Exception> getFirstException(List<Problem> problemList) {
+        return problemList.stream()
+                .filter(p -> p.getSeverity() == Severity.ERROR)
+                .findFirst()
+                .map(Problem::getException);
+    }
+
+    /**
      * Writes all messages of the given problems to a string.
      *
      * @param problems the problem list
