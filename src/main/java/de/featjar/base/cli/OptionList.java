@@ -483,18 +483,19 @@ public class OptionList {
     public static String getHelp(ICommand command) {
         IndentStringBuilder sb = new IndentStringBuilder();
         printGeneralOptions(sb);
-
-        List<ICommand> commands = FeatJAR.extensionPoint(Commands.class).getExtensions();
         sb.appendLine();
-        if (commands.isEmpty()) {
-            printNoCommandsAvailable(sb);
-        } else {
-            if (command == null) {
-                printAvailableCommands(sb, commands);
+
+        if (command == null) {
+            List<ICommand> commands = FeatJAR.extensionPoint(Commands.class).getExtensions();
+            if (commands.isEmpty()) {
+                printNoCommandsAvailable(sb);
             } else {
-                printCommandHelp(sb, command);
+                printAvailableCommands(sb, commands);
             }
+        } else {
+            printCommandHelp(sb, command);
         }
+
         return sb.toString();
     }
 

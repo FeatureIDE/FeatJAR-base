@@ -324,7 +324,8 @@ public final class FeatJAR extends IO implements AutoCloseable {
         if (Problem.containsError(problems)) {
             FeatJAR.log().problems(problems, Verbosity.ERROR);
             FeatJAR.log().problems(optionInput.parseRemainingArguments());
-            FeatJAR.log().message(OptionList.getHelp(optionInput.getCommand().orElse(null)));
+            FeatJAR.log()
+                    .plainMessage(OptionList.getHelp(optionInput.getCommand().orElse(null)));
             return panic();
         }
 
@@ -338,7 +339,7 @@ public final class FeatJAR extends IO implements AutoCloseable {
             Result<ICommand> optionalCommand = optionInput.getCommand();
             if (optionalCommand.isEmpty()) {
                 FeatJAR.log().error("No command provided");
-                FeatJAR.log().message(OptionList.getHelp());
+                FeatJAR.log().plainMessage(OptionList.getHelp());
                 return panic();
             } else {
                 ICommand command = optionalCommand.get();
