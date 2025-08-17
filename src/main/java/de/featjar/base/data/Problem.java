@@ -87,6 +87,22 @@ public class Problem {
     }
 
     /**
+     * Returns a {@link RuntimeException} from a list of {@link Problem problems}.
+     * If the problem list contains at least one problem with severity {@link Severity#ERROR} and an exception, this method constructs a new RuntimeException that wraps the exception of the first problem.
+     * Otherwise it constructs a new exception with all problems {@link #printProblems(List) printed} out.
+     * @param problemList the list of problems
+     * @return the {@link Exception} wrapped in an {@link Optional}
+     */
+    public static RuntimeException toException(List<Problem> problemList) {
+        return problemList.stream()
+                .filter(p -> p.getSeverity() == Severity.ERROR)
+                .findFirst()
+                .map(Problem::getException)
+                .map(RuntimeException::new)
+                .orElse(new RuntimeException(printProblems(problemList)));
+    }
+
+    /**
      * Writes all messages of the given problems to a string.
      *
      * @param problems the problem list
