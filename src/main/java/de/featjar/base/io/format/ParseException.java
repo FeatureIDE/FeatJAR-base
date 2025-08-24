@@ -32,6 +32,7 @@ public class ParseException extends Exception {
     private static final long serialVersionUID = -6948189323221248464L;
 
     protected final int lineNumber;
+    protected final int position;
 
     /**
      * Creates a parse exception.
@@ -49,11 +50,27 @@ public class ParseException extends Exception {
      * @param lineNumber the line number
      */
     public ParseException(String message, int lineNumber) {
+        this(message, lineNumber, -1);
+    }
+
+    /**
+     * Creates a parse exception.
+     *
+     * @param message the message
+     * @param lineNumber the line number
+     * @param position the position within the line
+     */
+    public ParseException(String message, int lineNumber, int position) {
         super(message);
         this.lineNumber = lineNumber;
+        this.position = position;
     }
 
     public int getLineNumber() {
         return lineNumber;
+    }
+
+    public int getPosition() {
+        return position;
     }
 }
