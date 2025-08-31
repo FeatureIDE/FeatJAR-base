@@ -21,26 +21,16 @@
 package de.featjar.base.io.xml;
 
 import de.featjar.base.FeatJAR;
-import de.featjar.base.data.Problem;
 import de.featjar.base.data.Result;
-import de.featjar.base.io.format.IFormat;
-import de.featjar.base.io.format.ParseException;
-import de.featjar.base.io.format.ParseProblem;
-import de.featjar.base.io.input.AInputMapper;
-import de.featjar.base.io.input.InputHeader;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.StringReader;
 import java.io.StringWriter;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
-import javax.xml.parsers.SAXParserFactory;
 import javax.xml.transform.OutputKeys;
 import javax.xml.transform.Transformer;
 import javax.xml.transform.TransformerException;
@@ -48,119 +38,21 @@ import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
 import org.w3c.dom.Document;
-import org.w3c.dom.Element;
-import org.w3c.dom.NodeList;
-import org.xml.sax.InputSource;
 
 /**
- * Helpers for parsing and writing an object from and into an XML file.
+ * Abstract writer for XML files.
  *
- * @param <T> the type of read/written data
+ * @param <T> the type of written data
  * @author Sebastian Krieter
  * @author Elias Kuiter
  */
-public abstract class AXMLFormat<T> implements IFormat<T> {
+public abstract class AXMLWriter<T> {
+
     protected static final Pattern completeTagPattern = Pattern.compile("<(\\w+)[^/]*>.*</\\1.*>");
     protected static final Pattern incompleteTagPattern = Pattern.compile("(<\\w+[^/>]*>)|(</\\w+[^>]*>)");
 
-    protected List<Problem> parseProblems = new ArrayList<>();
-
-    protected abstract T parseDocument(Document document) throws ParseException;
-
     protected abstract void writeDocument(T object, Document doc);
 
-    protected abstract Pattern getInputHeaderPattern();
-
-    @Override
-    public String getFileExtension() {
-        return "xml";
-    }
-
-    @Override
-    public boolean supportsContent(InputHeader inputHeader) {
-        return supportsParse()
-                && getInputHeaderPattern().matcher(inputHeader.get()).find();
-    }
-
-    protected List<Element> getElements(NodeList nodeList) {
-        final ArrayList<Element> elements = new ArrayList<>(nodeList.getLength());
-        for (int temp = 0; temp < nodeList.getLength(); temp++) {
-            final org.w3c.dom.Node nNode = nodeList.item(temp);
-            if (nNode.getNodeType() == org.w3c.dom.Node.ELEMENT_NODE) {
-                final Element eElement = (Element) nNode;
-                elements.add(eElement);
-            }
-        }
-        return elements;
-    }
-
-    protected List<Element> getElements(final Element element, final String nodeName) {
-        return getElements(element.getElementsByTagName(nodeName));
-    }
-
-    protected Element getElement(final Element element, final String nodeName) throws ParseException {
-        final List<Element> elements = getElements(element, nodeName);
-        if (elements.size() > 1) {
-            addParseProblem("Multiple nodes of " + nodeName + " defined.", element, Problem.Severity.WARNING);
-        } else if (elements.isEmpty()) {
-            addParseProblem("Node " + nodeName + " not defined!", element, Problem.Severity.ERROR);
-        }
-        return elements.get(0);
-    }
-
-    protected Result<Element> getElementResult(final Element element, final String nodeName) {
-        final List<Element> elements = getElements(element, nodeName);
-        if (elements.size() > 1) {
-            try {
-                addParseProblem("Multiple nodes of " + nodeName + " defined.", element, Problem.Severity.WARNING);
-            } catch (ParseException ignored) {
-            }
-        } else if (elements.isEmpty()) {
-            return Result.empty();
-        }
-        return Result.of(elements.get(0));
-    }
-
-    protected Element getDocumentElement(final Document document, final String... nodeNames) throws ParseException {
-        final Element element = document.getDocumentElement();
-        if (element == null || Arrays.stream(nodeNames).noneMatch(element.getNodeName()::equals)) {
-            addParseProblem("Node " + Arrays.toString(nodeNames) + " not defined!", element, Problem.Severity.ERROR);
-        }
-        return element;
-    }
-
-    protected void addParseProblem(String message, org.w3c.dom.Node node, Problem.Severity severity)
-            throws ParseException {
-        int lineNumber = node != null
-                ? Integer.parseInt(node.getUserData(PositionalXMLHandler.LINE_NUMBER_KEY_NAME)
-                        .toString())
-                : 0;
-        if (severity.equals(Problem.Severity.ERROR)) {
-            throw new ParseException(message, lineNumber);
-        } else {
-            parseProblems.add(new ParseProblem(message, severity, lineNumber));
-        }
-    }
-
-    @Override
-    public Result<T> parse(AInputMapper inputMapper) {
-        try {
-            parseProblems.clear();
-            final Document document =
-                    DocumentBuilderFactory.newInstance().newDocumentBuilder().newDocument();
-            SAXParserFactory.newInstance()
-                    .newSAXParser()
-                    .parse(new InputSource(inputMapper.get().getReader()), new PositionalXMLHandler(document));
-            document.getDocumentElement().normalize();
-            return Result.of(parseDocument(document), parseProblems);
-        } catch (final ParseException e) {
-            return Result.empty(new ParseProblem(e.getMessage(), Problem.Severity.ERROR, e.getLineNumber()));
-        } catch (final Exception e) {
-            return Result.empty(new Problem(e));
-        }
-    }
-
-    @Override
     public Result<String> serialize(T object) {
         final DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
         dbf.setNamespaceAware(true);
