@@ -76,7 +76,8 @@ public class BufferedLog implements Log {
     @Override
     public void println(Throwable error, Verbosity verbosity) {
         synchronized (logBuffer) {
-            logBuffer.add(new Message(() -> Log.getErrorMessage(error, true) + "\n", verbosity, false));
+            logBuffer.add(
+                    new Message(() -> Log.getErrorMessage(error, error.getMessage() == null) + "\n", verbosity, false));
         }
     }
 
