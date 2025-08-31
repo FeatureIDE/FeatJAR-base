@@ -39,6 +39,10 @@ public class Attribute<T> implements IAttribute<T> {
     protected Function<IAttributable, T> defaultValueFunction;
     protected Function<T, T> copyValueFunction = t -> t;
 
+    public Attribute(String name, Class<T> type) {
+        this(DEFAULT_NAMESPACE, name, type);
+    }
+
     public Attribute(String namespace, String name, Class<T> type) {
         this.namespace = Objects.requireNonNull(namespace);
         this.name = Objects.requireNonNull(name);
