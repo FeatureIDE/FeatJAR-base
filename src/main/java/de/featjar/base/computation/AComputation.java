@@ -40,30 +40,46 @@ import java.util.stream.Collectors;
  */
 public abstract class AComputation<T> extends ATree<IComputation<?>> implements IComputation<T> {
 
+    /**
+     * The cache object.
+     */
     protected Cache cache = FeatJAR.cache();
 
-    protected AComputation(IComputation<?>... computations) {
-        super(computations.length);
+    /**
+     * Constructs a new computation.
+     * @param dependencies the dependencies of this computation
+     */
+    protected AComputation(IComputation<?>... dependencies) {
+        super(dependencies.length);
         final Integer size = Dependency.computeDependencyCount(getClass());
-        assert size == computations.length;
-        setChildren(List.of(computations));
+        assert size == dependencies.length;
+        setChildren(List.of(dependencies));
     }
 
-    protected AComputation(List<IComputation<?>> computations1, IComputation<?>... computations2) {
-        super(computations1.size() + computations2.length);
+    /**
+     * Constructs a new computation.
+     * @param dependencies1 the first dependencies of this computation
+     * @param dependencies2 further dependencies of this computation
+     */
+    protected AComputation(List<IComputation<?>> dependencies1, IComputation<?>... dependencies2) {
+        super(dependencies1.size() + dependencies2.length);
         final Integer size = Dependency.computeDependencyCount(getClass());
-        assert size == computations1.size() + computations2.length;
+        assert size == dependencies1.size() + dependencies2.length;
         ArrayList<IComputation<?>> computations = new ArrayList<>(size);
-        computations.addAll(computations1);
-        computations.addAll(List.of(computations2));
+        computations.addAll(dependencies1);
+        computations.addAll(List.of(dependencies2));
         setChildren(computations);
     }
 
-    protected AComputation(Object... computations) {
-        super(computations.length);
+    /**
+     * Constructs a new computation.
+     * @param dependencies the dependencies of this computation
+     */
+    protected AComputation(Object... dependencies) {
+        super(dependencies.length);
         final Integer size = Dependency.computeDependencyCount(getClass());
         ArrayList<IComputation<?>> computationList = new ArrayList<>(size);
-        for (Object computation : computations) {
+        for (Object computation : dependencies) {
             unpackComputations(computationList, computation);
         }
         assert size == computationList.size();
@@ -90,10 +106,18 @@ public abstract class AComputation<T> extends ATree<IComputation<?>> implements 
         }
     }
 
+    /**
+     * Copy constructor.
+     * @param other the computation to copy
+     */
     protected AComputation(AComputation<T> other) {
         super();
     }
 
+    /**
+     * Check whether this computation received a cancel request.
+     * If so, this method throws a {@link CancellationException}.
+     */
     protected final void checkCancel() {
         if (Thread.interrupted()) {
             throw new CancellationException();

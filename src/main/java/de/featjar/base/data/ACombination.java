@@ -27,21 +27,43 @@ import java.util.function.Supplier;
  * Combination iterator that uses the combinatorial number system to process
  * combinations in parallel.
  *
+ * @param <T> the type of the element in the combination
+ * @param <E> the type of the environment for the combination
+ *
  * @author Sebastian Krieter
  */
 public abstract class ACombination<E, T> implements ICombination<E, T> {
 
+    /**
+     * THe environment object.
+     */
     public final E environment;
 
+    /**
+     * The indices of the elements.
+     */
     public final int[] elementIndices;
+    /**
+     * The index of current internal combination
+     */
     public long combinationIndex;
 
+    /**
+     * Creates a new combination instance
+     * @param t the value for t
+     * @param environmentCreator the environment supplier
+     */
     public ACombination(int t, Supplier<E> environmentCreator) {
         combinationIndex = 0;
         elementIndices = new int[t];
         environment = (environmentCreator != null) ? environmentCreator.get() : null;
     }
 
+    /**
+     * Copy constructor.
+     * @param other the combination to copy
+     * @param environmentCreator the environment supplier
+     */
     public ACombination(ACombination<E, T> other, Supplier<E> environmentCreator) {
         combinationIndex = other.combinationIndex;
         elementIndices = Arrays.copyOf(other.elementIndices, other.elementIndices.length);

@@ -32,7 +32,8 @@ public interface IIdentifiable {
     IIdentifier getIdentifier();
 
     /**
-     * {@return a new identifier generated with the {@link IIdentifierFactory } of {@link #getIdentifier()}}
+     * {@return a new generated identifier}
+     * The identifier is generated with {@link IIdentifierFactory} of {@link #getIdentifier()}.
      */
     default IIdentifier getNewIdentifier() {
         return getIdentifier().getFactory().get();

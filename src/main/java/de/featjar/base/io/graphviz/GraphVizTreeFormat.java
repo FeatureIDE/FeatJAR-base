@@ -30,6 +30,8 @@ import java.util.stream.Collectors;
 /**
  * Serializes trees to GraphViz DOT files.
  *
+ * @param <T> the type of the read/written object
+ *
  * @author Elias Kuiter
  */
 public class GraphVizTreeFormat<T extends ITree<T>> implements IFormat<T> {

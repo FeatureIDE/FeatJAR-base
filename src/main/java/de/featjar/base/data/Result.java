@@ -54,12 +54,21 @@ import java.util.stream.Stream;
  * @author Elias Kuiter
  */
 public class Result<T> implements Supplier<T> {
+
+    /**
+     * Instance of an empty result.
+     */
     protected static final Result<?> EMPTY = new Result<>(null, null);
 
     private final T object;
 
     private final List<Problem> problems = new LinkedList<>();
 
+    /**
+     * Constructs a new result object.
+     * @param object the computed object to wrap
+     * @param problems the problems occurred during computation
+     */
     protected Result(T object, List<Problem> problems) {
         this.object = object;
         problems = problems == null
@@ -126,7 +135,7 @@ public class Result<T> implements Supplier<T> {
     }
 
     /**
-     * {@return a result of an {@link Optional}}
+     * {@return a result of an link Optional}
      *
      * @param optional the optional
      * @param <T>      the type of the result's object
@@ -136,6 +145,13 @@ public class Result<T> implements Supplier<T> {
         return ofNullable(optional.orElse(null));
     }
 
+    /**
+     * {@return a result of an link Optional}
+     *
+     * @param optional the optional
+     * @param <T>      the type of the result's object
+     * @param potentialProblem a supplier of the problem in case the optional is empty
+     */
     public static <T> Result<T> ofOptional(
             @SuppressWarnings("OptionalUsedAsFieldOrParameterType") Optional<T> optional,
             Supplier<Problem> potentialProblem) {
@@ -296,6 +312,8 @@ public class Result<T> implements Supplier<T> {
      * Consumes this result's object, if any.
      *
      * @param resultHandler the object consumer
+     *
+     * @return this result
      */
     public Result<T> ifPresent(Consumer<T> resultHandler) {
         if (object != null) {
@@ -309,6 +327,8 @@ public class Result<T> implements Supplier<T> {
      * This list is guaranteed to be non-null and read-only.
      *
      * @param problemHandler the problem list consumer
+     *
+     * @return this result
      */
     public Result<T> ifEmpty(Consumer<List<Problem>> problemHandler) {
         if (object != null) {
@@ -370,7 +390,7 @@ public class Result<T> implements Supplier<T> {
     }
 
     /**
-     * {@return a sequential {@link Stream} containing only this result's object, if any}
+     * {@return a sequential Stream containing only this result's object, if any}
      */
     public Stream<T> stream() {
         if (!isPresent()) {
@@ -448,6 +468,8 @@ public class Result<T> implements Supplier<T> {
      * {@return this result's object or throws this result's problems}
      *
      * @param errorHandler the error handler
+     * @param <E> the type of the thrown exception
+     * @throws E a customizable exception
      */
     public <E extends Exception> T orElseThrow(Function<List<Problem>, E> errorHandler) throws E {
         if (object != null) {
@@ -506,23 +528,23 @@ public class Result<T> implements Supplier<T> {
     }
 
     /**
-     * {@return an {@link Optional} of this result's object}
+     * {@return an Optional of this result's object}
      */
     public Optional<T> toOptional() {
         return Optional.ofNullable(object);
     }
 
     /**
-     * {@return an {@link Optional} of a given index}
+     * {@return a Result of a given index}. If the given index is negative, the returned result is empty.
      *
      * @param index the index
      */
     public static Result<Integer> ofIndex(int index) {
-        return index == -1 ? empty() : of(index);
+        return index < 0 ? empty(new IndexOutOfBoundsException(index)) : of(index);
     }
 
     /**
-     * {@return a wrapped function that converts its results into {@link Optional}}
+     * {@return a wrapped function that converts its results into an Optional}
      *
      * @param function the function
      */
@@ -550,13 +572,16 @@ public class Result<T> implements Supplier<T> {
     }
 
     /**
-     * {@return {@code true} if a value is present and it equals {@code otherValue}, {@code false} otherwise}
+     * {@return true if a value is present and it equals otherValue, false otherwise}
      * @param otherValue the value that is being compared to
      */
     public boolean valueEquals(T otherValue) {
         return isPresent() && Objects.equals(get(), otherValue);
     }
 
+    /**
+     * {@return a constant Computation from this result}
+     */
     public IComputation<T> toComputation() {
         return Computations.of(orElseThrow());
     }

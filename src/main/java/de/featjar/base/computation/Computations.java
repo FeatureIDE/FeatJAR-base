@@ -55,6 +55,13 @@ public class Computations {
         return new ComputeConstant<>(object);
     }
 
+    /**
+     * {@return a trivial computation that computes an object using a supplier}
+     * @param <T>     the type of the object
+     * @param klass the calling class
+     * @param scope the calling scope
+     * @param supplier the supplier to compute the object
+     */
     public static <T> IComputation<T> of(Class<?> klass, String scope, Supplier<Result<T>> supplier) {
         return new ComputeSupplier<>(klass, scope, supplier);
     }
@@ -199,7 +206,7 @@ public class Computations {
     }
 
     /**
-     * {@return a {@link FutureResult} of the given computation}
+     * {@return a FutureResult of the given computation}
      *
      * @param tComputation the computation
      * @param <T> the type of the computation result
@@ -319,9 +326,10 @@ public class Computations {
     }
 
     /**
-     * {@return the value returned by a given function applied to this computation}
+     * {@return the value returned by a given function applied to a computation}
      * Typically, this returns a new computation composed with this computation.
      *
+     * @param computation the computation
      * @param fn the function
      */
     public static <T, U, V> V mapPair(

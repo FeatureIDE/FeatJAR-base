@@ -42,11 +42,21 @@ import java.util.stream.Stream;
  * range is not handled gracefully (with optionals everywhere). maybe this can
  * be solved in a better way.
  *
+ * @param <T> the type of the elements in the map
+ *
  * @author Sebastian Krieter
  * @author Elias Kuiter
  */
 public class RangeMap<T> implements Cloneable {
+
+    /**
+     * Indexed list of all elements.
+     */
     protected final ArrayList<T> indexToObject = new ArrayList<>();
+
+    /**
+     * Element to index map.
+     */
     protected final LinkedHashMap<T, Integer> objectToIndex = Maps.empty();
 
     /**
@@ -92,6 +102,9 @@ public class RangeMap<T> implements Cloneable {
         updateObjectToIndex();
     }
 
+    /**
+     * {@return the maximum index in the element list}
+     */
     public int maxIndex() {
         return indexToObject.size() - 1;
     }
@@ -102,15 +115,23 @@ public class RangeMap<T> implements Cloneable {
     public Result<Range> getValidIndexRange() {
         return indexToObject.size() == 1 ? Result.empty() : Result.of(Range.of(1, indexToObject.size() - 1));
     }
-
+    /**
+     * {@return the minimum index of the map}
+     */
     protected Result<Integer> getMinimumIndex() {
         return getValidIndexRange().map(Range::getLowerBound);
     }
-
+    /**
+     * {@return the maximum index of the map}
+     */
     protected Result<Integer> getMaximumIndex() {
         return getValidIndexRange().map(Range::getUpperBound);
     }
 
+    /**
+     * {@return whether the given index is between the minimum and maximum index (inclusive) of this map}
+     * @param index the index
+     */
     protected boolean isValidIndex(int index) {
         return getValidIndexRange().map(range -> range.test(index)).orElse(false);
     }
@@ -215,6 +236,7 @@ public class RangeMap<T> implements Cloneable {
 
     /**
      * Adds objects of another map to this map, excluding duplicates.
+     * @param other the range map to be added
      */
     public void addAll(RangeMap<T> other) {
         for (T variable : other.getObjects(true)) {
@@ -327,6 +349,9 @@ public class RangeMap<T> implements Cloneable {
         return Result.ofNullable(objectToIndex.get(object));
     }
 
+    /**
+     * {@return a stream of the element to index map}
+     */
     protected Stream<Entry<T, Integer>> entryStream() {
         return objectToIndex.entrySet().stream();
     }
@@ -411,6 +436,9 @@ public class RangeMap<T> implements Cloneable {
         }
     }
 
+    /**
+     * {@return whether this map contains no elements}
+     */
     public boolean isEmpty() {
         return getValidIndexRange().isEmpty();
     }

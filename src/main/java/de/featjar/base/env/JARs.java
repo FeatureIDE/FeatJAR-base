@@ -45,6 +45,11 @@ public class JARs {
         }
     }
 
+    /**
+     * {@return the latest modification date of a resource in the JAR}
+     * @param resourceName the name of the resource
+     * @throws IOException if an I/O exception occurs.
+     */
     public static long getLastModificationDate(String resourceName) throws IOException {
         return getResource(resourceName).openConnection().getLastModified();
     }

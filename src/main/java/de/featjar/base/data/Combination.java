@@ -27,6 +27,8 @@ import java.util.function.Supplier;
  * Combination iterator that uses the combinatorial number system to process
  * combinations in parallel.
  *
+ * @param <E> the type of the environment of the combination
+ *
  * @author Sebastian Krieter
  */
 public final class Combination<E> extends ACombination<E, int[]> {
@@ -38,6 +40,13 @@ public final class Combination<E> extends ACombination<E, int[]> {
 
     private final BinomialCalculator binomialCalculator;
 
+    /**
+     * Constructs a new combination.
+     *
+     * @param t value for t
+     * @param n number of elements
+     * @param environmentCreator supplier for environments
+     */
     public Combination(int t, int n, Supplier<E> environmentCreator) {
         super(t, environmentCreator);
         this.t = t;
@@ -52,6 +61,12 @@ public final class Combination<E> extends ACombination<E, int[]> {
         }
     }
 
+    /**
+     * Copies another combination.
+     *
+     * @param other the other combination
+     * @param environmentCreator supplier for environments
+     */
     public Combination(Combination<E> other, Supplier<E> environmentCreator) {
         super(other, environmentCreator);
         t = other.t;
@@ -66,6 +81,11 @@ public final class Combination<E> extends ACombination<E, int[]> {
         throw new UnsupportedOperationException();
     }
 
+    /**
+     * {@return a subset of the given elements that corresponds to the current combination}
+     * Changes the internal selection array.
+     * @param items all elements
+     */
     public int[] getSelection(int[] items) {
         for (int i = 0; i < elementIndices.length; i++) {
             selection[i] = items[elementIndices[i]];
@@ -73,6 +93,11 @@ public final class Combination<E> extends ACombination<E, int[]> {
         return selection;
     }
 
+    /**
+     * {@return a subset of the given elements that corresponds to the current combination}
+     * Changes the internal selection array.
+     * @param items all elements
+     */
     public int[] getSelection(int[][] items) {
         for (int i = 0; i < elementIndices.length; i++) {
             selection[i] = items[i][elementIndices[i]];
@@ -80,6 +105,11 @@ public final class Combination<E> extends ACombination<E, int[]> {
         return selection;
     }
 
+    /**
+     * {@return a subset of the given elements that corresponds to the current combination}
+     * Does not change the internal selection array, but creates a new one.
+     * @param items all elements
+     */
     public int[] createSelection(int[] items) {
         int[] newSelection = new int[elementIndices.length];
         for (int i = 0; i < elementIndices.length; i++) {
@@ -88,6 +118,11 @@ public final class Combination<E> extends ACombination<E, int[]> {
         return newSelection;
     }
 
+    /**
+     * {@return a subset of the given elements that corresponds to the current combination}
+     * Does not change the internal selection array, but creates a new one.
+     * @param items all elements
+     */
     public int[] createSelection(int[][] items) {
         int[] newSelection = new int[elementIndices.length];
         for (int i = 0; i < elementIndices.length; i++) {

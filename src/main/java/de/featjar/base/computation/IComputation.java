@@ -81,14 +81,35 @@ public interface IComputation<T> extends Supplier<Result<T>>, ITree<IComputation
      */
     Result<T> compute(List<Object> dependencyList, Progress progress);
 
+    /**
+     * {@return the current result object of the computation}
+     * Can be used to check the intermediate state of a computation.
+     * Computation may not implement this functionality.
+     */
     default Result<T> getIntermediateResult() {
         return Result.empty();
     }
 
+    /**
+     * Start this computation.
+     *
+     * @return the result of this computation or throws an exception if not result could be computed
+     *
+     * @see #computeResult()
+     */
     default T compute() {
         return computeResult().orElseThrow();
     }
 
+    /**
+     * Start this computation.
+     *
+     * @param progressSupplier the supplier of a progress object
+     *
+     * @return the result of this computation or throws an exception if not result could be computed
+     *
+     * @see #computeResult(Supplier)
+     */
     default T compute(Supplier<Progress> progressSupplier) {
         return computeResult(progressSupplier).orElseThrow();
     }
@@ -147,7 +168,7 @@ public interface IComputation<T> extends Supplier<Result<T>>, ITree<IComputation
      * @see #computeResult(boolean, boolean, Supplier)
      */
     default Result<T> computeResult(boolean tryHitCache, boolean tryWriteCache) {
-        return computeResult(tryHitCache, tryWriteCache, tryWriteCache ? Progress::new : () -> Progress.Null.NULL);
+        return computeResult(tryHitCache, tryWriteCache, tryWriteCache ? Progress::new : () -> Progress.NULL);
     }
 
     /**
@@ -198,7 +219,7 @@ public interface IComputation<T> extends Supplier<Result<T>>, ITree<IComputation
     }
 
     /**
-     * {@return the (cached) result of this computation. Uses the given progress supplier to create {@link Progress} instances for each computation.}
+     * {@return the (cached) result of this computation. Uses the given progress supplier to create Progress instances for each computation.}
      *
      * @param progressSupplier the progress supplier
      *
@@ -311,10 +332,21 @@ public interface IComputation<T> extends Supplier<Result<T>>, ITree<IComputation
         return flatMapResult(klass, scope, t -> Result.ofNullable(fn.apply(t)));
     }
 
+    /**
+     * {@return a new computation that cast the result of another computation to a new type}
+     * @param <U> the new type
+     * @param newType the class object of the new type
+     */
     default <U> IComputation<U> cast(Class<U> newType) {
         return mapResult(newType, "castTo", i -> newType.cast(i));
     }
 
+    /**
+     * {@return a computation for the given dependency}
+     *
+     * @param <U> the type of the dependency
+     * @param dependency the dependency
+     */
     @SuppressWarnings("unchecked")
     default <U> Result<IComputation<U>> getDependencyComputation(Dependency<U> dependency) {
         return getChild(dependency.getIndex()).map(c -> (IComputation<U>) c);

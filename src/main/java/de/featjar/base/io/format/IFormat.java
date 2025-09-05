@@ -114,14 +114,16 @@ public interface IFormat<T> extends IExtension {
     }
 
     /**
-     * {@return whether this format supports {@link #parse(AInputMapper)}}
+     * {@return whether this format supports parsing}
+     * If {@code true} this format implements {@link #parse(AInputMapper)}.
      */
     default boolean supportsParse() {
         return false;
     }
 
     /**
-     * {@return whether this format supports {@link #write(Object, AOutputMapper)}}}
+     * {@return whether this format supports writing}
+     * If {@code true} this format implements {@link #write(Object, AOutputMapper)}.
      */
     default boolean supportsWrite() {
         return false;

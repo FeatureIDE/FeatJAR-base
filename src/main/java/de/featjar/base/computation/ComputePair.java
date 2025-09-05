@@ -28,35 +28,60 @@ import java.util.List;
  * A computation that computes two computations.
  * If any dependency fails to compute, the entire computation fails.
  *
+ * @param <T> the type of the first computation
+ * @param <U> the type of the second computation
+ *
  * @author Elias Kuiter
  */
 public class ComputePair<T, U> extends AComputation<Pair<T, U>> {
-    protected static final Dependency<?> KEY_COMPUTATION = Dependency.newDependency();
-    protected static final Dependency<?> VALUE_COMPUTATION = Dependency.newDependency();
+    private static final Dependency<?> KEY_COMPUTATION = Dependency.newDependency();
+    private static final Dependency<?> VALUE_COMPUTATION = Dependency.newDependency();
 
+    /**
+     * Constructs a new computation.
+     * @param key the first computation
+     * @param value the second computation
+     */
     public ComputePair(IComputation<T> key, IComputation<U> value) {
         super(key, value);
     }
 
+    /**
+     * Copy constructor.
+     * @param other the computation to copy
+     */
     protected ComputePair(ComputePair<T, U> other) {
         super(other);
     }
 
+    /**
+     * {@return the first computation}
+     */
     @SuppressWarnings("unchecked")
     public IComputation<T> getKeyComputation() {
         return getDependencyComputation((Dependency<T>) KEY_COMPUTATION).get();
     }
 
+    /**
+     * Sets the first computation.
+     * @param key the first computation
+     */
     @SuppressWarnings("unchecked")
     public void setKeyComputation(IComputation<T> key) {
         setDependencyComputation((Dependency<T>) KEY_COMPUTATION, key);
     }
 
+    /**
+     * {@return the second computation}
+     */
     @SuppressWarnings("unchecked")
     public IComputation<U> getValueComputation() {
         return getDependencyComputation((Dependency<U>) VALUE_COMPUTATION).get();
     }
-
+    /**
+     * Sets the second computation.
+     * @param value the second computation
+     */
     @SuppressWarnings("unchecked")
     public void setValueComputation(IComputation<U> value) {
         setDependencyComputation((Dependency<U>) VALUE_COMPUTATION, value);

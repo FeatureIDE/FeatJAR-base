@@ -70,7 +70,8 @@ public abstract class AFormats<T> extends AExtensionPoint<IFormat<T>> implements
     }
 
     /**
-     * {@return an array of the names of all installed formats for BooleanAssignmentGroup}.
+     * {@return the format that matches the given name}.
+     * @param name the name to match
      */
     public Optional<IFormat<T>> getFormatByName(String name) {
         return getExtensions().stream()

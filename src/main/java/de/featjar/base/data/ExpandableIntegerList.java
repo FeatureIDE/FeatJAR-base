@@ -33,8 +33,8 @@ public class ExpandableIntegerList implements Serializable {
 
     private static final long serialVersionUID = 1831680426776033300L;
 
-    protected int[] elements;
-    protected int size;
+    private int[] elements;
+    private int size;
 
     public ExpandableIntegerList() {
         this(10);
@@ -234,7 +234,7 @@ public class ExpandableIntegerList implements Serializable {
     /**
      * Creates an array containing all elements of this list.
      * Modifications will not affect this instance.
-     * The array will be as large as {@link size()}.
+     * The array will be as large as {@link #size()}.
      * <br><br>
      * If modification is not necessary, but performance is important, consider using {@link #getInternalArray()}.
      *

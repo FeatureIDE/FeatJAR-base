@@ -61,7 +61,7 @@ public class Cache implements IInitializer, IBrowsable<GraphVizTreeFormat<ICompu
 
         /**
          * Caches top-level computation results; that is, those not nested in other computations.
-         * Nested computations are detected by checking if {@link IComputation#compute(DependencyList, Progress)} is already on the stack.
+         * Nested computations are detected by checking if {@link IComputation#compute(List, Progress)} is already on the stack.
          */
         CachePolicy CACHE_TOP_LEVEL =
                 (computation, stackTrace) -> !stackTrace.containsMethodCall(IComputation.class, "compute");
@@ -79,8 +79,15 @@ public class Cache implements IInitializer, IBrowsable<GraphVizTreeFormat<ICompu
      * Configures a cache.
      */
     public static class Configuration {
+
+        /**
+         * The {@link CachePolicy} to use.
+         */
         protected CachePolicy cachePolicy = CachePolicy.CACHE_NONE;
 
+        /**
+         * The {@link Executor} for computations.
+         */
         protected Executor executor = Executors.newCachedThreadPool();
 
         /**
@@ -117,6 +124,9 @@ public class Cache implements IInitializer, IBrowsable<GraphVizTreeFormat<ICompu
      */
     protected final Map<IComputation<?>, FutureResult<?>> computationMap = new ConcurrentHashMap<>();
 
+    /**
+     * Statistic for cache hits per computation.
+     */
     protected final Map<IComputation<?>, Long> hitStatistics = new HashMap<>();
 
     /**

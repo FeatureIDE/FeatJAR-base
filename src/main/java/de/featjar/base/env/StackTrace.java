@@ -32,7 +32,7 @@ import java.util.stream.Collectors;
  * @author Elias Kuiter
  */
 public class StackTrace {
-    protected List<StackTraceElement> stackTraceElements;
+    private List<StackTraceElement> stackTraceElements;
 
     /**
      * Creates a new stack trace for the current thread.

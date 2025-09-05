@@ -32,9 +32,21 @@ public class HostEnvironment {
      * Operating systems distinguished by FeatJAR.
      */
     public enum OperatingSystem {
+        /**
+         * Windows
+         */
         WINDOWS,
+        /**
+         * MacOS
+         */
         MAC_OS,
+        /**
+         * Linux
+         */
         LINUX,
+        /**
+         * Something else
+         */
         UNKNOWN
     }
 

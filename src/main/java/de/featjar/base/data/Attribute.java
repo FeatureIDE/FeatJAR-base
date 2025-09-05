@@ -27,22 +27,39 @@ import java.util.function.Function;
 /**
  * Primary implementation of {@link IAttribute}.
  *
+ * @param <T> the type of the attribute
+ *
  * @author Elias Kuiter
  */
 public class Attribute<T> implements IAttribute<T> {
+    /**
+     * The default name space for attributes.
+     * Set to: {@code de.featjar.base.data}
+     */
     public static final String DEFAULT_NAMESPACE = Attribute.class.getPackageName();
 
-    protected final String namespace;
-    protected final String name;
-    protected final Class<T> type;
-    protected BiPredicate<IAttributable, T> validator;
-    protected Function<IAttributable, T> defaultValueFunction;
-    protected Function<T, T> copyValueFunction = t -> t;
+    private final String namespace;
+    private final String name;
+    private final Class<T> type;
+    private BiPredicate<IAttributable, T> validator;
+    private Function<IAttributable, T> defaultValueFunction;
+    private Function<T, T> copyValueFunction = t -> t;
 
+    /**
+     * Constructs a new attribute with the {@link #DEFAULT_NAMESPACE default name space}.
+     * @param name the name of the attribute
+     * @param type the class object of the attribute type
+     */
     public Attribute(String name, Class<T> type) {
         this(DEFAULT_NAMESPACE, name, type);
     }
 
+    /**
+     * Constructs a new attribute.
+     * @param namespace the name space of the attribute
+     * @param name the name of the attribute
+     * @param type the class object of the attribute type
+     */
     public Attribute(String namespace, String name, Class<T> type) {
         this.namespace = Objects.requireNonNull(namespace);
         this.name = Objects.requireNonNull(name);
@@ -119,7 +136,7 @@ public class Attribute<T> implements IAttribute<T> {
     }
 
     /**
-     * {@return a copy of this attribute's value for a given {@link IAttributable}}
+     * {@return a copy of this attribute's value for a given IAttributable}
      */
     @Override
     public Result<T> copyValue(IAttributable attributable) {

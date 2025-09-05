@@ -83,7 +83,7 @@ public interface ITreeVisitor<T extends ITree<?>, U> {
     }
 
     /**
-     * {@return a condition that is {@code true} if visiting the root implies it satisfying a given predicate}
+     * {@return a condition that is true if visiting the root implies it satisfying a given predicate}
      *
      * @param path the path to the visited node
      * @param predicate the predicate

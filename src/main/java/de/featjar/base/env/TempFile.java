@@ -40,12 +40,15 @@ public class TempFile implements AutoCloseable {
      * @param prefix the prefix of the temporary file's name
      * @param suffix the suffix of the temporary file's name
      *
-     * @throws IOException
+     * @throws IOException if an I/O error occurs
      */
     public TempFile(String prefix, String suffix) throws IOException {
         path = Files.createTempFile(prefix, suffix);
     }
 
+    /**
+     * {@return the path of this file}
+     */
     public Path getPath() {
         return path;
     }

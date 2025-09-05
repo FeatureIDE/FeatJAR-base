@@ -46,38 +46,89 @@ import java.util.function.Supplier;
  * @author Elias Kuiter
  */
 public class Process implements Supplier<Result<List<String>>> {
-    protected final Path executablePath;
-    protected final Map<String, String> environmentVariables;
-    protected final List<String> arguments;
-    protected final Duration timeout;
-    protected boolean errorOccurred;
-
+    private final Path executablePath;
+    private final Map<String, String> environmentVariables;
+    private final List<String> arguments;
+    private final Duration timeout;
+    private boolean errorOccurred;
+    /**
+     * Constructs a new process object.
+     * @param executablePath the path to the executable
+     * @param arguments the command line arguments for the executable
+     */
     public Process(Path executablePath, String... arguments) {
         this(executablePath, List.of(arguments));
     }
-
+    /**
+     * Constructs a new process object.
+     * @param executablePath the path to the executable
+     * @param arguments the command line arguments for the executable
+     */
     public Process(Path executablePath, List<String> arguments) {
         this(executablePath, arguments, null, null);
     }
-
+    /**
+     * Constructs a new process object.
+     * @param executablePath the path to the executable
+     * @param arguments the command line arguments for the executable
+     * @param timeout the timeout after which the process is stopped
+     */
     public Process(Path executablePath, List<String> arguments, Duration timeout) {
         this(executablePath, arguments, null, timeout);
     }
-
+    /**
+     * Constructs a new process object.
+     * @param executablePath the path to the executable
+     * @param arguments the command line arguments for the executable
+     * @param environmentVariables the environment variables for the executable
+     */
     public Process(Path executablePath, List<String> arguments, Map<String, String> environmentVariables) {
         this(executablePath, arguments, environmentVariables, null);
     }
-
+    /**
+     * Constructs a new process object.
+     * @param executablePath the path to the executable
+     * @param environmentVariables the environment variables for the executable
+     * @param timeout the timeout after which the process is stopped
+     */
     public Process(Path executablePath, Map<String, String> environmentVariables, Duration timeout) {
         this(executablePath, null, environmentVariables, timeout);
     }
 
+    /**
+     * Constructs a new process object.
+     * @param executablePath the path to the executable
+     * @param arguments the command line arguments for the executable
+     * @param environmentVariables the environment variables for the executable
+     * @param timeout the timeout after which the process is stopped
+     */
     public Process(
             Path executablePath, List<String> arguments, Map<String, String> environmentVariables, Duration timeout) {
         this.executablePath = Objects.requireNonNull(executablePath);
         this.arguments = arguments == null ? List.of() : arguments;
         this.environmentVariables = environmentVariables == null ? Map.of() : environmentVariables;
         this.timeout = timeout;
+    }
+
+    /**
+     * Starts the process and lets it run in a separate thread.
+     *
+     * @return an instance of {@link java.lang.Process}
+     *
+     * @throws IOException if an I/O error occurs
+     */
+    public java.lang.Process start() throws IOException {
+        List<String> command = new ArrayList<>();
+        command.add(executablePath.toString());
+        command.addAll(arguments);
+
+        FeatJAR.log().debug(String.join(" ", command));
+        FeatJAR.log().debug(environmentVariables);
+
+        final ProcessBuilder processBuilder = new ProcessBuilder(command);
+        processBuilder.environment().putAll(environmentVariables);
+
+        return processBuilder.start();
     }
 
     @Override
@@ -87,6 +138,16 @@ public class Process implements Supplier<Result<List<String>>> {
         return result.map(r -> output);
     }
 
+    /**
+     * Starts the process in a separate thread and waits for it to finish or until the timeout.
+     * @param input the input to provide to the started process
+     * @param outConsumer the consumer of the process' output stream
+     * @param errConsumer the consumer of the process' error stream
+     * @return a result containing potential problems during execution
+     *
+     * @see #run()
+     * @see #run(Consumer, Consumer)
+     */
     public Result<Void> run(String input, Consumer<String> outConsumer, Consumer<String> errConsumer) {
         java.lang.Process process = null;
         try {
@@ -126,29 +187,30 @@ public class Process implements Supplier<Result<List<String>>> {
         }
     }
 
-    public java.lang.Process start() throws IOException {
-        List<String> command = new ArrayList<>();
-        command.add(executablePath.toString());
-        command.addAll(arguments);
-
-        FeatJAR.log().debug(String.join(" ", command));
-        FeatJAR.log().debug(environmentVariables);
-
-        final ProcessBuilder processBuilder = new ProcessBuilder(command);
-        processBuilder.environment().putAll(environmentVariables);
-
-        return processBuilder.start();
-    }
-
+    /**
+     * Starts the process in a separate thread and waits for it to finish or until the timeout.
+     * @param outConsumer the consumer of the process' output stream
+     * @param errConsumer the consumer of the process' error stream
+     * @return a result containing potential problems during execution
+     *
+     * @see #run()
+     * @see #run(String, Consumer, Consumer)
+     */
     public Result<Void> run(Consumer<String> outConsumer, Consumer<String> errConsumer) {
         return run(null, outConsumer, errConsumer);
     }
-
+    /**
+     * Starts the process in a separate thread and waits for it to finish or until the timeout.
+     * @return a result containing potential problems during execution
+     *
+     * @see #run(Consumer, Consumer)
+     * @see #run(String, Consumer, Consumer)
+     */
     public Result<Void> run() {
         return run(null, null, null);
     }
 
-    protected void consumeInputStream(InputStream inputStream, Consumer<String> consumer, boolean isError) {
+    private void consumeInputStream(InputStream inputStream, Consumer<String> consumer, boolean isError) {
         if (consumer != null) {
             new Thread(() -> {
                         try (BufferedReader reader =

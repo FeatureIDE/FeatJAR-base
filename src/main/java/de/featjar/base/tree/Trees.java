@@ -47,7 +47,7 @@ import java.util.stream.StreamSupport;
 public class Trees {
 
     /**
-     * Thrown when a visitor requests the {@link ITreeVisitor.TraversalAction#FAIL}
+     * Thrown when a visitor requests the {@link de.featjar.base.tree.visitor.ITreeVisitor.TraversalAction#FAIL}
      * action.
      */
     public static class VisitorFailException extends Exception {

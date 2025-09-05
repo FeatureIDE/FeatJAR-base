@@ -57,6 +57,7 @@ public class FutureResult<T> implements Supplier<Result<T>> {
      * Creates a future result completed with a given result.
      *
      * @param result the result
+     * @param progress the progress object for the computation
      */
     public FutureResult(Result<T> result, Progress progress) {
         this(DependentPromise.from(CompletableTask.completed(result, getExecutor())), progress);
@@ -66,6 +67,7 @@ public class FutureResult<T> implements Supplier<Result<T>> {
      * Creates a future result from a given promise.
      *
      * @param promise the promise
+     * @param progress the progress object for the computation
      */
     public FutureResult(DependentPromise<Result<T>> promise, Progress progress) {
         this.promise = promise;
@@ -87,7 +89,7 @@ public class FutureResult<T> implements Supplier<Result<T>> {
     }
 
     /**
-     * {@return a future result from given {@link IComputation} that resolves when all dependencies are resolved}
+     * {@return a future result from given computation that resolves when all dependencies are resolved}
      *
      * @param computation the computation
      * @param tryHitCache whether to try to read from the cache

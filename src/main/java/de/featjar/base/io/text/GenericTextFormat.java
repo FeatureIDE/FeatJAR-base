@@ -26,6 +26,8 @@ import de.featjar.base.io.format.IFormat;
 /**
  * Serializes an arbitrary object as text, as it is returned by {@link Object#toString()}.
  *
+ * @param <T> the type of the read/written object
+ *
  * @author Sebastian Krieter
  */
 public class GenericTextFormat<T> implements IFormat<T> {

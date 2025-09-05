@@ -483,7 +483,7 @@ public class IntegerList implements Serializable {
     }
 
     /**
-     * {@return this integer list's elements as an {@code IntStream}}
+     * {@return this integer list's elements as an IntStream}
      */
     public final IntStream stream() {
         return IntStream.of(elements);

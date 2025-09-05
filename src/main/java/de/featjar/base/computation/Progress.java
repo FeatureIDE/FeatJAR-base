@@ -30,8 +30,12 @@ import java.util.function.Supplier;
  */
 public class Progress implements Supplier<Double>, AutoCloseable {
 
-    public static class Null extends Progress {
-        public static final Null NULL = new Null();
+    /**
+     * An instance of a progress object that does nothing.
+     */
+    public static final Progress NULL = new Null();
+
+    private static class Null extends Progress {
 
         @Override
         public void setCurrentStep(long currentStep) {}
@@ -46,14 +50,20 @@ public class Progress implements Supplier<Double>, AutoCloseable {
         public void setTotalSteps(long totalSteps) {}
     }
 
-    protected String name;
-    protected long totalSteps, currentSteps;
-    protected boolean finished;
+    private String name;
+    private long totalSteps, currentSteps;
+    private boolean finished;
 
+    /**
+     * Constructs a new progress instance with one step.
+     */
     public Progress() {
-        this(Long.MAX_VALUE);
+        this(1);
     }
-
+    /**
+     * Constructs a new progress instance.
+     * @param totalSteps the number of necessary steps
+     */
     protected Progress(long totalSteps) {
         if (totalSteps < 1) {
             throw new IndexOutOfBoundsException(String.valueOf(totalSteps));
@@ -65,10 +75,17 @@ public class Progress implements Supplier<Double>, AutoCloseable {
         return new Progress(steps == 0 ? 1 : steps);
     }
 
+    /**
+     * {@return the name of this progress}
+     */
     public String getName() {
         return name;
     }
 
+    /**
+     * Sets the name of this progress}
+     * @param name the name
+     */
     public void setName(String name) {
         this.name = name;
     }
