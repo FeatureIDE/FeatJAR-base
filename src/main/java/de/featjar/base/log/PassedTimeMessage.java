@@ -21,7 +21,8 @@
 package de.featjar.base.log;
 
 /**
- * Returns the passed time since creating in a human-readable format.
+ * Returns the passed time since creating this message supplier.
+ * The output format is: {@code dd hh:mm:ss} or {@code " > 99 days "}.
  *
  * @author Sebastian Krieter
  */
@@ -29,6 +30,9 @@ public final class PassedTimeMessage implements IMessage {
 
     private long startTime;
 
+    /**
+     * Creates a new message supplier.
+     */
     public PassedTimeMessage() {
         startTime = System.currentTimeMillis() / 1000L;
     }

@@ -131,6 +131,7 @@ public class ConfigurableLog implements Log, IInitializer {
          * @param path        the path to the file
          * @param verbosities the logged verbosities
          * @return this configuration
+         * @throws FileNotFoundException if the file exists but is a directory rather than a regular file, does not exist but cannot be created, or cannot be opened for any other reason.
          */
         public Configuration logToFile(Path path, Verbosity... verbosities) throws FileNotFoundException {
             Objects.requireNonNull(path);

@@ -29,11 +29,6 @@ import java.util.List;
  * @author Sebastian Krieter
  */
 public class EmptyProgressBar implements IProgressBar {
-    @Override
-    public void track(Progress progress) {}
-
-    @Override
-    public void track(Progress progress, IMessage... messages) {}
 
     @Override
     public void track(Progress progress, List<IMessage> messageSuppliers) {}

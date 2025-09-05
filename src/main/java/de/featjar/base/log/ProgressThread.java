@@ -50,12 +50,20 @@ public final class ProgressThread extends Thread implements IProgressBar, AutoCl
 
     private boolean running = true;
 
+    /**
+     * Creates a new progress thread.
+     * @param refreshRate the number of milliseconds between new messages.
+     */
     public ProgressThread(int refreshRate) {
         super();
         this.refreshRate = refreshRate;
         start();
     }
 
+    /**
+     * Set the number of milliseconds between new messages.
+     * @param refreshRate the refreshRate in milliseconds.
+     */
     public void setRefreshRate(int refreshRate) {
         this.refreshRate = refreshRate;
     }
@@ -111,12 +119,11 @@ public final class ProgressThread extends Thread implements IProgressBar, AutoCl
         }
     }
 
+    /**
+     * Stops this progress thread.
+     */
     public void shutdown() {
         running = false;
-    }
-
-    public int getRefreshRate() {
-        return refreshRate;
     }
 
     @Override

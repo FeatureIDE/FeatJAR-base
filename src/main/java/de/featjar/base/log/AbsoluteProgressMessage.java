@@ -23,12 +23,12 @@ package de.featjar.base.log;
 import de.featjar.base.computation.Progress;
 
 /**
- * A message supplier that shows the relative progress of a {@link Progress progress} object and its name.
- * The output format is: {@code relative % (name)}.
+ * A message supplier that shows the current and total steps of a {@link Progress progress} object and its name.
+ * The output format is: {@code current/total (name)}.
  *
  * @author Sebastian Krieter
  */
-public final class RelativeProgressMessage implements IMessage {
+public final class AbsoluteProgressMessage implements IMessage {
 
     private final Progress progress;
 
@@ -36,17 +36,11 @@ public final class RelativeProgressMessage implements IMessage {
      * Constructs a new message supplier with the given progress object.
      * @param progress the progress object
      */
-    public RelativeProgressMessage(Progress progress) {
+    public AbsoluteProgressMessage(Progress progress) {
         this.progress = progress;
     }
 
     public String get() {
-        double relativeProgress = progress.get();
-        if (relativeProgress < 0) {
-            relativeProgress = 0;
-        } else if (relativeProgress > 1) {
-            relativeProgress = 1;
-        }
-        return String.format("%5.1f %% (%s)", relativeProgress * 100, progress.getName());
+        return String.format("%d/%d (%s)", progress.getCurrentStep(), progress.getTotalSteps(), progress.getName());
     }
 }

@@ -27,24 +27,21 @@ package de.featjar.base.log;
  */
 public final class UsedMemoryMessage implements IMessage {
 
-    private long startFreeMemory;
-
-    public UsedMemoryMessage() {
-        System.gc();
-        startFreeMemory = getFreeMemory();
-    }
-
-    private long getFreeMemory() {
+    private long free() {
         Runtime runtime = Runtime.getRuntime();
         return runtime.maxMemory() - runtime.totalMemory() + runtime.freeMemory();
     }
 
-    private long getUsedMemory() {
+    private long used() {
         Runtime runtime = Runtime.getRuntime();
         return runtime.totalMemory() - runtime.freeMemory();
     }
 
+    private static double format(long memory) {
+        return (memory / 1_000_000) / 1000.0;
+    }
+
     public String get() {
-        return String.format("%.3f GB", ((getUsedMemory()) / 1_000_000) / 1000.0);
+        return String.format("%.3f/%.3f GB", format(used()), format(free()));
     }
 }

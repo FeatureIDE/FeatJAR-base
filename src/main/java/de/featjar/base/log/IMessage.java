@@ -23,6 +23,7 @@ package de.featjar.base.log;
 import java.util.function.Supplier;
 
 /**
+ * A supplier of a message. Intended to be used with {@link IProgressBar}.
  *
  * @author Sebastian Krieter
  */

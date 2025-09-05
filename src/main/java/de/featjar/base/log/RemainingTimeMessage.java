@@ -20,10 +20,13 @@
  */
 package de.featjar.base.log;
 
+import de.featjar.base.computation.Progress;
 import java.util.Arrays;
 import java.util.function.Supplier;
 
 /**
+ * Returns an estimation of the remaining time for a {@link Progress progress} object.
+ * The output format is: {@code ETR: dd hh:mm:ss} or {@code "ETR:  > 99 days "} or {@code "ETR: N/A         "}.
  *
  * @author Sebastian Krieter
  */
@@ -39,9 +42,13 @@ public final class RemainingTimeMessage implements IMessage {
 
     private Supplier<Double> progressSupplier;
 
-    public RemainingTimeMessage(Supplier<Double> progressSupplier) {
+    /**
+     * Constructs a new message supplier.
+     * @param progress the progress object
+     */
+    public RemainingTimeMessage(Supplier<Double> progress) {
         startTime = System.currentTimeMillis() / 1000L;
-        this.progressSupplier = progressSupplier;
+        this.progressSupplier = progress;
         Arrays.fill(timeSlidingWindow, startTime);
     }
 

@@ -26,7 +26,9 @@ import de.featjar.base.computation.Progress;
 import java.util.List;
 
 /**
- * Provides a way to track the progress of a {@link IComputation computation}.
+ * Provides an interface to track the progress of a {@link IComputation computation}.
+ * For instance, print the relative progress to the {@link ProgressThread console}.
+ * Uses {@link IMessage messages} to customize the output.
  *
  * @see FeatJAR#progress()
  *
@@ -34,15 +36,36 @@ import java.util.List;
  */
 public interface IProgressBar {
 
+    /**
+     * Tracks the given progress object with a set of default messages.
+     * @param progress the progress object
+     *
+     * @see ActivityMessage
+     * @see RelativeProgressMessage
+     * @see PassedTimeMessage
+     */
     default void track(Progress progress) {
-        track(progress, new ActivityMessage(), new ProgressMessage(progress), new PassedTimeMessage());
+        track(progress, new ActivityMessage(), new RelativeProgressMessage(progress), new PassedTimeMessage());
     }
 
+    /**
+     * Tracks the given progress object with the given list of messages.
+     * @param progress the progress object
+     * @param messageSuppliers the list of messages
+     */
     default void track(Progress progress, IMessage... messageSuppliers) {
         track(progress, List.of(messageSuppliers));
     }
 
+    /**
+     * Tracks the given progress object with the given list of messages.
+     * @param progress the progress object
+     * @param messageSuppliers the list of messages
+     */
     void track(Progress progress, List<IMessage> messageSuppliers);
 
+    /**
+     * Removes the tracking of the last tracked progress object.
+     */
     void untrack();
 }
