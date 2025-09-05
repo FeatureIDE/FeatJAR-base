@@ -20,6 +20,7 @@
  */
 package de.featjar.base.io.output;
 
+import java.io.BufferedOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.nio.charset.Charset;
@@ -73,8 +74,9 @@ public class FileOutput extends AOutput {
             }
         }
         OpenOption appendOption = overwrite ? StandardOpenOption.TRUNCATE_EXISTING : StandardOpenOption.APPEND;
-        return createNewFiles
-                ? Files.newOutputStream(path, StandardOpenOption.WRITE, appendOption, StandardOpenOption.CREATE)
-                : Files.newOutputStream(path, StandardOpenOption.WRITE, appendOption);
+        return new BufferedOutputStream(
+                createNewFiles
+                        ? Files.newOutputStream(path, StandardOpenOption.WRITE, appendOption, StandardOpenOption.CREATE)
+                        : Files.newOutputStream(path, StandardOpenOption.WRITE, appendOption));
     }
 }
