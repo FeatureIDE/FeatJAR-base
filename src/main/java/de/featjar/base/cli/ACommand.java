@@ -25,6 +25,8 @@ import java.util.List;
 
 /**
  * The abstract class for any command.
+ *
+ * @author Sebastian Krieter
  */
 public abstract class ACommand implements ICommand {
 
@@ -41,6 +43,9 @@ public abstract class ACommand implements ICommand {
     public static final Option<Path> OUTPUT_OPTION =
             Option.newOption("output", Option.PathParser).setDescription("Path to output file(s)");
 
+    /**
+     * {@return all options registered for the calling class}
+     */
     public final List<Option<?>> getOptions() {
         return Option.getAllOptions(getClass());
     }

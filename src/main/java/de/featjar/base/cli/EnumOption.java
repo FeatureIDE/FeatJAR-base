@@ -21,34 +21,60 @@
 package de.featjar.base.cli;
 
 import java.util.Arrays;
+import java.util.Locale;
+import java.util.Objects;
+import java.util.stream.Collectors;
 
 /**
- * A Boolean flag option, which can either be present or not.
+ * An option that takes one value from a predefined list of values given by an enum.
+ *
+ * @param <E> the enum type of the option
  *
  * @author Sebastian Krieter
  */
-public class EnumOption extends Option<String> {
+public class EnumOption<E extends Enum<E>> extends Option<E> {
 
-    private String[] possibleValues;
     /**
-     * Creates a flag option.
+     * {@return a string that lists all possible values of an enum class}
+     * @param enumClass the enum class
+     */
+    public static <T extends Enum<T>> String possibleValues(Class<T> enumClass) {
+        final Object[] enumConstants = enumClass.getEnumConstants();
+        return enumConstants == null //
+                ? "" //
+                : Arrays.stream(enumConstants)
+                        .map(Objects::toString)
+                        .map(String::toLowerCase)
+                        .collect(Collectors.joining(", "));
+    }
+
+    private final Class<E> enumClass;
+
+    /**
+     * Creates an enum option.
      *
      * @param name the name of the flag option
+     * @param enumClass the enum class
      */
-    protected EnumOption(String name, String... possibleValues) {
-        super(name, StringParser);
-        this.possibleValues = Arrays.copyOf(possibleValues, possibleValues.length);
-        Arrays.sort(this.possibleValues);
-        validator = s -> Arrays.binarySearch(this.possibleValues, s) >= 0;
+    protected EnumOption(String name, Class<E> enumClass) {
+        super(name, s -> Enum.valueOf(enumClass, s.toUpperCase(Locale.ENGLISH)));
+        this.enumClass = enumClass;
     }
 
     @Override
     public String toString() {
         return String.format(
-                "%s <value>%s (one of %s)%s",
+                "%s <value>%s (one of [%s])%s",
                 getArgumentName(),
                 getDescription().map(d -> ": " + d).orElse(""),
-                Arrays.toString(possibleValues),
+                possibleValues(),
                 getDefaultValue().map(s -> " (default: " + s + ")").orElse(""));
+    }
+
+    /**
+     * {@return all possible values of this option's enum}
+     */
+    public String possibleValues() {
+        return possibleValues(enumClass);
     }
 }

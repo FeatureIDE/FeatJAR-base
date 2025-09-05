@@ -32,6 +32,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 /**
  * An extension point installs {@link IExtension extensions} of a given type.
@@ -150,19 +151,16 @@ public abstract class AExtensionPoint<T extends IExtension> {
     /**
      * {@return all installed extensions matching the given regular expression}
      * The matching is case-insensitive.
-     * If no extensions match, an empty set is returned.
+     * If no extensions match, an empty list is returned.
      *
      * @param regex the regular expression
      */
-    public LinkedHashSet<T> getMatchingExtensions(String regex) {
-        LinkedHashSet<String> matchingIdentifiers = indexMap.keySet().stream()
-                .filter(Pattern.compile(regex).asPredicate())
-                .collect(Sets.toSet());
-        return matchingIdentifiers.stream()
-                .map(this::getExtension)
-                .filter(Result::isPresent)
-                .map(Result::get)
-                .collect(Sets.toSet());
+    public List<T> getMatchingExtensions(String regex) {
+        Pattern pattern = Pattern.compile(regex);
+        return indexMap.entrySet().stream()
+                .filter(e -> pattern.matcher(e.getKey()).matches())
+                .map(e -> extensions.get(e.getValue()))
+                .collect(Collectors.toList());
     }
 
     /**

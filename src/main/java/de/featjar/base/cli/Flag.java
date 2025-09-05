@@ -26,6 +26,7 @@ package de.featjar.base.cli;
  * @author Elias Kuiter
  */
 public class Flag extends Option<Boolean> {
+
     /**
      * Creates a flag option.
      *

@@ -20,55 +20,52 @@
  */
 package de.featjar.base.cli;
 
+import java.util.Arrays;
 import java.util.List;
-import java.util.function.Function;
+import java.util.Locale;
+import java.util.stream.Collectors;
 
 /**
- * A list option, which is parsed as a list of values.
+ * An option that takes a list of predefined values given by a enum.
  *
- * @author Elias Kuiter
+ * @param <E> the enum type of the option
+ *
  * @author Sebastian Krieter
- * @param <T> the type of the option value
  */
-public abstract class AListOption<T> extends Option<List<T>> {
+public class EnumListOption<E extends Enum<E>> extends Option<List<E>> {
+
+    private final Class<E> enumClass;
 
     /**
-     * Creates a list option with an empty default list.
+     * Creates a list option with a given enum as possible values.
      *
-     * @param name the name
-     * @param parser the parser
+     * @param name the name of the list enum option
+     * @param enumClass the class of the enum
      */
-    protected AListOption(String name, Function<String, List<T>> parser) {
-        this(name, parser, List.of());
-    }
-    /**
-     * Creates a list option with a single-element default list.
-     *
-     * @param name the name
-     * @param parser the parser
-     * @param defaultValue the value for the default list
-     */
-    protected AListOption(String name, Function<String, List<T>> parser, T defaultValue) {
-        this(name, parser, List.of(defaultValue));
-    }
-
-    /**
-     * Creates a list option with a given default list.
-     *
-     * @param name the name
-     * @param parser the parser
-     * @param defaultValue a default list
-     */
-    protected AListOption(String name, Function<String, List<T>> parser, List<T> defaultValue) {
-        super(name, parser, defaultValue);
+    protected EnumListOption(String name, Class<E> enumClass) {
+        super(
+                name,
+                s -> Arrays.stream(s.split("[,\n]"))
+                        .map(o -> Enum.valueOf(enumClass, o.toUpperCase(Locale.ENGLISH)))
+                        .collect(Collectors.toList()),
+                List.of());
+        this.enumClass = enumClass;
     }
 
     @Override
     public String toString() {
         return String.format(
-                "%s <value1,value2,...>%s%s",
+                "%s <value1,value2,...>%s (one or more of [%s])%s",
                 getArgumentName(),
                 getDescription().map(d -> ": " + d).orElse(""),
+                possibleValues(),
                 getDefaultValue().map(s -> " (default: " + s + ")").orElse(""));
+    }
+
+    /**
+     * {@return all possible values of this option's enum}
+     */
+    public String possibleValues() {
+        return EnumOption.possibleValues(enumClass);
     }
 }

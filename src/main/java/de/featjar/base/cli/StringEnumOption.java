@@ -20,35 +20,37 @@
  */
 package de.featjar.base.cli;
 
-import java.util.List;
-import java.util.stream.Collectors;
-import java.util.stream.IntStream;
+import java.util.Arrays;
+import java.util.LinkedHashSet;
 
 /**
- * A range option, representing a list of integer values from 1 to n.
+ * An option that takes one value from a predefined list of values given by a list of strings.
  *
  * @author Sebastian Krieter
  */
-public class RangeOption extends Option<List<Integer>> {
+public class StringEnumOption extends Option<String> {
+
+    private final LinkedHashSet<String> possibleValues;
 
     /**
-     * Creates a range option.
+     * Creates an enum option.
      *
-     * @param name the name
+     * @param name the name of the flag option
+     * @param possibleValues the possible values this option can take
      */
-    protected RangeOption(String name) {
-        super(
-                name,
-                s -> IntStream.rangeClosed(1, Integer.parseInt(s)).boxed().collect(Collectors.toList()),
-                List.of(1));
+    protected StringEnumOption(String name, String... possibleValues) {
+        super(name, StringParser);
+        this.possibleValues = new LinkedHashSet<>(Arrays.asList(possibleValues));
+        validator = s -> this.possibleValues.contains(s);
     }
 
     @Override
     public String toString() {
         return String.format(
-                "%s <maxValue>%s%s",
+                "%s <value>%s (one of %s)%s",
                 getArgumentName(),
                 getDescription().map(d -> ": " + d).orElse(""),
+                possibleValues.toString(),
                 getDefaultValue().map(s -> " (default: " + s + ")").orElse(""));
     }
 }

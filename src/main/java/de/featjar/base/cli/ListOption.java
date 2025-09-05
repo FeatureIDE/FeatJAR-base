@@ -21,6 +21,7 @@
 package de.featjar.base.cli;
 
 import java.util.Arrays;
+import java.util.List;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -31,7 +32,7 @@ import java.util.stream.Collectors;
  * @author Sebastian Krieter
  * @param <T> the type of the option value
  */
-public class ListOption<T> extends AListOption<T> {
+public class ListOption<T> extends Option<List<T>> {
 
     /**
      * Creates a list option.
@@ -41,5 +42,14 @@ public class ListOption<T> extends AListOption<T> {
      */
     protected ListOption(String name, Function<String, T> parser) {
         super(name, s -> Arrays.stream(s.split("[,\n]")).map(parser).collect(Collectors.toList()));
+    }
+
+    @Override
+    public String toString() {
+        return String.format(
+                "%s <value1,value2,...>%s%s",
+                getArgumentName(),
+                getDescription().map(d -> ": " + d).orElse(""),
+                getDefaultValue().map(s -> " (default: " + s + ")").orElse(""));
     }
 }

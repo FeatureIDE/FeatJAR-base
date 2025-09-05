@@ -63,11 +63,26 @@ import java.util.function.Supplier;
  * @author Elias Kuiter
  */
 public final class FeatJAR extends IO implements AutoCloseable {
+    /**
+     * Name of the root package.
+     */
     public static final String ROOT_PACKAGE_NAME = "de.featjar";
+    /**
+     * Name of the library.
+     */
     public static final String LIBRARY_NAME = "feat.jar";
 
+    /**
+     * Error code for internal problems during computation.
+     */
     public static final int ERROR_COMPUTING_RESULT = 1;
+    /**
+     * Error code for timeout during computation.
+     */
     public static final int ERROR_TIMEOUT = 1;
+    /**
+     * Error code for problems during output of the computed result.
+     */
     public static final int ERROR_WRITING_RESULT = 1;
 
     /**
@@ -85,6 +100,9 @@ public final class FeatJAR extends IO implements AutoCloseable {
          */
         public final Cache.Configuration cacheConfig = new Cache.Configuration();
 
+        /**
+         * {@code true} if a separate thread is used for progress monitoring.
+         */
         public boolean useProgressThread = false;
 
         /**
@@ -109,6 +127,9 @@ public final class FeatJAR extends IO implements AutoCloseable {
             return this;
         }
 
+        /**
+         * Initializes FeatJAR with this configuration.
+         */
         public void initialize() {
             FeatJAR.initialize(this);
         }
@@ -131,10 +152,16 @@ public final class FeatJAR extends IO implements AutoCloseable {
         System.exit(run(arguments));
     }
 
+    /**
+     * {@return a new empty FeatJAR configuration}
+     */
     public static Configuration configure() {
         return new Configuration();
     }
 
+    /**
+     * {@return a new FeatJAR configuration with default values}
+     */
     public static Configuration defaultConfiguration() {
         final Configuration configuration = new Configuration();
         configuration
@@ -147,6 +174,9 @@ public final class FeatJAR extends IO implements AutoCloseable {
         return configuration;
     }
 
+    /**
+     * {@return a new FeatJAR configuration with values intended for logging problems in undefined state}
+     */
     public static Configuration panicConfiguration() {
         final Configuration configuration = new Configuration();
         configuration
@@ -157,6 +187,9 @@ public final class FeatJAR extends IO implements AutoCloseable {
         return configuration;
     }
 
+    /**
+     * {@return a new FeatJAR configuration with values intended for test settings}
+     */
     public static Configuration testConfiguration() {
         final Configuration configuration = new Configuration();
         configuration
@@ -173,13 +206,16 @@ public final class FeatJAR extends IO implements AutoCloseable {
 
     /**
      * {@return the current FeatJAR instance}
+     *
+     * @throws IllegalStateException if FeatJAR is not initialized.
      */
     public static FeatJAR getInstance() {
+        if (instance == null) throw new IllegalStateException("FeatJAR not initialized yet");
         return instance;
     }
 
     /**
-     * {@return {@code true} if FeatJAR is initialized, {@code false} otherwise}
+     * {@return true if FeatJAR is initialized, false otherwise}
      */
     public static boolean isInitialized() {
         return instance != null;
@@ -187,6 +223,8 @@ public final class FeatJAR extends IO implements AutoCloseable {
 
     /**
      * Initializes FeatJAR with a default configuration.
+     *
+     * @return the new FeatJAR instance
      */
     public static FeatJAR initialize() {
         return initialize(defaultConfiguration());
@@ -196,6 +234,7 @@ public final class FeatJAR extends IO implements AutoCloseable {
      * Initializes FeatJAR.
      *
      * @param configuration the FeatJAR configuration
+     * @return the new FeatJAR instance
      */
     public static synchronized FeatJAR initialize(Configuration configuration) {
         if (instance != null) {
@@ -289,10 +328,12 @@ public final class FeatJAR extends IO implements AutoCloseable {
      * Interpret arguments and run the specified command.
      *
      * @param arguments command-line arguments
+     *
+     * @return the exit code. 0 for a successful run, a number greater than 0 otherwise
      */
     public static int run(String... arguments) {
         try (FeatJAR featJAR = FeatJAR.initialize(null)) {
-            return runAfterInitialization(true, arguments);
+            return featJAR.runAfterInitialization(true, arguments);
         } catch (Exception e) {
             FeatJAR.log().error(e);
             return panic();
@@ -300,61 +341,66 @@ public final class FeatJAR extends IO implements AutoCloseable {
     }
 
     /**
-     * Interpret arguments and run the specified command.
+     * Interpret arguments and run with the test configuration.
      *
      * @param arguments command-line arguments
+     *
+     * @return the exit code. 0 for a successful run, a number greater than 0 otherwise
+     *
+     * @see #testConfiguration()
      */
     public static int runTest(String... arguments) {
         try (FeatJAR featJAR = FeatJAR.initialize(testConfiguration())) {
-            return runAfterInitialization(false, arguments);
+            return featJAR.runAfterInitialization(false, arguments);
         } catch (Exception e) {
             FeatJAR.log().error(e);
             return panic();
         }
     }
 
+    /**
+     * Interpret arguments and run the specified command. Skips the initialization. Assumes that a FeatJAR
+     *
+     * @param arguments command-line arguments
+     *
+     * @return the exit code. 0 for a successful run, a number greater than 0 otherwise
+     */
     public static int runInternally(String... arguments) {
-        return runAfterInitialization(false, arguments);
+        return getInstance().runAfterInitialization(false, arguments);
     }
 
-    private static int runAfterInitialization(boolean configure, String... arguments) {
+    private int runAfterInitialization(boolean configure, String... arguments) {
         OptionList optionInput = new OptionList(arguments);
 
         List<Problem> problems = optionInput.parseArguments();
+
+        if (configure) {
+            setConfiguration(optionInput.getConfiguration());
+        }
+
         if (Problem.containsError(problems)) {
-            FeatJAR.log().problems(problems, Verbosity.ERROR);
-            FeatJAR.log().problems(optionInput.parseRemainingArguments());
+            FeatJAR.log().problems(problems);
             FeatJAR.log()
-                    .plainMessage(OptionList.getHelp(optionInput.getCommand().orElse(null)));
-            return panic();
+                    .plainMessage(OptionList.printHelp(optionInput.getCommand().orElse(null)));
+            return FeatJAR.ERROR_COMPUTING_RESULT;
         }
 
         if (optionInput.isHelp()) {
-            System.out.println("This is FeatJAR!");
-            System.out.println(OptionList.getHelp(optionInput.getCommand().orElse(null)));
+            FeatJAR.log().plainMessage("This is FeatJAR!");
+            FeatJAR.log()
+                    .plainMessage(OptionList.printHelp(optionInput.getCommand().orElse(null)));
         } else if (optionInput.isVersion()) {
-            System.out.println(FeatJAR.LIBRARY_NAME + ", development version");
+            FeatJAR.log().plainMessage(FeatJAR.LIBRARY_NAME + ", development version");
         } else {
-            FeatJAR.log().problems(problems);
             Result<ICommand> optionalCommand = optionInput.getCommand();
+            FeatJAR.log().problems(problems);
             if (optionalCommand.isEmpty()) {
                 FeatJAR.log().error("No command provided");
-                FeatJAR.log().plainMessage(OptionList.getHelp());
-                return panic();
+                FeatJAR.log().plainMessage(OptionList.printAvailableCommands());
+                return FeatJAR.ERROR_COMPUTING_RESULT;
             } else {
                 ICommand command = optionalCommand.get();
                 FeatJAR.log().debug("Running command %s", command.getIdentifier());
-                List<Problem> commandProblems =
-                        optionInput.addOptions(command.getOptions()).parseRemainingArguments();
-                FeatJAR.log().problems(commandProblems);
-                if (Problem.containsError(commandProblems)) {
-                    FeatJAR.log()
-                            .message(OptionList.getHelp(optionInput.getCommand().orElse(command)));
-                    return panic();
-                }
-                if (configure) {
-                    instance.setConfiguration(optionInput.getConfiguration());
-                }
                 return command.run(optionInput);
             }
         }
@@ -406,9 +452,7 @@ public final class FeatJAR extends IO implements AutoCloseable {
      * @param klass the extension point's class
      */
     public static <T extends AExtensionPoint<?>> T extensionPoint(Class<T> klass) {
-        FeatJAR instance = FeatJAR.instance;
-        if (instance == null) throw new IllegalStateException("FeatJAR not initialized yet");
-        Result<T> extensionPoint = instance.getExtensionPoint(klass);
+        Result<T> extensionPoint = getInstance().getExtensionPoint(klass);
         if (extensionPoint.isEmpty())
             throw new RuntimeException("extension point " + klass + " not currently installed in FeatJAR");
         return extensionPoint.get();
@@ -422,9 +466,7 @@ public final class FeatJAR extends IO implements AutoCloseable {
      * @param klass the extension point's class
      */
     public static <T extends IExtension> T extension(Class<T> klass) {
-        FeatJAR instance = FeatJAR.instance;
-        if (instance == null) throw new IllegalStateException("FeatJAR not initialized yet");
-        Result<T> extension = instance.getExtension(klass);
+        Result<T> extension = getInstance().getExtension(klass);
         if (extension.isEmpty())
             throw new RuntimeException("extension " + klass + " not currently installed in FeatJAR");
         return extension.get();
@@ -449,7 +491,7 @@ public final class FeatJAR extends IO implements AutoCloseable {
     }
 
     /**
-     * {@return the current FeatJAR instance's progress bar, or an progress bar if
+     * {@return the current FeatJAR instance's progress bar, or an empty progress bar if
      * uninitialized or --progress option was not provided}
      */
     public static IProgressBar progress() {
