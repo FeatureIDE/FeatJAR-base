@@ -55,11 +55,6 @@ import java.util.stream.Stream;
  */
 public class Result<T> implements Supplier<T> {
 
-    /**
-     * Instance of an empty result.
-     */
-    protected static final Result<?> EMPTY = new Result<>(null, null);
-
     private final T object;
 
     private final List<Problem> problems = new LinkedList<>();
@@ -216,10 +211,20 @@ public class Result<T> implements Supplier<T> {
         return of(Void.VOID, problems);
     }
 
+    /**
+     * {@return a list of all problems from the given results}
+     *
+     * @param results the results
+     */
     public static List<Problem> getProblems(Result<?>... results) {
         return getProblems(Arrays.asList(results));
     }
-
+    /**
+     *
+     * {@return a list of all problems from the given results}
+     *
+     * @param results the results
+     */
     public static List<Problem> getProblems(List<? extends Result<?>> results) {
         return results.stream()
                 .filter(Objects::nonNull)
@@ -227,14 +232,20 @@ public class Result<T> implements Supplier<T> {
                 .collect(Collectors.toList());
     }
 
-    public static Stream<Result<?>> nonNull(List<? extends Result<?>> results) {
+    private static Stream<Result<?>> nonNull(List<? extends Result<?>> results) {
         return results.stream().map(result -> result == null ? Result.empty() : result);
     }
 
-    public static List<Result<?>> replaceNull(List<? extends Result<?>> results) {
-        return nonNull(results).collect(Collectors.toList());
-    }
-
+    /**
+     * {@return for a given list of results, a result of a list with all wrapped objects}
+     * Merges a list of n non-empty results into a non-empty result of a list of length n.
+     * If any result in the given list is empty, returns an empty result.
+     * The returned result contains all problems from the given results.
+     *
+     * @param <T> the type of the returned list
+     * @param results the results
+     * @param listFactory a supplier for the returned list
+     */
     public static <T extends List<Object>> Result<T> mergeAll(
             List<? extends Result<?>> results, Supplier<T> listFactory) {
         List<Problem> problems = getProblems(results);
@@ -243,42 +254,62 @@ public class Result<T> implements Supplier<T> {
                 : Result.empty(problems);
     }
 
+    /**
+     * {@return for a given list of results, a result of a list with all wrapped objects}
+     * Merges a list of n non-empty results into a non-empty result of a list of length n.
+     * If any result in the given list is empty, returns an empty result.
+     * The returned result contains all problems from the given results.
+     *
+     * @param results the results
+     */
     public static Result<ArrayList<Object>> mergeAll(List<? extends Result<?>> results) {
         return mergeAll(results, ArrayList::new);
     }
 
+    /**
+     * {@return for a given list of results, a result of a list with all wrapped objects}
+     * Merges a list of n results into a non-empty result of a list of length n.
+     * If any result in the given list is empty, the returned list contains null at the same position.
+     * The returned result contains all problems from the given results.
+     *
+     * @param <T> the type of the returned list
+     * @param results the results
+     * @param listFactory a supplier for the returned list
+     */
     public static <T extends List<Object>> Result<T> mergeAllNullable(
             List<? extends Result<?>> results, Supplier<T> listFactory) {
-        List<Problem> problems = getProblems(results);
         return Result.of(
-                nonNull(results).map(r -> r.orElse(null)).collect(Collectors.toCollection(listFactory)), problems);
+                nonNull(results).map(r -> r.orElse(null)).collect(Collectors.toCollection(listFactory)),
+                getProblems(results));
     }
 
+    /**
+     * {@return for a given list of results, a result of a list with all wrapped objects}
+     * Merges a list of n results into a non-empty result of a list of length n.
+     * If any result in the given list is empty, the returned list contains null at the same position.
+     * The returned result contains all problems from the given results.
+     *
+     * @param results the results
+     */
     public static Result<ArrayList<Object>> mergeAllNullable(List<? extends Result<?>> results) {
         return mergeAllNullable(results, ArrayList::new);
     }
 
-    public static Result<?> mergeLast(List<Result<?>> results) {
-        results = results.stream().filter(Objects::nonNull).collect(Collectors.toList());
-        if (results.isEmpty()) return of(new ArrayList<>());
-        List<Problem> problems = getProblems(results);
-        return Result.ofNullable(results.get(results.size() - 1).orElse(null), problems);
-    }
-
-    @SuppressWarnings("unchecked")
-    public <U> Result<U> merge(Result<U> other) {
-        return (Result<U>) mergeLast(Arrays.asList(this, other));
-    }
-
+    /**
+     * {@return A new result that does not wrap another result}
+     * If this result contains another result, this method unwraps the inner object, such that the returned result does not contain another result.
+     * @param <U> the type of the wrapped object
+     */
     @SuppressWarnings("unchecked")
     public <U> Result<U> unwrap() {
-        Result<?> innerResult = this;
+        List<Problem> allProblems = new LinkedList<>(problems);
         Object innerObject = object;
         while (innerObject instanceof Result) {
-            innerResult = (Result<?>) innerObject;
+            Result<?> innerResult = (Result<?>) innerObject;
+            allProblems.addAll(innerResult.problems);
             innerObject = innerResult.orElse(null);
         }
-        return (Result<U>) innerResult;
+        return (Result<U>) Result.ofNullable(innerObject, allProblems);
     }
 
     /**
@@ -346,39 +377,18 @@ public class Result<T> implements Supplier<T> {
      * exceptions occur during the mapping or if this result was empty before.
      */
     public <R> Result<R> map(Function<T, R> mapper) {
-        if (object != null) {
-            try {
-                return Result.of(mapper.apply(object), problems);
-            } catch (final Exception e) {
-                return merge(Result.empty(e));
-            }
-        } else {
-            return Result.empty(problems);
+        try {
+            return object != null
+                    ? mergeProblems(Result.ofNullable(mapper.apply(object), problems))
+                    : Result.empty(problems);
+        } catch (final Exception e) {
+            return mergeProblems(Result.empty(e));
         }
-    }
-
-    /**
-     * Filters the object in this result using a given {@link Predicate}
-     * If the predicate evaluates to {@code false} the value of this result is set to {@code null}.
-     *
-     * @param predicate the predicate
-     * @return A new result with the original object or an empty result.
-     */
-    public Result<T> filter(Predicate<T> predicate) {
-        if (object != null) {
-            try {
-                if (!predicate.test(object)) {
-                    return Result.empty(problems);
-                }
-            } catch (final Exception e) {
-                return merge(Result.empty(e));
-            }
-        }
-        return this;
     }
 
     /**
      * Maps the object in this result to another object using a mapper function that also returns a {@link Result}.
+     * Merges the two problems lists.
      *
      * @param mapper the mapper function
      * @param <R>    the type of the mapped object
@@ -386,11 +396,101 @@ public class Result<T> implements Supplier<T> {
      * exceptions occur during the mapping or if this result was empty before.
      */
     public <R> Result<R> flatMap(Function<T, Result<R>> mapper) {
-        return object != null ? mapper.apply(object) : Result.empty(problems);
+        try {
+            return object != null ? mergeProblems(mapper.apply(object)) : Result.empty(problems);
+        } catch (final Exception e) {
+            return mergeProblems(Result.empty(e));
+        }
     }
 
     /**
-     * {@return a sequential Stream containing only this result's object, if any}
+     * Filters the object in this result using a given {@link Predicate}.
+     * If the predicate evaluates to {@code false} the value of this result is set to {@code null}.
+     *
+     * @param predicate the predicate
+     * @return A new result with the original object or an empty result.
+     */
+    public Result<T> filter(Predicate<T> predicate) {
+        try {
+            return object != null ? predicate.test(object) ? this : Result.empty(problems) : Result.empty(problems);
+        } catch (final Exception e) {
+            return mergeProblems(Result.empty(e));
+        }
+    }
+
+    /**
+     * {@return a new empty result, containing the problems from this result and the problem constructed from the given exception}
+     * @param exception the exception
+     */
+    public <U> Result<U> nullify(Exception exception) {
+        return mergeProblems(Result.empty(exception));
+    }
+
+    /**
+     * {@return a new empty result, containing the problems from this result and the given problems}
+     * @param problems the given problems
+     */
+    public <U> Result<U> nullify(Problem... problems) {
+        return mergeProblems(Result.empty(problems));
+    }
+
+    /**
+     * {@return a new empty result, containing the problems from this result and the given problems}
+     * @param problems the given problems
+     */
+    public <U> Result<U> nullify(List<Problem> problems) {
+        return mergeProblems(Result.empty(problems));
+    }
+
+    /**
+     * {@return a new result containing the same object and problems as this results and the given problems}
+     * Returns this result object if there are no new problems given.
+     * @param problems the given problems
+     */
+    public Result<T> addProblemInformation(Problem... problems) {
+        return problems.length == 0 ? this : mergeProblems(Result.ofNullable(object, problems));
+    }
+
+    /**
+     * {@return a new result containing the same object and problems as this results and the given problems}
+     * Returns this result object if there are no new problems given.
+     * @param problems the given problems
+     */
+    public Result<T> addProblemInformation(List<Problem> problems) {
+        return problems.isEmpty() ? this : mergeProblems(Result.ofNullable(object, problems));
+    }
+
+    /**
+     * Filters the object in this result using a given {@link Predicate}.
+     * If the predicate evaluates to {@code false} the value of this result is set to {@code null}.
+     * Allows to provide a {@link Problem} to indicate why the object was filtered.
+     *
+     * @param predicate the predicate
+     * @param problemSupplier a supplier to create a {@link Problem} when an object was filtered
+     * @return A new result with the original object or an empty result.
+     */
+    public Result<T> filter(Predicate<T> predicate, Supplier<Problem> problemSupplier) {
+        try {
+            return object != null
+                    ? predicate.test(object) ? this : mergeProblems(Result.empty(problemSupplier.get()))
+                    : Result.empty(problems);
+        } catch (final Exception e) {
+            return mergeProblems(Result.empty(e));
+        }
+    }
+
+    /**
+     * {@return the given result with the problems from this result added to its problem list}
+     * @param <R> the type of result
+     * @param otherResult the given result
+     */
+    private <R> Result<R> mergeProblems(Result<R> otherResult) {
+        otherResult.problems.addAll(0, problems);
+        return otherResult;
+    }
+
+    /**
+     * {@return a sequential stream containing only this result's object, if any}
      */
     public Stream<T> stream() {
         if (!isPresent()) {

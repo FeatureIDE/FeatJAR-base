@@ -195,9 +195,9 @@ public interface IComputation<T> extends Supplier<Result<T>>, ITree<IComputation
             return computeFutureResult(tryHitCache, tryWriteCache)
                     .getPromise()
                     .onTimeout(
-                            () -> Result.empty(new TimeoutException(
-                                            String.format("Timeout of %ss was reached.", timeout.getSeconds())))
-                                    .merge(getIntermediateResult()),
+                            () -> getIntermediateResult()
+                                    .nullify(new Problem(new TimeoutException(
+                                            String.format("Timeout of %ss was reached.", timeout.getSeconds())))),
                             timeout,
                             true)
                     .get();

@@ -507,10 +507,12 @@ public interface ITree<T extends ITree<T>> extends IBrowsable<GraphVizTreeFormat
 
     @Override
     default Result<URI> getBrowseURI(GraphVizTreeFormat<T> argument) {
-        Result<String> dot = argument.serialize((T) this);
-        if (dot.isEmpty()) return dot.merge(Result.empty());
+        return argument.serialize((T) this).flatMap(ITree::buildURI);
+    }
+
+    private static Result<URI> buildURI(String dot) {
         try {
-            return Result.of(new URI("https", "edotor.net", "", "engine=dot", dot.get()));
+            return Result.of(new URI("https", "edotor.net", "", "engine=dot", dot));
         } catch (URISyntaxException e) {
             return Result.empty(e);
         }

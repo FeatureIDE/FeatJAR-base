@@ -225,9 +225,12 @@ public class FutureResult<T> implements Supplier<Result<T>> {
                 promise.thenApplyAsync(
                         tResult -> {
                             try {
-                                return tResult.merge(fn.apply(tResult, progress));
+                                Result<U> uResult = fn.apply(tResult, progress);
+                                return (tResult == null)
+                                        ? uResult
+                                        : uResult.addProblemInformation(tResult.getProblems());
                             } catch (Exception e) {
-                                return Result.empty(e);
+                                return (tResult == null) ? Result.empty() : tResult.nullify(e);
                             }
                         },
                         getExecutor()),

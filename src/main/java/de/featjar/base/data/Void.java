@@ -29,10 +29,9 @@ package de.featjar.base.data;
  *
  * @author Elias Kuiter
  */
-public class Void extends Result<java.lang.Void> {
+public class Void {
+    /**
+     * Singleton instance of Void.
+     */
     protected static final de.featjar.base.data.Void VOID = new de.featjar.base.data.Void();
-
-    protected Void() {
-        super(null, null);
-    }
 }

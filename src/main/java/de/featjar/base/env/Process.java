@@ -172,11 +172,10 @@ public class Process implements Supplier<Result<List<String>>> {
                 result = Result.empty(
                         new Problem(executablePath + " exited with value " + exitValue, Problem.Severity.ERROR));
             }
-            return Result.empty(
-                            new Problem("exit code = " + exitValue, Problem.Severity.INFO),
-                            new Problem("in time = " + terminatedInTime, Problem.Severity.INFO),
-                            new Problem("elapsed time in ms = " + elapsedTime, Problem.Severity.INFO))
-                    .merge(result);
+            return result.addProblemInformation(
+                    new Problem("exit code = " + exitValue, Problem.Severity.INFO),
+                    new Problem("in time = " + terminatedInTime, Problem.Severity.INFO),
+                    new Problem("elapsed time in ms = " + elapsedTime, Problem.Severity.INFO));
         } catch (IOException | InterruptedException e) {
             return Result.empty(e);
         } finally {
