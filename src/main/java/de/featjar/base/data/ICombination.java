@@ -21,10 +21,10 @@
 package de.featjar.base.data;
 
 /**
- * Combination of some items.
- * Can store an arbitrary environment object to provide context.
+ * Combination tuple of some items. Used by combination iterators (e.g. {@link SingleLexicographicIterator}).
+ * Can store an arbitrary environment object to provide context to the class using the combination.
  *
- * @param <T> the type of the item in the combination
+ * @param <T> the type of items in the combination
  * @param <E> the type of the environment for the combination
  *
  * @author Sebastian Krieter
@@ -33,8 +33,17 @@ public interface ICombination<E, T> {
 
     /**
      * {@return the current combination of items given as instance of T}
+     * Uses the internal selection array.
+     * <b>Must not be changed by the calling class.
+     * Does change after additional calls to {@link #advance()}.</b>
      */
     T select();
+
+    /**
+     * {@return a subset of the items that corresponds to the current combination}
+     * Does not change the internal selection array, but creates a new one.
+     */
+    T createSelection();
 
     /**
      * Moves to the next combination.

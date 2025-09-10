@@ -22,25 +22,31 @@ package de.featjar.base.data;
 
 import java.util.Arrays;
 import java.util.Objects;
-import java.util.function.Supplier;
 import java.util.stream.IntStream;
 
 /**
- * Combination iterator that uses the combinatorial number system to process
- * combinations in parallel.
+ * Combination object used {@link MultiLexicographicIterator}.
+ *
+ * @param <E> the type of the environment for the combination
  *
  * @author Sebastian Krieter
  */
 public final class MultiLiteralCombination<E> extends ACombination<E, int[]> {
 
-    public final int[][] items;
-    private int[] selection;
-
+    private final int[][] items;
     private final int[] t;
     private final long maxIndex;
 
-    public MultiLiteralCombination(int[][] items, int[] t, Supplier<E> environmentCreator) {
-        super(IntStream.of(Objects.requireNonNull(t)).sum(), environmentCreator);
+    private int[] selection;
+
+    /**
+     * Creates a new combination with the given item sets, combination sizes, and environment.
+     * @param items the integer sets
+     * @param t the combination size for each item set
+     * @param environment the environment
+     */
+    public MultiLiteralCombination(int[][] items, int[] t, E environment) {
+        super(IntStream.of(Objects.requireNonNull(t)).sum(), environment);
         Objects.requireNonNull(items);
 
         if (items.length != t.length) {
@@ -90,6 +96,15 @@ public final class MultiLiteralCombination<E> extends ACombination<E, int[]> {
             selection[i] = items[i][elementIndices[i]];
         }
         return selection;
+    }
+
+    @Override
+    public int[] createSelection() {
+        int[] newSelection = new int[selection.length];
+        for (int i = 0; i < elementIndices.length; i++) {
+            newSelection[i] = items[i][elementIndices[i]];
+        }
+        return newSelection;
     }
 
     @Override

@@ -21,11 +21,9 @@
 package de.featjar.base.data;
 
 import java.util.Arrays;
-import java.util.function.Supplier;
 
 /**
- * Combination iterator that uses the combinatorial number system to process
- * combinations in parallel.
+ * Abstract implementation of {@link ICombination}.
  *
  * @param <T> the type of the element in the combination
  * @param <E> the type of the environment for the combination
@@ -49,25 +47,25 @@ public abstract class ACombination<E, T> implements ICombination<E, T> {
     public long combinationIndex;
 
     /**
-     * Creates a new combination instance
+     * Creates a new combination instance.
      * @param t the value for t
-     * @param environmentCreator the environment supplier
+     * @param environment the environment
      */
-    public ACombination(int t, Supplier<E> environmentCreator) {
+    public ACombination(int t, E environment) {
         combinationIndex = 0;
         elementIndices = new int[t];
-        environment = (environmentCreator != null) ? environmentCreator.get() : null;
+        this.environment = (environment != null) ? environment : null;
     }
 
     /**
      * Copy constructor.
      * @param other the combination to copy
-     * @param environmentCreator the environment supplier
+     * @param environment the environment
      */
-    public ACombination(ACombination<E, T> other, Supplier<E> environmentCreator) {
+    public ACombination(ACombination<E, T> other, E environment) {
         combinationIndex = other.combinationIndex;
         elementIndices = Arrays.copyOf(other.elementIndices, other.elementIndices.length);
-        environment = (environmentCreator != null) ? environmentCreator.get() : null;
+        this.environment = (environment != null) ? environment : null;
     }
 
     @Override

@@ -27,25 +27,55 @@ import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
 /**
- * Combination iterator that uses the combinatorial number system to process
- * combinations in parallel.
+ * This iterator provides all t-wise combinations of a given set of integer items without permutations.
+ * It uses the combinatorial number system to enumerate combinations and enable parallel processing.
+ *
+ * @param <E> the type of the environment object within a combination
  *
  * @author Sebastian Krieter
  */
 public final class SingleLexicographicIterator<E> implements Spliterator<ICombination<E, int[]>> {
 
+    /**
+     * {@return a sequential stream using a new instance of the iterator with the given items and combination size}
+     *
+     * @param t the combination size
+     * @param items the items
+     */
     public static Stream<ICombination<Void, int[]>> stream(int[] items, int t) {
         return StreamSupport.stream(new SingleLexicographicIterator<>(items, t, null), false);
     }
 
+    /**
+     * {@return a parallel stream using a new instance of the iterator with the given items and combination size}
+     *
+     * @param t the combination size
+     * @param items the items
+     */
     public static Stream<ICombination<Void, int[]>> parallelStream(int[] items, int t) {
         return StreamSupport.stream(new SingleLexicographicIterator<Void>(items, t, null), true);
     }
 
+    /**
+     * {@return a sequential stream using a new instance of the iterator with the given items and combination size}
+     *
+     * @param t the combination size
+     * @param items the items
+     * @param <V> the type of the environment object for the combinations
+     * @param environmentCreator a supplier for the environment object
+     */
     public static <V> Stream<ICombination<V, int[]>> stream(int[] items, int t, Supplier<V> environmentCreator) {
         return StreamSupport.stream(new SingleLexicographicIterator<>(items, t, environmentCreator), false);
     }
 
+    /**
+     * {@return a parallel stream using a new instance of the iterator with the given items and combination size}
+     *
+     * @param t the combination size
+     * @param items the items
+     * @param <V> the type of the environment object for the combinations
+     * @param environmentCreator a supplier for the environment object
+     */
     public static <V> Stream<ICombination<V, int[]>> parallelStream(
             int[] items, int t, Supplier<V> environmentCreator) {
         return StreamSupport.stream(new SingleLexicographicIterator<>(items, t, environmentCreator), true);
@@ -57,15 +87,26 @@ public final class SingleLexicographicIterator<E> implements Spliterator<ICombin
     private long end;
     private final Supplier<E> environmentCreator;
 
+    /**
+     * Constructs a new instance of the iterator with the given items and combination size.
+     *
+     * @param t the combination size
+     * @param items the items
+     * @param environmentCreator a supplier for the environment object
+     */
     public SingleLexicographicIterator(int[] items, int t, Supplier<E> environmentCreator) {
         this.environmentCreator = environmentCreator;
-        combination = new SingleLiteralCombination<>(items, t, environmentCreator);
+        combination = new SingleLiteralCombination<>(items, t, environmentCreator.get());
         end = combination.maxIndex();
     }
 
+    /**
+     * Copy constructor. Used by {@link #trySplit()}.
+     * @param other the iterator to copy
+     */
     private SingleLexicographicIterator(SingleLexicographicIterator<E> other) {
-        this.environmentCreator = other.environmentCreator;
-        combination = new SingleLiteralCombination<E>(other.combination, other.environmentCreator);
+        environmentCreator = other.environmentCreator;
+        combination = new SingleLiteralCombination<E>(other.combination, environmentCreator.get());
 
         long currentIndex = other.combination.index();
         long newStart = currentIndex + ((other.end - currentIndex) / 2);

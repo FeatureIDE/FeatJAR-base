@@ -22,26 +22,33 @@ package de.featjar.base.data;
 
 import java.util.Arrays;
 import java.util.Objects;
-import java.util.function.Supplier;
 
 /**
- * Combination iterator that uses the combinatorial number system to process
- * combinations in parallel.
+ * Combination object used {@link SingleLexicographicIterator}.
+ *
+ * @param <E> the type of the environment for the combination
  *
  * @author Sebastian Krieter
  */
 public final class SingleLiteralCombination<E> extends ACombination<E, int[]> {
 
-    public final int[] items;
-    private int[] selection;
-
+    private final int[] items;
     private final int t;
     private final long maxIndex;
 
+    private int[] selection;
+    private int lastChangedIndex;
+
     private final BinomialCalculator binomialCalculator;
 
-    public SingleLiteralCombination(int[] items, int t, Supplier<E> environmentCreator) {
-        super(t, environmentCreator);
+    /**
+     * Creates a new combination with the given items, combination size, and environment supplier.
+     * @param items the integer items
+     * @param t the value for t
+     * @param environment the environment
+     */
+    public SingleLiteralCombination(int[] items, int t, E environment) {
+        super(t, environment);
         Objects.requireNonNull(items);
 
         this.t = t;
@@ -53,11 +60,17 @@ public final class SingleLiteralCombination<E> extends ACombination<E, int[]> {
         elementIndices[0] = 0;
         for (int i = 1; i < t; i++) {
             elementIndices[i] = i;
+            selection[i] = items[i];
         }
     }
 
-    public SingleLiteralCombination(SingleLiteralCombination<E> other, Supplier<E> environmentCreator) {
-        super(other, environmentCreator);
+    /**
+     * Copy constructor.
+     * @param other the combination to copy
+     * @param environment a new environment object
+     */
+    public SingleLiteralCombination(SingleLiteralCombination<E> other, E environment) {
+        super(other, environment);
         t = other.t;
         items = other.items;
         binomialCalculator = other.binomialCalculator;
@@ -67,10 +80,19 @@ public final class SingleLiteralCombination<E> extends ACombination<E, int[]> {
 
     @Override
     public int[] select() {
-        for (int i = 0; i < elementIndices.length; i++) {
+        for (int i = 0; i <= lastChangedIndex; i++) {
             selection[i] = items[elementIndices[i]];
         }
         return selection;
+    }
+
+    @Override
+    public int[] createSelection() {
+        int[] newSelection = new int[selection.length];
+        for (int i = 0; i < newSelection.length; i++) {
+            newSelection[i] = items[elementIndices[i]];
+        }
+        return newSelection;
     }
 
     @Override
@@ -96,6 +118,7 @@ public final class SingleLiteralCombination<E> extends ACombination<E, int[]> {
     }
 
     private void resetLowerElements(int i) {
+        lastChangedIndex = i;
         for (int j = i - 1; j >= 0; j--) {
             elementIndices[j] = j;
         }

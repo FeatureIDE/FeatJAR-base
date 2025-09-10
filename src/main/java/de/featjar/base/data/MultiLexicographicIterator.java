@@ -27,8 +27,11 @@ import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
 /**
- * Combination iterator that uses the combinatorial number system to process
- * combinations in parallel.
+ * This iterator provides all combinations of multiple sets of integer items without permutations.
+ * Each item set has a corresponding combination size, which is used to build a sub combination of that size per set.
+ * These sub combinations are concatenate to form the complete combination.
+ *
+ * @param <E> the type of the environment object
  *
  * @author Sebastian Krieter
  */
@@ -36,21 +39,37 @@ public final class MultiLexicographicIterator<E> implements Spliterator<ICombina
 
     private final ICombination<E, int[]> combination;
 
+    /**
+     * {@return a sequential stream using a new instance of the iterator with the given t and number of elements}
+     *
+     * @param t the combination size
+     * @param items the item sets to use
+     */
     public static Stream<ICombination<Void, int[]>> stream(int[][] items, int[] t) {
         return StreamSupport.stream(new MultiLexicographicIterator<>(items, t, null), false);
     }
 
+    /**
+     * {@return a sequential stream using a new instance of the iterator with the given t and number of elements}
+     *
+     * @param t the combination size
+     * @param items the item sets to use
+     * @param <V> the type of the environment object for the combinations
+     * @param environmentCreator a supplier for the environment object
+     */
     public static <V> Stream<ICombination<V, int[]>> stream(int[][] items, int[] t, Supplier<V> environmentCreator) {
         return StreamSupport.stream(new MultiLexicographicIterator<>(items, t, environmentCreator), false);
     }
 
-    public static <V> Stream<ICombination<V, int[]>> parallelStream(
-            int[][] items, int[] t, Supplier<V> environmentCreator) {
-        return StreamSupport.stream(new MultiLexicographicIterator<>(items, t, environmentCreator), true);
-    }
-
+    /**
+     * Constructs a new instance of the iterator with the given item sets and combination sizes.
+     *
+     * @param items the item sets
+     * @param t the combination size for each item set
+     * @param environmentCreator a supplier for the environment object
+     */
     public MultiLexicographicIterator(int[][] items, int[] t, Supplier<E> environmentCreator) {
-        combination = new MultiLiteralCombination<>(items, t, environmentCreator);
+        combination = new MultiLiteralCombination<>(items, t, environmentCreator.get());
     }
 
     @Override
