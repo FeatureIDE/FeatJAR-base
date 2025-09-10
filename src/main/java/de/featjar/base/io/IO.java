@@ -619,6 +619,7 @@ public class IO {
      * @param format          the format
      * @param ioMapperOptions the {@link AIOMapper} options
      * @param <T>             the type of the object
+     * @throws IOException if an I/O error has occurred
      */
     public static <T> void save(T object, Path path, IFormat<T> format, IOMapperOptions... ioMapperOptions)
             throws IOException {
@@ -634,6 +635,7 @@ public class IO {
      * @param charset         the charset
      * @param ioMapperOptions the {@link AIOMapper} options
      * @param <T>             the type of the object
+     * @throws IOException if an I/O error has occurred
      */
     public static <T> void save(
             T object, Path path, IFormat<T> format, Charset charset, IOMapperOptions... ioMapperOptions)
@@ -652,6 +654,7 @@ public class IO {
      * @param format    the format
      * @param outStream the output stream
      * @param <T>       the type of the object
+     * @throws IOException if an I/O error has occurred
      */
     public static <T> void save(T object, OutputStream outStream, IFormat<T> format) throws IOException {
         save(object, outStream, format, DEFAULT_CHARSET);
@@ -665,6 +668,7 @@ public class IO {
      * @param outStream the output stream
      * @param charset   the charset
      * @param <T>       the type of the object
+     * @throws IOException if an I/O error has occurred
      */
     public static <T> void save(T object, OutputStream outStream, IFormat<T> format, Charset charset)
             throws IOException {
@@ -682,6 +686,7 @@ public class IO {
      * @param object the object
      * @param format the format
      * @param <T>    the type of the object
+     * @throws IOException if an I/O error has occurred
      */
     public static <T> String print(T object, IFormat<T> format) throws IOException {
         if (format.supportsWrite()) {
@@ -699,6 +704,7 @@ public class IO {
      * @param object the object
      * @param format the format
      * @param <T>    the type of the object
+     * @throws IOException if an I/O error has occurred
      */
     public static <T> LinkedHashMap<Path, String> printHierarchy(T object, IFormat<T> format) throws IOException {
         if (format.supportsWrite()) {

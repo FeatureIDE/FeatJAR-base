@@ -104,6 +104,7 @@ public class RangeMap<T> implements Cloneable {
 
     /**
      * {@return the maximum index in the element list}
+     * Returns 0 for an empty map.
      */
     public int maxIndex() {
         return indexToObject.size() - 1;
@@ -111,18 +112,21 @@ public class RangeMap<T> implements Cloneable {
 
     /**
      * {@return the range of valid indices in this range map}
+     * Returns an empty result for an empty map.
      */
     public Result<Range> getValidIndexRange() {
         return indexToObject.size() == 1 ? Result.empty() : Result.of(Range.of(1, indexToObject.size() - 1));
     }
     /**
      * {@return the minimum index of the map}
+     * Returns an empty result for an empty map.
      */
     protected Result<Integer> getMinimumIndex() {
         return getValidIndexRange().map(Range::getLowerBound);
     }
     /**
      * {@return the maximum index of the map}
+     * Returns an empty result for an empty map.
      */
     protected Result<Integer> getMaximumIndex() {
         return getValidIndexRange().map(Range::getUpperBound);
@@ -326,7 +330,7 @@ public class RangeMap<T> implements Cloneable {
     public List<T> getObjects(boolean includeGaps) {
         return includeGaps
                 ? Collections.unmodifiableList(indexToObject.subList(1, indexToObject.size()))
-                : indexToObject.stream().filter(Objects::nonNull).collect(Collectors.toList());
+                : indexToObject.stream().filter(Objects::nonNull).collect(Collectors.toUnmodifiableList());
     }
 
     /**

@@ -24,6 +24,7 @@ import java.io.IOException;
 import java.nio.charset.Charset;
 import java.nio.file.Path;
 import java.util.zip.ZipEntry;
+import java.util.zip.ZipException;
 import java.util.zip.ZipOutputStream;
 
 /**
@@ -41,7 +42,8 @@ public class ZIPEntryOutput extends AOutput {
      * @param path            the path
      * @param zipOutputStream the ZIP output stream
      * @param charset         the charset
-     * @throws IOException
+     * @throws ZipException if a ZIP error has occurred
+     * @throws IOException if an I/O error has occurred
      */
     public ZIPEntryOutput(Path path, ZipOutputStream zipOutputStream, Charset charset) throws IOException {
         super(zipOutputStream, charset);

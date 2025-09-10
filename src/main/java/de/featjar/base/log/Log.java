@@ -28,19 +28,15 @@ import java.util.List;
 import java.util.function.Supplier;
 
 /**
- * Logs messages to standard output and files. Formats log messages with
- * {@link IFormatter formatters}. TODO: instead of logging values directly, only
- * pass suppliers that are called if some log target is configured. this saves
- * time for creating log strings
+ * Logs messages to standard output and files. Formats log messages with {@link IFormatter formatters}.
+ * TODO: instead of logging values directly, only pass suppliers that are called if some log target is configured. this saves time for creating log strings
  *
  * @author Sebastian Krieter
  * @author Elias Kuiter
  */
 public interface Log {
     /**
-     * Logging verbosity. Each verbosity defines a
-     * type of message that can be logged. In addition, defines a log level that
-     * includes all log messages of the message type and all types above.
+     * Logging verbosity. Each verbosity defines a type of message that can be logged. In addition, defines a log level that includes all log messages of the message type and all types above.
      */
     public enum Verbosity {
         /**
@@ -380,7 +376,8 @@ public interface Log {
      * Logs a message.
      *
      * @param message   the message
-     * @param verbosity the verbosities
+     * @param verbosity the kind of verbosity to log
+     * @param format whether to apply the {@link ConfigurableLog.Configuration configured} {@link IFormatter formatters} to the message before logging
      */
     default void log(Supplier<String> message, Verbosity verbosity, boolean format) {
         println(message, verbosity, format);

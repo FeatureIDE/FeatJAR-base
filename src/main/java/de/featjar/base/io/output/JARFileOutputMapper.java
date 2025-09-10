@@ -27,6 +27,7 @@ import java.nio.file.Path;
 import java.util.jar.Attributes;
 import java.util.jar.JarOutputStream;
 import java.util.jar.Manifest;
+import java.util.zip.ZipException;
 
 /**
  * Maps virtual paths to a JAR file output.
@@ -43,6 +44,8 @@ public class JARFileOutputMapper extends AOutputMapper {
      * @param jarPath  the JAR file path
      * @param mainPath the main path
      * @param charset  the charset
+     * @throws ZipException if a ZIP error has occurred
+     * @throws IOException if an I/O error has occurred
      */
     public JARFileOutputMapper(Path jarPath, Path mainPath, Charset charset) throws IOException {
         super(mainPath);

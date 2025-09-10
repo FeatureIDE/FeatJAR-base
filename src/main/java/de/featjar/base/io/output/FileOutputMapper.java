@@ -41,6 +41,7 @@ public class FileOutputMapper extends AOutputMapper {
      * @param rootPath the root path
      * @param mainPath the main path
      * @param charset  the charset
+     * @throws IOException if an I/O error has occurred
      */
     public FileOutputMapper(List<Path> paths, Path rootPath, Path mainPath, Charset charset) throws IOException {
         super(relativizeRootPath(rootPath, mainPath));
@@ -57,6 +58,7 @@ public class FileOutputMapper extends AOutputMapper {
      *
      * @param mainPath the main path
      * @param charset  the charset
+     * @throws IOException if an I/O error has occurred
      */
     public FileOutputMapper(Path mainPath, Charset charset) throws IOException {
         this(List.of(mainPath), mainPath.getParent(), mainPath, charset);

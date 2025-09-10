@@ -23,6 +23,7 @@ package de.featjar.base.io.input;
 import java.io.IOException;
 import java.nio.charset.Charset;
 import java.nio.file.Path;
+import java.util.zip.ZipException;
 
 /**
  * Maps physical paths to physical file inputs.
@@ -36,6 +37,8 @@ public class ZIPFileInputMapper extends AInputMapper {
      *
      * @param mainPath the main path
      * @param charset  the charset
+     * @throws ZipException if a ZIP error has occurred
+     * @throws IOException if an I/O error has occurred
      */
     public ZIPFileInputMapper(Path mainPath, Charset charset) throws IOException {
         super(mainPath);

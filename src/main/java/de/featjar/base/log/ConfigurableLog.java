@@ -72,29 +72,50 @@ public class ConfigurableLog implements Log, IInitializer {
 
     /**
      * Configures a log.
+     * <ul>
+     * <li>Allows to map {@link Log.Verbosity verbosities} to streams and log files with
+     * {@link Configuration#logToStream(PrintStream, Verbosity...) logToStream} and
+     * {@link Configuration#logToFile(Path, Verbosity...) logToFile}. Unmapped verbosities are not logged.</li>
+     * <li>Allows to set {@link IFormatter formatters} with {@link Configuration#addFormatter(IFormatter) addFormatter}.</li>
+     * <li>Allows to enable the stack trace for error logging with {@link Configuration#setPrintStacktrace(boolean) setPrintStacktrace}.</li>
+     * </ul>
      */
     public static class Configuration {
         // TODO: to make this more general, we could use an OutputMapper here to
         // log to anything supported by an OutputMapper (even a ZIP file).
-        protected final LinkedHashMap<Verbosity, StreamCollection> logStreams = Maps.empty();
-        protected final LinkedList<IFormatter> formatters = new LinkedList<>();
-        protected boolean printStacktrace = false;
+        private final LinkedHashMap<Verbosity, StreamCollection> logStreams = Maps.empty();
+        private final LinkedList<IFormatter> formatters = new LinkedList<>();
+        private boolean printStacktrace = false;
 
-        protected final LinkedHashMap<PrintStream, Integer> progressCharactersPerStream = Maps.empty();
+        private final LinkedHashMap<PrintStream, Integer> progressCharactersPerStream = Maps.empty();
 
+        /**
+         * Constructs a new log configuration.
+         */
         public Configuration() {
             resetLogStreams();
         }
 
+        /**
+         * {@return whether to print the stack trace}
+         */
         public boolean isPrintStacktrace() {
             return printStacktrace;
         }
-
+        /**
+         * Sets whether to print the stack trace.
+         * @param printStacktrace {@code true} to enable, {@code false} to disable
+         * @return this configuration
+         */
         public Configuration setPrintStacktrace(boolean printStacktrace) {
             this.printStacktrace = printStacktrace;
             return this;
         }
 
+        /**
+         * Resets all mapping for all streams.
+         * @return this configuration
+         */
         public Configuration resetLogStreams() {
             logStreams.clear();
             return this;
@@ -178,6 +199,14 @@ public class ConfigurableLog implements Log, IInitializer {
             return this;
         }
 
+        /**
+         * Maps verbosities to appropriate standard streams if they are more or equally important than the given verbosity.
+         * <br>
+         * Order from most to least important: MESSAGE > ERROR > WARNING > INFO > DEBUG > PROGRESS
+         * <br>
+         * @param verbosity the least important verbosity that should be mapped
+         * @return this configuration
+         */
         public Configuration logAtMost(Verbosity verbosity) {
             switch (verbosity) {
                 case MESSAGE:
@@ -209,6 +238,14 @@ public class ConfigurableLog implements Log, IInitializer {
             return this;
         }
 
+        /**
+         * Maps all verbosities to appropriate standard streams.
+         * <br>
+         * System.out: MESSAGE, INFO, DEBUG, PROGRESS
+         * <br>
+         * System.err: ERROR, WARNING
+         * @return this configuration
+         */
         public Configuration logAll() {
             logToSystemErr(Verbosity.ERROR, Verbosity.WARNING);
             logToSystemOut(Verbosity.MESSAGE, Verbosity.INFO, Verbosity.DEBUG, Verbosity.PROGRESS);

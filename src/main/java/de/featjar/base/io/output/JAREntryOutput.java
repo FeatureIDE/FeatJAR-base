@@ -25,6 +25,7 @@ import java.nio.charset.Charset;
 import java.nio.file.Path;
 import java.util.jar.JarEntry;
 import java.util.jar.JarOutputStream;
+import java.util.zip.ZipException;
 
 /**
  * An entry in a JAR file.
@@ -41,7 +42,8 @@ public class JAREntryOutput extends AOutput {
      * @param path            the path
      * @param jarOutputStream the JAR output stream
      * @param charset         the charset
-     * @throws IOException
+     * @throws ZipException if a ZIP error has occurred
+     * @throws IOException if an I/O error has occurred
      */
     public JAREntryOutput(Path path, JarOutputStream jarOutputStream, Charset charset) throws IOException {
         super(jarOutputStream, charset);

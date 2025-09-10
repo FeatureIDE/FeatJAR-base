@@ -33,15 +33,29 @@ import java.util.stream.Collectors;
  * @author Elias Kuiter
  */
 public class Sets {
+    /**
+     * {@return a new empty LinkedHashSet}
+     * @param <T> the type of elements within the set
+     */
     public static <T> LinkedHashSet<T> empty() {
         return new LinkedHashSet<>();
     }
 
+    /**
+     * {@return a new LinkedHashSet containing the provided objects}
+     * @param <T> the type of elements within the set
+     * @param objects the objects to be in the set
+     */
     @SafeVarargs
     public static <T> LinkedHashSet<T> of(T... objects) {
         return new LinkedHashSet<>(Set.of(objects));
     }
 
+    /**
+     * {@return a new LinkedHashSet containing all elements from the given sets}
+     * @param <T> the type of elements within the set
+     * @param sets the sets from which to add elements
+     */
     @SafeVarargs
     public static <T> LinkedHashSet<T> union(Collection<T>... sets) {
         LinkedHashSet<T> newSet = new LinkedHashSet<>();
@@ -51,6 +65,10 @@ public class Sets {
         return newSet;
     }
 
+    /**
+     * {@return a Collector providing a LInkedHashSet}
+     * @param <T> the type of elements within the set
+     */
     public static <T> Collector<T, ?, LinkedHashSet<T>> toSet() {
         return Collectors.toCollection(LinkedHashSet::new);
     }

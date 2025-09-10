@@ -38,6 +38,7 @@ public class FileInputMapper extends AInputMapper {
      * @param rootPath the root path
      * @param mainPath the main path
      * @param charset  the charset
+     * @throws IOException if an I/O error has occurred
      */
     public FileInputMapper(List<Path> paths, Path rootPath, Path mainPath, Charset charset) throws IOException {
         super(relativizeRootPath(rootPath, mainPath));
@@ -52,6 +53,7 @@ public class FileInputMapper extends AInputMapper {
      *
      * @param mainPath the main path
      * @param charset  the charset
+     * @throws IOException if an I/O error has occurred
      */
     public FileInputMapper(Path mainPath, Charset charset) throws IOException {
         super(mainPath);
