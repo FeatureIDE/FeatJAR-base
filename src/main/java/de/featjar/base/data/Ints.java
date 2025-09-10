@@ -22,23 +22,36 @@ package de.featjar.base.data;
 
 import java.util.stream.IntStream;
 
+/**
+ * Utility methods for int arrays.
+ */
 public final class Ints {
 
     private Ints() {}
 
+    /**
+     * Produces an array of size 2^t containing at each position the index at which a circular gray code of size t flips a bit.
+     * @param t the size of the gray code
+     * @return the index array
+     */
     public static int[] grayCode(int t) {
         final int[] gray = IntStream.rangeClosed(1, 1 << t)
                 .map(Integer::numberOfTrailingZeros)
                 .toArray();
-        gray[gray.length - 1] = 0;
+        gray[gray.length - 1]--;
         return gray;
     }
 
-    public static int[] filteredList(final int size, IntegerList filter) {
-        int[] list = IntStream.rangeClosed(1, size).toArray();
-        for (int e : filter.elements) {
-            list[Math.abs(e) - 1] = 0;
+    /**
+     * {@return a new int array with consecutive numbers from 1 to newSize without the numbers from the given list}
+     * @param list the elements to remove
+     * @param newSize the length of the new array
+     */
+    public static int[] invertedList(IntegerList list, final int newSize) {
+        int[] invertedList = IntStream.rangeClosed(1, newSize).toArray();
+        for (int e : list.elements) {
+        	invertedList[Math.abs(e) - 1] = 0;
         }
-        return IntStream.of(list).filter(i -> i != 0).toArray();
+        return IntStream.of(invertedList).filter(i -> i != 0).toArray();
     }
 }
