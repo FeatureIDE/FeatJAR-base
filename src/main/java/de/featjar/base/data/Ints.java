@@ -50,7 +50,7 @@ public final class Ints {
     public static int[] invertedList(IntegerList list, final int newSize) {
         int[] invertedList = IntStream.rangeClosed(1, newSize).toArray();
         for (int e : list.elements) {
-        	invertedList[Math.abs(e) - 1] = 0;
+            invertedList[Math.abs(e) - 1] = 0;
         }
         return IntStream.of(invertedList).filter(i -> i != 0).toArray();
     }

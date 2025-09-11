@@ -103,6 +103,13 @@ public class RangeMap<T> implements Cloneable {
     }
 
     /**
+     * {@return the number of mapped objects}
+     */
+    public int size() {
+        return objectToIndex.size();
+    }
+
+    /**
      * {@return the maximum index in the element list}
      * Returns 0 for an empty map.
      */
@@ -334,6 +341,30 @@ public class RangeMap<T> implements Cloneable {
     }
 
     /**
+     * {@return an unmodifiable list of the objects mapped to the given list of indices}
+     * The objects are in the same order as the given indices, but the list does not contain a object for any invalid index.
+     * @param indices the list of indices
+     */
+    public List<T> getObjects(IntegerList indices) {
+        return getObjects(indices, false);
+    }
+
+    /**
+     * {@return an unmodifiable list of the objects mapped to the given list of indices}
+     * The objects are in the same order as the given indices, but the list does not contain a object for any invalid index.
+     * @param indices the list of indices
+     * @param includeGaps if {@code true} and any given index is invalid, the returned list contains {@code null} at this position.
+     */
+    public List<T> getObjects(IntegerList indices, boolean includeGaps) {
+        return (includeGaps
+                        ? indices.stream().mapToObj(i -> isValidIndex(Math.abs(i)) ? indexToObject.get(i) : null)
+                        : indices.stream()
+                                .filter(i -> isValidIndex(Math.abs(i)))
+                                .mapToObj(i -> indexToObject.get(i)))
+                .collect(Collectors.toUnmodifiableList());
+    }
+
+    /**
      * {@return the object an index is mapped to by this range map}
      *
      * @param index the index
@@ -351,6 +382,31 @@ public class RangeMap<T> implements Cloneable {
      */
     public Result<Integer> get(T object) {
         return Result.ofNullable(objectToIndex.get(object));
+    }
+
+    /**
+     * {@return an unmodifiable list of all indices in this maps}
+     */
+    public List<Integer> getIndices() {
+        return entryStream().map(e -> e.getValue()).collect(Collectors.toUnmodifiableList());
+    }
+
+    /**
+     * {@return an unmodifiable list of objects that are mapped to the given objects}
+     *
+     * @param objects a list of objects
+     */
+    public List<Integer> getIndices(List<T> objects) {
+        return stream(objects).collect(Collectors.toUnmodifiableList());
+    }
+
+    /**
+     * {@return a human readable mapping}
+     */
+    public String print() {
+        return stream()
+                .map(pair -> String.format("%d <-> %s", pair.getKey(), pair.getValue()))
+                .collect(Collectors.joining(", "));
     }
 
     /**
@@ -472,5 +528,56 @@ public class RangeMap<T> implements Cloneable {
     @Override
     public RangeMap<T> clone() {
         return new RangeMap<>(this);
+    }
+
+    /**
+     * Adapts each element from {@code oldIndices} from its index in this map to its index in {@code newMap}.
+     * The adapted indices are stored in {@code newIndices}.
+     * Caller must ensure that {@code newIndices} is at least as large as {@code oldIndices}.
+     * Indices may be negative. In this case, the absolute value is used for adapting the mapping and the return value will also be negative.
+     *
+     * @param oldIndices the indices to adapt
+     * @param newIndices the space for the adapted indices
+     * @param newMap the range map to adapt to
+     * @param integrateOldObjects if {@code true} objects that do not occur in {@code newMap} are added to it, otherwise an exception is thrown in this case.
+     */
+    public void adapt(int[] oldIndices, int[] newIndices, RangeMap<T> newMap, boolean integrateOldObjects) {
+        for (int i = 0; i < oldIndices.length; i++) {
+            newIndices[i] = adapt(oldIndices[i], newMap, integrateOldObjects);
+        }
+    }
+
+    /**
+     * Adapt {@code oldIndex} from its index in this map to its index in {@code newMap}.
+     * The index may be negative. In this case, the absolute value is used for adapting the mapping and the return value will also be negative.
+     *
+     * @param oldIndex the index to adapt
+     * @param newMap the range map to adapt to
+     * @param integrateOldObject if {@code true} an object that does not occur in {@code newMap} is added to it, otherwise an exception is thrown in this case.
+     * @return the adapted index
+     */
+    public int adapt(int oldIndex, RangeMap<T> newMap, boolean integrateOldObject) {
+        if (oldIndex == 0) {
+            return 0;
+        } else {
+            final Result<T> name = get(Math.abs(oldIndex));
+            if (name.isPresent()) {
+                T variableName = name.get();
+                final int newLiteral;
+                Result<Integer> index = newMap.get(variableName);
+                if (index.isEmpty()) {
+                    if (integrateOldObject) {
+                        newLiteral = newMap.add(variableName);
+                    } else {
+                        throw new IllegalArgumentException("No variable named " + variableName);
+                    }
+                } else {
+                    newLiteral = index.get();
+                }
+                return oldIndex < 0 ? -newLiteral : newLiteral;
+            } else {
+                throw new IllegalArgumentException("No variable with index " + oldIndex);
+            }
+        }
     }
 }
