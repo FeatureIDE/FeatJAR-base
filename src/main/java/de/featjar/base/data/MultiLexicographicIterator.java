@@ -69,7 +69,8 @@ public final class MultiLexicographicIterator<E> implements Spliterator<ICombina
      * @param environmentCreator a supplier for the environment object
      */
     public MultiLexicographicIterator(int[][] items, int[] t, Supplier<E> environmentCreator) {
-        combination = new MultiLiteralCombination<>(items, t, environmentCreator.get());
+        combination =
+                new MultiLiteralCombination<>(items, t, environmentCreator == null ? null : environmentCreator.get());
     }
 
     @Override

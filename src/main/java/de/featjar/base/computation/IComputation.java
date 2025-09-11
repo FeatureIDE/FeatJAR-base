@@ -196,7 +196,7 @@ public interface IComputation<T> extends Supplier<Result<T>>, ITree<IComputation
                     .getPromise()
                     .onTimeout(
                             () -> getIntermediateResult()
-                                    .nullify(new Problem(new TimeoutException(
+                                    .addProblemInformation(new Problem(new TimeoutException(
                                             String.format("Timeout of %ss was reached.", timeout.getSeconds())))),
                             timeout,
                             true)

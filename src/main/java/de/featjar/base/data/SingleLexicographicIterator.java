@@ -96,7 +96,8 @@ public final class SingleLexicographicIterator<E> implements Spliterator<ICombin
      */
     public SingleLexicographicIterator(int[] items, int t, Supplier<E> environmentCreator) {
         this.environmentCreator = environmentCreator;
-        combination = new SingleLiteralCombination<>(items, t, environmentCreator.get());
+        combination =
+                new SingleLiteralCombination<>(items, t, environmentCreator == null ? null : environmentCreator.get());
         end = combination.maxIndex();
     }
 
@@ -106,7 +107,8 @@ public final class SingleLexicographicIterator<E> implements Spliterator<ICombin
      */
     private SingleLexicographicIterator(SingleLexicographicIterator<E> other) {
         environmentCreator = other.environmentCreator;
-        combination = new SingleLiteralCombination<E>(other.combination, environmentCreator.get());
+        combination = new SingleLiteralCombination<E>(
+                other.combination, environmentCreator == null ? null : environmentCreator.get());
 
         long currentIndex = other.combination.index();
         long newStart = currentIndex + ((other.end - currentIndex) / 2);

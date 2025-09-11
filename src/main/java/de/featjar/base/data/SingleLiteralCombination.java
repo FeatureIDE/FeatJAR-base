@@ -62,6 +62,7 @@ public final class SingleLiteralCombination<E> extends ACombination<E, int[]> {
             elementIndices[i] = i;
             selection[i] = items[i];
         }
+        lastChangedIndex = selection.length - 1;
     }
 
     /**
@@ -76,6 +77,7 @@ public final class SingleLiteralCombination<E> extends ACombination<E, int[]> {
         binomialCalculator = other.binomialCalculator;
         maxIndex = other.maxIndex;
         selection = Arrays.copyOf(other.selection, other.selection.length);
+        lastChangedIndex = selection.length - 1;
     }
 
     @Override
