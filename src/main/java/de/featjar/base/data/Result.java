@@ -421,6 +421,7 @@ public class Result<T> implements Supplier<T> {
     /**
      * {@return a new empty result, containing the problems from this result and the problem constructed from the given exception}
      * @param exception the exception
+     * @param <U> the type of the new result
      */
     public <U> Result<U> nullify(Exception exception) {
         return mergeProblems(Result.empty(exception));
@@ -429,6 +430,7 @@ public class Result<T> implements Supplier<T> {
     /**
      * {@return a new empty result, containing the problems from this result and the given problems}
      * @param problems the given problems
+     * @param <U> the type of the new result
      */
     public <U> Result<U> nullify(Problem... problems) {
         return mergeProblems(Result.empty(problems));
@@ -437,6 +439,7 @@ public class Result<T> implements Supplier<T> {
     /**
      * {@return a new empty result, containing the problems from this result and the given problems}
      * @param problems the given problems
+     * @param <U> the type of the new result
      */
     public <U> Result<U> nullify(List<Problem> problems) {
         return mergeProblems(Result.empty(problems));
