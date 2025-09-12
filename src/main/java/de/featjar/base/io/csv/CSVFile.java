@@ -310,6 +310,7 @@ public class CSVFile {
                 for (List<String> line : values) {
                     output.writeText(printLine(line));
                 }
+                output.flush();
                 values.clear();
             } catch (final IOException e) {
                 FeatJAR.log().error(e);
