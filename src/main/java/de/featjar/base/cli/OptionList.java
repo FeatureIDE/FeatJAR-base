@@ -257,7 +257,7 @@ public class OptionList {
                         COMMAND_OPTION.getName());
                 return;
             }
-            parseOption(COMMAND_OPTION, commandLineArguments.get(argumentIndex), problemList);
+            parseOption(COMMAND_OPTION, arguments.get(argumentIndex), problemList);
             Result<ICommand> command = getResult(COMMAND_OPTION);
             if (command.isEmpty()) {
                 problemList.addAll(command.getProblems());
