@@ -25,6 +25,7 @@ import de.featjar.base.data.Maps;
 import de.featjar.base.data.Result;
 import de.featjar.base.data.Sets;
 import java.io.IOException;
+import java.lang.reflect.InvocationTargetException;
 import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -110,6 +111,34 @@ public class ExtensionManager implements AutoCloseable {
                         IExtension e = extensionClass.getConstructor().newInstance();
                         ep.installExtension(e);
                         extensions.put(e.getIdentifier(), e);
+                    } catch (final ClassNotFoundException e) {
+                        FeatJAR.log()
+                                .error(new Exception(
+                                        String.format(
+                                                "Could not find class %s for extension point %s",
+                                                extensionId, extensionPointClass.getName()),
+                                        e));
+                    } catch (final NoSuchMethodException e) {
+                        FeatJAR.log()
+                                .error(new Exception(
+                                        String.format(
+                                                "Missing default constructor for class %s for extension point %s",
+                                                extensionId, extensionPointClass.getName()),
+                                        e));
+                    } catch (final IllegalAccessException e) {
+                        FeatJAR.log()
+                                .error(new Exception(
+                                        String.format(
+                                                "Inaccesible default constructor for class %s for extension point %s",
+                                                extensionId, extensionPointClass.getName()),
+                                        e));
+                    } catch (final InvocationTargetException | ExceptionInInitializerError e) {
+                        FeatJAR.log()
+                                .error(new Exception(
+                                        String.format(
+                                                "Internal problem when instantiating class %s for extension point %s",
+                                                extensionId, extensionPointClass.getName()),
+                                        e));
                     } catch (final Exception e) {
                         FeatJAR.log().error(e);
                     }
