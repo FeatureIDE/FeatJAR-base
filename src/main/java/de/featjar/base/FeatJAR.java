@@ -412,7 +412,9 @@ public final class FeatJAR extends IO implements AutoCloseable {
         if (log instanceof BufferedLog) {
             ConfigurableLog newLog = new ConfigurableLog();
             newLog.setConfiguration(panicConfiguration().logConfig);
-            ((BufferedLog) log).flush(m -> {
+            BufferedLog bufferedLog = (BufferedLog) log;
+            bufferedLog.setPrintStacktrace(true);
+            bufferedLog.flush(m -> {
                 Supplier<String> originalMessage = m.getMessage();
                 Supplier<String> message;
                 Verbosity verbosity = m.getVerbosity();
@@ -513,6 +515,7 @@ public final class FeatJAR extends IO implements AutoCloseable {
         ConfigurableLog newLog = getExtension(ConfigurableLog.class).orElseGet(ConfigurableLog::new);
         newLog.setConfiguration(configuration.logConfig);
         log = newLog;
+        fallbackLog.setPrintStacktrace(configuration.logConfig.isPrintStacktrace());
         fallbackLog.flush(m -> log.print(m.getMessage(), m.getVerbosity(), m.isFormat()));
 
         cache = getExtension(Cache.class).orElseGet(Cache::new);
