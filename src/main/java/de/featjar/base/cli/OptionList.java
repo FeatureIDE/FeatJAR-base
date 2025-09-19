@@ -154,7 +154,11 @@ public class OptionList {
 
     private final List<Option<?>> options = new ArrayList<>(Option.getAllOptions(getClass()));
 
-    private final List<String> commandLineArguments, configFileArguments;
+    private List<String> commandLineArguments;
+
+    private final List<String> unparsedCommandLineArguments;
+
+    private List<String> configFileArguments;
 
     private LinkedList<String> arguments;
     private LinkedHashMap<String, Object> properties;
@@ -174,8 +178,7 @@ public class OptionList {
      * @param arguments the arguments
      */
     public OptionList(List<String> arguments) {
-        this.commandLineArguments = new ArrayList<>(arguments);
-        configFileArguments = new ArrayList<>();
+        this.unparsedCommandLineArguments = new ArrayList<>(arguments);
     }
 
     /**
@@ -186,6 +189,8 @@ public class OptionList {
     public List<Problem> parseArguments() {
         properties = new LinkedHashMap<>();
         arguments = new LinkedList<>();
+        configFileArguments = new ArrayList<>();
+        commandLineArguments = new ArrayList<>(unparsedCommandLineArguments);
         List<Problem> problemList = new ArrayList<>();
 
         parseBareCommand(problemList);

@@ -68,8 +68,11 @@ class ArgumentParserTest {
     void parseOption() {
         Option<Integer> option1 = new Option<>("x", Integer::valueOf);
         Option<Integer> option2 = new Option<>("y", Integer::valueOf);
-        OptionList parser = parser("--x", "42");
+
+        OptionList parser = new OptionList("--x", "42");
+        parser.parseArguments();
         parser.addOptions(List.of(option1, option2)).parseArguments();
+
         assertEquals(Result.of(42), parser.getResult(option1));
         assertEquals(Result.empty(), parser.getResult(option2));
     }
