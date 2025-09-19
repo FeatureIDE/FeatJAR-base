@@ -21,6 +21,7 @@
 package de.featjar.base.computation;
 
 import de.featjar.base.FeatJAR;
+import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -35,7 +36,7 @@ import java.util.Map;
  */
 public class Dependency<U> {
 
-    private static Map<Class<?>, Integer> map = new LinkedHashMap<>();
+    private static Map<Class<?>, List<Dependency<?>>> map = new LinkedHashMap<>();
 
     public static Dependency<Object> newDependency() {
         return addDependency(getCallingClass(), Object.class);
@@ -68,9 +69,10 @@ public class Dependency<U> {
     }
 
     private static <U> Dependency<U> addDependency(Class<?> clazz, Class<U> type) {
-        final int count = computeDependencyCount(clazz);
-        map.put(clazz, count + 1);
-        return new Dependency<>(type, count);
+        final List<Dependency<?>> list = getDependencyList(clazz);
+        Dependency<U> newDependency = new Dependency<>(type, list.size());
+        list.add(newDependency);
+        return newDependency;
     }
 
     public static void deleteAllDependencies() {
@@ -78,15 +80,20 @@ public class Dependency<U> {
         map = null;
     }
 
-    public static int computeDependencyCount(Class<?> clazz) {
-        final Integer integer = map.get(clazz);
-        if (integer != null) {
-            return integer;
+    public static int getDependencyCount(Class<?> clazz) {
+        return getDependencyList(clazz).size();
+    }
+
+    public static List<Dependency<?>> getDependencyList(Class<?> clazz) {
+        final List<Dependency<?>> list = map.get(clazz);
+        if (list != null) {
+            return list;
         } else {
-            final Class<?> p = clazz.getSuperclass();
-            final int curIndex = (p == null) ? 0 : computeDependencyCount(p);
-            map.put(clazz, curIndex);
-            return curIndex;
+            final Class<?> superClazz = clazz.getSuperclass();
+            ArrayList<Dependency<?>> clazzDependencyList =
+                    (superClazz == null) ? new ArrayList<>() : new ArrayList<>(getDependencyList(superClazz));
+            map.put(clazz, clazzDependencyList);
+            return clazzDependencyList;
         }
     }
 

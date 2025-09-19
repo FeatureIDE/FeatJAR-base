@@ -51,7 +51,7 @@ public abstract class AComputation<T> extends ATree<IComputation<?>> implements 
      */
     protected AComputation(IComputation<?>... dependencies) {
         super(dependencies.length);
-        final Integer size = Dependency.computeDependencyCount(getClass());
+        final Integer size = Dependency.getDependencyCount(getClass());
         assert size == dependencies.length;
         setChildren(List.of(dependencies));
     }
@@ -63,7 +63,7 @@ public abstract class AComputation<T> extends ATree<IComputation<?>> implements 
      */
     protected AComputation(List<IComputation<?>> dependencies1, IComputation<?>... dependencies2) {
         super(dependencies1.size() + dependencies2.length);
-        final Integer size = Dependency.computeDependencyCount(getClass());
+        final Integer size = Dependency.getDependencyCount(getClass());
         assert size == dependencies1.size() + dependencies2.length;
         ArrayList<IComputation<?>> computations = new ArrayList<>(size);
         computations.addAll(dependencies1);
@@ -77,7 +77,7 @@ public abstract class AComputation<T> extends ATree<IComputation<?>> implements 
      */
     protected AComputation(Object... dependencies) {
         super(dependencies.length);
-        final Integer size = Dependency.computeDependencyCount(getClass());
+        final Integer size = Dependency.getDependencyCount(getClass());
         ArrayList<IComputation<?>> computationList = new ArrayList<>(size);
         for (Object computation : dependencies) {
             unpackComputations(computationList, computation);

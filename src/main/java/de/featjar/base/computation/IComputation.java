@@ -342,6 +342,13 @@ public interface IComputation<T> extends Supplier<Result<T>>, ITree<IComputation
     }
 
     /**
+     * {@return all dependencies of this computation}
+     */
+    default List<Dependency<?>> getDependencies() {
+        return Dependency.getDependencyList(getClass());
+    }
+
+    /**
      * {@return a computation for the given dependency}
      *
      * @param <U> the type of the dependency
