@@ -25,6 +25,7 @@ import de.featjar.base.data.Maps;
 import de.featjar.base.data.Sets;
 import de.featjar.base.extension.IInitializer;
 import de.featjar.base.io.MultiStream;
+import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.PrintStream;
@@ -87,7 +88,8 @@ public class ConfigurableLog implements Log, IInitializer {
         private final LinkedList<IFormatter> formatters = new LinkedList<>();
         private boolean printStacktrace = false;
 
-        private final LinkedHashMap<PrintStream, Integer> progressCharactersPerStream = Maps.empty();
+        private final LinkedHashMap<String, Integer> progressCharactersPerTarget = Maps.empty();
+        private final LinkedHashMap<PrintStream, String> streamTargets = Maps.empty();
 
         /**
          * Constructs a new log configuration.
@@ -121,27 +123,29 @@ public class ConfigurableLog implements Log, IInitializer {
             return this;
         }
 
-        private void addStream(PrintStream stream, Verbosity verbostiy) {
+        private void addStream(PrintStream stream, String target, Verbosity verbostiy) {
             StreamCollection multiStream = logStreams.get(verbostiy);
             if (multiStream == null) {
                 multiStream = new StreamCollection();
                 logStreams.put(verbostiy, multiStream);
             }
             multiStream.addStream(stream);
-            progressCharactersPerStream.put(stream, 0);
+            streamTargets.put(stream, target);
+            progressCharactersPerTarget.put(target, 0);
         }
 
         /**
          * Configures a stream to be a logging target.
          *
-         * @param stream      the stream
+         * @param stream the stream
+         * @param target the target of the stream (e.g., a specific file)
          * @param verbosities the logged verbosities
          * @return this configuration
          */
-        public Configuration logToStream(PrintStream stream, Verbosity... verbosities) {
+        public Configuration logToStream(PrintStream stream, String target, Verbosity... verbosities) {
             Objects.requireNonNull(stream);
             for (Verbosity verbosity : verbosities) {
-                addStream(stream, verbosity);
+                addStream(stream, target, verbosity);
             }
             return this;
         }
@@ -156,12 +160,10 @@ public class ConfigurableLog implements Log, IInitializer {
          */
         public Configuration logToFile(Path path, Verbosity... verbosities) throws FileNotFoundException {
             Objects.requireNonNull(path);
+            File file = path.toAbsolutePath().normalize().toFile();
             logToStream(
-                    new PrintStream(
-                            new FileOutputStream(
-                                    path.toAbsolutePath().normalize().toFile()),
-                            false,
-                            StandardCharsets.UTF_8),
+                    new PrintStream(new FileOutputStream(file), false, StandardCharsets.UTF_8),
+                    file.toString(),
                     verbosities);
             return this;
         }
@@ -173,7 +175,7 @@ public class ConfigurableLog implements Log, IInitializer {
          * @return this configuration
          */
         public Configuration logToSystemOut(Verbosity... verbosities) {
-            logToStream(originalSystemOut, verbosities);
+            logToStream(originalSystemOut, "system", verbosities);
             return this;
         }
 
@@ -184,7 +186,7 @@ public class ConfigurableLog implements Log, IInitializer {
          * @return this configuration
          */
         public Configuration logToSystemErr(Verbosity... verbosities) {
-            logToStream(originalSystemErr, verbosities);
+            logToStream(originalSystemErr, "system", verbosities);
             return this;
         }
 
@@ -355,9 +357,10 @@ public class ConfigurableLog implements Log, IInitializer {
         char[] charArray = message.toCharArray();
         synchronized (this) {
             for (PrintStream stream : streamCollection.getStreams()) {
-                Integer progressSize = configuration.progressCharactersPerStream.get(stream);
+                Integer progressSize =
+                        configuration.progressCharactersPerTarget.get(configuration.streamTargets.get(stream));
                 stream.println(fillBuffer(charArray, progressSize != null ? progressSize : 0));
-                configuration.progressCharactersPerStream.put(stream, 0);
+                configuration.progressCharactersPerTarget.put(configuration.streamTargets.get(stream), 0);
             }
         }
     }
@@ -366,9 +369,10 @@ public class ConfigurableLog implements Log, IInitializer {
         char[] charArray = message.toCharArray();
         synchronized (this) {
             for (PrintStream stream : streamCollection.getStreams()) {
-                Integer progressSize = configuration.progressCharactersPerStream.get(stream);
+                Integer progressSize =
+                        configuration.progressCharactersPerTarget.get(configuration.streamTargets.get(stream));
                 stream.print(fillBuffer(charArray, progressSize != null ? progressSize : 0));
-                configuration.progressCharactersPerStream.put(stream, 0);
+                configuration.progressCharactersPerTarget.put(configuration.streamTargets.get(stream), 0);
             }
         }
     }
@@ -377,9 +381,11 @@ public class ConfigurableLog implements Log, IInitializer {
         char[] charArray = message.toCharArray();
         synchronized (this) {
             for (PrintStream stream : streamCollection.getStreams()) {
-                Integer progressSize = configuration.progressCharactersPerStream.get(stream);
+                Integer progressSize =
+                        configuration.progressCharactersPerTarget.get(configuration.streamTargets.get(stream));
                 stream.print(fillBuffer(charArray, progressSize != null ? progressSize : 0));
-                configuration.progressCharactersPerStream.put(stream, charArray.length);
+                configuration.progressCharactersPerTarget.put(
+                        configuration.streamTargets.get(stream), charArray.length);
             }
         }
     }
