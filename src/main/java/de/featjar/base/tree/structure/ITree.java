@@ -462,7 +462,7 @@ public interface ITree<T extends ITree<T>> extends IBrowsable<GraphVizTreeFormat
     }
 
     /**
-     * {@return the descendants of this node}
+     * {@return the descendants of this node in no particular order}
      */
     default LinkedHashSet<? extends T> getDescendants() {
         return parallelStream().collect(Sets.toSet());
