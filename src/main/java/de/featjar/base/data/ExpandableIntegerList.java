@@ -49,6 +49,11 @@ public class ExpandableIntegerList implements Serializable {
         size = elements.length;
     }
 
+    public ExpandableIntegerList(ExpandableIntegerList other) {
+        this.elements = Arrays.copyOf(other.elements, other.elements.length);
+        this.size = other.size;
+    }
+
     public void clear() {
         size = 0;
     }
