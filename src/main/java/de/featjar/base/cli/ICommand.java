@@ -20,10 +20,12 @@
  */
 package de.featjar.base.cli;
 
-import de.featjar.base.extension.IExtension;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+
+import de.featjar.base.extension.IExtension;
+import de.featjar.base.shell.ShellSession;
 
 /**
  * A command run within a {@link Commands}.
@@ -62,4 +64,10 @@ public interface ICommand extends IExtension {
      * @return exit code
      */
     int run(OptionList optionParser);
+    
+    default OptionList getShellOptions(ShellSession session, List<String> cmdParams) {
+    	OptionList optionList = new OptionList();
+    	optionList.parseArguments();
+		return optionList;
+    }
 }

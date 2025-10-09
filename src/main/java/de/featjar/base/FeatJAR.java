@@ -203,6 +203,16 @@ public final class FeatJAR extends IO implements AutoCloseable {
         configuration.cacheConfig.setCachePolicy(Cache.CachePolicy.CACHE_NONE);
         return configuration;
     }
+    
+    public static Configuration shellConfiguration() {
+        final Configuration configuration = new Configuration();
+        configuration
+                .logConfig
+                .logToSystemOut(Log.Verbosity.MESSAGE, Log.Verbosity.INFO, Log.Verbosity.PROGRESS)
+                .logToSystemErr(Log.Verbosity.ERROR);
+        configuration.cacheConfig.setCachePolicy(Cache.CachePolicy.CACHE_NONE);
+        return configuration;
+    }
 
     /**
      * {@return the current FeatJAR instance}
