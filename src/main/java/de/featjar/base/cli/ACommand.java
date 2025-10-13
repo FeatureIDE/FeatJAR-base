@@ -22,6 +22,9 @@ package de.featjar.base.cli;
 
 import java.nio.file.Path;
 import java.util.List;
+import java.util.Optional;
+
+import de.featjar.base.shell.ShellSession;
 
 /**
  * The abstract class for any command.
@@ -49,4 +52,14 @@ public abstract class ACommand implements ICommand {
     public final List<Option<?>> getOptions() {
         return Option.getAllOptions(getClass());
     }
+    
+    public OptionList getShellOptions(ShellSession session, List<String> cmdParams) {    	
+    	OptionList optionList = new OptionList();
+    	Optional<Path> path = session.get(cmdParams.get(0), Path.class);
+    	
+    	optionList.parseArguments();    	
+		optionList.parseProperties(INPUT_OPTION, String.valueOf(path.get()));
+	
+		return optionList;
+    } //TODO OUTPUT, look 
 }

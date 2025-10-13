@@ -35,6 +35,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
@@ -356,6 +357,11 @@ public class OptionList {
                 }
             }
         }
+    }
+    
+    public void parseProperties(Option<?> option, String command) {
+        Result<?> parse = option.parse(command);
+        properties.put(option.getName(), parse.get());        
     }
 
     private void parseRemainingArguments(List<Problem> problemList) {
