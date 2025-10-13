@@ -8,13 +8,6 @@ public class Variables implements IShellCommand{
 	@Override
 	public void execute(ShellSession session, List<String> cmdParams) {
 		
-//		if(cmdParams.size() == 1) {
-//			cmdParams.get(0).e
-//		}
-		
-		
-		
-		
 		session.printVariables();
 		
 	}

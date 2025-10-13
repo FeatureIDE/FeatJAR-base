@@ -52,7 +52,7 @@ public class Shell {
 	}
 
 	private Result<IShellCommand> parseCommand(String commandString) {	
-		ShellCommands shellCommandsExentionsPoint = FeatJAR.extensionPoint(ShellCommands.class);
+		ShellCommands shellCommandsExentionsPoint = ShellCommands.getInstance();
 		List<IShellCommand> commands = shellCommandsExentionsPoint
 				.getExtensions().stream().filter(command -> command.getShortName()
 						.map(name -> name.toLowerCase().startsWith(commandString)).orElse(Boolean.FALSE))

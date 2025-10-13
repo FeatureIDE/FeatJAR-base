@@ -1,5 +1,6 @@
 package de.featjar.base.shell;
 
+import java.util.Comparator;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -82,8 +83,11 @@ public class ShellSession {
 	}
 	
 	public void printSortedByVarNames() {
-		// TODO sort, group (type or name)
+		// TODO implement both methods in parser
 		
 		elements.entrySet().stream().sorted(Map.Entry.comparingByKey()).forEach(m -> FeatJAR.log().info(m.getKey() + " " + m.getValue().type.getSimpleName()));
+		}
+	public void printSortedByType() {
+		elements.entrySet().stream().sorted(Comparator.comparing(e -> String.valueOf(e.getValue().type))).forEach(m -> FeatJAR.log().info(m.getKey() + " " + m.getValue().type.getSimpleName()));
 	}
 }

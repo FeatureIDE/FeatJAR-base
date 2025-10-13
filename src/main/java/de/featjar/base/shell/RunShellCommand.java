@@ -1,6 +1,7 @@
 package de.featjar.base.shell;
 
 import java.util.List;
+import java.util.NoSuchElementException;
 import java.util.Optional;
 
 import de.featjar.base.FeatJAR;
@@ -12,13 +13,24 @@ public class RunShellCommand implements IShellCommand {
 	
 	@Override
 	public void execute(ShellSession session, List<String> cmdParams) {
-		ICommand cliCommand = Commands.getInstance().getExtension(cmdParams.get(0)).get();
-		OptionList shellOptions = cliCommand.getShellOptions(session, cmdParams.subList(1, cmdParams.size()));
-		cliCommand.getOptions().forEach(o -> {
-			FeatJAR.log().message(o+"="+shellOptions.getResult(o).map(String::valueOf).orElse(""));
+		
+		if(cmdParams.isEmpty()) {
+			return;
 		}
-		);
-		cliCommand.run(shellOptions);
+		
+		try {
+			ICommand cliCommand = Commands.getInstance().getExtension(cmdParams.get(0)).get();
+			OptionList shellOptions = cliCommand.getShellOptions(session, cmdParams.subList(1, cmdParams.size()));
+			cliCommand.getOptions().forEach(o -> {
+				FeatJAR.log().message(o+"="+shellOptions.getResult(o).map(String::valueOf).orElse(""));
+			});			
+			cliCommand.run(shellOptions);
+			
+		} catch (NoSuchElementException e) {
+			FeatJAR.log().message("Nothing there");
+		}
+		
+
 	}
 
 	@Override

@@ -14,7 +14,7 @@ public class PrintShellCommand implements IShellCommand {
 
 	@Override
 	public void execute(ShellSession session, List<String> cmdParams) {
-		//  TODO layer for electing the type and then	
+		//  TODO layer for electing the type	
 		
 		if(cmdParams.isEmpty()) {
 			session.printVariables();
