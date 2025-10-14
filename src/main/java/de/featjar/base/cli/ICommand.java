@@ -20,8 +20,6 @@
  */
 package de.featjar.base.cli;
 
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -71,8 +69,7 @@ public interface ICommand extends IExtension {
     	OptionList optionList = new OptionList();
     	    	
     	optionList.parseArguments();
-        	
-
+    	
 		return optionList;
     }
 }
