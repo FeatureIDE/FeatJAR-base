@@ -55,9 +55,32 @@ public abstract class ACommand implements ICommand {
     
     public OptionList getShellOptions(ShellSession session, List<String> cmdParams) {    	
     	OptionList optionList = new OptionList();
+    	
+    	if(cmdParams.isEmpty()) {
+    		throw new IllegalArgumentException("No path object specified");
+    	}
+    	
+    	Optional<Path> path = session.get(cmdParams.get(0), Path.class);
+    	
+    	if(path.isEmpty()) {
+    		throw new IllegalArgumentException(String.format("'%s' is not a session object", cmdParams.get(0)));
+    	}
+    	
+    	optionList.parseArguments();    	
+		optionList.parseProperties(INPUT_OPTION, String.valueOf(path.get()));
+	
+		return optionList;
+    } //TODO OUTPUT, look 
+    
+    public OptionList getShellOptionsWIP(ShellSession session, List<String> cmdParams) {    	
+    	OptionList optionList = new OptionList();
     	Optional<Path> path = session.get(cmdParams.get(0), Path.class);
     	
     	optionList.parseArguments();    	
+    	
+    	optionList.getOptions();
+    	
+    	
 		optionList.parseProperties(INPUT_OPTION, String.valueOf(path.get()));
 	
 		return optionList;
