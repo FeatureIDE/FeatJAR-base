@@ -13,12 +13,12 @@ public class HelpShellCommand implements IShellCommand {
 	}
 	
 	public void printCommands() {
-		FeatJAR.log().info("Interactive shell - supported commands are (capitalization is not taken into account):\n");
+		FeatJAR.log().message("Interactive shell - supported commands are (capitalization is not taken into account):\n");
 		FeatJAR.extensionPoint(ShellCommands.class).getExtensions()
 			.stream().map(c -> c.getShortName().orElse("")
 			.concat(" - " + c.getDescription().orElse("")))
-			.forEach(FeatJAR.log()::info);		
-		FeatJAR.log().info("\n");
+			.forEach(FeatJAR.log()::message);		
+		FeatJAR.log().message("\n");
 	}
 	
     @Override

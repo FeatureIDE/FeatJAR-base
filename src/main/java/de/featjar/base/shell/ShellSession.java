@@ -68,26 +68,30 @@ public class ShellSession {
 		return elements.containsKey(key);
 	}
 	
+	public boolean isEmpty() {
+		return elements.isEmpty();
+	}
+	
 	public void printVariable(String key) {		
 		for (Entry<String, StoredElement<?>> entry : elements.entrySet()) {
 			if(entry.getKey().equals(key)) {
-				FeatJAR.log().info("Variable: " + key + " Type: " + entry.getValue().type.getSimpleName() + "\n");
+				FeatJAR.log().message("Variable: " + key + " Type: " + entry.getValue().type.getSimpleName() + "\n");
 				break;
 			}
 		}
 	}
 	
 	public void printVariables() {		
-		elements.entrySet().forEach(m -> FeatJAR.log().info(m.getKey() + "   (" 
+		elements.entrySet().forEach(m -> FeatJAR.log().message(m.getKey() + "   (" 
 		+ m.getValue().type.getSimpleName() + ")" ));
 	}
 	
 	public void printSortedByVarNames() {
 		// TODO implement both methods in parser
 		
-		elements.entrySet().stream().sorted(Map.Entry.comparingByKey()).forEach(m -> FeatJAR.log().info(m.getKey() + " " + m.getValue().type.getSimpleName()));
+		elements.entrySet().stream().sorted(Map.Entry.comparingByKey()).forEach(m -> FeatJAR.log().message(m.getKey() + " " + m.getValue().type.getSimpleName()));
 		}
 	public void printSortedByType() {
-		elements.entrySet().stream().sorted(Comparator.comparing(e -> String.valueOf(e.getValue().type))).forEach(m -> FeatJAR.log().info(m.getKey() + " " + m.getValue().type.getSimpleName()));
+		elements.entrySet().stream().sorted(Comparator.comparing(e -> String.valueOf(e.getValue().type))).forEach(m -> FeatJAR.log().message(m.getKey() + " " + m.getValue().type.getSimpleName()));
 	}
 }

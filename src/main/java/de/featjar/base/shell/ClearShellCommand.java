@@ -15,9 +15,9 @@ public class ClearShellCommand implements IShellCommand {
 		
 			if(Objects.equals("y", choice)) {
 				session.clear();
-				FeatJAR.log().info("Clearing successful");
+				FeatJAR.log().message("Clearing successful");
 			} else if(Objects.equals("n", choice)) {
-				FeatJAR.log().info("Clearing aborted");
+				FeatJAR.log().message("Clearing aborted");
 			}
 		}	
 	

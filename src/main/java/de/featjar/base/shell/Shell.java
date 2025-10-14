@@ -59,21 +59,25 @@ public class Shell {
 				.collect(Collectors.toList());
 
 		if (commands.size() > 1) {
-			Map<Integer, IShellCommand> temp = new HashMap<Integer, IShellCommand>();
+			Map<Integer, IShellCommand> ambiguousCommands = new HashMap<Integer, IShellCommand>();
 			int i = 1;
 			
 			FeatJAR.log().info
-			("Command name %s is ambiguous! choose one of the following %d commands: \n",	commandString, commands.size());
+			("Command name %s is ambiguous! choose one of the following %d commands (leave balnk to abort): \n",	commandString, commands.size());
 
 			for(IShellCommand c : commands) {
-				FeatJAR.log().info(i + "." + c.getShortName().get() + " - " + c.getDescription().get());
-				temp.put(i, c);
+				FeatJAR.log().message(i + "." + c.getShortName().get() + " - " + c.getDescription().get());
+				ambiguousCommands.put(i, c);
 				i++;
 			}
 			
 			String choice = readCommand("").orElse("");
 			
-			for (Map.Entry<Integer, IShellCommand> entry : temp.entrySet()) {
+			if(choice.isBlank()) {
+				return Result.empty();
+			}
+			
+			for (Map.Entry<Integer, IShellCommand> entry : ambiguousCommands.entrySet()) {
 	            if (Objects.equals(entry.getKey(), Integer.parseInt(choice))) {
 	                return Result.of(entry.getValue());
 	            }
@@ -87,7 +91,7 @@ public class Shell {
 		if (commands.isEmpty()) {
 			Result<IShellCommand> matchingExtension = shellCommandsExentionsPoint.getMatchingExtension(commandString);
 			if (matchingExtension.isEmpty()) {
-				FeatJAR.log().info("No such command '%s'. \n <help> shows all viable commands", commandString);
+				FeatJAR.log().message("No such command '%s'. \n <help> shows all viable commands", commandString);
 				
 				return Result.empty(addProblem(Severity.ERROR, "No command matched the name '%s'!", commandString));
 			}
@@ -112,17 +116,17 @@ public class Shell {
 	}
 	
 	public static Optional<String> readCommand(String prompt) {
-		FeatJAR.log().info(prompt);
+		FeatJAR.log().message(prompt);
 		String input = shellScanner.nextLine().trim();
 		return input.isEmpty() ? Optional.empty() : Optional.of(input);
 	}
 
 	public static void printArt() {
-		FeatJAR.log().info(" _____             _       _    _     ____   ____   _            _  _ ");
-		FeatJAR.log().info("|  ___|___   __ _ | |_    | |  / \\   |  _ \\ / ___| | |__    ___ | || |");
-		FeatJAR.log().info("| |_  / _ \\ / _` || __|_  | | / _ \\  | |_) |\\___ \\ | '_ \\  / _ \\| || |");
-		FeatJAR.log().info("|  _||  __/| (_| || |_| |_| |/ ___ \\ |  _ <  ___) || | | ||  __/| || |");
-		FeatJAR.log().info("|_|   \\___| \\__,_| \\__|\\___//_/   \\_\\|_| \\_\\|____/ |_| |_| \\___||_||_|");
-		FeatJAR.log().info("\n");
+		FeatJAR.log().message(" _____             _       _    _     ____   ____   _            _  _ ");
+		FeatJAR.log().message("|  ___|___   __ _ | |_    | |  / \\   |  _ \\ / ___| | |__    ___ | || |");
+		FeatJAR.log().message("| |_  / _ \\ / _` || __|_  | | / _ \\  | |_) |\\___ \\ | '_ \\  / _ \\| || |");
+		FeatJAR.log().message("|  _||  __/| (_| || |_| |_| |/ ___ \\ |  _ <  ___) || | | ||  __/| || |");
+		FeatJAR.log().message("|_|   \\___| \\__,_| \\__|\\___//_/   \\_\\|_| \\_\\|____/ |_| |_| \\___||_||_|");
+		FeatJAR.log().message("\n");
 	}
 }

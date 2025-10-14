@@ -26,7 +26,7 @@ public class PrintShellCommand implements IShellCommand {
 		cmdParams.forEach(e -> {
 		    session.getElement(e)
 		        .ifPresentOrElse(m -> {
-		        	FeatJAR.log().info(e + ":");
+		        	FeatJAR.log().message(e + ":");
 		        	printMap(m);
 		        }, () -> FeatJAR.log().error("Could not find a variable named " + e));
 		});	
@@ -34,11 +34,11 @@ public class PrintShellCommand implements IShellCommand {
 	
 	private void printMap(Object v) {
 			if (v instanceof ITree<?>) {
-				FeatJAR.log().info(((ITree<?>) v).print());
+				FeatJAR.log().message(((ITree<?>) v).print());
 			} else {
-				FeatJAR.log().info(v);
+				FeatJAR.log().message(v);
 			}
-			FeatJAR.log().info("");
+			FeatJAR.log().message("");
 	}
 	
     public Optional<String> getShortName() {

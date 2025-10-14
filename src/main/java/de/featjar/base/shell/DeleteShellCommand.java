@@ -21,7 +21,7 @@ public class DeleteShellCommand implements IShellCommand {
 		}
 
 		cmdParams.forEach(e -> {
-			session.remove(e).ifPresentOrElse(a -> FeatJAR.log().info("Removing of " + e + " successful"),
+			session.remove(e).ifPresentOrElse(a -> FeatJAR.log().message("Removing of " + e + " successful"),
 					() -> FeatJAR.log().error("Could not find a variable named " + e));
 		});
 	}
