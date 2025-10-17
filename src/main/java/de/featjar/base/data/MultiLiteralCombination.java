@@ -40,9 +40,11 @@ public final class MultiLiteralCombination<E> extends ACombination<E, int[]> {
     private int[] selection;
 
     /**
-     * Creates a new combination with the given item sets, combination sizes, and environment.
-     * @param items the integer sets
-     * @param t the combination size for each item set
+     * Creates a new combination with the given item sets, combination sizes, and
+     * environment.
+     *
+     * @param items       the integer sets
+     * @param t           the combination size for each item set
      * @param environment the environment
      */
     public MultiLiteralCombination(int[][] items, int[] t, E environment) {
@@ -54,17 +56,8 @@ public final class MultiLiteralCombination<E> extends ACombination<E, int[]> {
                     "Number of item sets (%d) must be the same as index length (%d)", items.length, t.length));
         }
         this.t = t;
-        this.items = new int[elementIndices.length][];
+        this.items = items;
         selection = new int[IntStream.of(t).sum()];
-
-        int index = 0;
-        for (int k = 0; k < t.length; k++) {
-            int tk = t[k];
-            int[] item = items[k];
-            for (int i = 0; i < tk; i++) {
-                this.items[index++] = item;
-            }
-        }
 
         reset();
 
@@ -97,19 +90,25 @@ public final class MultiLiteralCombination<E> extends ACombination<E, int[]> {
 
     @Override
     public int[] select() {
-        for (int i = 0; i < elementIndices.length; i++) {
-            selection[i] = items[i][elementIndices[i]];
-        }
-        return selection;
+        return select(selection);
     }
 
     @Override
     public int[] createSelection() {
-        int[] newSelection = new int[selection.length];
-        for (int i = 0; i < elementIndices.length; i++) {
-            newSelection[i] = items[i][elementIndices[i]];
+        return select(new int[selection.length]);
+    }
+
+    private int[] select(int[] selectionArray) {
+        int i = 0;
+        int tIndex = 0;
+        for (int k = 0; k < t.length; k++) {
+            int[] itemSet = items[k];
+            tIndex += t[k];
+            for (; i < tIndex; i++) {
+                selectionArray[i] = itemSet[elementIndices[i]];
+            }
         }
-        return newSelection;
+        return selectionArray;
     }
 
     @Override
