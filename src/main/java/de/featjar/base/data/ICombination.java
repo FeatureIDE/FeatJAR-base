@@ -32,6 +32,11 @@ package de.featjar.base.data;
 public interface ICombination<E, T> {
 
     /**
+     * Resets this combination.
+     */
+    void reset();
+
+    /**
      * {@return the current combination of items given as instance of T}
      * Uses the internal selection array.
      * <b>Must not be changed by the calling class.

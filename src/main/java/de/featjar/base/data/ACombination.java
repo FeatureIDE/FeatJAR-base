@@ -52,7 +52,6 @@ public abstract class ACombination<E, T> implements ICombination<E, T> {
      * @param environment the environment
      */
     public ACombination(int t, E environment) {
-        combinationIndex = 0;
         elementIndices = new int[t];
         this.environment = (environment != null) ? environment : null;
     }
@@ -66,6 +65,10 @@ public abstract class ACombination<E, T> implements ICombination<E, T> {
         combinationIndex = other.combinationIndex;
         elementIndices = Arrays.copyOf(other.elementIndices, other.elementIndices.length);
         this.environment = (environment != null) ? environment : null;
+    }
+
+    public void reset() {
+        combinationIndex = 0;
     }
 
     @Override

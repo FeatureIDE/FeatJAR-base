@@ -66,27 +66,32 @@ public final class MultiLiteralCombination<E> extends ACombination<E, int[]> {
             }
         }
 
-        index = 0;
-        for (int tk : t) {
-            elementIndices[index++] = 0;
-            for (int i = 1; i < tk; i++) {
-                elementIndices[index++] = i;
-            }
-        }
+        reset();
 
         if (elementIndices.length > 0) {
             BinomialCalculator binomialCalculator = new BinomialCalculator(
                     IntStream.of(t).max().getAsInt(),
                     Arrays.stream(items).mapToInt(a -> a.length).max().getAsInt());
-            long sum = 1;
+            long product = 1;
             for (int k = 0; k < t.length; k++) {
                 int tk = t[k];
                 int nk = items[k].length;
-                sum *= binomialCalculator.binomial(nk, tk);
+                product *= binomialCalculator.binomial(nk, tk);
             }
-            maxIndex = sum;
+            maxIndex = product;
         } else {
             maxIndex = 0;
+        }
+    }
+
+    public void reset() {
+        super.reset();
+        int index = 0;
+        for (int tk : t) {
+            elementIndices[index++] = 0;
+            for (int i = 1; i < tk; i++) {
+                elementIndices[index++] = i;
+            }
         }
     }
 
@@ -109,6 +114,7 @@ public final class MultiLiteralCombination<E> extends ACombination<E, int[]> {
 
     @Override
     public boolean advance() {
+        combinationIndex++;
         int offset = 0;
         for (int k = 0; k < t.length; k++) {
             int tk = t[k];
@@ -119,7 +125,6 @@ public final class MultiLiteralCombination<E> extends ACombination<E, int[]> {
                 if (elementIndices[i + offset] + 1 < elementIndices[i + 1 + offset]) {
                     ++elementIndices[i + offset];
                     resetLowerElements(offset, k, i);
-                    combinationIndex++;
                     return true;
                 }
             }
@@ -127,15 +132,11 @@ public final class MultiLiteralCombination<E> extends ACombination<E, int[]> {
             if (lastIndex != nk) {
                 elementIndices[i + offset] = lastIndex;
                 resetLowerElements(offset, k, i);
-                combinationIndex++;
                 return true;
             }
             offset += tk;
         }
-
-        resetLowerElements(0, t.length, 0);
-        combinationIndex = 0;
-        return true;
+        return false;
     }
 
     private void resetLowerElements(int offset, int k, int i) {

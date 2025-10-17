@@ -137,8 +137,6 @@ public final class SingleLexicographicIterator<E> implements Spliterator<ICombin
             return false;
         }
         action.accept(combination);
-        combination.advance();
-
-        return true;
+        return combination.advance();
     }
 }

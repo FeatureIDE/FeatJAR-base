@@ -50,11 +50,16 @@ public final class SingleLiteralCombination<E> extends ACombination<E, int[]> {
     public SingleLiteralCombination(int[] items, int t, E environment) {
         super(t, environment);
         Objects.requireNonNull(items);
+        binomialCalculator = new BinomialCalculator(t, items.length);
+        maxIndex = binomialCalculator.binomial();
 
         this.t = t;
         this.items = items;
-        binomialCalculator = new BinomialCalculator(t, items.length);
-        maxIndex = binomialCalculator.binomial();
+        reset();
+    }
+
+    public void reset() {
+        super.reset();
         selection = new int[t];
 
         elementIndices[0] = 0;
@@ -116,7 +121,7 @@ public final class SingleLiteralCombination<E> extends ACombination<E, int[]> {
             elementIndices[i] = lastIndex;
             resetLowerElements(i);
         }
-        return true;
+        return combinationIndex < maxIndex;
     }
 
     private void resetLowerElements(int i) {
