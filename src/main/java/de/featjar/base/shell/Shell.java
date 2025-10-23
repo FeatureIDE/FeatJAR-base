@@ -33,25 +33,13 @@ public class Shell {
 	private ListIterator<String> historyIterator;
 	private final BufferedReader reader;
 	private StringBuilder input;
+	String historyCommandLine;
 	private int cursorX = 0, cursorY = 0;
 	private boolean lastArrowKeyUp = false;
 
     private static final String TERMINAL_COLOR_RED = "\033[0;31m";
     private static final String TERMINAL_COLOR_RESET = "\033[0m";
 
-	private static final int KEY_ARROW_UP = 1000;
-	private static final int KEY_ARROW_DOWN = 1001;
-	private static final int KEY_ARROW_LEFT = 1002;
-	private static final int KEY_ARROW_RIGHT = 1003;
-	private static final int KEY_BACKSPACE = 1004;
-	private static final int KEY_DELETE = 1005;
-	private static final int KEY_ENTER = 1006;
-	private static final int KEY_ESCAPE = 1007;
-	private static final int KEY_PAGE_UP = 1010;
-	private static final int KEY_PAGE_DOWN = 1011;
-	private static final int KEY_ALT = 1012;
-
-	private static enum LoopControl {NORMAL, BREAK, CONTINUE};
 
 	private Shell() {
 		this.session = new ShellSession();
@@ -165,7 +153,7 @@ public class Shell {
 				command = commands.get(0);
 				return Result.of(command);
 			}
-			String choice = readCommand("Do you mean: " + commands.get(0).getShortName().get() + "? (ENTER) or (a)bort").orElse("");
+			String choice = readCommand("Do you mean: " + commands.get(0).getShortName().get() + "? (ENTER) or (a)bort\n").orElse("");
 			if(choice.isEmpty()) {
 				command = commands.get(0);
 			} else {
@@ -207,10 +195,10 @@ public class Shell {
 	}
 
 	public static Optional<String> readCommand(String prompt) {
-		return Shell.getInstance().WIP(prompt);
+		return Shell.getInstance().readShellCommand(prompt);
 	}
 
-	private Optional<String> WIP(String prompt) {
+	private Optional<String> readShellCommand(String prompt) {
 		FeatJAR.log().noLineBreakMessage(prompt);
 
 		if(isWindows()) {
@@ -221,7 +209,7 @@ public class Shell {
 		input = new StringBuilder();
 		int inputCharacter;
 		historyIterator = history.listIterator(history.size());
-		String cmd = (history.size() > 0) ? history.get(history.size() -1) : "";
+		historyCommandLine = (history.size() > 0) ? history.get(history.size() -1) : "";
 
 		try {
 			enterInputMode();
@@ -245,61 +233,24 @@ public class Shell {
 			    	}
 	                if(inputCharacter == '[') {
 	                    inputCharacter = reader.read();
-	                    switch (inputCharacter) {
-                        case 'A':
-                        	if(historyIterator == null) {
-                        		continue;
-                        	}
-
-                            if(historyIterator.hasPrevious()) {
-                            	cmd = historyIterator.previous();
-                                moveUpHistory(input, cmd);
-                                continue;
-                            }
-
-                        	if(!historyIterator.hasPrevious()) {
-                                moveUpHistory(input, cmd);
-                                continue;
-                        	}
-                        case 'B':
-                         	if(historyIterator == null) {
-                        		continue;
-                        	}
-
-                        	if(lastArrowKeyUp && historyIterator.hasNext()) {
-                        		cmd = historyIterator.next();
-                        	}
-
-                          	if(!historyIterator.hasNext()) {
-                                moveOutOfHistory(input);
-                                continue;
-                        	}
-
-                          	cmd = historyIterator.next();
-                            moveDownHistory(input, cmd);
-                            continue;
-
-                        case 'C':
-                            moveCursorRight(input);
-                            break;
-                        case 'D':
-                            moveCursorLeft();
-                            break;
-                    }
+	                    handleArrowKeys(inputCharacter);
 		                if (inputCharacter == 51) {
 					    	handleDeleteKey(inputCharacter);
+						    lastArrowKeyUp = false;
 		                }
 	                } else if (input.length() != 0){
 	            		historyIterator = history.listIterator(history.size());
-	            		resetInputLine(input);
+	            		resetInputLine();
+	    			    lastArrowKeyUp = false;
 	                } else {
 	                    exitInputMode();
 	                    throw new CancellationException("\nCommand canceled\n");
 	                }
 			    } else {
 			    	handleNormalKey(inputCharacter);
+				    lastArrowKeyUp = false;
 			    }
-			    lastArrowKeyUp = false;
+//			    lastArrowKeyUp = false;
 			}
 
 		} catch (IOException e) {
@@ -313,20 +264,62 @@ public class Shell {
 		return input.length() == 0 ? Optional.empty() : Optional.of(String.valueOf(input));
 	}
 
+	private void handleArrowKeys(int inputCharacter) {
+		switch (inputCharacter) {
+		case 'A':
+			if(historyIterator == null) {
+				return;
+			}
+
+		    if(historyIterator.hasPrevious()) {
+		    	historyCommandLine = historyIterator.previous();
+		        moveUpHistory();
+		        return;
+		    }
+
+			if(!historyIterator.hasPrevious()) {
+		        moveUpHistory();
+		        return;
+			}
+		case 'B':
+		 	if(historyIterator == null) {
+				return;
+			}
+
+			if(lastArrowKeyUp && historyIterator.hasNext()) {
+				historyCommandLine = historyIterator.next();
+			}
+
+		  	if(!historyIterator.hasNext()) {
+		        moveOutOfHistory();
+		        return;
+			}
+
+		  	historyCommandLine = historyIterator.next();
+		    moveDownHistory();
+		    return;
+
+		case 'C':
+		    moveCursorRight();
+		    break;
+		case 'D':
+		    moveCursorLeft();
+		    break;
+               }
+	}
+
 	private void handleBackspaceKey() {
 		if (input.length() != 0) {
-
 			if(cursorX >= 0) {
 				if(cursorX <= input.length() && cursorX != 0) {
-					handleBackspaceKey(input);
+					input.deleteCharAt(cursorX-1);
+					displayCharacters(cursorX, input.toString());
+					FeatJAR.log().noLineBreakMessage("\b");
 				}
 				if(cursorX != 0) {
 					cursorX--;
 				}
 			} 
-//			else {
-//				FeatJAR.log().noLineBreakMessage(("\b \b"));
-//			}
 		}
 	}
 
@@ -335,7 +328,7 @@ public class Shell {
 			inputCharacter = reader.read();
 		}
 		if(inputCharacter == '~') {
-			handleDeleteKey(input);
+			handleDeleteKey();
 		}
 	}
 
@@ -350,28 +343,28 @@ public class Shell {
 		displayCharacters(cursorX, input.toString());
 	}
 
-	private void resetInputLine(StringBuilder input) {
+	private void resetInputLine() {
 		input.setLength(0);
 		input.append("");
 		displayCharacters(cursorX, "");
 	}
 
-	private void moveDownHistory(StringBuilder input, String cmd) {
+	private void moveDownHistory() {
 		input.setLength(0);
-		input.append(cmd);
-		displayCharacters(cursorX, cmd);
+		input.append(historyCommandLine);
+		displayCharacters(cursorX, historyCommandLine);
 		lastArrowKeyUp = false;
 	}
 
-	private void moveOutOfHistory(StringBuilder input) {
-		resetInputLine(input);
+	private void moveOutOfHistory() {
+		resetInputLine();
 		lastArrowKeyUp = false;
 	}
 
-	private void moveUpHistory(StringBuilder input, String cmd) {
+	private void moveUpHistory() {
 		input.setLength(0);
-		input.append(cmd);
-		displayCharacters(cursorX, cmd);
+		input.append(historyCommandLine);
+		displayCharacters(cursorX, historyCommandLine);
 		lastArrowKeyUp = true;
 	}
 
@@ -382,24 +375,18 @@ public class Shell {
 		}
 	}
 
-	private void moveCursorRight(StringBuilder input) {
+	private void moveCursorRight() {
 		if (cursorX < input.length()) {
 			FeatJAR.log().noLineBreakMessage("\033[C");
 			cursorX++;
 		}
 	}
 
-	private void handleDeleteKey(StringBuilder input) {
+	private void handleDeleteKey() {
 		if(input.length() != 0 && cursorX != input.length()) {
 			input.deleteCharAt(cursorX);
 			displayCharacters(cursorX, input.toString());
 		}
-	}
-
-	private void handleBackspaceKey(StringBuilder input) {
-		input.deleteCharAt(cursorX-1);
-		displayCharacters(cursorX, input.toString());
-		FeatJAR.log().noLineBreakMessage("\b");
 	}
 
     /**
