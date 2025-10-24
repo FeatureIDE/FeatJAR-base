@@ -36,6 +36,7 @@ public class Shell {
 	String historyCommandLine;
 	private int cursorX = 0, cursorY = 0;
 	private boolean lastArrowKeyUp = false;
+//	List<String> commandList;
 
     private static final String TERMINAL_COLOR_RED = "\033[0;31m";
     private static final String TERMINAL_COLOR_RESET = "\033[0m";
@@ -95,7 +96,7 @@ public class Shell {
 			}
 		}
 	}
-
+	
 	private Result<IShellCommand> parseCommand(String commandString) {
 		ShellCommands shellCommandsExentionsPoint = ShellCommands.getInstance();
 		List<IShellCommand> commands = shellCommandsExentionsPoint
@@ -116,7 +117,7 @@ public class Shell {
 				ambiguousCommands.put(i, c);
 				i++;
 			}
-
+			
 			String choice = readCommand("").orElse("");
 
 			if(choice.isBlank()) {
@@ -149,7 +150,7 @@ public class Shell {
 			}
 			command = matchingExtension.get();
 		} else {
-			if(commands.get(0).getShortName().get().matches(commandString)) {
+			if(commands.get(0).getShortName().get().toLowerCase().matches(commandString)) {
 				command = commands.get(0);
 				return Result.of(command);
 			}
@@ -166,6 +167,40 @@ public class Shell {
 	private Problem addProblem(Severity severity, String message, Object... arguments) {
 		return new Problem(String.format(message, arguments), severity);
 	}
+	
+    private void handleTabulatorAutoComplete() {
+        if (input.length() == 0) {
+        	return;
+        }
+		List<String> commands = ShellCommands.getInstance().getExtensions().stream()
+				.filter(command -> command.getShortName().map(name -> name.toLowerCase().startsWith(String.valueOf(input))).orElse(Boolean.FALSE))
+				.map(cmd -> cmd.getShortName().get().toLowerCase())
+				.collect(Collectors.toList());
+		
+		if(commands.isEmpty()) {
+			return;
+		}
+		
+        String prefix = commands.get(0);
+        
+        for (int i = 1; i < commands.size(); i++) {
+            prefix = calculateSimilarPrefix(prefix, commands.get(i));
+        }
+        input.setLength(0);        
+        input = input.append(prefix);
+        cursorX = input.length();
+        
+		displayCharacters(cursorX, input.toString());
+    }
+
+    private String calculateSimilarPrefix(String first, String second) {
+        int prefixLength = Math.min(first.length(), second.length());
+        int i = 0;
+        while (i < prefixLength && first.charAt(i) == second.charAt(i)) {
+        	i++;
+        }
+        return first.substring(0, i);
+    }	
 
 	private boolean isWindows() {
 		return osName.startsWith("Windows");
@@ -207,7 +242,7 @@ public class Shell {
 		}
 
 		input = new StringBuilder();
-		int inputCharacter;
+		int key;
 		historyIterator = history.listIterator(history.size());
 		historyCommandLine = (history.size() > 0) ? history.get(history.size() -1) : "";
 
@@ -215,97 +250,147 @@ public class Shell {
 			enterInputMode();
 			while (true){
 
-				inputCharacter = reader.read();
-
-				if(inputCharacter == '\r' || inputCharacter == '\n') {
+				key = reader.read();
+				
+				if(isInterrupt(key)) {
+					System.exit(2);
+				} 
+				if (isEOF(key)){
+					break;
+				}
+				if(isEnter(key)) {
 					FeatJAR.log().noLineBreakMessage("\r\n");
 					break;
 				}
-
-			    if (inputCharacter == 127 || inputCharacter == 8) {
+				
+				if(isTabulator(key)) {
+					handleTabulatorAutoComplete();
+					continue;
+				}
+				
+			    if (isBackspace(key)) {
 			        handleBackspaceKey();
 		            continue;
 			    }
-
-			    if(inputCharacter == 27) {
-			    	if(reader.ready()) {
-			    		inputCharacter = reader.read();
-			    	}
-	                if(inputCharacter == '[') {
-	                    inputCharacter = reader.read();
-	                    handleArrowKeys(inputCharacter);
-		                if (inputCharacter == 51) {
-					    	handleDeleteKey(inputCharacter);
-						    lastArrowKeyUp = false;
-		                }
-	                } else if (input.length() != 0){
-	            		historyIterator = history.listIterator(history.size());
-	            		resetInputLine();
-	    			    lastArrowKeyUp = false;
-	                } else {
-	                    exitInputMode();
-	                    throw new CancellationException("\nCommand canceled\n");
-	                }
-			    } else {
-			    	handleNormalKey(inputCharacter);
-				    lastArrowKeyUp = false;
-			    }
-//			    lastArrowKeyUp = false;
+			    if(isEscape(key)) {
+			    	handleEscapeKey(key);
+			    } 
+//			    else {
+			    	handleNormalKey(key);
+//			    }
 			}
-
 		} catch (IOException e) {
-
 			e.printStackTrace();
 		} finally {
 			exitInputMode();
 		}
 		cursorX = 0;
 
-		return input.length() == 0 ? Optional.empty() : Optional.of(String.valueOf(input));
+		return input.length() == 0 ? Optional.empty() : Optional.of(String.valueOf(input).toLowerCase());
 	}
 
-	private void handleArrowKeys(int inputCharacter) {
-		switch (inputCharacter) {
-		case 'A':
-			if(historyIterator == null) {
-				return;
-			}
-
-		    if(historyIterator.hasPrevious()) {
-		    	historyCommandLine = historyIterator.previous();
-		        moveUpHistory();
-		        return;
+	private void handleEscapeKey(int key) throws IOException {
+		key = getNextKey(key);
+		if(key == '[') {
+		    key = getNextKey(key);
+		    if(isPageKey(key)) {
+		    	//TODO implement handling
+			    lastArrowKeyUp = false;
+		    } else if (isDelete(key)) {
+		    	handleDeleteKey(key);
+			    lastArrowKeyUp = false;
+		    } else {
+			    handleArrowKeys(key);
 		    }
+		    
+		} else if (input.length() != 0) {
+			historyIterator = history.listIterator(history.size());
+			resetInputLine();
+		    lastArrowKeyUp = false;
+		} else {
+		    exitInputMode();
+		    throw new CancellationException("\nCommand canceled\n");
+		}
+	}
 
-			if(!historyIterator.hasPrevious()) {
-		        moveUpHistory();
-		        return;
-			}
-		case 'B':
-		 	if(historyIterator == null) {
-				return;
-			}
+	private int getNextKey(int key) throws IOException {
+		return reader.ready() ? reader.read() : key;
+	}
 
-			if(lastArrowKeyUp && historyIterator.hasNext()) {
-				historyCommandLine = historyIterator.next();
-			}
+	private boolean isPageKey(int key) throws IOException {
+		return (key == 53 || key == 54) && getNextKey(key) == 126;
+	}
 
-		  	if(!historyIterator.hasNext()) {
-		        moveOutOfHistory();
-		        return;
-			}
+	private boolean isTabulator(int key) {
+		return key == 9;
+	}
 
-		  	historyCommandLine = historyIterator.next();
-		    moveDownHistory();
-		    return;
+	private boolean isEOF(int key) {
+		return key == 4;
+	}
 
-		case 'C':
-		    moveCursorRight();
-		    break;
-		case 'D':
-		    moveCursorLeft();
-		    break;
-               }
+	private boolean isInterrupt(int key) {
+		return key == 3;
+	}
+	
+	private boolean isDelete(int key) {
+		return key == 51;
+	}
+
+	private boolean isEscape(int key) {
+		return key == 27;
+	}
+
+	private boolean isBackspace(int key) {
+		return key == 127; // || isTabulator(key)
+	}
+
+	private boolean isEnter(int key) {
+		return key == '\r' || key == '\n';
+	}
+
+	private void handleArrowKeys(int key) {
+		switch (key) {
+			case 'A':
+				if(historyIterator == null) {
+					return;
+				}
+	
+			    if(historyIterator.hasPrevious()) {
+			    	historyCommandLine = historyIterator.previous();
+			        moveUpHistory();
+			        return;
+			    }
+	
+				if(!historyIterator.hasPrevious()) {
+			        moveUpHistory();
+			        return;
+				}
+			case 'B':
+			 	if(historyIterator == null) {
+					return;
+				}
+	
+				if(lastArrowKeyUp && historyIterator.hasNext()) {
+					historyCommandLine = historyIterator.next();
+				}
+	
+			  	if(!historyIterator.hasNext()) {
+			        moveOutOfHistory();
+			        return;
+				}
+	
+			  	historyCommandLine = historyIterator.next();
+			    moveDownHistory();
+			    return;
+	
+			case 'C':
+			    moveCursorRight();
+			    break;
+			case 'D':
+			    moveCursorLeft();
+			    break;
+		 }
 	}
 
 	private void handleBackspaceKey() {
@@ -323,29 +408,32 @@ public class Shell {
 		}
 	}
 
-	private void handleDeleteKey(int inputCharacter) throws IOException {
-		if(reader.ready()) {
-			inputCharacter = reader.read();
-		}
-		if(inputCharacter == '~') {
-			handleDeleteKey();
+	private void handleDeleteKey(int key) throws IOException {
+		key = getNextKey(key);
+		if(key == '~') {
+			if(input.length() != 0 && cursorX != input.length()) {
+				input.deleteCharAt(cursorX);
+				displayCharacters(cursorX, input.toString());
+			}
 		}
 	}
 
-	private void handleNormalKey(int inputCharacter) {
+	private void handleNormalKey(int key) {
 		cursorX++;
 
 		if(input.length() == 0) {
-			input.append((char) inputCharacter);
+			input.append((char) key);
 		} else {
-			input.insert(cursorX-1,(char) inputCharacter);
+			input.insert(cursorX-1,(char) key);
 		}
 		displayCharacters(cursorX, input.toString());
+	    lastArrowKeyUp = false;
 	}
 
 	private void resetInputLine() {
 		input.setLength(0);
 		input.append("");
+		cursorX = 0;
 		displayCharacters(cursorX, "");
 	}
 
@@ -379,13 +467,6 @@ public class Shell {
 		if (cursorX < input.length()) {
 			FeatJAR.log().noLineBreakMessage("\033[C");
 			cursorX++;
-		}
-	}
-
-	private void handleDeleteKey() {
-		if(input.length() != 0 && cursorX != input.length()) {
-			input.deleteCharAt(cursorX);
-			displayCharacters(cursorX, input.toString());
 		}
 	}
 
