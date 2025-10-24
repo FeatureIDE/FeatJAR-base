@@ -33,56 +33,42 @@ import de.featjar.base.shell.ShellSession;
  */
 public abstract class ACommand implements ICommand {
 
-    /**
-     * Input option for loading files.
-     */
-    public static final Option<Path> INPUT_OPTION = Option.newOption("input", Option.PathParser)
-            .setDescription("Path to input file(s)")
-            .setValidator(Option.PathValidator);
+	/**
+	 * Input option for loading files.
+	 */
+	public static final Option<Path> INPUT_OPTION = Option.newOption("input", Option.PathParser)
+			.setDescription("Path to input file(s)").setValidator(Option.PathValidator);
 
-    /**
-     * Output option for saving files.
-     */
-    public static final Option<Path> OUTPUT_OPTION =
-            Option.newOption("output", Option.PathParser).setDescription("Path to output file(s)");
+	/**
+	 * Output option for saving files.
+	 */
+	public static final Option<Path> OUTPUT_OPTION = Option.newOption("output", Option.PathParser)
+			.setDescription("Path to output file(s)");
 
-    /**
-     * {@return all options registered for the calling class}
-     */
-    public final List<Option<?>> getOptions() {
-        return Option.getAllOptions(getClass());
-    }
-    
-    public OptionList getShellOptions(ShellSession session, List<String> cmdParams) {    	
-    	OptionList optionList = new OptionList();
-    	
-    	if(cmdParams.isEmpty()) {
-    		throw new IllegalArgumentException("No path object specified");
-    	}
-    	
-    	Optional<Path> path = session.get(cmdParams.get(0), Path.class);
-    	
-    	if(path.isEmpty()) {
-    		throw new IllegalArgumentException(String.format("'%s' is not a session object", cmdParams.get(0)));
-    	}
-    	
-    	optionList.parseArguments();    	
+	/**
+	 * {@return all options registered for the calling class}
+	 */
+	public final List<Option<?>> getOptions() {
+		return Option.getAllOptions(getClass());
+	}
+
+	public OptionList getShellOptions(ShellSession session, List<String> cmdParams) {
+		OptionList optionList = new OptionList();
+
+		if (cmdParams.isEmpty()) {
+			throw new IllegalArgumentException("No path object specified");
+		}
+
+		Optional<Path> path = session.get(cmdParams.get(0), Path.class);
+
+		if (path.isEmpty()) {
+			throw new IllegalArgumentException(String.format("'%s' is not a session object", cmdParams.get(0)));
+		}
+
+		optionList.parseArguments();
 		optionList.parseProperties(INPUT_OPTION, String.valueOf(path.get()));
-	
+
 		return optionList;
-    } //TODO OUTPUT, look 
-    
-    public OptionList getShellOptionsWIP(ShellSession session, List<String> cmdParams) {    	
-    	OptionList optionList = new OptionList();
-    	Optional<Path> path = session.get(cmdParams.get(0), Path.class);
-    	
-    	optionList.parseArguments();    	
-    	
-    	optionList.getOptions();
-    	
-    	
-		optionList.parseProperties(INPUT_OPTION, String.valueOf(path.get()));
-	
-		return optionList;
-    } //TODO OUTPUT, look 
+	} 
+
 }
