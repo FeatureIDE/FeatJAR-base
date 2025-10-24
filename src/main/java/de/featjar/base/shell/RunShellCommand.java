@@ -1,20 +1,20 @@
 package de.featjar.base.shell;
 
 import java.util.List;
-import java.util.NoSuchElementException;
 import java.util.Optional;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import de.featjar.base.FeatJAR;
 import de.featjar.base.cli.Commands;
 import de.featjar.base.cli.ICommand;
+import de.featjar.base.cli.Option;
 import de.featjar.base.cli.OptionList;
 import de.featjar.base.data.Result;
 
 public class RunShellCommand implements IShellCommand {
 	
 	@Override
-	public void execute(ShellSession session, List<String> cmdParams) {
-		
+	public void execute(ShellSession session, List<String> cmdParams) {		
 		if(cmdParams.isEmpty()) {
 			FeatJAR.log().info(String.format("Usage: %s", getDescription().orElse("")));
 			return;
@@ -27,15 +27,62 @@ public class RunShellCommand implements IShellCommand {
 				return;
 			}
 			OptionList shellOptions = cliCommand.get().getShellOptions(session, cmdParams.subList(1, cmdParams.size()));
-			//TODO Alter options 
-			cliCommand.get().getOptions().forEach(o -> {
-				FeatJAR.log().message(o+"="+shellOptions.getResult(o).map(String::valueOf).orElse(""));
-			});			
-			cliCommand.get().run(shellOptions);
+
+			shellOptions = alterOptions(cliCommand, shellOptions);
+	
+			int runResult = cliCommand.get().run(shellOptions);
+			
+			if(runResult == 0) {
+				FeatJAR.log().message("Successfull");
+			} else {
+				FeatJAR.log().error(Shell.wrapErorrColor("Errorcode '%d' occured in command '%s'"), runResult, cliCommand.get().getIdentifier());
+			}
 			
 		} catch (IllegalArgumentException iae) {
-			FeatJAR.log().error(iae.getMessage());
+			iae.printStackTrace();
+			FeatJAR.log().error(Shell.wrapErorrColor(iae.getMessage()));
+			FeatJAR.log().info(String.format("Usage %s", getDescription().get()));
+			
 		}
+	}
+	
+	private OptionList alterOptions(Result<ICommand> cliCommand, OptionList shellOptions) {
+		String choice;
+		
+		while(true) {
+			AtomicInteger i = new AtomicInteger(1);
+			List<Option<?>> options = cliCommand.get().getOptions();
+			int numberChoice;
+			
+			options.forEach(o -> {
+				FeatJAR.log()
+				.message(i.getAndIncrement()+". "+o+"="+shellOptions.getResult(o)
+				.map(String::valueOf).orElse(""));
+			});	
+			choice = String.valueOf(Shell
+					.readCommand("Alter options ?\nSelect a number or leave blank to proceed:\n")
+					.orElse(""))
+					.toLowerCase();
+			
+			if(choice.isBlank()) {
+				break;
+			}
+			try {
+				numberChoice = Integer.parseInt(choice)-1;
+			} catch (NumberFormatException e) {
+				FeatJAR.log().error("Only decimal numbers are a valid choice");
+				continue; 
+			}		
+					
+			if(options.size() - 1 < numberChoice || numberChoice < 1) {
+				FeatJAR.log().error("Number does not exist");
+				continue;
+			}
+			
+			choice = String.valueOf(Shell.readCommand("Enter the new value:\n").orElse(""));			
+			shellOptions.parseProperties(options.get(numberChoice), choice);			
+		}
+		return shellOptions;
 	}
 
 	@Override
@@ -45,7 +92,7 @@ public class RunShellCommand implements IShellCommand {
 
 	@Override
 	public Optional<String> getDescription() {
-		return Optional.of("run... WIP");
+		return Optional.of("run <cmd> <sessionPath> WIP");
 	}
 
 }
