@@ -25,6 +25,7 @@ package de.featjar.base.data;
  *
  * @author Sebastian Krieter
  */
+// TODO Improve performance and memory efficiency
 public class BinomialCalculator {
 
     private final long[][] binomial;
@@ -68,11 +69,14 @@ public class BinomialCalculator {
         }
     }
 
-    public int[] combination(long index) {
-        final int[] combination = new int[maxK];
+    public int[] combination(long index, int[] combination) {
+        return combination(index, combination, 0);
+    }
+
+    public int[] combination(long index, int[] combination, int offset) {
         for (int i = maxK; i > 0; i--) {
             if (index <= 0) {
-                combination[i - 1] = i - 1;
+                combination[i - 1 + offset] = i - 1;
             } else {
                 final int p = (int) Math.ceil(Math.pow(index * factorial(i), (1.0 / i)));
                 for (int j = p; j <= maxN; j++) {

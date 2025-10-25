@@ -24,6 +24,8 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import de.featjar.base.data.combination.CombinationStream;
+import de.featjar.base.data.combination.ISelection;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -38,7 +40,7 @@ public class SingleLexicographicIteratorTest {
     @Test
     void streamSequential1() {
         int[] items = IntStream.range(0, 10).toArray();
-        List<String> sSet = SingleLexicographicIterator.stream(items, 1) //
+        List<String> sSet = CombinationStream.stream(items, 1) //
                 .map(c -> Arrays.toString(c.select())) //
                 .collect(Collectors.toList());
 
@@ -54,7 +56,7 @@ public class SingleLexicographicIteratorTest {
     @Test
     void streamSequential2() {
         int[] items = IntStream.range(0, 10).toArray();
-        List<String> sSet = SingleLexicographicIterator.stream(items, 2) //
+        List<String> sSet = CombinationStream.stream(items, 2) //
                 .map(c -> Arrays.toString(c.select())) //
                 .collect(Collectors.toList());
 
@@ -73,7 +75,7 @@ public class SingleLexicographicIteratorTest {
     @Test
     void streamSequential3() {
         int[] items = IntStream.range(0, 10).toArray();
-        List<int[]> sSet = SingleLexicographicIterator.stream(items, 3) //
+        List<int[]> sSet = CombinationStream.stream(items, 3) //
                 .map(c -> c.createSelection()) //
                 .collect(Collectors.toList());
 
@@ -137,17 +139,15 @@ public class SingleLexicographicIteratorTest {
         int size = (int) BinomialCalculator.computeBinomial(n, k);
         int[] counts = new int[size];
         Random random = new Random(1);
-        SingleLexicographicIterator.parallelStream(items, k)
-                .mapToLong(c -> c.index())
-                .forEach(c -> {
-                    try {
-                        Thread.sleep((long) (20 * random.nextDouble()));
-                    } catch (Exception e) {
-                    }
-                    synchronized (counts) {
-                        counts[Math.toIntExact(c)]++;
-                    }
-                });
+        CombinationStream.parallelStream(items, k).mapToLong(c -> c.index()).forEach(c -> {
+            try {
+                Thread.sleep((long) (20 * random.nextDouble()));
+            } catch (Exception e) {
+            }
+            synchronized (counts) {
+                counts[Math.toIntExact(c)]++;
+            }
+        });
         for (int i = 0; i < counts.length; i++) {
             assertEquals(1, counts[i], String.valueOf(i));
         }
@@ -155,11 +155,11 @@ public class SingleLexicographicIteratorTest {
 
     private void streamParallelAndSequential(int t, int n) {
         int[] items = IntStream.range(0, n).toArray();
-        List<String> pSet = SingleLexicographicIterator.parallelStream(items, t)
-                .map(ICombination::toString)
+        List<String> pSet = CombinationStream.parallelStream(items, t)
+                .map(ISelection::toString)
                 .collect(Collectors.toList());
-        List<String> sSet = SingleLexicographicIterator.stream(items, t) //
-                .map(ICombination::toString) //
+        List<String> sSet = CombinationStream.stream(items, t) //
+                .map(ISelection::toString) //
                 .collect(Collectors.toList());
 
         assertEquals(sSet.size(), pSet.size(), sSet + "\n!=\n" + pSet);
