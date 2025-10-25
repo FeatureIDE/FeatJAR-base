@@ -25,6 +25,7 @@ import java.util.Map;
 import java.util.function.Function;
 import java.util.stream.Collector;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 /**
  * Utilities for handling linked hash maps.
@@ -33,14 +34,37 @@ import java.util.stream.Collectors;
  * @author Elias Kuiter
  */
 public class Maps {
+    /**
+     * Creates a new empty {@link LinkedHashMap}.
+     * @param <T> the type of the keys
+     * @param <U> the type of the values
+     * @return a new map instance
+     */
     public static <T, U> LinkedHashMap<T, U> empty() {
         return new LinkedHashMap<>();
     }
-
+    /**
+     * Creates a new {@link LinkedHashMap} with a single mapping.
+     * @param <T> the type of the keys
+     * @param <U> the type of the values
+     * @param key the key of the mapping
+     * @param value the value of the mapping
+     * @return a new map instance
+     */
     public static <T, U> LinkedHashMap<T, U> of(T key, U value) {
         return new LinkedHashMap<>(Map.of(key, value));
     }
 
+    /**
+     * Creates a new {@link LinkedHashMap} from a key and value mapper.
+     * Can be used with {@link Stream#collect(Collector)}.
+     * @param <K> the type of the keys
+     * @param <U> the type of the values
+     * @param <T> the type of element in the stream
+     * @param keyMapper a function converting an element to a key
+     * @param valueMapper a function converting an element to a value
+     * @return a new map instance
+     */
     public static <T, K, U> Collector<T, ?, LinkedHashMap<K, U>> toMap(
             Function<? super T, ? extends K> keyMapper, Function<? super T, ? extends U> valueMapper) {
         return Collectors.toMap(

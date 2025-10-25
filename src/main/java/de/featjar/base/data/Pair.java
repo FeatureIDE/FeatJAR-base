@@ -34,7 +34,13 @@ import java.util.Objects;
  */
 public class Pair<A, B> {
 
+    /**
+     * The key object
+     */
     protected final A key;
+    /**
+     * The value object
+     */
     protected final B value;
 
     /**
