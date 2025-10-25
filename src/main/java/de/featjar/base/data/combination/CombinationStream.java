@@ -54,6 +54,32 @@ public final class CombinationStream {
     }
 
     /**
+     * {@return a sequential stream with the given items and combination size}
+     *
+     * @param <T> the type of the items
+     * @param <E> the type of the environment for the selections returned by the stream
+     * @param t the combination size
+     * @param items the items
+     * @param environmentSupplier the supplier of the environment objects
+     */
+    public static <T, E> Stream<ISelection<T[], E>> stream(T[] items, int t, Supplier<E> environmentSupplier) {
+        return StreamSupport.stream(new ObjectLexicographicIterator<>(items, t, environmentSupplier), false);
+    }
+
+    /**
+     * {@return a sequential stream with the given items and combination size}
+     *
+     * @param <T> the type of the items
+     * @param <E> the type of the environment for the selections returned by the stream
+     * @param t the combination size
+     * @param items the items
+     * @param environmentSupplier the supplier of the environment objects
+     */
+    public static <T, E> Stream<ISelection<T[], E>> stream(T[][] items, int[] t, Supplier<E> environmentSupplier) {
+        return StreamSupport.stream(new ObjectLexicographicIterator<>(items, t, environmentSupplier), false);
+    }
+
+    /**
      * {@return a parallel stream with the given items and combination size}
      *
      * @param <T> the type of the items
@@ -120,6 +146,30 @@ public final class CombinationStream {
      */
     public static Stream<ISelection<int[], Void>> stream(int[] items, int t) {
         return StreamSupport.stream(new IntLexicographicIterator<>(items, t, () -> null), false);
+    }
+
+    /**
+     * {@return a sequential stream with the given items and combination size}
+     *
+     * @param <E> the type of the environment for the selections returned by the stream
+     * @param t the combination size
+     * @param items the items
+     * @param environmentSupplier the supplier of the environment objects
+     */
+    public static <E> Stream<ISelection<int[], E>> stream(int[] items, int t, Supplier<E> environmentSupplier) {
+        return StreamSupport.stream(new IntLexicographicIterator<>(items, t, environmentSupplier), false);
+    }
+
+    /**
+     * {@return a sequential stream with the given items and combination size}
+     *
+     * @param <E> the type of the environment for the selections returned by the stream
+     * @param t the combination size
+     * @param items the items
+     * @param environmentSupplier the supplier of the environment objects
+     */
+    public static <E> Stream<ISelection<int[], E>> stream(int[][] items, int[] t, Supplier<E> environmentSupplier) {
+        return StreamSupport.stream(new IntLexicographicIterator<>(items, t, environmentSupplier), false);
     }
 
     /**
