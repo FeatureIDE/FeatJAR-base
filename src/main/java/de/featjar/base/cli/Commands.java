@@ -26,7 +26,6 @@ import de.featjar.base.extension.AExtensionPoint;
 import de.featjar.base.io.IO;
 import de.featjar.base.io.format.IFormat;
 import de.featjar.base.io.format.IFormatSupplier;
-
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -76,7 +75,7 @@ public class Commands extends AExtensionPoint<ICommand> {
     public static Commands getInstance() {
         return FeatJAR.extensionPoint(Commands.class);
     }
-    
+
     /**
      * Runs a given function in a new thread, aborting it when it is not done after a timeout expires.
      * If the entire process should be stopped afterwards, {@link System#exit(int)} must be called explicitly.
