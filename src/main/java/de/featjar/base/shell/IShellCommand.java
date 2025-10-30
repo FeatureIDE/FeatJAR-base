@@ -1,3 +1,23 @@
+/*
+ * Copyright (C) 2025 FeatJAR-Development-Team
+ *
+ * This file is part of FeatJAR-base.
+ *
+ * base is free software: you can redistribute it and/or modify it
+ * under the terms of the GNU Lesser General Public License as published by
+ * the Free Software Foundation, either version 3.0 of the License,
+ * or (at your option) any later version.
+ *
+ * base is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+ * See the GNU Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public License
+ * along with base. If not, see <https://www.gnu.org/licenses/>.
+ *
+ * See <https://github.com/FeatureIDE/FeatJAR-base> for further information.
+ */
 package de.featjar.base.shell;
 
 import java.util.List;
@@ -5,21 +25,21 @@ import java.util.Optional;
 
 import de.featjar.base.extension.IExtension;
 
-public interface IShellCommand extends IExtension{ 
-	
-	void execute(ShellSession session, List<String> cmdParams);
-	
+public interface IShellCommand extends IExtension {
+
+    void execute(ShellSession session, List<String> cmdParams);
+
     /**
      * {@return this command's short name, if any} The short name can be used to call this command from the CLI.
      */
     default Optional<String> getShortName() {
         return Optional.empty();
     }
-    
+
     /**
      * {@return this command's description name, if any}
      */
-    default Optional<String> getDescription(){
-    	return Optional.empty();
+    default Optional<String> getDescription() {
+        return Optional.empty();
     }
 }

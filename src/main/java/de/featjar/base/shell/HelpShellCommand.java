@@ -1,3 +1,23 @@
+/*
+ * Copyright (C) 2025 FeatJAR-Development-Team
+ *
+ * This file is part of FeatJAR-base.
+ *
+ * base is free software: you can redistribute it and/or modify it
+ * under the terms of the GNU Lesser General Public License as published by
+ * the Free Software Foundation, either version 3.0 of the License,
+ * or (at your option) any later version.
+ *
+ * base is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+ * See the GNU Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public License
+ * along with base. If not, see <https://www.gnu.org/licenses/>.
+ *
+ * See <https://github.com/FeatureIDE/FeatJAR-base> for further information.
+ */
 package de.featjar.base.shell;
 
 import java.util.List;
@@ -6,32 +26,33 @@ import java.util.Optional;
 import de.featjar.base.FeatJAR;
 
 public class HelpShellCommand implements IShellCommand {
-	
-	@Override
-	public void execute(ShellSession session, List<String> cmdParams) {
-		printCommands();
-	}
-	
-	public void printCommands() {
-		FeatJAR.log().message("Interactive shell");
-		FeatJAR.log().message("Capitalization is NOT taken into account");
-		FeatJAR.log().message("You can cancel ANY command by pressing the (ESC) key");
-		FeatJAR.log().message("Supported commands are: \n");
-		
-		FeatJAR.extensionPoint(ShellCommands.class).getExtensions()
-			.stream().map(c -> c.getShortName().orElse("")
-			.concat(" - " + c.getDescription().orElse("")))
-			.forEach(FeatJAR.log()::message);		
-		FeatJAR.log().message("\n");
-	}
-	
+
+    @Override
+    public void execute(ShellSession session, List<String> cmdParams) {
+        printCommands();
+    }
+
+    public void printCommands() {
+        FeatJAR.log().message("Interactive shell");
+        FeatJAR.log().message("Capitalization of COMMANDS is NOT taken into account");
+        FeatJAR.log().message("You can cancel ANY command by pressing the (ESC) key");
+        FeatJAR.log().message("Supported commands are: \n");
+
+        FeatJAR.extensionPoint(ShellCommands.class).getExtensions().stream()
+                .map(c -> c.getShortName()
+                        .orElse("")
+                        .concat(" - " + c.getDescription().orElse("")))
+                .forEach(FeatJAR.log()::message);
+        FeatJAR.log().message("\n");
+    }
+
     @Override
     public Optional<String> getShortName() {
         return Optional.of("help");
     }
-    
+
     @Override
-    public Optional<String> getDescription(){
-    	return Optional.of("print all commads");
+    public Optional<String> getDescription() {
+        return Optional.of("print all commads");
     }
 }
