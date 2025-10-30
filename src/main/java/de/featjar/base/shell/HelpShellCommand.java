@@ -41,7 +41,7 @@ public class HelpShellCommand implements IShellCommand {
         FeatJAR.extensionPoint(ShellCommands.class).getExtensions().stream()
                 .map(c -> c.getShortName()
                         .orElse("")
-                        .concat(" - " + c.getDescription().orElse("")))
+                        .concat(" " + c.getDescription().orElse("")))
                 .forEach(FeatJAR.log()::message);
         FeatJAR.log().message("\n");
     }
@@ -53,6 +53,6 @@ public class HelpShellCommand implements IShellCommand {
 
     @Override
     public Optional<String> getDescription() {
-        return Optional.of("print all commads");
+        return Optional.of("- print all commads");
     }
 }

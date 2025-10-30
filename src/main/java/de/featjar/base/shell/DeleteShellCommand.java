@@ -54,6 +54,6 @@ public class DeleteShellCommand implements IShellCommand {
 
     @Override
     public Optional<String> getDescription() {
-        return Optional.of("delete session variables - <cmd> <name> ...");
+        return Optional.of("- <name> ... - delete session variables");
     }
 }

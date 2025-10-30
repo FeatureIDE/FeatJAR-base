@@ -37,6 +37,6 @@ public class ExitShellCommand implements IShellCommand {
 
     @Override
     public Optional<String> getDescription() {
-        return Optional.of("leave shell");
+        return Optional.of("- leave shell");
     }
 }

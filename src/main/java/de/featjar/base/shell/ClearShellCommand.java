@@ -50,6 +50,6 @@ public class ClearShellCommand implements IShellCommand {
 
     @Override
     public Optional<String> getDescription() {
-        return Optional.of("delete the entire session");
+        return Optional.of("- delete the entire session");
     }
 }

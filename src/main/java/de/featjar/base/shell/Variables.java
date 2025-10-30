@@ -37,6 +37,6 @@ public class Variables implements IShellCommand {
 
     @Override
     public Optional<String> getDescription() {
-        return Optional.of("print the name and type of all session variables");
+        return Optional.of("- print the name and type of all session variables");
     }
 }

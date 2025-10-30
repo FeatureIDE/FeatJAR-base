@@ -114,6 +114,6 @@ public class RunShellCommand implements IShellCommand {
 
     @Override
     public Optional<String> getDescription() {
-        return Optional.of("run <cmd> <sessionPath> WIP");
+        return Optional.of("<sessionPath> - launch non shellcommands");
     }
 }

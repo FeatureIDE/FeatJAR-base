@@ -69,8 +69,6 @@ public class Shell {
             this.shellScanner = null;
             this.reader = new BufferedReader(new InputStreamReader(System.in));
         }
-        // TODO remove the next line !
-        session.put("p", Paths.get("../feature-model/testFeatureModels/basic.xml"), Path.class);
     }
 
     public static Shell getInstance() {
@@ -247,7 +245,6 @@ public class Shell {
         FeatJAR.log().noLineBreakMessage("\033[2K");
         FeatJAR.log().noLineBreakMessage("$ " + typedText);
         FeatJAR.log().noLineBreakMessage("\033[" + (cursorX + CURSOR_START_POSITION_LENGTH) + "G");
-        // TODO cursor dynamic + " " after $
     }
     
     
