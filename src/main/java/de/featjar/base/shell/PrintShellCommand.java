@@ -65,6 +65,6 @@ public class PrintShellCommand implements IShellCommand {
     }
 
     public Optional<String> getDescription() {
-        return Optional.of("<name> ... - print the content of variables");
+        return Optional.of("<var>... - print the content of variables");
     }
 }
