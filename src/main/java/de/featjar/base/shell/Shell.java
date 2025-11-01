@@ -48,19 +48,19 @@ public class Shell {
     private ShellSession session;
     private final Scanner shellScanner;
     private List<String> history;
-    private ListIterator<String> historyIterator;
+    private int historyIterator;
     private final BufferedReader reader;
     private StringBuilder input;
     String historyCommandLine;
     private int cursorX, cursorY;
     private boolean lastArrowKeyUp;
+	private boolean lastArrowKeyDown;
     private final static String START_OF_TERMINAL_LINE = "$ "; 
-    private final static int CURSOR_START_POSITION_LENGTH = START_OF_TERMINAL_LINE.length() + 1;
+    private final static int CURSOR_START_POSITION = START_OF_TERMINAL_LINE.length() + 1;
 
     private Shell() {
         this.session = new ShellSession();
         this.history = new LinkedList<>();
-        this.historyIterator = history.listIterator();
 
         if (isWindows()) {
             this.shellScanner = new Scanner(System.in);
@@ -215,7 +215,7 @@ public class Shell {
         input = input.append(prefix);
         cursorX = input.length();
 
-        displayCharacters(input.toString());
+        displayCharacters(String.valueOf(input));
     }
 
     private String calculateSimilarPrefix(String oldPrefix, String nextString) {
@@ -233,27 +233,33 @@ public class Shell {
 
     /**
      * Displays the typed characters in the console.
-     * '\r' moves the cursor to the beginning of the line
-     * '\u001B[2K' or '\033[2K' erases the entire line
-     * '\u001B' (unicode) or '\033' (octal) for ESC work fine here
-     * '\u001B[#G' moves cursor to column #
-     * see for more documentation: https://gist.github.com/fnky/458719343aabd01cfb17a3a4f7296797
      * @param typedText the typed characters
      */
     private void displayCharacters(String typedText) {
+    	/*
+        * '\r' moves the cursor to the beginning of the line
+        * '\u001B[2K' or '\033[2K' erases the entire line
+        * '\u001B' (unicode) or '\033' (octal) for ESC work fine here
+        * '\u001B[#G' moves cursor to column #
+        * see for more documentation: https://gist.github.com/fnky/458719343aabd01cfb17a3a4f7296797
+        */
         FeatJAR.log().noLineBreakMessage("\r");
         FeatJAR.log().noLineBreakMessage("\033[2K");
         FeatJAR.log().noLineBreakMessage("$ " + typedText);
-        FeatJAR.log().noLineBreakMessage("\033[" + (cursorX + CURSOR_START_POSITION_LENGTH) + "G");
+        FeatJAR.log().noLineBreakMessage("\033[" + (cursorX + CURSOR_START_POSITION) + "G");
     }
     
     
     private void resetMousePointer() {
-        FeatJAR.log().noLineBreakMessage("\033[" + CURSOR_START_POSITION_LENGTH + "G");
+        FeatJAR.log().noLineBreakMessage("\033[" + CURSOR_START_POSITION + "G");
     }
 
-    /*
-     * TODO
+    /**
+     * Static access for {@link #readShellCommand(String)}
+     * reads characters one by one without line buffering into a String
+     * handles special keys (e.g. ESC)
+     * @param prompt the message that is shown in the terminal
+     * @return 
      */
 
     public static Optional<String> readCommand(String prompt) {
@@ -270,7 +276,7 @@ public class Shell {
 
         input = new StringBuilder();
         int key;
-        historyIterator = history.listIterator(history.size());
+        historyIterator = history.size() - 1;
         historyCommandLine = (history.size() > 0) ? history.get(history.size() - 1) : "";
 
         try {
@@ -324,7 +330,7 @@ public class Shell {
             }
 
         } else if (input.length() != 0) {
-            historyIterator = history.listIterator(history.size());
+            historyIterator = history.size() - 1;
             resetInputLine();
             lastArrowKeyUp = false;
         } else {
@@ -371,44 +377,46 @@ public class Shell {
     }
 
     private void handleArrowKeys(int key) {
+    	final char ARROW_UP = 'A', ARROW_DOWN = 'B', ARROW_RIGHT = 'C', ARROW_LEFT = 'D';
         switch (key) {
-            case 'A':
-                if (historyIterator == null) {
+            case ARROW_UP:
+            	if (historyIterator == 0 || (lastArrowKeyUp && (historyIterator == history.size() - 1))) {
+                    historyCommandLine = history.get(historyIterator);
+            		moveToEndOfHistory();
+					return;
+				}
+            	
+            	if((historyIterator == history.size() - 1) && (historyIterator - 1) >= 0) {
+                    historyCommandLine = history.get(historyIterator);
+                    historyIterator--;
+                    moveToEndOfHistory();
                     return;
-                }
-
-                if (historyIterator.hasPrevious()) {
-                    historyCommandLine = historyIterator.previous();
-                    moveUpHistory();
+            	}
+            	
+            	if(lastArrowKeyDown && (historyIterator - 1) >= 0) {
+            		historyIterator--;
+                    historyCommandLine = history.get(historyIterator);
+                    moveToEndOfHistory();
                     return;
+            	}
+            case ARROW_DOWN: 
+                if (lastArrowKeyUp && historyIterator != 0 && (historyIterator + 1) < history.size()) {
+                    historyIterator++;
+                    historyCommandLine = history.get(historyIterator);
                 }
-
-                if (!historyIterator.hasPrevious()) {
-                    moveUpHistory();
-                    return;
-                }
-            case 'B':
-                if (historyIterator == null) {
-                    return;
-                }
-
-                if (lastArrowKeyUp && historyIterator.hasNext()) {
-                    historyCommandLine = historyIterator.next();
-                }
-
-                if (!historyIterator.hasNext()) {
+                if(!((historyIterator + 1) < history.size())) {
                     moveOutOfHistory();
                     return;
                 }
-
-                historyCommandLine = historyIterator.next();
-                moveDownHistory();
+                historyIterator++;
+                historyCommandLine = history.get(historyIterator);
+                
+                moveToStartofHistory();
                 return;
-
-            case 'C':
+            case ARROW_RIGHT:
                 moveCursorRight();
                 break;
-            case 'D':
+            case ARROW_LEFT:
                 moveCursorLeft();
                 break;
         }
@@ -449,6 +457,7 @@ public class Shell {
         }
         displayCharacters(input.toString());
         lastArrowKeyUp = false;
+        lastArrowKeyDown = false;
     }
 
     private void resetInputLine() {
@@ -458,30 +467,34 @@ public class Shell {
         displayCharacters("");
     }
 
-    private void moveDownHistory() {
+    private void moveToStartofHistory() {
         input.setLength(0);
         input.append(historyCommandLine);
+        cursorX = input.length() - 1;
         displayCharacters(historyCommandLine);
         lastArrowKeyUp = false;
+        lastArrowKeyDown = true;
     }
 
     private void moveOutOfHistory() {
         resetInputLine();
         lastArrowKeyUp = false;
+        lastArrowKeyDown = true;
     }
 
-    private void moveUpHistory() {
+    private void moveToEndOfHistory() {
         input.setLength(0);
         input.append(historyCommandLine);
         cursorX = input.length() - 1;
         displayCharacters(historyCommandLine);
         lastArrowKeyUp = true;
+        lastArrowKeyDown = false;
     }
 
     private void moveCursorLeft() {
         if (cursorX > 0) {
             cursorX--;
-            FeatJAR.log().noLineBreakMessage("\033[D"); // +"" ??
+            FeatJAR.log().noLineBreakMessage("\033[D");
         }
     }
 
