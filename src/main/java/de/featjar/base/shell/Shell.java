@@ -48,7 +48,7 @@ public class Shell {
     private ShellSession session;
     private final Scanner shellScanner;
     private List<String> history;
-    private int historyIterator;
+    private int historyIndex;
     private final BufferedReader reader;
     private StringBuilder input;
     String historyCommandLine;
@@ -276,7 +276,7 @@ public class Shell {
 
         input = new StringBuilder();
         int key;
-        historyIterator = history.size() - 1;
+        historyIndex = history.size() - 1;
         historyCommandLine = (history.size() > 0) ? history.get(history.size() - 1) : "";
 
         try {
@@ -330,7 +330,7 @@ public class Shell {
             }
 
         } else if (input.length() != 0) {
-            historyIterator = history.size() - 1;
+            historyIndex = history.size() - 1;
             resetInputLine();
             lastArrowKeyUp = false;
         } else {
@@ -380,45 +380,45 @@ public class Shell {
     	final char ARROW_UP = 'A', ARROW_DOWN = 'B', ARROW_RIGHT = 'C', ARROW_LEFT = 'D';
         switch (key) {
             case ARROW_UP:
-            	if (historyIterator == 0 || (lastArrowKeyUp && (historyIterator == history.size() - 1))) {
-                    historyCommandLine = history.get(historyIterator);
+            	if (historyIndex == 0 || (lastArrowKeyUp && (historyIndex == history.size() - 1))) {
+                    historyCommandLine = history.get(historyIndex);
             		moveToEndOfHistory();
 					return;
 				}
             	
-            	if((historyIterator == history.size() - 1) && (historyIterator - 1) >= 0) {
-                    historyCommandLine = history.get(historyIterator);
-                    historyIterator--;
+            	if((historyIndex == history.size() - 1) && (historyIndex - 1) >= 0) {
+                    historyCommandLine = history.get(historyIndex);
+                    historyIndex--;
                     moveToEndOfHistory();
                     return;
             	}
             	
-            	if(lastArrowKeyDown && (historyIterator - 1) >= 0) {
-            		historyIterator--;
-                    historyCommandLine = history.get(historyIterator);
+            	if(lastArrowKeyDown && (historyIndex - 1) >= 0) {
+            		historyIndex--;
+                    historyCommandLine = history.get(historyIndex);
                     moveToEndOfHistory();
                     return;
             	}
             	
-            	if(historyIterator > 0) {
-                    historyCommandLine = history.get(historyIterator);
-            		historyIterator--;
+            	if(historyIndex > 0) {
+                    historyCommandLine = history.get(historyIndex);
+            		historyIndex--;
                     moveToEndOfHistory();
                     return;
             	}
             	
 
             case ARROW_DOWN: 
-                if (lastArrowKeyUp && historyIterator != 0 && (historyIterator + 1) < history.size()) {
-                    historyIterator++;
-                    historyCommandLine = history.get(historyIterator);
+                if (lastArrowKeyUp && historyIndex != 0 && (historyIndex + 1) < history.size()) {
+                    historyIndex++;
+                    historyCommandLine = history.get(historyIndex);
                 }
-                if(!((historyIterator + 1) < history.size())) {
+                if(!((historyIndex + 1) < history.size())) {
                     moveOutOfHistory();
                     return;
                 }
-                historyIterator++;
-                historyCommandLine = history.get(historyIterator);
+                historyIndex++;
+                historyCommandLine = history.get(historyIndex);
                 
                 moveToStartofHistory();
                 return;
