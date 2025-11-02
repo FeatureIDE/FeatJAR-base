@@ -380,48 +380,70 @@ public class Shell {
     	final char ARROW_UP = 'A', ARROW_DOWN = 'B', ARROW_RIGHT = 'C', ARROW_LEFT = 'D';
         switch (key) {
             case ARROW_UP:
-            	if (historyIndex == 0 || (lastArrowKeyUp && (historyIndex == history.size() - 1))) {
+//            	System.out.println("\nUPINDEX: " + historyIndex + " SIZE:" + history.size() + "\n");
+            	
+//            	if(lastArrowKeyDown && (historyIndex == history.size() - 1)) {
+//            		historyIndex--;
+//                    historyCommandLine = history.get(historyIndex);
+//                	System.out.println("\n " +historyIndex + "\n");
+//                    moveToEndOfHistory();
+//                    return;
+//            	}
+            	
+            	if (historyIndex == 0 || (!lastArrowKeyUp && (historyIndex == history.size() - 1))) {
+            		if(lastArrowKeyDown) {
+            			historyIndex--;
+            		}
                     historyCommandLine = history.get(historyIndex);
             		moveToEndOfHistory();
 					return;
 				}
             	
-            	if((historyIndex == history.size() - 1) && (historyIndex - 1) >= 0) {
-                    historyCommandLine = history.get(historyIndex);
-                    historyIndex--;
-                    moveToEndOfHistory();
-                    return;
-            	}
-            	
-            	if(lastArrowKeyDown && (historyIndex - 1) >= 0) {
-            		historyIndex--;
-                    historyCommandLine = history.get(historyIndex);
-                    moveToEndOfHistory();
-                    return;
-            	}
+
             	
             	if(historyIndex > 0) {
-                    historyCommandLine = history.get(historyIndex);
             		historyIndex--;
+                    historyCommandLine = history.get(historyIndex);
                     moveToEndOfHistory();
                     return;
             	}
             	
+            	
+//            	if((historyIndex == history.size() - 1) && historyIndex > 0) {
+//                    historyCommandLine = history.get(historyIndex);
+//                    historyIndex--;
+//                    moveToEndOfHistory();
+//                    return;
+//            	}
+//            	
+//            	if(lastArrowKeyDown && historyIndex > 0) {
+//            		historyIndex--;
+//                    historyCommandLine = history.get(historyIndex);
+//                    moveToEndOfHistory();
+//                    return;
+//            	}
+            	
+
 
             case ARROW_DOWN: 
                 if (lastArrowKeyUp && historyIndex != 0 && (historyIndex + 1) < history.size()) {
                     historyIndex++;
                     historyCommandLine = history.get(historyIndex);
+                    moveToStartofHistory();
+                    return;
                 }
                 if(!((historyIndex + 1) < history.size())) {
                     moveOutOfHistory();
                     return;
+                } else {
+                    historyIndex++;
+                    historyCommandLine = history.get(historyIndex);
+                    moveToStartofHistory();
+                    return;
                 }
-                historyIndex++;
-                historyCommandLine = history.get(historyIndex);
-                
-                moveToStartofHistory();
-                return;
+
+//                System.out.println("\nDOWNINDEX: " + historyIndex + " SIZE:" + history.size() + "\n");
+
             case ARROW_RIGHT:
                 moveCursorRight();
                 break;
@@ -488,7 +510,7 @@ public class Shell {
     private void moveOutOfHistory() {
         resetInputLine();
         lastArrowKeyUp = false;
-        lastArrowKeyDown = true;
+        lastArrowKeyDown = false;
     }
 
     private void moveToEndOfHistory() {
