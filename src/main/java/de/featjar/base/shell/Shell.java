@@ -399,6 +399,15 @@ public class Shell {
                     moveToEndOfHistory();
                     return;
             	}
+            	
+            	if(historyIterator > 0) {
+                    historyCommandLine = history.get(historyIterator);
+            		historyIterator--;
+                    moveToEndOfHistory();
+                    return;
+            	}
+            	
+
             case ARROW_DOWN: 
                 if (lastArrowKeyUp && historyIterator != 0 && (historyIterator + 1) < history.size()) {
                     historyIterator++;
