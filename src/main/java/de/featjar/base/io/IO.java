@@ -26,13 +26,19 @@ import de.featjar.base.data.Maps;
 import de.featjar.base.data.Result;
 import de.featjar.base.io.format.IFormat;
 import de.featjar.base.io.format.IFormatSupplier;
-import de.featjar.base.io.input.*;
+import de.featjar.base.io.input.AInput;
+import de.featjar.base.io.input.AInputMapper;
+import de.featjar.base.io.input.StreamInputMapper;
+import de.featjar.base.io.input.StringInputMapper;
 import de.featjar.base.io.output.AOutput;
 import de.featjar.base.io.output.AOutputMapper;
 import de.featjar.base.io.output.StreamOutputMapper;
 import de.featjar.base.io.output.StringOutputMapper;
+import java.io.BufferedReader;
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.net.URL;
 import java.nio.charset.Charset;
@@ -41,7 +47,9 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.function.Supplier;
+import java.util.stream.Collectors;
 
 /**
  * Loads inputs and saves outputs of a {@link IFormat}.
@@ -742,5 +750,48 @@ public class IO {
      */
     public static void write(String string, Path path) throws IOException {
         write(string, path, DEFAULT_CHARSET);
+    }
+
+    /**
+     * Reads a string from a physical file.
+     *
+     * @param path   the path
+     * @throws IOException if an I/O error occurs
+     *
+     * @return the content of the entire file as a string.
+     */
+    public static String read(Path path) throws IOException {
+        return read(Files.newInputStream(path));
+    }
+
+    /**
+     * Reads a string from an input stream.
+     *
+     * @param in   the stream
+     * @throws IOException if an I/O error occurs
+     *
+     * @return the content of the entire stream as a string.
+     */
+    public static String read(InputStream in) throws IOException {
+        ByteArrayOutputStream byteContent = new ByteArrayOutputStream();
+        byte[] buffer = new byte[4096];
+        for (int length; (length = in.read(buffer)) != -1; ) {
+            byteContent.write(buffer, 0, length);
+        }
+        return byteContent.toString(DEFAULT_CHARSET);
+    }
+
+    /**
+     * Reads a list of text lines from an input stream.
+     *
+     * @param in   the stream
+     * @throws IOException if an I/O error occurs
+     *
+     * @return the content of the entire stream as a list of lines.
+     */
+    public static List<String> readLines(InputStream in) throws IOException {
+        try (BufferedReader reader = new BufferedReader(new InputStreamReader(in, DEFAULT_CHARSET))) {
+            return reader.lines().collect(Collectors.toList());
+        }
     }
 }
