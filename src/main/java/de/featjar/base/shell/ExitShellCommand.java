@@ -23,6 +23,11 @@ package de.featjar.base.shell;
 import java.util.List;
 import java.util.Optional;
 
+/**
+ * Exits the shell.
+ *
+ * @author Niclas Kleinert
+ */
 public class ExitShellCommand implements IShellCommand {
 
     @Override

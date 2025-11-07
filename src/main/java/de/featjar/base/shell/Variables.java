@@ -23,6 +23,11 @@ package de.featjar.base.shell;
 import java.util.List;
 import java.util.Optional;
 
+/**
+ * Shows all stored variables within {@link ShellSession}
+ *
+ * @author Niclas Kleinert
+ */
 public class Variables implements IShellCommand {
 
     @Override

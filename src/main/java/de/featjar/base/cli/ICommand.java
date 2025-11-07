@@ -64,6 +64,13 @@ public interface ICommand extends IExtension {
      */
     int run(OptionList optionParser);
 
+    /**
+     * Parses arguments into an option list.
+     *
+     * @param session the shell session
+     * @param cmdParams the given arguments for the command
+     * @return an option list containing parsed arguments
+     */
     default OptionList getShellOptions(ShellSession session, List<String> cmdParams) {
         OptionList optionList = new OptionList();
 

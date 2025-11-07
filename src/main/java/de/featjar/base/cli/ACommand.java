@@ -52,6 +52,9 @@ public abstract class ACommand implements ICommand {
         return Option.getAllOptions(getClass());
     }
 
+    /**
+     * {@return an option list with all parsed arguments and properties including a path variable from the session}
+     */
     public OptionList getShellOptions(ShellSession session, List<String> cmdParams) {
         OptionList optionList = new OptionList();
 

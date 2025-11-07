@@ -20,17 +20,23 @@
  */
 package de.featjar.base.shell;
 
-import java.util.List;
-import java.util.Optional;
-import java.util.concurrent.atomic.AtomicInteger;
-
 import de.featjar.base.FeatJAR;
+import de.featjar.base.cli.ACommand;
 import de.featjar.base.cli.Commands;
 import de.featjar.base.cli.ICommand;
 import de.featjar.base.cli.Option;
 import de.featjar.base.cli.OptionList;
 import de.featjar.base.data.Result;
+import java.util.List;
+import java.util.Optional;
+import java.util.concurrent.atomic.AtomicInteger;
 
+/**
+ * Allows {@link ACommand} to be run via the shell with the possibility to
+ * alter certain options before the command is executed.
+ *
+ * @author Niclas Kleinert
+ */
 public class RunShellCommand implements IShellCommand {
 
     @Override
@@ -58,8 +64,7 @@ public class RunShellCommand implements IShellCommand {
                 FeatJAR.log()
                         .error(
                                 "Errorcode '%d' occured in command '%s'",
-                                runResult,
-                                cliCommand.get().getIdentifier());
+                                runResult, cliCommand.get().getIdentifier());
             }
 
         } catch (IllegalArgumentException iae) {

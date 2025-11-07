@@ -20,12 +20,16 @@
  */
 package de.featjar.base.shell;
 
+import de.featjar.base.FeatJAR;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 
-import de.featjar.base.FeatJAR;
-
+/**
+ * Deletes all variables from the entire shell session.
+ *
+ * @author Niclas Kleinert
+ */
 public class ClearShellCommand implements IShellCommand {
 
     @Override

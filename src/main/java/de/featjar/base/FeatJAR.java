@@ -205,6 +205,9 @@ public final class FeatJAR extends IO implements AutoCloseable {
         return configuration;
     }
 
+    /**
+     * {@return a new FeatJAR configuration with values intended for shell settings}
+     */
     public static Configuration shellConfiguration() {
         final Configuration configuration = new Configuration();
         configuration

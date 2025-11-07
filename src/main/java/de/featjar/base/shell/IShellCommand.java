@@ -20,13 +20,23 @@
  */
 package de.featjar.base.shell;
 
+import de.featjar.base.extension.IExtension;
 import java.util.List;
 import java.util.Optional;
 
-import de.featjar.base.extension.IExtension;
-
+/**
+ * A shell command run within a {@link ShellCommands}
+ *
+ * @author Niclas Kleinert
+ */
 public interface IShellCommand extends IExtension {
 
+    /**
+     * Executes the shell command.
+     *
+     * @param session the storage location of all variables
+     * @param cmdParams all arguments except the shell command
+     */
     void execute(ShellSession session, List<String> cmdParams);
 
     /**

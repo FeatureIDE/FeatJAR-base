@@ -357,9 +357,14 @@ public class OptionList {
             }
         }
     }
-
-    public void parseProperties(Option<?> option, String command) {
-        Result<?> parse = option.parse(command);
+    /**
+     * Adds a option with custom value to properties.
+     * 
+     * @param option the option
+     * @param optionValue the command
+     */
+    public void parseProperties(Option<?> option, String optionValue) {
+        Result<?> parse = option.parse(optionValue);
         properties.put(option.getName(), parse.get());
     }
 

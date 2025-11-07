@@ -20,14 +20,18 @@
  */
 package de.featjar.base.shell;
 
+import de.featjar.base.FeatJAR;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
-import de.featjar.base.FeatJAR;
-
+/**
+ * Deletes a given list of variables from the shell session.
+ *
+ * @author Niclas Kleinert
+ */
 public class DeleteShellCommand implements IShellCommand {
 
     @Override

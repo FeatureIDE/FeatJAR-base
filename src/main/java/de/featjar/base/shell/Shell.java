@@ -20,17 +20,18 @@
  */
 package de.featjar.base.shell;
 
+import de.featjar.base.FeatJAR;
+import de.featjar.base.data.Problem;
+import de.featjar.base.data.Problem.Severity;
+import de.featjar.base.data.Result;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.ListIterator;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
@@ -38,11 +39,11 @@ import java.util.Scanner;
 import java.util.concurrent.CancellationException;
 import java.util.stream.Collectors;
 
-import de.featjar.base.FeatJAR;
-import de.featjar.base.data.Problem;
-import de.featjar.base.data.Problem.Severity;
-import de.featjar.base.data.Result;
-
+/**
+ * The basic shell that provides direct access to all commands of FeatJAR.
+ *
+ * @author Niclas Kleinert
+ */
 public class Shell {
     private static Shell instance;
     private ShellSession session;
@@ -52,11 +53,11 @@ public class Shell {
     private final BufferedReader reader;
     private StringBuilder input;
     String historyCommandLine;
-    private int cursorX, cursorY;
+    private int cursorX;
     private boolean lastArrowKeyUp;
-	private boolean lastArrowKeyDown;
-    private final static String START_OF_TERMINAL_LINE = "$ "; 
-    private final static int CURSOR_START_POSITION = START_OF_TERMINAL_LINE.length() + 1;
+    private boolean lastArrowKeyDown;
+    private static final String START_OF_TERMINAL_LINE = "$ ";
+    private static final int CURSOR_START_POSITION = START_OF_TERMINAL_LINE.length() + 1;
 
     private Shell() {
         this.session = new ShellSession();
@@ -82,7 +83,7 @@ public class Shell {
     private void run() {
         FeatJAR.initialize(FeatJAR.shellConfiguration());
         printArt();
-        new HelpShellCommand().printCommands();
+        new HelpShellCommand().execute(null, null);
         while (true) {
             List<String> cmdArg = null;
             try {
@@ -164,9 +165,7 @@ public class Shell {
         if (commands.isEmpty()) {
             Result<IShellCommand> matchingExtension = shellCommandsExentionsPoint.getMatchingExtension(commandString);
             if (matchingExtension.isEmpty()) {
-                FeatJAR.log()
-                        .message(
-                                "No such command '" + commandString + "'. \n <help> shows all viable commands");
+                FeatJAR.log().message("No such command '" + commandString + "'. \n <help> shows all viable commands");
                 return Result.empty(addProblem(Severity.ERROR, "No command matched the name '%s'!", commandString));
             }
             command = matchingExtension.get();
@@ -236,32 +235,27 @@ public class Shell {
      * @param typedText the typed characters
      */
     private void displayCharacters(String typedText) {
-    	/*
-        * '\r' moves the cursor to the beginning of the line
-        * '\u001B[2K' or '\033[2K' erases the entire line
-        * '\u001B' (unicode) or '\033' (octal) for ESC work fine here
-        * '\u001B[#G' moves cursor to column #
-        * see for more documentation: https://gist.github.com/fnky/458719343aabd01cfb17a3a4f7296797
-        */
+        /*
+         * '\r' moves the cursor to the beginning of the line
+         * '\u001B[2K' or '\033[2K' erases the entire line
+         * '\u001B' (unicode) or '\033' (octal) for ESC work fine here
+         * '\u001B[#G' moves cursor to column #
+         * see for more documentation: https://gist.github.com/fnky/458719343aabd01cfb17a3a4f7296797
+         */
         FeatJAR.log().noLineBreakMessage("\r");
         FeatJAR.log().noLineBreakMessage("\033[2K");
         FeatJAR.log().noLineBreakMessage("$ " + typedText);
         FeatJAR.log().noLineBreakMessage("\033[" + (cursorX + CURSOR_START_POSITION) + "G");
     }
-    
-    
-    private void resetMousePointer() {
-        FeatJAR.log().noLineBreakMessage("\033[" + CURSOR_START_POSITION + "G");
-    }
 
     /**
      * Static access for {@link #readShellCommand(String)}
-     * reads characters one by one without line buffering into a String
-     * handles special keys (e.g. ESC)
+     * Reads characters one by one without line buffering into a string until ENTER is pressed.
+     * Handles special keys. ESC cancels every command. Ensures that arrow keys work as in a normal shell (including a terminal history).
+     * Page keys are ignored. Interrupts do not need special treatment and, therefore, work as usual.
      * @param prompt the message that is shown in the terminal
-     * @return 
+     * @return all normal keys combined into a string
      */
-
     public static Optional<String> readCommand(String prompt) {
         return Shell.getInstance().readShellCommand(prompt);
     }
@@ -310,9 +304,7 @@ public class Shell {
         }
         cursorX = 0;
 
-        return input.length() == 0
-                ? Optional.empty()
-                : Optional.of(String.valueOf(input));
+        return input.length() == 0 ? Optional.empty() : Optional.of(String.valueOf(input));
     }
 
     private void handleEscapeKey(int key) throws IOException {
@@ -335,8 +327,7 @@ public class Shell {
             lastArrowKeyUp = false;
         } else {
             exitInputMode();
-            throw new CancellationException(
-                    "\nCommand canceled\n");
+            throw new CancellationException("\nCommand canceled\n");
         }
     }
 
@@ -352,14 +343,6 @@ public class Shell {
         return key == 9;
     }
 
-    private boolean isEOF(int key) {
-        return key == 4;
-    }
-
-    private boolean isInterrupt(int key) {
-        return key == 3;
-    }
-
     private boolean isDelete(int key) {
         return key == 51;
     }
@@ -369,7 +352,7 @@ public class Shell {
     }
 
     private boolean isBackspace(int key) {
-        return key == 127 || key == 8; // || isTabulator(key)
+        return key == 127 || key == 8;
     }
 
     private boolean isEnter(int key) {
@@ -377,62 +360,37 @@ public class Shell {
     }
 
     private void handleArrowKeys(int key) {
-    	final char ARROW_UP = 'A', ARROW_DOWN = 'B', ARROW_RIGHT = 'C', ARROW_LEFT = 'D';
+        final char ARROW_UP = 'A', ARROW_DOWN = 'B', ARROW_RIGHT = 'C', ARROW_LEFT = 'D';
         switch (key) {
             case ARROW_UP:
-//            	System.out.println("\nUPINDEX: " + historyIndex + " SIZE:" + history.size() + "\n");
-            	
-//            	if(lastArrowKeyDown && (historyIndex == history.size() - 1)) {
-//            		historyIndex--;
-//                    historyCommandLine = history.get(historyIndex);
-//                	System.out.println("\n " +historyIndex + "\n");
-//                    moveToEndOfHistory();
-//                    return;
-//            	}
-            	
-            	if (historyIndex == 0 || (!lastArrowKeyUp && (historyIndex == history.size() - 1))) {
-            		if(lastArrowKeyDown) {
-            			historyIndex--;
-            		}
-                    historyCommandLine = history.get(historyIndex);
-            		moveToEndOfHistory();
-					return;
-				}
-            	
-
-            	
-            	if(historyIndex > 0) {
-            		historyIndex--;
+                if (history.isEmpty()) {
+                    return;
+                }
+                if (historyIndex == 0 || (!lastArrowKeyUp && (historyIndex == history.size() - 1))) {
+                    if (lastArrowKeyDown) {
+                        historyIndex--;
+                    }
                     historyCommandLine = history.get(historyIndex);
                     moveToEndOfHistory();
                     return;
-            	}
-            	
-            	
-//            	if((historyIndex == history.size() - 1) && historyIndex > 0) {
-//                    historyCommandLine = history.get(historyIndex);
-//                    historyIndex--;
-//                    moveToEndOfHistory();
-//                    return;
-//            	}
-//            	
-//            	if(lastArrowKeyDown && historyIndex > 0) {
-//            		historyIndex--;
-//                    historyCommandLine = history.get(historyIndex);
-//                    moveToEndOfHistory();
-//                    return;
-//            	}
-            	
-
-
-            case ARROW_DOWN: 
+                }
+                if (historyIndex > 0) {
+                    historyIndex--;
+                    historyCommandLine = history.get(historyIndex);
+                    moveToEndOfHistory();
+                    return;
+                }
+            case ARROW_DOWN:
+                if (history.isEmpty()) {
+                    return;
+                }
                 if (lastArrowKeyUp && historyIndex != 0 && (historyIndex + 1) < history.size()) {
                     historyIndex++;
                     historyCommandLine = history.get(historyIndex);
                     moveToStartofHistory();
                     return;
                 }
-                if(!((historyIndex + 1) < history.size())) {
+                if (!((historyIndex + 1) < history.size())) {
                     moveOutOfHistory();
                     return;
                 } else {
@@ -441,9 +399,6 @@ public class Shell {
                     moveToStartofHistory();
                     return;
                 }
-
-//                System.out.println("\nDOWNINDEX: " + historyIndex + " SIZE:" + history.size() + "\n");
-
             case ARROW_RIGHT:
                 moveCursorRight();
                 break;
@@ -463,7 +418,7 @@ public class Shell {
                 }
                 if (cursorX != 0) {
                     cursorX--;
-                } // TODO 238, CursorY
+                }
             }
         }
     }
@@ -493,7 +448,6 @@ public class Shell {
 
     private void resetInputLine() {
         input.setLength(0);
-        input.append("");
         cursorX = 0;
         displayCharacters("");
     }
@@ -506,6 +460,10 @@ public class Shell {
         lastArrowKeyUp = false;
         lastArrowKeyDown = true;
     }
+
+    /*
+     * moves out of the command history and resets the two lastArrowKey booleans
+     */
 
     private void moveOutOfHistory() {
         resetInputLine();
@@ -549,8 +507,10 @@ public class Shell {
              * -echo has to be disabled in combination with icanon to allow ANSI escape sequences to actually to what they are supposed to do
              * (e.g. "\033[D" to move the cursor one space to the left). Otherwise the control code gets directly printed to the console
              * without executing the the ANSI escape sequence.
-			*/
-        	Runtime.getRuntime().exec(new String[]{"sh","-c","stty -icanon -echo </dev/tty"}).waitFor();
+             */
+            Runtime.getRuntime()
+                    .exec(new String[] {"sh", "-c", "stty -icanon -echo </dev/tty"})
+                    .waitFor();
         } catch (InterruptedException | IOException e) {
             FeatJAR.log().error("Could not enter terminal input mode: " + e.getMessage());
         }
@@ -568,8 +528,6 @@ public class Shell {
             FeatJAR.log().error("Could not leave terminal input mode: " + e.getMessage());
         }
     }
-    
-    
 
     private void printArt() {
         FeatJAR.log().message(" _____             _       _    _     ____   ____   _            _  _ ");

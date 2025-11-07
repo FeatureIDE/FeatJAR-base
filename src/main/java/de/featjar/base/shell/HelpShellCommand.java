@@ -20,30 +20,43 @@
  */
 package de.featjar.base.shell;
 
+import de.featjar.base.FeatJAR;
 import java.util.List;
 import java.util.Optional;
 
-import de.featjar.base.FeatJAR;
-
+/**
+ * Prints basic usage informations of the shell and all available shell commands.
+ *
+ * @author Niclas Kleinert
+ */
 public class HelpShellCommand implements IShellCommand {
 
     @Override
     public void execute(ShellSession session, List<String> cmdParams) {
-        printCommands();
+        printBasicUsage();
+        printAllCommands();
     }
 
-    public void printCommands() {
-        FeatJAR.log().message("Interactive shell");
-        FeatJAR.log().message("Capitalization of COMMANDS is NOT taken into account");
-        FeatJAR.log().message("You can cancel ANY command by pressing the (ESC) key");
+    /**
+     * Prints all {@link IShellCommand} that are registered at {@link ShellCommands}
+     */
+    public void printAllCommands() {
         FeatJAR.log().message("Supported commands are: \n");
-
-        FeatJAR.extensionPoint(ShellCommands.class).getExtensions().stream()
+        ShellCommands.getInstance().getExtensions().stream()
                 .map(c -> c.getShortName()
                         .orElse("")
                         .concat(" " + c.getDescription().orElse("")))
                 .forEach(FeatJAR.log()::message);
         FeatJAR.log().message("\n");
+    }
+
+    /**
+     * Prints basic usage informations of the shell.
+     */
+    private void printBasicUsage() {
+        FeatJAR.log().message("Interactive shell");
+        FeatJAR.log().message("Capitalization of COMMANDS is NOT taken into account");
+        FeatJAR.log().message("You can cancel ANY command by pressing the (ESC) key");
     }
 
     @Override

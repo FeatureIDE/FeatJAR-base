@@ -23,6 +23,11 @@ package de.featjar.base.shell;
 import de.featjar.base.FeatJAR;
 import de.featjar.base.extension.AExtensionPoint;
 
+/**
+ * Extension point for {@link IShellCommand}.
+ *
+ * @author Niclas Kleinert
+ */
 public class ShellCommands extends AExtensionPoint<IShellCommand> {
 
     public static ShellCommands getInstance() {
