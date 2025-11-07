@@ -20,15 +20,19 @@
  */
 package de.featjar.base.shell;
 
+import de.featjar.base.FeatJAR;
+import de.featjar.base.tree.structure.ITree;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
-import de.featjar.base.FeatJAR;
-import de.featjar.base.tree.structure.ITree;
-
+/**
+ * Prints the content of given shell session variables.
+ *
+ * @author Niclas Kleinert
+ */
 public class PrintShellCommand implements IShellCommand {
 
     @Override
