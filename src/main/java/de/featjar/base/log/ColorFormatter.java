@@ -22,9 +22,14 @@ package de.featjar.base.log;
 
 import de.featjar.base.log.Log.Verbosity;
 
+/**
+ * Prepends different colors to logs and appends a reset of the colors as suffix.
+ *
+ * @author Niclas Kleinert
+ */
 public class ColorFormatter implements IFormatter {
 
-	private static final String TERMINAL_COLOR_LIGHT_BLUE = "\033[38;2;173;236;255m";
+    private static final String TERMINAL_COLOR_LIGHT_BLUE = "\033[38;2;173;236;255m";
     private static final String TERMINAL_COLOR_YELLOW = "\033[38;2;255;255;0m";
     private static final String TERMINAL_COLOR_RED = "\033[38;2;255;0;0m";
     private static final String TERMINAL_COLOR_RESET = "\033[0m";
