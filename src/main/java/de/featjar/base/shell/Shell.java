@@ -232,6 +232,7 @@ public class Shell {
 
     /**
      * Displays the typed characters in the console.
+     * 
      * @param typedText the typed characters
      */
     private void displayCharacters(String typedText) {
@@ -253,6 +254,7 @@ public class Shell {
      * Reads characters one by one without line buffering into a string until ENTER is pressed.
      * Handles special keys. ESC cancels every command. Ensures that arrow keys work as in a normal shell (including a terminal history).
      * Page keys are ignored. Interrupts do not need special treatment and, therefore, work as usual.
+     * 
      * @param prompt the message that is shown in the terminal
      * @return all normal keys combined into a string
      */
@@ -462,7 +464,7 @@ public class Shell {
     }
 
     /*
-     * moves out of the command history and resets the two lastArrowKey booleans
+     * Moves out of the command history and resets the two lastArrowKey booleans.
      */
 
     private void moveOutOfHistory() {
@@ -495,7 +497,8 @@ public class Shell {
     }
 
     /**
-     *Sets the terminal into a 'raw' like mode that has no line buffer such that the shell can read a single key press, signals like CTRL+C do still work
+     *Sets the terminal into a 'raw' like mode that has no line buffer such that the shell can read a single key press, 
+     *signals like CTRL+C do still work.
      */
     private void enterInputMode() {
         try {
@@ -517,7 +520,7 @@ public class Shell {
     }
 
     /**
-     * Resets the the changes made in {@link Shell#enterInputMode()} and sets the terminal back into 'cooked' (normal) mode
+     * Resets the the changes made in {@link Shell#enterInputMode()} and sets the terminal back into 'cooked' (normal) mode.
      */
     private void exitInputMode() {
         try {
