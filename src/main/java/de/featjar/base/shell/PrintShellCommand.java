@@ -21,6 +21,7 @@
 package de.featjar.base.shell;
 
 import de.featjar.base.FeatJAR;
+import de.featjar.base.log.Log.Verbosity;
 import de.featjar.base.tree.structure.ITree;
 import java.util.Arrays;
 import java.util.Collections;
@@ -45,13 +46,12 @@ public class PrintShellCommand implements IShellCommand {
         }
 
         cmdParams.forEach(e -> {
-            session.getElement(e)
-                    .ifPresentOrElse(
-                            m -> {
-                                FeatJAR.log().message(e + ":");
-                                printMap(m);
-                            },
-                            () -> FeatJAR.log().error("Could not find a variable named " + e));
+            session.get(e)
+                    .ifPresent(m -> {
+                        FeatJAR.log().message(e + ":");
+                        printMap(m);
+                    })
+                    .orElseLog(Verbosity.ERROR);
         });
     }
 

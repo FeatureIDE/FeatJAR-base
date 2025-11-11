@@ -359,7 +359,7 @@ public class OptionList {
     }
     /**
      * Adds a option with custom value to properties.
-     * 
+     *
      * @param option the option
      * @param optionValue the command
      */

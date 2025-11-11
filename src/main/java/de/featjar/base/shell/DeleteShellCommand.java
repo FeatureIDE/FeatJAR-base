@@ -21,6 +21,7 @@
 package de.featjar.base.shell;
 
 import de.featjar.base.FeatJAR;
+import de.featjar.base.log.Log.Verbosity;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
@@ -46,8 +47,8 @@ public class DeleteShellCommand implements IShellCommand {
 
         cmdParams.forEach(e -> {
             session.remove(e)
-                    .ifPresentOrElse(a -> FeatJAR.log().message("Removing of " + e + " successful"), () -> FeatJAR.log()
-                            .error("Could not find a variable named " + e));
+                    .ifPresent(a -> FeatJAR.log().message("Removing of " + e + " successful"))
+                    .orElseLog(Verbosity.ERROR);
         });
     }
 

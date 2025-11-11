@@ -21,11 +21,13 @@
 package de.featjar.base.shell;
 
 import de.featjar.base.FeatJAR;
+import de.featjar.base.data.Problem;
+import de.featjar.base.data.Problem.Severity;
+import de.featjar.base.data.Result;
 import java.util.Comparator;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.Optional;
 
 /**
  * The session in which all loaded formats are stored.
@@ -46,50 +48,76 @@ public class ShellSession {
 
     private final Map<String, StoredElement<?>> elements;
 
+    public ShellSession() {
+        elements = new LinkedHashMap<>();
+    }
+
     /**
-     * similar functionality as {@link #getElement(String)}
-     * but avoids unchecked cast warnings when the type of element is known
+     * Returns the element if the key is present in the session
+     * and casts the element to the known type.
+     *
      * @param <T> generic type of element
      * @param key the elements' key
-     * @param type the elements' type
-     * @return the element of the shell session or an empty optional if the element is not present
+     * @param kownType the elements' type
+     * @return the element of the shell session or an empty result if the element is not present
      */
     @SuppressWarnings("unchecked")
-    public <T> Optional<T> get(String key, Class<T> type) {
+    public <T> Result<T> get(String key, Class<T> kownType) {
         StoredElement<?> storedElement = elements.get(key);
 
         if (storedElement == null) {
-            return Optional.empty();
+            return Result.empty(addNotPresentProblem(key));
         }
-        if (storedElement.type == type) {
-            return Optional.of((T) storedElement.type.cast(storedElement.element));
+        if (storedElement.type == kownType) {
+            return Result.of((T) storedElement.type.cast(storedElement.element));
         } else {
             throw new RuntimeException("Wrong Type");
         }
     }
 
     /**
+     * Returns the element if the key is present in the session or
+     * ,otherwise, an empty result containing an error message.
+     *
      * @param key the elements' key
-     * @return the type of the element or null if it is not present
+     * @return the element that is mapped to the key or an empty result if it is not present
      */
-    public Optional<Object> getType(String key) {
-        return Optional.ofNullable(elements.get(key)).map(e -> e.type);
+    public Result<Object> get(String key) {
+        return elements.get(key) != null
+                ? Result.of(elements.get(key)).map(e -> e.element)
+                : Result.empty(addNotPresentProblem(key));
     }
 
     /**
+     * Returns the type of an element or
+     * ,otherwise, an empty result containing an error message.
+     *
      * @param key the elements' key
-     * @return the element that is mapped to the key or null if it is not present
+     * @return the type of the element or an empty result if the element is not present
      */
-    public Optional<Object> getElement(String key) {
-        return Optional.ofNullable(elements.get(key)).map(e -> e.element);
-    }
-
-    public ShellSession() {
-        elements = new LinkedHashMap<>();
+    public <T> Result<Object> getType(String key) {
+        return elements.get(key) != null
+                ? Result.of(elements.get(key)).map(e -> e.type)
+                : Result.empty(addNotPresentProblem(key));
     }
 
     /**
-     * puts an element into the session
+     * Removes a single element of the shell session.
+     *
+     * @param key the elements' key
+     * @return non-null previous value if the removal was successful
+     */
+    public Result<?> remove(String key) {
+        return Result.of(elements.remove(key)).or(Result.empty(addNotPresentProblem(key)));
+    }
+
+    private Problem addNotPresentProblem(String key) {
+        return new Problem(String.format("A variable named '%s' is not present in the session!", key), Severity.ERROR);
+    }
+
+    /**
+     * Puts an element into the session.
+     *
      * @param <T> generic type of element
      * @param key the elements' key
      * @param element the element of the shell session
@@ -100,28 +128,22 @@ public class ShellSession {
     }
 
     /**
-     * removes a specific variable of the shell session
-     * @param key the variables' key
-     * @return non-null previous value if the removal was successful
-     */
-    public Optional<?> remove(String key) {
-        return Optional.ofNullable(elements.remove(key));
-    }
-    /**
-     * removes all elements of the session
+     * Removes all elements of the session.
      */
     public void clear() {
         elements.clear();
     }
 
     /**
-     * @return the number of elements in the session
+     * {@return the number of elements in the session}
      */
     public int getSize() {
         return elements.size();
     }
+
     /**
-     * checks if the shell session contains a variable with a specific key
+     * Checks if the shell session contains a element with a specific key.
+     *
      * @param key the elements' key
      * @return true if a variable with given key is present
      */
@@ -130,14 +152,17 @@ public class ShellSession {
     }
 
     /**
-     * checks if the shell session is empty
+     * Checks if the shell session is empty.
+     *
      * @return true if no element is present
      */
     public boolean isEmpty() {
         return elements.isEmpty();
     }
+
     /**
-     * prints a single if there is a matching key
+     * Prints a single if there is a matching key.
+     *
      * @param key the elements' key
      */
     public void printVariable(String key) {
@@ -152,7 +177,7 @@ public class ShellSession {
     }
 
     /**
-     * prints all in the session present variables
+     * Prints everything present in the session.
      */
     public void printVariables() {
         elements.entrySet().forEach(m -> FeatJAR.log()
