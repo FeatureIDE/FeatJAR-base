@@ -161,11 +161,11 @@ public class ShellSession {
     }
 
     /**
-     * Prints a single if there is a matching key.
+     * Prints a single element if there is a matching key.
      *
      * @param key the elements' key
      */
-    public void printVariable(String key) {
+    public void printSingleELement(String key) {
         for (Entry<String, StoredElement<?>> entry : elements.entrySet()) {
             if (entry.getKey().equals(key)) {
                 FeatJAR.log()
@@ -179,7 +179,7 @@ public class ShellSession {
     /**
      * Prints everything present in the session.
      */
-    public void printVariables() {
+    public void printAll() {
         elements.entrySet().forEach(m -> FeatJAR.log()
                 .message(m.getKey() + "   (" + m.getValue().type.getSimpleName() + ")"));
     }

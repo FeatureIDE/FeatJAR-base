@@ -39,7 +39,7 @@ public class DeleteShellCommand implements IShellCommand {
     public void execute(ShellSession session, List<String> cmdParams) {
 
         if (cmdParams.isEmpty()) {
-            session.printVariables();
+            session.printAll();
             cmdParams = Shell.readCommand("Enter the variable names you want to delete or leave blank to abort:")
                     .map(c -> Arrays.stream(c.split("\\s+")).collect(Collectors.toList()))
                     .orElse(Collections.emptyList());
