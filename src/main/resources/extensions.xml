@@ -5,4 +5,13 @@
         <extension id="de.featjar.base.computation.Cache" />
     </point>
     <point id="de.featjar.base.cli.Commands" />
+    <point id="de.featjar.base.shell.ShellCommands">
+		<extension id="de.featjar.base.shell.PrintShellCommand" />
+    	<extension id="de.featjar.base.shell.HelpShellCommand" />
+    	<extension id="de.featjar.base.shell.ExitShellCommand" />
+		<extension id="de.featjar.base.shell.ClearShellCommand" />
+		<extension id="de.featjar.base.shell.DeleteShellCommand" />
+		<extension id="de.featjar.base.shell.Variables" />
+		<extension id="de.featjar.base.shell.RunShellCommand" />
+    </point>  
 </extensions>

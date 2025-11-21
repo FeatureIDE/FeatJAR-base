@@ -20,6 +20,8 @@
  */
 package de.featjar.base.cli;
 
+import de.featjar.base.data.Result;
+import de.featjar.base.shell.ShellSession;
 import java.nio.file.Path;
 import java.util.List;
 
@@ -48,5 +50,27 @@ public abstract class ACommand implements ICommand {
      */
     public final List<Option<?>> getOptions() {
         return Option.getAllOptions(getClass());
+    }
+
+    /**
+     * {@return an option list with all parsed arguments and properties including a path variable from the session}
+     */
+    public OptionList getShellOptions(ShellSession session, List<String> cmdParams) {
+        OptionList optionList = new OptionList();
+
+        if (cmdParams.isEmpty()) {
+            throw new IllegalArgumentException("No path object specified");
+        }
+
+        Result<Path> path = session.get(cmdParams.get(0), Path.class);
+
+        if (path.isEmpty()) {
+            throw new IllegalArgumentException(String.format("'%s' is not a session object", cmdParams.get(0)));
+        }
+
+        optionList.parseArguments();
+        optionList.parseProperties(INPUT_OPTION, String.valueOf(path.get()));
+
+        return optionList;
     }
 }
