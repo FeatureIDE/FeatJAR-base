@@ -20,6 +20,8 @@
  */
 package de.featjar.base.data;
 
+import de.featjar.base.data.type.GenericType;
+import de.featjar.base.data.type.Type;
 import java.util.Objects;
 import java.util.function.BiPredicate;
 import java.util.function.Function;
@@ -55,7 +57,7 @@ public class Attribute<T> implements IAttribute<T> {
      */
     public Attribute(Name name, Class<T> type) {
         this.name = Objects.requireNonNull(name);
-        this.type = Objects.requireNonNull(new GenericType<T>(type));
+        this.type = new GenericType<T>(Objects.requireNonNull(type));
     }
 
     @Override

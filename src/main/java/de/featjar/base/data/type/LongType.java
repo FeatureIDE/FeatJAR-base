@@ -18,52 +18,30 @@
  *
  * See <https://github.com/FeatureIDE/FeatJAR-base> for further information.
  */
-package de.featjar.base.data;
-
-import java.util.Objects;
+package de.featjar.base.data.type;
 
 /**
- * Represents a type.
- *
- * @param <T> the type class
+ * Type for the Java Long data type.
  *
  * @author Sebastian Krieter
- * @author Elias Kuiter
  */
-public abstract class Type<T> {
+public class LongType implements Type<Long> {
 
-    protected final Class<T> type;
+    public static final LongType INSTANCE = new LongType();
 
-    /**
-     * Constructs a new type.
-     * @param type the class object of the type
-     */
-    public Type(Class<T> type) {
-        this.type = Objects.requireNonNull(type);
-    }
+    private LongType() {}
 
-    public Class<T> getClassType() {
-        return type;
-    }
-
-    public abstract T copy(T value);
-
-    public abstract T parse(String text);
-
-    public abstract String serialize(T value);
-
-    @Override
     public String toString() {
-        return String.format("Type{%s}", type.getTypeName());
+        return "LongType";
     }
 
     @Override
-    public boolean equals(Object o) {
-        return this == o;
+    public Long parse(String text) {
+        return Long.parseLong(text);
     }
 
     @Override
-    public int hashCode() {
-        return Objects.hash(type);
+    public Class<Long> getClassType() {
+        return Long.class;
     }
 }

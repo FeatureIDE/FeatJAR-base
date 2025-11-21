@@ -20,6 +20,7 @@
  */
 package de.featjar.base.data;
 
+import de.featjar.base.data.type.Type;
 import java.util.function.BiPredicate;
 import java.util.function.Function;
 
@@ -37,6 +38,8 @@ public interface IAttribute<T> extends Function<IAttributable, Result<T>> {
     String getSimpleName();
 
     Name getName();
+
+    Type<T> getType();
 
     Class<T> getClassType();
 

@@ -18,15 +18,18 @@
  *
  * See <https://github.com/FeatureIDE/FeatJAR-base> for further information.
  */
-package de.featjar.base.data;
+package de.featjar.base.data.type;
 
+import java.util.Objects;
 import java.util.function.Function;
 
 /**
  *
  * @author Sebastian Krieter
  */
-public class GenericType<T> extends Type<T> {
+public class GenericType<T> implements Type<T> {
+
+    private final Class<T> type;
 
     private Function<T, T> copyValueFunction = t -> t;
     private Function<T, String> serializeValueFunction = String::valueOf;
@@ -34,15 +37,19 @@ public class GenericType<T> extends Type<T> {
         throw new UnsupportedOperationException();
     };
 
+    /**
+     * Constructs a new generic type.
+     * @param type the class object of the type
+     */
     public GenericType(Class<T> type) {
-        super(type);
+        this.type = Objects.requireNonNull(type);
     }
 
     /**
      * {@return the copy value function}
      */
-    public Result<Function<T, T>> getCopyValueFunction() {
-        return Result.ofNullable(copyValueFunction);
+    public Function<T, T> getCopyValueFunction() {
+        return copyValueFunction;
     }
 
     /**
@@ -52,7 +59,7 @@ public class GenericType<T> extends Type<T> {
      * @return this attribute
      */
     public GenericType<T> setCopyValueFunction(Function<T, T> copyValueFunction) {
-        this.copyValueFunction = copyValueFunction;
+        this.copyValueFunction = Objects.requireNonNull(copyValueFunction);
         return this;
     }
 
@@ -61,7 +68,7 @@ public class GenericType<T> extends Type<T> {
     }
 
     public void setSerializeValueFunction(Function<T, String> serializeValueFunction) {
-        this.serializeValueFunction = serializeValueFunction;
+        this.serializeValueFunction = Objects.requireNonNull(serializeValueFunction);
     }
 
     public Function<String, T> getParseValueFunction() {
@@ -69,11 +76,16 @@ public class GenericType<T> extends Type<T> {
     }
 
     public void setParseValueFunction(Function<String, T> parseValueFunction) {
-        this.parseValueFunction = parseValueFunction;
+        this.parseValueFunction = Objects.requireNonNull(parseValueFunction);
     }
 
+    public String toTypeString() {
+        return String.format("Generic:%s", type.getTypeName());
+    }
+
+    @Override
     public String toString() {
-        return String.format("GenericType{%s}", type.getTypeName());
+        return toTypeString();
     }
 
     @Override
@@ -89,5 +101,20 @@ public class GenericType<T> extends Type<T> {
     @Override
     public String serialize(T value) {
         return serializeValueFunction.apply(value);
+    }
+
+    @Override
+    public Class<T> getClassType() {
+        return type;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        return this == o;
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(type);
     }
 }
