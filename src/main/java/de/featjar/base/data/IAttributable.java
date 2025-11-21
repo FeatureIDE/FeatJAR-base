@@ -54,9 +54,9 @@ public interface IAttributable {
     }
 
     default <S> void checkType(Attribute<S> attribute, S value) {
-        if (!attribute.getType().isInstance(value)) {
+        if (!attribute.getClassType().isInstance(value)) {
             throw new IllegalArgumentException(String.format(
-                    "cannot set attribute of type %s to value of type %s", attribute.getType(), value.getClass()));
+                    "cannot set attribute of type %s to value of type %s", attribute.getClassType(), value.getClass()));
         }
     }
 

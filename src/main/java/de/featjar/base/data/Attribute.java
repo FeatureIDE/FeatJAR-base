@@ -32,53 +32,50 @@ import java.util.function.Function;
  * @author Elias Kuiter
  */
 public class Attribute<T> implements IAttribute<T> {
-    /**
-     * The default name space for attributes.
-     * Set to: {@code de.featjar.base.data}
-     */
-    public static final String DEFAULT_NAMESPACE = Attribute.class.getPackageName();
 
-    private final String namespace;
-    private final String name;
-    private final Class<T> type;
+    private final Name name;
+    private final Type<T> type;
     private BiPredicate<IAttributable, T> validator;
     private Function<IAttributable, T> defaultValueFunction;
     private Function<T, T> copyValueFunction = t -> t;
 
     /**
-     * Constructs a new attribute with the {@link #DEFAULT_NAMESPACE default name space}.
+     * Constructs a new attribute with the {@link Name#DEFAULT_NAMESPACE default name space}.
      * @param name the name of the attribute
      * @param type the class object of the attribute type
      */
     public Attribute(String name, Class<T> type) {
-        this(DEFAULT_NAMESPACE, name, type);
+        this(new Name(name), type);
     }
 
     /**
      * Constructs a new attribute.
-     * @param namespace the name space of the attribute
      * @param name the name of the attribute
      * @param type the class object of the attribute type
      */
-    public Attribute(String namespace, String name, Class<T> type) {
-        this.namespace = Objects.requireNonNull(namespace);
+    public Attribute(Name name, Class<T> type) {
         this.name = Objects.requireNonNull(name);
-        this.type = Objects.requireNonNull(type);
+        this.type = Objects.requireNonNull(new GenericType<T>(type));
     }
 
     @Override
     public String getNamespace() {
-        return namespace;
+        return name.getNamespace();
     }
 
     @Override
-    public String getName() {
+    public String getSimpleName() {
+        return name.getName();
+    }
+
+    @Override
+    public Name getName() {
         return name;
     }
 
     @Override
-    public Class<T> getType() {
-        return type;
+    public Class<T> getClassType() {
+        return type.getClassType();
     }
 
     /**
@@ -93,6 +90,13 @@ public class Attribute<T> implements IAttribute<T> {
      */
     public Result<Function<T, T>> getCopyValueFunction() {
         return Result.ofNullable(copyValueFunction);
+    }
+
+    /**
+     * {@return this attribute's copy value function}
+     */
+    public Result<Function<T, String>> getSerializeValueFunction() {
+        return Result.of(type::serialize);
     }
 
     /**
@@ -144,6 +148,12 @@ public class Attribute<T> implements IAttribute<T> {
                 .flatMap(f -> attributable.getAttributeValue(this).map(o -> f.apply((T) o)));
     }
 
+    @Override
+    public Result<String> serializeValue(IAttributable attributable) {
+        return getSerializeValueFunction()
+                .flatMap(f -> attributable.getAttributeValue(this).map(o -> f.apply((T) o)));
+    }
+
     /**
      * {@return this attribute's validator}
      */
@@ -165,7 +175,7 @@ public class Attribute<T> implements IAttribute<T> {
 
     @Override
     public String toString() {
-        return String.format("Attribute{namespace='%s', name='%s'}", namespace, name);
+        return String.format("Attribute{%s}", name);
     }
 
     @Override
@@ -173,11 +183,11 @@ public class Attribute<T> implements IAttribute<T> {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         Attribute<?> attribute = (Attribute<?>) o;
-        return namespace.equals(attribute.namespace) && name.equals(attribute.name);
+        return name.equals(attribute.name);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(namespace, name);
+        return Objects.hash(name);
     }
 }
