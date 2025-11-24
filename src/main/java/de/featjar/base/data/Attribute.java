@@ -20,7 +20,13 @@
  */
 package de.featjar.base.data;
 
+import de.featjar.base.data.type.BooleanType;
+import de.featjar.base.data.type.DoubleType;
+import de.featjar.base.data.type.FloatType;
 import de.featjar.base.data.type.GenericType;
+import de.featjar.base.data.type.IntegerType;
+import de.featjar.base.data.type.LongType;
+import de.featjar.base.data.type.StringType;
 import de.featjar.base.data.type.Type;
 import java.util.Objects;
 import java.util.function.BiPredicate;
@@ -46,7 +52,7 @@ public class Attribute<T> implements IAttribute<T> {
      * @param name the name of the attribute
      * @param type the class object of the attribute type
      */
-    public Attribute(String name, Class<T> type) {
+    Attribute(String name, Class<T> type) {
         this(new Name(name), type);
     }
 
@@ -55,9 +61,24 @@ public class Attribute<T> implements IAttribute<T> {
      * @param name the name of the attribute
      * @param type the class object of the attribute type
      */
-    public Attribute(Name name, Class<T> type) {
+    @SuppressWarnings("unchecked")
+    Attribute(Name name, Class<T> type) {
         this.name = Objects.requireNonNull(name);
-        this.type = new GenericType<T>(Objects.requireNonNull(type));
+        if (type == Boolean.class) {
+            this.type = (Type<T>) BooleanType.INSTANCE;
+        } else if (type == Integer.class) {
+            this.type = (Type<T>) IntegerType.INSTANCE;
+        } else if (type == Double.class) {
+            this.type = (Type<T>) DoubleType.INSTANCE;
+        } else if (type == Long.class) {
+            this.type = (Type<T>) LongType.INSTANCE;
+        } else if (type == String.class) {
+            this.type = (Type<T>) StringType.INSTANCE;
+        } else if (type == Float.class) {
+            this.type = (Type<T>) FloatType.INSTANCE;
+        } else {
+            this.type = new GenericType<>(Objects.requireNonNull(type));
+        }
     }
 
     @Override
@@ -73,6 +94,11 @@ public class Attribute<T> implements IAttribute<T> {
     @Override
     public Name getName() {
         return name;
+    }
+
+    @Override
+    public Type<T> getType() {
+        return type;
     }
 
     @Override

@@ -47,6 +47,10 @@ public class Attributes {
                 .collect(Collectors.toSet());
     }
 
+    public static <T> Attribute<T> get(Name name, Class<T> type) {
+        return get(name.getNamespace(), name.getName(), type);
+    }
+
     public static <T> Attribute<T> get(String name, Class<T> type) {
         return get(Name.DEFAULT_NAMESPACE, name, type);
     }

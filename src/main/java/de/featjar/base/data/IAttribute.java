@@ -66,4 +66,14 @@ public interface IAttribute<T> extends Function<IAttributable, Result<T>> {
                 .map(getClassType()::cast)
                 .or(getDefaultValue(attributable));
     }
+
+    default String serialize(Object value) {
+        Type<T> type = getType();
+        return type.serialize(type.getClassType().cast(value));
+    }
+
+    default T cast(Object value) {
+        Type<T> type = getType();
+        return type.getClassType().cast(value);
+    }
 }
