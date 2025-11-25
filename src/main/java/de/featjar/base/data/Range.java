@@ -108,6 +108,10 @@ public class Range implements Function<Integer, Boolean>, Cloneable {
         return this.lowerBound == lowerBound && this.upperBound == upperBound;
     }
 
+    public boolean is(Range range) {
+        return this.lowerBound == range.lowerBound && this.upperBound == range.upperBound;
+    }
+
     public boolean isOpen() {
         return isLowerBoundOpen() || isUpperBoundOpen();
     }
