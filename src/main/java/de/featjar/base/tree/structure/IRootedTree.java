@@ -26,6 +26,7 @@ public interface IRootedTree<T extends IRootedTree<T>> extends ITree<T> {
     /**
      * {@return the parent node of this node, if any}
      */
+    // TODO should be an Optional
     Result<T> getParent();
 
     /**

@@ -58,9 +58,13 @@ public class Name implements Comparable<Name> {
         return name;
     }
 
+    public String getFullName() {
+        return String.format("%s:%s", namespace, name);
+    }
+
     @Override
     public String toString() {
-        return String.format("Attribute{namespace='%s', name='%s'}", namespace, name);
+        return String.format("Name{namespace='%s', name='%s'}", namespace, name);
     }
 
     @Override
