@@ -73,9 +73,23 @@ public class Pair<A, B> {
     }
 
     /**
+     * {@return this pair's first element (or key)}
+     */
+    public A getFirst() {
+        return key;
+    }
+
+    /**
      * {@return this pair's second element (or value)}
      */
     public B getValue() {
+        return value;
+    }
+
+    /**
+     * {@return this pair's first element (or key)}
+     */
+    public B getSecond() {
         return value;
     }
 
