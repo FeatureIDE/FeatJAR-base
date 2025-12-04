@@ -20,7 +20,6 @@
  */
 package de.featjar.base.tree.visitor;
 
-import de.featjar.base.data.Result;
 import de.featjar.base.tree.Trees;
 import de.featjar.base.tree.structure.ITree;
 import java.util.List;
@@ -53,10 +52,5 @@ public class PreOrderVisitor<T extends ITree<?>> implements ITreeVisitor<T, Void
     @Override
     public TraversalAction firstVisit(List<T> path) {
         return function.apply(path);
-    }
-
-    @Override
-    public Result<Void> getResult() {
-        return Result.of(null);
     }
 }

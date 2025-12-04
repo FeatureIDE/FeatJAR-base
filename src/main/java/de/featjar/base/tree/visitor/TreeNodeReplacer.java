@@ -20,6 +20,7 @@
  */
 package de.featjar.base.tree.visitor;
 
+import de.featjar.base.data.Result;
 import de.featjar.base.tree.Trees;
 import de.featjar.base.tree.structure.ITree;
 import java.util.List;
@@ -33,24 +34,28 @@ import java.util.function.Function;
  *
  * @author Sebastian Krieter
  */
-public class PostOrderVisitor<T extends ITree<?>> implements ITreeVisitor<T, Void> {
+public class TreeNodeReplacer<T extends ITree<T>> implements ITreeVisitor<T, Void> {
 
-    private Function<List<T>, TraversalAction> function;
+    private Function<T, ? extends T> function;
 
-    public Function<List<T>, TraversalAction> getFunction() {
+    public Function<T, ? extends T> getFunction() {
         return function;
     }
 
-    public void setFunction(Function<List<T>, TraversalAction> function) {
+    public void setFunction(Function<T, ? extends T> function) {
         this.function = function;
     }
 
-    public PostOrderVisitor(Function<List<T>, TraversalAction> function) {
+    public TreeNodeReplacer(Function<T, ? extends T> function) {
         this.function = function;
     }
 
     @Override
     public TraversalAction lastVisit(List<T> path) {
-        return function.apply(path);
+        Result<T> parentNode = ITreeVisitor.getParentNode(path);
+        if (parentNode.isPresent()) {
+            parentNode.get().replaceChildren(function);
+        }
+        return TraversalAction.CONTINUE;
     }
 }
