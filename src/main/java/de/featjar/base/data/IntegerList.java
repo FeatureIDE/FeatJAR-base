@@ -105,23 +105,11 @@ public class IntegerList implements Serializable {
     }
 
     /**
-     * {@return the value at the given index of this integer list} To ensure
-     * performance, no {@link Result} is created, so the index should be checked for
-     * validity beforehand.
-     *
-     * @param index the index
-     * @throws IndexOutOfBoundsException when the index is invalid
-     */
-    public final int get(int index) {
-        return elements[index];
-    }
-
-    /**
      * {@return a copy of this integer list's integers} The returned array may be
      * modified.
      */
-    public final int[] copy() {
-        return copyOfRange(0, elements.length);
+    public final int[] copyInts() {
+        return copyOfRangeInts(0, elements.length);
     }
 
     /**
@@ -130,10 +118,10 @@ public class IntegerList implements Serializable {
      *
      * @param range the range
      */
-    public final int[] copyOfRange(Range range) {
+    public final int[] copyOfRangeInts(Range range) {
         int lowerBound = range.getLowerBound();
         int upperBound = range.getUpperBound();
-        return copyOfRange(
+        return copyOfRangeInts(
                 lowerBound != Range.OPEN ? lowerBound : 0, upperBound != Range.OPEN ? upperBound : elements.length);
     }
 
@@ -144,7 +132,7 @@ public class IntegerList implements Serializable {
      * @param start the start index
      * @param end   the end index
      */
-    public final int[] copyOfRange(int start, int end) {
+    public final int[] copyOfRangeInts(int start, int end) {
         return Arrays.copyOfRange(elements, start, end);
     }
 
@@ -152,7 +140,7 @@ public class IntegerList implements Serializable {
      * {@return the absolute values of this integer list's integers} The returned
      * array may be modified.
      */
-    public final int[] getAbsoluteValues() {
+    public final int[] getAbsoluteValuesInts() {
         return Arrays.stream(elements).map(Math::abs).toArray();
     }
 
@@ -160,7 +148,7 @@ public class IntegerList implements Serializable {
      * {@return the positive values in this integer list's integers} The returned
      * array may be modified.
      */
-    public int[] getPositiveValues() {
+    public int[] getPositiveValuesInts() {
         return Arrays.stream(elements).filter(integer -> integer > 0).toArray();
     }
 
@@ -168,7 +156,7 @@ public class IntegerList implements Serializable {
      * {@return the negative values in this integer list's integers} The returned
      * array may be modified.
      */
-    public int[] getNegativeValues() {
+    public int[] getNegativeValuesInts() {
         return Arrays.stream(elements).filter(integer -> integer < 0).toArray();
     }
 
@@ -176,8 +164,222 @@ public class IntegerList implements Serializable {
      * {@return the non-zero values in this integer list's integers} The returned
      * array may be modified.
      */
-    public int[] getNonZeroValues() {
+    public int[] getNonZeroValuesInts() {
         return Arrays.stream(elements).filter(integer -> integer != 0).toArray();
+    }
+
+    /**
+     * {@return the union of this integer list with the given integers} No
+     * duplicated are created.
+     *
+     * @param integers the integers
+     */
+    public final int[] addAllInts(int... integers) {
+        boolean[] intersectionMarker = new boolean[elements.length];
+        int count = 0;
+        for (int integer : integers) {
+            final int[] indices = indicesOf(integer);
+            for (int i = 0; i < indices.length; i++) {
+                int index = indices[i];
+                if (index >= 0 && !intersectionMarker[index]) {
+                    count++;
+                    intersectionMarker[index] = true;
+                }
+            }
+        }
+
+        int[] newArray = new int[elements.length + integers.length - count];
+        int j = 0;
+        for (int i = 0; i < elements.length; i++) {
+            if (!intersectionMarker[i]) {
+                newArray[j++] = elements[i];
+            }
+        }
+        System.arraycopy(integers, 0, newArray, j, integers.length);
+        assert Arrays.stream(elements).allMatch(e -> Arrays.stream(newArray).anyMatch(i -> i == e));
+        assert Arrays.stream(integers).allMatch(e -> Arrays.stream(newArray).anyMatch(i -> i == e));
+        return newArray;
+    }
+
+    /**
+     * {@return the intersection of this integer list with the given integers}
+     *
+     * @param integers the integers
+     */
+    public final int[] retainAllInts(int... integers) {
+        boolean[] intersectionMarker = new boolean[elements.length];
+        int count = 0;
+        for (int integer : integers) {
+            final int[] indices = indicesOf(integer);
+            for (int i = 0; i < indices.length; i++) {
+                int index = indices[i];
+                if (index >= 0 && !intersectionMarker[index]) {
+                    count++;
+                    intersectionMarker[index] = true;
+                }
+            }
+        }
+
+        int[] newArray = new int[count];
+        int j = 0;
+        for (int i = 0; i < elements.length; i++) {
+            if (intersectionMarker[i]) {
+                newArray[j++] = elements[i];
+            }
+        }
+        assert Arrays.stream(elements)
+                .allMatch(e -> Arrays.stream(newArray).anyMatch(i -> i == e)
+                        == Arrays.stream(integers).anyMatch(i -> i == e));
+        return newArray;
+    }
+
+    /**
+     * {@return the difference of this integer list and the given integers}
+     *
+     * @param integers the integers
+     */
+    public final int[] removeAllInts(int... integers) {
+        boolean[] intersectionMarker = new boolean[elements.length];
+        int count = 0;
+        for (int integer : integers) {
+            final int[] indices = indicesOf(integer);
+            for (int i = 0; i < indices.length; i++) {
+                int index = indices[i];
+                if (index >= 0 && !intersectionMarker[index]) {
+                    count++;
+                    intersectionMarker[index] = true;
+                }
+            }
+        }
+
+        int[] newArray = new int[elements.length - count];
+        int j = 0;
+        for (int i = 0; i < elements.length; i++) {
+            if (!intersectionMarker[i]) {
+                newArray[j++] = elements[i];
+            }
+        }
+        assert Arrays.stream(elements)
+                .allMatch(e -> Arrays.stream(newArray).anyMatch(i -> i == e)
+                        ^ Arrays.stream(integers).anyMatch(i -> i == e));
+        return newArray;
+    }
+
+    /**
+     * {@return a new integer list containing the negated values of this integer
+     * list}
+     */
+    public int[] negateInts() {
+        return Arrays.stream(elements).map(integer -> -integer).toArray();
+    }
+
+    /**
+     * {@return a copy of this integer list's integers} The returned array may be
+     * modified.
+     */
+    public IntegerList copy() {
+        return new IntegerList(copyInts());
+    }
+
+    /**
+     * {@return a copy of this integer list's integers in a given range} The
+     * returned array may be modified.
+     *
+     * @param range the range
+     */
+    public IntegerList copyOfRange(Range range) {
+        return new IntegerList(copyOfRangeInts(range));
+    }
+
+    /**
+     * {@return a copy of this integer list's integers in a given range} The
+     * returned array may be modified.
+     *
+     * @param start the start index
+     * @param end   the end index
+     */
+    public IntegerList copyOfRange(int start, int end) {
+        return new IntegerList(copyOfRangeInts(start, end));
+    }
+
+    /**
+     * {@return the absolute values of this integer list's integers} The returned
+     * array may be modified.
+     */
+    public IntegerList getAbsoluteValues() {
+        return new IntegerList(getAbsoluteValuesInts());
+    }
+
+    /**
+     * {@return the positive values in this integer list's integers} The returned
+     * array may be modified.
+     */
+    public IntegerList getPositiveValues() {
+        return new IntegerList(getPositiveValuesInts());
+    }
+
+    /**
+     * {@return the negative values in this integer list's integers} The returned
+     * array may be modified.
+     */
+    public IntegerList getNegativeValues() {
+        return new IntegerList(getNegativeValuesInts());
+    }
+
+    /**
+     * {@return the non-zero values in this integer list's integers} The returned
+     * array may be modified.
+     */
+    public IntegerList getNonZeroValues() {
+        return new IntegerList(getNonZeroValuesInts());
+    }
+
+    /**
+     * {@return the union of this integer list with the given integers} No
+     * duplicated are created.
+     *
+     * @param integers the integers
+     */
+    public IntegerList addAll(int... integers) {
+        return new IntegerList(addAllInts(integers));
+    }
+
+    /**
+     * {@return the intersection of this integer list with the given integers}
+     *
+     * @param integers the integers
+     */
+    public IntegerList retainAll(int... integers) {
+        return new IntegerList(retainAllInts(integers));
+    }
+
+    /**
+     * {@return the difference of this integer list and the given integers}
+     *
+     * @param integers the integers
+     */
+    public IntegerList removeAll(int... integers) {
+        return new IntegerList(removeAllInts(integers));
+    }
+
+    /**
+     * {@return a new integer list containing the negated values of this integer
+     * list}
+     */
+    public IntegerList negate() {
+        return new IntegerList(negateInts());
+    }
+
+    /**
+     * {@return the value at the given index of this integer list} To ensure
+     * performance, no {@link Result} is created, so the index should be checked for
+     * validity beforehand.
+     *
+     * @param index the index
+     * @throws IndexOutOfBoundsException when the index is invalid
+     */
+    public final int get(int index) {
+        return elements[index];
     }
 
     public final boolean contains(int element) {
@@ -366,103 +568,6 @@ public class IntegerList implements Serializable {
     }
 
     /**
-     * {@return the union of this integer list with the given integers} No
-     * duplicated are created.
-     *
-     * @param integers the integers
-     */
-    public final int[] addAll(int... integers) {
-        boolean[] intersectionMarker = new boolean[elements.length];
-        int count = 0;
-        for (int integer : integers) {
-            final int[] indices = indicesOf(integer);
-            for (int i = 0; i < indices.length; i++) {
-                int index = indices[i];
-                if (index >= 0 && !intersectionMarker[index]) {
-                    count++;
-                    intersectionMarker[index] = true;
-                }
-            }
-        }
-
-        int[] newArray = new int[elements.length + integers.length - count];
-        int j = 0;
-        for (int i = 0; i < elements.length; i++) {
-            if (!intersectionMarker[i]) {
-                newArray[j++] = elements[i];
-            }
-        }
-        System.arraycopy(integers, 0, newArray, j, integers.length);
-        assert Arrays.stream(elements).allMatch(e -> Arrays.stream(newArray).anyMatch(i -> i == e));
-        assert Arrays.stream(integers).allMatch(e -> Arrays.stream(newArray).anyMatch(i -> i == e));
-        return newArray;
-    }
-
-    /**
-     * {@return the intersection of this integer list with the given integers}
-     *
-     * @param integers the integers
-     */
-    public final int[] retainAll(int... integers) {
-        boolean[] intersectionMarker = new boolean[elements.length];
-        int count = 0;
-        for (int integer : integers) {
-            final int[] indices = indicesOf(integer);
-            for (int i = 0; i < indices.length; i++) {
-                int index = indices[i];
-                if (index >= 0 && !intersectionMarker[index]) {
-                    count++;
-                    intersectionMarker[index] = true;
-                }
-            }
-        }
-
-        int[] newArray = new int[count];
-        int j = 0;
-        for (int i = 0; i < elements.length; i++) {
-            if (intersectionMarker[i]) {
-                newArray[j++] = elements[i];
-            }
-        }
-        assert Arrays.stream(elements)
-                .allMatch(e -> Arrays.stream(newArray).anyMatch(i -> i == e)
-                        == Arrays.stream(integers).anyMatch(i -> i == e));
-        return newArray;
-    }
-
-    /**
-     * {@return the difference of this integer list and the given integers}
-     *
-     * @param integers the integers
-     */
-    public final int[] removeAll(int... integers) {
-        boolean[] intersectionMarker = new boolean[elements.length];
-        int count = 0;
-        for (int integer : integers) {
-            final int[] indices = indicesOf(integer);
-            for (int i = 0; i < indices.length; i++) {
-                int index = indices[i];
-                if (index >= 0 && !intersectionMarker[index]) {
-                    count++;
-                    intersectionMarker[index] = true;
-                }
-            }
-        }
-
-        int[] newArray = new int[elements.length - count];
-        int j = 0;
-        for (int i = 0; i < elements.length; i++) {
-            if (!intersectionMarker[i]) {
-                newArray[j++] = elements[i];
-            }
-        }
-        assert Arrays.stream(elements)
-                .allMatch(e -> Arrays.stream(newArray).anyMatch(i -> i == e)
-                        ^ Arrays.stream(integers).anyMatch(i -> i == e));
-        return newArray;
-    }
-
-    /**
      * {@return the number of elements in the given array that are also contained in
      * this integer list.}
      *
@@ -495,14 +600,6 @@ public class IntegerList implements Serializable {
      */
     public final int[] get() {
         return elements;
-    }
-
-    /**
-     * {@return a new integer list containing the negated values of this integer
-     * list}
-     */
-    public final int[] negate() {
-        return Arrays.stream(elements).map(integer -> -integer).toArray();
     }
 
     @Override
