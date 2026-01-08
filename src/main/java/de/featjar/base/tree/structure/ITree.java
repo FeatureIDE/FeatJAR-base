@@ -99,7 +99,7 @@ public interface ITree<T extends ITree<T>> extends IBrowsable<GraphVizTreeFormat
      * {@return a function that validates this node's children}
      */
     default Predicate<T> getChildValidator() {
-        return t -> true;
+        return Objects::nonNull;
     }
 
     default void assertChildrenCountInRange(int newChildrenCount, Range range) {

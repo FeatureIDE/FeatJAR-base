@@ -26,6 +26,7 @@ import de.featjar.base.data.Void;
 import de.featjar.base.tree.structure.ITree;
 import de.featjar.base.tree.visitor.ITreeVisitor;
 import de.featjar.base.tree.visitor.ITreeVisitor.TraversalAction;
+import de.featjar.base.tree.visitor.TreePrinter;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -271,6 +272,15 @@ public class Trees {
                 stack.pop();
             }
         }
+    }
+
+    /**
+     * {@return a human-readable string of the given tree}
+     * Default print method for trees, see {@link TreePrinter} for more options.
+     * @param root the tree to print
+     */
+    public static String print(ITree<?> root) {
+        return Trees.traverse(root, new TreePrinter()).get();
     }
 
     private static class StackEntry<T> {
