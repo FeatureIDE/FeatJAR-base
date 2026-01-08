@@ -40,6 +40,10 @@ public class Attributes {
         return Collections.unmodifiableSet(attributeSet.keySet());
     }
 
+    public static void clearAllAttributes() {
+        attributeSet.clear();
+    }
+
     public static Set<Attribute<?>> getAllAttributes(String namespace) {
         return attributeSet.entrySet().stream()
                 .filter(e -> Objects.equals(namespace, e.getKey().getNamespace()))
