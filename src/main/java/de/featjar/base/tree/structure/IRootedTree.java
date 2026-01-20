@@ -21,12 +21,31 @@
 package de.featjar.base.tree.structure;
 
 import de.featjar.base.data.Result;
+import java.util.stream.Stream;
+import java.util.stream.StreamSupport;
 
 public interface IRootedTree<T extends IRootedTree<T>> extends ITree<T> {
     /**
      * {@return the parent node of this node, if any}
      */
+    // TODO should be an Optional
     Result<T> getParent();
+
+    /**
+     * {@return a stream of all (transitive) parents of this node up to the root of the tree, starting with the parent of this node}
+     */
+    @SuppressWarnings("unchecked")
+    default Stream<T> parentStream() {
+        return StreamSupport.stream(new ParentIterator<>((T) this, false), false);
+    }
+
+    /**
+     * {@return a stream of all (transitive) parents of this node up to the root of the tree, starting with this node}
+     */
+    @SuppressWarnings("unchecked")
+    default Stream<T> pathToRoot() {
+        return StreamSupport.stream(new ParentIterator<>((T) this, true), false);
+    }
 
     /**
      * Sets the parent node of this node.
