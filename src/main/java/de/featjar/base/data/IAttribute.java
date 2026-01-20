@@ -20,6 +20,7 @@
  */
 package de.featjar.base.data;
 
+import de.featjar.base.data.type.Type;
 import java.util.function.BiPredicate;
 import java.util.function.Function;
 
@@ -34,15 +35,23 @@ import java.util.function.Function;
 public interface IAttribute<T> extends Function<IAttributable, Result<T>> {
     String getNamespace();
 
-    String getName();
+    String getSimpleName();
 
-    Class<T> getType();
+    Name getName();
+
+    Type<T> getType();
+
+    Class<T> getClassType();
 
     default Result<T> getDefaultValue(IAttributable attributable) {
         return Result.empty();
     }
 
     default Result<T> copyValue(IAttributable attributable) {
+        return Result.empty();
+    }
+
+    default Result<String> serializeValue(IAttributable attributable) {
         return Result.empty();
     }
 
@@ -54,7 +63,17 @@ public interface IAttribute<T> extends Function<IAttributable, Result<T>> {
     default Result<T> apply(IAttributable attributable) {
         return Result.ofOptional(attributable.getAttributes())
                 .map(a -> a.get(this))
-                .map(getType()::cast)
+                .map(getClassType()::cast)
                 .or(getDefaultValue(attributable));
+    }
+
+    default String serialize(Object value) {
+        Type<T> type = getType();
+        return type.serialize(type.getClassType().cast(value));
+    }
+
+    default T cast(Object value) {
+        Type<T> type = getType();
+        return type.getClassType().cast(value);
     }
 }
