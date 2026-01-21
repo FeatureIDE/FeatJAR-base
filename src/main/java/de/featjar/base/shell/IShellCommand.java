@@ -18,35 +18,26 @@
  *
  * See <https://github.com/FeatureIDE/FeatJAR-base> for further information.
  */
-package de.featjar.base.cli;
+package de.featjar.base.shell;
 
 import de.featjar.base.extension.IExtension;
-import de.featjar.base.shell.ShellSession;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
 /**
- * A command run within a {@link Commands}.
+ * A shell command run within a {@link ShellCommands}
  *
- * @author Sebastian Krieter
- * @author Elias Kuiter
+ * @author Niclas Kleinert
  */
-public interface ICommand extends IExtension {
+public interface IShellCommand extends IExtension {
 
     /**
-     * {@return this command's description, if any}
+     * Executes the shell command.
+     *
+     * @param session the storage location of all variables
+     * @param cmdParams all arguments except the shell command
      */
-    default Optional<String> getDescription() {
-        return Optional.empty();
-    }
-
-    /**
-     * {@return this command's options}
-     */
-    default List<Option<?>> getOptions() {
-        return new ArrayList<>();
-    }
+    void execute(ShellSession session, List<String> cmdParams);
 
     /**
      * {@return this command's short name, if any} The short name can be used to call this command from the CLI.
@@ -56,26 +47,9 @@ public interface ICommand extends IExtension {
     }
 
     /**
-     * Runs this command with some given options.
-     *
-     * @param optionParser the option parser
-     *
-     * @return exit code
+     * {@return this command's description name, if any}
      */
-    int run(OptionList optionParser);
-
-    /**
-     * Parses arguments into an option list.
-     *
-     * @param session the shell session
-     * @param cmdParams the given arguments for the command
-     * @return an option list containing parsed arguments
-     */
-    default OptionList getShellOptions(ShellSession session, List<String> cmdParams) {
-        OptionList optionList = new OptionList();
-
-        optionList.parseArguments();
-
-        return optionList;
+    default Optional<String> getDescription() {
+        return Optional.empty();
     }
 }
