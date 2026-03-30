@@ -72,6 +72,10 @@ public class Commands extends AExtensionPoint<ICommand> {
      */
     public static final Pattern STANDARD_INPUT_PATTERN = Pattern.compile(STANDARD_INPUT + "(\\.(.+))?");
 
+    public static Commands getInstance() {
+        return FeatJAR.extensionPoint(Commands.class);
+    }
+
     /**
      * Runs a given function in a new thread, aborting it when it is not done after a timeout expires.
      * If the entire process should be stopped afterwards, {@link System#exit(int)} must be called explicitly.

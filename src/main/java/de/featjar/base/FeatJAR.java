@@ -32,6 +32,7 @@ import de.featjar.base.extension.IExtension;
 import de.featjar.base.io.IO;
 import de.featjar.base.log.BufferedLog;
 import de.featjar.base.log.CallerFormatter;
+import de.featjar.base.log.ColorFormatter;
 import de.featjar.base.log.ConfigurableLog;
 import de.featjar.base.log.EmptyProgressBar;
 import de.featjar.base.log.IProgressBar;
@@ -200,6 +201,20 @@ public final class FeatJAR extends IO implements AutoCloseable {
                 .addFormatter(new TimeStampFormatter())
                 .addFormatter(new VerbosityFormatter())
                 .addFormatter(new CallerFormatter());
+        configuration.cacheConfig.setCachePolicy(Cache.CachePolicy.CACHE_NONE);
+        return configuration;
+    }
+
+    /**
+     * {@return a new FeatJAR configuration with values intended for shell settings}
+     */
+    public static Configuration shellConfiguration() {
+        final Configuration configuration = new Configuration();
+        configuration
+                .logConfig
+                .logToSystemOut(Log.Verbosity.MESSAGE, Log.Verbosity.INFO, Log.Verbosity.PROGRESS)
+                .logToSystemErr(Log.Verbosity.ERROR, Log.Verbosity.WARNING)
+                .addFormatter(new ColorFormatter());
         configuration.cacheConfig.setCachePolicy(Cache.CachePolicy.CACHE_NONE);
         return configuration;
     }

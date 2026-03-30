@@ -357,6 +357,16 @@ public class OptionList {
             }
         }
     }
+    /**
+     * Adds a option with custom value to properties.
+     *
+     * @param option the option
+     * @param optionValue the command
+     */
+    public void parseProperties(Option<?> option, String optionValue) {
+        Result<?> parse = option.parse(optionValue);
+        properties.put(option.getName(), parse.get());
+    }
 
     private void parseRemainingArguments(List<Problem> problemList) {
         ListIterator<String> listIterator = arguments.listIterator();
